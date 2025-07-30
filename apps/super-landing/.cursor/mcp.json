@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ]
+        },
+        "agentzero": {
+            "type": "sse",
+            "url": "http://localhost:50001/mcp/t-0/sse"
+        }
+    }
+}
