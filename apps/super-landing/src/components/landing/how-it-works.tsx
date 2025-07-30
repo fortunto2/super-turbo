@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { LightbulbIcon, Bot, SlidersHorizontal } from "lucide-react";
+import { SafeIcon } from "@/components/ui/safe-icon";
 import { useTranslation } from "@/hooks/use-translation";
 import { useParams } from "next/navigation";
 import { getValidLocale } from "@/lib/get-valid-locale";
@@ -39,20 +40,15 @@ export function HowItWorks() {
   const steps = t("howItWorks.steps") as Step[];
 
   // Default icons to use for each step
-  const icons = [
-    <LightbulbIcon
-      key="lightbulb"
+  const iconComponents = [LightbulbIcon, Bot, SlidersHorizontal];
+
+  const icons = iconComponents.map((IconComponent, index) => (
+    <SafeIcon
+      key={index}
+      icon={IconComponent}
       className="h-10 w-10"
-    />,
-    <Bot
-      key="bot"
-      className="h-10 w-10"
-    />,
-    <SlidersHorizontal
-      key="sliders"
-      className="h-10 w-10"
-    />,
-  ];
+    />
+  ));
 
   return (
     <section className="py-24 bg-muted/30 gradient-section">

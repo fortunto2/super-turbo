@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { default as Link } from "@/components/ui/optimized-link";
 import { Icons } from "@/components/ui/icons";
+import { SafeIcon } from "@/components/ui/safe-icon";
 import { LucideIcon } from "lucide-react";
 import { allCases } from ".contentlayer/generated";
 import { useTranslation } from "@/hooks/use-translation";
@@ -142,7 +143,10 @@ export function CaseUseCases() {
                     <CardHeader>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 rounded-md bg-accent/10 text-accent glassmorphism">
-                          <IconComponent className="h-8 w-8" />
+                          <SafeIcon
+                            icon={IconComponent}
+                            className="h-8 w-8"
+                          />
                         </div>
                       </div>
                       <CardTitle>{item.title}</CardTitle>

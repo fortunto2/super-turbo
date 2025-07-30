@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { UserCircle } from "lucide-react";
 import { Icons } from "@/components/ui/icons";
+import { SafeIcon } from "@/components/ui/safe-icon";
 import { LucideIcon } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 import { useParams } from "next/navigation";
@@ -70,7 +71,10 @@ export function Features() {
                 variants={itemVariants}
               >
                 <div className="p-3 rounded-full bg-accent/10 text-accent w-fit mb-4 glassmorphism">
-                  <IconComponent className="h-8 w-8" />
+                  <SafeIcon
+                    icon={IconComponent}
+                    className="h-8 w-8"
+                  />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>

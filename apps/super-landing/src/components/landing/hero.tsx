@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { APP_URLS } from "@/lib/constants";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SafeIcon } from "@/components/ui/safe-icon";
 import Image from "next/image";
 import { useTranslation } from "@/hooks/use-translation";
 import { useParams } from "next/navigation";
@@ -56,8 +57,9 @@ export function Hero() {
         <motion.h1
           className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter max-w-3xl"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
         >
           {t("hero.title")}
         </motion.h1>
@@ -66,8 +68,9 @@ export function Hero() {
         <motion.p
           className="text-xl md:text-2xl text-muted-foreground max-w-2xl"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          viewport={{ once: true }}
         >
           {t("hero.description")}
         </motion.p>
@@ -76,8 +79,9 @@ export function Hero() {
         <motion.div
           className="flex flex-col sm:flex-row gap-4 mt-8"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+          viewport={{ once: true }}
         >
           <Button
             size="lg"
@@ -99,8 +103,9 @@ export function Hero() {
         <motion.div
           className="relative w-full max-w-5xl mt-12 aspect-video rounded-lg overflow-hidden shadow-2xl border border-accent/20 gradient-border"
           initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+          viewport={{ once: true }}
         >
           <div
             className="relative w-full h-full"
@@ -112,6 +117,7 @@ export function Hero() {
                 className={`absolute inset-0 transition-opacity duration-1000 ${
                   index === currentSlide ? "opacity-100" : "opacity-0"
                 }`}
+                suppressHydrationWarning
               >
                 <Image
                   src={slide}
@@ -131,7 +137,10 @@ export function Hero() {
               aria-label="Previous slide"
               title="View previous screenshot"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <SafeIcon
+                icon={ChevronLeft}
+                className="h-6 w-6"
+              />
             </button>
 
             <button
@@ -140,11 +149,17 @@ export function Hero() {
               aria-label="Next slide"
               title="View next screenshot"
             >
-              <ChevronRight className="h-6 w-6" />
+              <SafeIcon
+                icon={ChevronRight}
+                className="h-6 w-6"
+              />
             </button>
 
             {/* Индикаторы слайдов */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            <div
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2"
+              suppressHydrationWarning
+            >
               {slides.map((_, index) => (
                 <button
                   key={index}
@@ -153,6 +168,7 @@ export function Hero() {
                   }`}
                   onClick={() => setCurrentSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}
+                  suppressHydrationWarning
                 />
               ))}
             </div>

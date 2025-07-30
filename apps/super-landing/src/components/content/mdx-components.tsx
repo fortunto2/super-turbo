@@ -88,7 +88,6 @@ interface MDXProps {
 
 export function MDXContent({ code }: MDXProps) {
   // Ensure process is available for ContentLayer2
-
   if (
     typeof window !== "undefined" &&
     typeof (window as Window & { process?: unknown }).process === "undefined"
