@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import { ExternalLink, Zap, Video, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStripePrices } from "@/hooks/use-stripe-prices";

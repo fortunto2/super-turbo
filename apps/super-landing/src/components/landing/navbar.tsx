@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@turbo-super/ui";
 import { default as Link } from "@/components/ui/optimized-link";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
-import { APP_URLS } from "@/lib/constants";
 import { Dropdown } from "../ui/dropdown-menu";
 import { i18n } from "@/config/i18n-config";
-import { cn } from "@/lib/utils";
+import { cn } from "@turbo-super/ui";
 import { useTranslation } from "@/hooks/use-translation";
 import { getValidLocale } from "@/lib/get-valid-locale";
+import { APP_URLS } from "@/lib/constants";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);

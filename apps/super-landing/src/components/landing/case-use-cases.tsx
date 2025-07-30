@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@turbo-super/ui';
 import { default as Link } from "@/components/ui/optimized-link";
 import { Icons } from "@/components/ui/icons";
 import { SafeIcon } from "@/components/ui/safe-icon";

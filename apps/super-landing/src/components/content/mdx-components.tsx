@@ -7,7 +7,7 @@ import { Feature } from "./feature";
 import { Steps } from "./steps";
 import { Step } from "./step";
 import { CTABox } from "./cta-box";
-import { Button } from "@/components/ui/button";
+import { Button } from '@turbo-super/ui';
 import { Check } from "lucide-react";
 import { PricingSection } from "./pricing-section";
 import { VideoShowcase } from "@/components/landing/video-showcase";

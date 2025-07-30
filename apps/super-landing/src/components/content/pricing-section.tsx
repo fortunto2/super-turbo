@@ -1,14 +1,13 @@
 "use client";
 
 import { default as Link } from "@/components/ui/optimized-link";
-import { APP_URLS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn, Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Zap, X, Check, Users, ArrowRight } from "lucide-react";
 import { useParams } from "next/navigation";
 import { getValidLocale } from "@/lib/get-valid-locale";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
+import { APP_URLS } from "@/lib/constants";
 
 // Определение типов для данных о тарифах
 interface PricePlan {

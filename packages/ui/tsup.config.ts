@@ -11,4 +11,8 @@ export default defineConfig({
   banner: {
     js: '"use client";',
   },
+  // Копируем CSS файлы
+  loader: {
+    ".css": "copy",
+  },
 });

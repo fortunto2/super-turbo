@@ -2,10 +2,10 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, FileImage, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { cn } from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 
 interface UploadedImage {
   id: string;

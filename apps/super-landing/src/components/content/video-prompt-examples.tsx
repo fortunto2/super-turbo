@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@turbo-super/ui';
 import { Copy, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 
 interface VideoPromptExample {

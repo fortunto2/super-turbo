@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 // Simple Progress component since it's not available in UI library
 function Progress({ value, className }: { value: number; className?: string }) {
   return (

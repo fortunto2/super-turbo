@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@turbo-super/ui";
 import { motion } from "framer-motion";
 import { APP_URLS } from "@/lib/constants";
 import { useTranslation } from "@/hooks/use-translation";

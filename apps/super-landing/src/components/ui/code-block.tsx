@@ -1,16 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
-import { Button } from './button';
+import { useState, ReactNode, isValidElement } from "react";
+import { Copy, Check } from "lucide-react";
+import { Button } from "@turbo-super/ui";
 
 interface CodeBlockProps {
-  children: React.ReactNode;
+  children: ReactNode;
   language?: string;
   className?: string;
 }
 
-export const CodeBlock = ({ children, language, className = '' }: CodeBlockProps) => {
+export const CodeBlock = ({
+  children,
+  language,
+  className = "",
+}: CodeBlockProps) => {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async (text: string) => {
@@ -19,38 +23,40 @@ export const CodeBlock = ({ children, language, className = '' }: CodeBlockProps
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy code:', err);
+      console.error("Failed to copy code:", err);
     }
   };
 
   const extractTextContent = (element: React.ReactNode): string => {
-    if (typeof element === 'string') {
+    if (typeof element === "string") {
       return element;
     }
-    
-    if (React.isValidElement(element)) {
+
+    if (isValidElement(element)) {
       if (element.props.children) {
         return extractTextContent(element.props.children);
       }
     }
-    
+
     if (Array.isArray(element)) {
-      return element.map(extractTextContent).join('');
+      return element.map(extractTextContent).join("");
     }
-    
-    return '';
+
+    return "";
   };
 
   const codeText = extractTextContent(children);
 
   return (
     <div className="relative group">
-      <pre className={`overflow-x-auto p-4 bg-gray-900 text-gray-100 rounded-lg border ${className}`}>
-        <code className={language ? `language-${language}` : ''}>
+      <pre
+        className={`overflow-x-auto p-4 bg-gray-900 text-gray-100 rounded-lg border ${className}`}
+      >
+        <code className={language ? `language-${language}` : ""}>
           {children}
         </code>
       </pre>
-      
+
       <Button
         variant="ghost"
         size="sm"
@@ -58,12 +64,8 @@ export const CodeBlock = ({ children, language, className = '' }: CodeBlockProps
         onClick={() => copyToClipboard(codeText)}
         title={copied ? "Copied!" : "Copy code"}
       >
-        {copied ? (
-          <Check className="w-4 h-4" />
-        ) : (
-          <Copy className="w-4 h-4" />
-        )}
+        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
       </Button>
     </div>
   );
-}; 
+};

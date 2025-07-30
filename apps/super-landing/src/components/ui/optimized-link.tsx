@@ -32,7 +32,10 @@ const OptimizedLink: React.FC<OptimizedLinkProps> = ({
   ...props
 }) => {
   // Строковое представление href (может быть объектом для сложных ссылок)
-  const hrefString = typeof href === "string" ? href : href.pathname || "";
+  const hrefString =
+    typeof href === "string"
+      ? href
+      : (href as { pathname?: string })?.pathname || "";
 
   // Определяем, является ли ссылка внутренней ссылкой на контент
   const isContentLink =

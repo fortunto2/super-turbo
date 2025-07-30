@@ -1,11 +1,11 @@
  'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
 
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import { Copy, Check, Settings, Code, Zap } from 'lucide-react';
 
 // Типы данных

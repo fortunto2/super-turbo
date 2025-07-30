@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@turbo-super/ui';
 import React from "react";
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {

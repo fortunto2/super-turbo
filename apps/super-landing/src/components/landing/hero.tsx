@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@turbo-super/ui";
 import { motion } from "framer-motion";
 import { APP_URLS } from "@/lib/constants";
 import { ChevronLeft, ChevronRight } from "lucide-react";

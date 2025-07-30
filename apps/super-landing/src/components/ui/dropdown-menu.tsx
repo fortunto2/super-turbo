@@ -2,7 +2,7 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
-import { cn } from "@/lib/utils";
+import { cn } from '@turbo-super/ui';
 import { ReactNode } from "react";
 
 interface DropdownOption {
