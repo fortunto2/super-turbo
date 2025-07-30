@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Библиотечная конфигурация",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "target": "ES2018",
+    "lib": ["ES2020"],
+    "module": "ESNext",
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"]
+} 

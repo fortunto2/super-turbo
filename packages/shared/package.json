@@ -1,0 +1,42 @@
+{
+  "name": "@turbo-super/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Общие утилиты и хуки для turbo-super",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs", 
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@turbo-super/eslint-config": "workspace:*",
+    "@turbo-super/tsconfig": "workspace:*",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "eslint": "^8.57.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+} 
