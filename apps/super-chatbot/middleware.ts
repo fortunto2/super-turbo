@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { guestRegex, isDevelopmentEnvironment } from "@/lib/constants";
+
+const isDevelopmentEnvironment = process.env.NODE_ENV === "development";
+const guestRegex = /^guest-\d+$/;
 
 // Edge-совместимый Sentry (используем только совместимые API)
 let Sentry: any = null;
