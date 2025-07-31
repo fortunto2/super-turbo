@@ -2,7 +2,10 @@
   "name": "landing",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.10.0",
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": ">=20.18.1"
+  },
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
     "prebuild": "node scripts/generate-llms.js",
