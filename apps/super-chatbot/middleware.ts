@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const isDevelopmentEnvironment = process.env.NODE_ENV === "development";
+
 const guestRegex = /^guest-\d+$/;
 
 // Убираем Sentry из middleware для Edge Runtime совместимости
@@ -15,7 +16,12 @@ async function getTokenFromRequest(request: NextRequest) {
       (acc, cookie) => {
         const [key, value] = cookie.trim().split("=");
         if (key && value) {
-          acc[key] = decodeURIComponent(value);
+          try {
+            acc[key] = decodeURIComponent(value);
+          } catch (e) {
+            // Игнорируем ошибки декодирования
+            acc[key] = value;
+          }
         }
         return acc;
       },
@@ -37,124 +43,129 @@ async function getTokenFromRequest(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+  try {
+    const { pathname, searchParams } = request.nextUrl;
 
-  // Простое логирование для разработки
-  if (isDevelopmentEnvironment) {
-    console.log(`[Middleware] ${request.method} ${pathname}`);
-  }
-
-  /*
-   * Playwright starts the dev server and requires a 200 status to
-   * begin the tests, so this ensures that the tests can start
-   */
-  if (pathname.startsWith("/ping")) {
-    return new Response("pong", { status: 200 });
-  }
-
-  if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
-  }
-
-  // Allow access to config API endpoints without authentication
-  if (pathname.startsWith("/api/config/")) {
-    return NextResponse.next();
-  }
-
-  // Allow access to generation API endpoints without authentication
-  if (pathname.startsWith("/api/generate/")) {
-    return NextResponse.next();
-  }
-
-  // Allow access to file API endpoints without authentication
-  if (pathname.startsWith("/api/file/")) {
-    return NextResponse.next();
-  }
-
-  // Разрешаем доступ к отладочной странице без аутентификации
-  if (pathname.startsWith("/debug")) {
-    return NextResponse.next();
-  }
-
-  // Пропускаем запросы на туннелирование Sentry
-  if (pathname.startsWith("/monitoring")) {
-    return NextResponse.next();
-  }
-
-  // Проверка на наличие параметра, предотвращающего цикл
-  const hasRedirectParam = searchParams.has("from_redirect");
-
-  const token = await getTokenFromRequest(request);
-
-  // Логирование пользователя для разработки
-  if (token && isDevelopmentEnvironment) {
-    console.log(`[Middleware] User: ${token.email}`);
-  }
-
-  // Если пользователь переходит на страницу входа, перенаправляем на auto-login
-  if (pathname === "/login") {
-    const url = new URL("/auto-login", request.url);
-    return NextResponse.redirect(url);
-  }
-
-  if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
-    // Логирование неавторизованного доступа для разработки
-    if (
-      !pathname.startsWith("/_next") &&
-      !pathname.startsWith("/api/auth") &&
-      isDevelopmentEnvironment
-    ) {
-      console.log(`[Middleware] Unauthorized access: ${pathname}`);
+    // Простое логирование для разработки
+    if (isDevelopmentEnvironment) {
+      console.log(`[Middleware] ${request.method} ${pathname}`);
+    }
+    /*
+     * Playwright starts the dev server and requires a 200 status to
+     * begin the tests, so this ensures that the tests can start
+     */
+    if (pathname.startsWith("/ping")) {
+      return new Response("pong", { status: 200 });
     }
 
-    // Для API запросов используем гостевой вход
-    if (pathname.startsWith("/api/")) {
-      return NextResponse.redirect(
-        new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
-      );
-    }
-
-    // Для страницы auto-login, если уже есть параметр from_redirect,
-    // не перенаправляем снова, чтобы избежать циклических редиректов
-    if (pathname === "/auto-login" && hasRedirectParam) {
+    if (pathname.startsWith("/api/auth")) {
       return NextResponse.next();
     }
 
-    // Для обычных запросов перенаправляем на auto-login с параметром
-    const url = new URL("/auto-login", request.url);
-    url.searchParams.set("from_redirect", "true");
-    return NextResponse.redirect(url);
-  }
-
-  const isGuest = guestRegex.test(token?.email ?? "");
-
-  // Если пользователь в гостевом режиме и явно пытается войти в аккаунт
-  // через auto-login, позволяем пройти дальше для Auth0 авторизации
-  if (token && isGuest && pathname === "/auto-login") {
-    return NextResponse.next();
-  }
-
-  // Если пользователь в гостевом режиме и пытается выйти из гостевого режима
-  // через signOut, позволяем пройти дальше
-  if (token && isGuest && pathname === "/api/auth/signout") {
-    return NextResponse.next();
-  }
-
-  if (token && !isGuest && ["/auto-login", "/register"].includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  // Логирование чатов для разработки
-  if (pathname.startsWith("/chat/") && isDevelopmentEnvironment) {
-    const chatId = pathname.split("/")[2];
-    if (chatId) {
-      console.log(`[Middleware] Accessing chat: ${chatId}`);
+    // Allow access to config API endpoints without authentication
+    if (pathname.startsWith("/api/config/")) {
+      return NextResponse.next();
     }
-  }
 
-  return NextResponse.next();
+    // Allow access to generation API endpoints without authentication
+    if (pathname.startsWith("/api/generate/")) {
+      return NextResponse.next();
+    }
+
+    // Allow access to file API endpoints without authentication
+    if (pathname.startsWith("/api/file/")) {
+      return NextResponse.next();
+    }
+
+    // Разрешаем доступ к отладочной странице без аутентификации
+    if (pathname.startsWith("/debug")) {
+      return NextResponse.next();
+    }
+
+    // Пропускаем запросы на туннелирование Sentry
+    if (pathname.startsWith("/monitoring")) {
+      return NextResponse.next();
+    }
+
+    // Проверка на наличие параметра, предотвращающего цикл
+    const hasRedirectParam = searchParams.has("from_redirect");
+
+    const token = await getTokenFromRequest(request);
+
+    // Логирование пользователя для разработки
+    if (token && isDevelopmentEnvironment) {
+      console.log(`[Middleware] User: ${token.email}`);
+    }
+
+    // Если пользователь переходит на страницу входа, перенаправляем на auto-login
+    if (pathname === "/login") {
+      const url = new URL("/auto-login", request.url);
+      return NextResponse.redirect(url);
+    }
+
+    if (!token) {
+      const redirectUrl = encodeURIComponent(request.url);
+
+      // Логирование неавторизованного доступа для разработки
+      if (
+        !pathname.startsWith("/_next") &&
+        !pathname.startsWith("/api/auth") &&
+        isDevelopmentEnvironment
+      ) {
+        console.log(`[Middleware] Unauthorized access: ${pathname}`);
+      }
+
+      // Для API запросов используем гостевой вход
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.redirect(
+          new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
+        );
+      }
+
+      // Для страницы auto-login, если уже есть параметр from_redirect,
+      // не перенаправляем снова, чтобы избежать циклических редиректов
+      if (pathname === "/auto-login" && hasRedirectParam) {
+        return NextResponse.next();
+      }
+
+      // Для обычных запросов перенаправляем на auto-login с параметром
+      const url = new URL("/auto-login", request.url);
+      url.searchParams.set("from_redirect", "true");
+      return NextResponse.redirect(url);
+    }
+
+    const isGuest = guestRegex.test(token?.email ?? "");
+
+    // Если пользователь в гостевом режиме и явно пытается войти в аккаунт
+    // через auto-login, позволяем пройти дальше для Auth0 авторизации
+    if (token && isGuest && pathname === "/auto-login") {
+      return NextResponse.next();
+    }
+
+    // Если пользователь в гостевом режиме и пытается выйти из гостевого режима
+    // через signOut, позволяем пройти дальше
+    if (token && isGuest && pathname === "/api/auth/signout") {
+      return NextResponse.next();
+    }
+
+    if (token && !isGuest && ["/auto-login", "/register"].includes(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // Логирование чатов для разработки
+    if (pathname.startsWith("/chat/") && isDevelopmentEnvironment) {
+      const chatId = pathname.split("/")[2];
+      if (chatId) {
+        console.log(`[Middleware] Accessing chat: ${chatId}`);
+      }
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error("[Middleware] Error:", error);
+    // В случае ошибки возвращаем 500
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
 
 export const config = {
