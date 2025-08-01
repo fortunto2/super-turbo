@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "turbo build",
+    "build:types": "turbo build:types",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

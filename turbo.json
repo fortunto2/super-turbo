@@ -15,8 +15,19 @@
       ]
     },
     "dev": {
+      "dependsOn": ["^build:types"],
       "cache": false,
       "persistent": true
+    },
+    "build:types": {
+      "dependsOn": ["^build:types"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "tsconfig*.json"
+      ],
+      "outputs": [
+        "dist/**/*.d.ts"
+      ]
     },
     "lint": {
       "dependsOn": ["^build"],

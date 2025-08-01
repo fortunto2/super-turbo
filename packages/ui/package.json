@@ -14,8 +14,8 @@
     "src/styles.css"
   ],
   "scripts": {
-    "build": "node build.js",
-    "build:types": "tsc -p tsconfig.build.json",
+    "build": "tsup && node restore-types.js",
+    "build:types": "node restore-types.js",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/",
