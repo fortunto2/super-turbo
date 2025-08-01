@@ -36,8 +36,14 @@ export async function POST(request: NextRequest) {
         return `https://${process.env.VERCEL_URL}`;
       }
 
+      // Try to detect the correct port from request headers
+      const host = request.headers.get("host");
+      if (host && host.includes("localhost")) {
+        return `http://${host}`;
+      }
+
       // Finally fallback to localhost for development
-      return "http://localhost:3001";
+      return "http://localhost:3000";
     };
 
     const appUrl = getAppUrl();

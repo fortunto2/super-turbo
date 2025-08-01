@@ -495,7 +495,7 @@ function StripePaymentButton({
           ] }) }),
           /* @__PURE__ */ jsxs("div", { className: "text-xs text-muted-foreground text-center pt-2 border-t", children: [
             /* @__PURE__ */ jsx("p", { children: "\u2713 Instant access \u2022 \u2713 No subscription \u2022 \u2713 Secure Stripe payment" }),
-            mode === "test" && /* @__PURE__ */ jsx("p", { className: "text-yellow-600 dark:text-yellow-400 mt-1", children: "\u{1F9EA} Test mode - Use test card 4242 4242 4242 4242" })
+            /* @__PURE__ */ jsx("p", { className: "text-yellow-600 dark:text-yellow-400 mt-1", children: "\u{1F9EA} Test mode - Use test card 4242 4242 4242 4242" })
           ] })
         ] })
       ]

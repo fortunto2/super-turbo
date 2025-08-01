@@ -189,7 +189,7 @@ export function StripePaymentButton({
 
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
           <p>✓ Instant access • ✓ No subscription • ✓ Secure Stripe payment</p>
-          {mode === "test" && (
+          {true && (
             <p className="text-yellow-600 dark:text-yellow-400 mt-1">
               🧪 Test mode - Use test card 4242 4242 4242 4242
             </p>

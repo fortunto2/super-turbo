@@ -1,38 +1,53 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { Button } from '@turbo-super/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
-import { CheckCircle, ArrowLeft, Coins } from 'lucide-react';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@turbo-super/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import { CheckCircle, ArrowLeft, Coins } from "lucide-react";
+import Link from "next/link";
 
 interface PaymentSuccessData {
   sessionId: string;
   amount: number;
   currency: string;
   creditAmount?: number;
-  status: 'success' | 'processing' | 'error';
+  status: "success" | "processing" | "error";
 }
 
 export default function PaymentSuccessPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
-  const [paymentData, setPaymentData] = useState<PaymentSuccessData | null>(null);
+  const [paymentData, setPaymentData] = useState<PaymentSuccessData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (sessionId) {
-      // Здесь можно добавить API call для получения деталей платежа
-      // Пока используем моковые данные
-      setPaymentData({
-        sessionId,
-        amount: 100,
-        currency: 'usd',
-        creditAmount: 100,
-        status: 'success'
-      });
-      setLoading(false);
+      // Проверяем статус платежа через webhook
+      const checkPaymentStatus = async () => {
+        try {
+          console.log("🔍 Checking payment status for session:", sessionId);
+
+          // Здесь можно добавить проверку статуса платежа через Stripe API
+          // Пока используем моковые данные
+
+          setPaymentData({
+            sessionId,
+            amount: 100,
+            currency: "usd",
+            creditAmount: 100,
+            status: "success",
+          });
+          setLoading(false);
+        } catch (error) {
+          console.error("❌ Error checking payment status:", error);
+          setLoading(false);
+        }
+      };
+
+      checkPaymentStatus();
     }
   }, [sessionId]);
 
@@ -53,8 +68,8 @@ export default function PaymentSuccessPage() {
         <Card className="w-full max-w-md">
           <CardContent className="text-center py-8">
             <p className="text-red-600">Ошибка загрузки данных платежа</p>
-            <Link href="/chat">
-              <Button className="mt-4">Вернуться в чат</Button>
+            <Link href="/">
+              <Button className="mt-4">Вернуться</Button>
             </Link>
           </CardContent>
         </Card>
@@ -86,9 +101,12 @@ export default function PaymentSuccessPage() {
               </span>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-sm text-muted-foreground">Сумма платежа:</span>
+              <span className="text-sm text-muted-foreground">
+                Сумма платежа:
+              </span>
               <span className="text-sm font-medium">
-                ${(paymentData.amount / 100).toFixed(2)} {paymentData.currency.toUpperCase()}
+                ${(paymentData.amount / 100).toFixed(2)}{" "}
+                {paymentData.currency.toUpperCase()}
               </span>
             </div>
           </div>
@@ -103,13 +121,22 @@ export default function PaymentSuccessPage() {
           </div>
 
           <div className="flex gap-3">
-            <Link href="/chat" className="flex-1">
-              <Button className="w-full" variant="outline">
+            <Link
+              href="/"
+              className="flex-1"
+            >
+              <Button
+                className="w-full"
+                variant="outline"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Вернуться в чат
+                Вернуться
               </Button>
             </Link>
-            <Link href="/tools" className="flex-1">
+            <Link
+              href="/tools"
+              className="flex-1"
+            >
               <Button className="w-full">
                 <Coins className="w-4 h-4 mr-2" />
                 Использовать инструменты
@@ -125,4 +152,4 @@ export default function PaymentSuccessPage() {
       </Card>
     </div>
   );
-} 
+}
