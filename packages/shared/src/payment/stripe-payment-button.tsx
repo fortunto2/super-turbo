@@ -97,7 +97,7 @@ export function StripePaymentButton({
         className={`border-2 border-purple-500/50 bg-gradient-to-r from-purple-50/80 to-blue-50/80 dark:from-purple-950/30 dark:to-blue-950/30 dark:border-purple-400/30 ${className}`}
       >
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
+          <Loader2 className="size-6 animate-spin mr-2" />
           <span>Loading payment options...</span>
         </CardContent>
       </Card>
@@ -126,7 +126,7 @@ export function StripePaymentButton({
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Zap className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
+          <Zap className="size-5 text-yellow-500 dark:text-yellow-400" />
           {isCreditsVariant ? "Пополнить баланс" : "Generate VEO3 Videos"}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
@@ -141,9 +141,9 @@ export function StripePaymentButton({
           <div className="p-6 border-2 border-blue-200 dark:border-blue-700/50 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors text-center">
             <div className="flex items-center justify-center gap-2 mb-3">
               {isCreditsVariant ? (
-                <CreditCard className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                <CreditCard className="size-5 text-blue-500 dark:text-blue-400" />
               ) : (
-                <Video className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                <Video className="size-5 text-blue-500 dark:text-blue-400" />
               )}
               <span className="font-semibold text-lg">
                 {isCreditsVariant
@@ -172,12 +172,12 @@ export function StripePaymentButton({
             >
               {isCreatingCheckout ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  <Loader2 className="size-5 mr-2 animate-spin" />
                   Creating Payment...
                 </>
               ) : (
                 <>
-                  <ExternalLink className="w-5 h-5 mr-2" />
+                  <ExternalLink className="size-5 mr-2" />
                   {isCreditsVariant
                     ? `Пополнить за $${price.toFixed(2)}`
                     : `Generate Video for $${price.toFixed(2)}`}

@@ -27,24 +27,36 @@ if (!fs.existsSync(componentsDir)) {
 // Создаем badge.d.ts
 const badgeContent = `import * as React from "react";
 import { VariantProps } from "class-variance-authority";
+import { BadgeProps } from "@turbo-super/ui";
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<any> {}
-
-export declare const Badge: React.ForwardRefExoticComponent<
-  BadgeProps & React.RefAttributes<HTMLDivElement>
->;`;
+export declare const Badge: React.ForwardRefExoticComponent<BadgeProps & React.RefAttributes<HTMLDivElement>>;`;
 
 fs.writeFileSync(path.join(componentsDir, 'badge.d.ts'), badgeContent);
 
 // Создаем button.d.ts
 const buttonContent = `import * as React from "react";
 import { VariantProps } from "class-variance-authority";
+import { ButtonProps } from "@turbo-super/ui";
 
-export interface ButtonProps
+export interface Props extends ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<any> {
+    VariantProps<{
+      variant: {
+        default: string;
+        destructive: string;
+        outline: string;
+        secondary: string;
+        ghost: string;
+        link: string;
+        accent: string;
+      };
+      size: {
+        default: string;
+        sm: string;
+        lg: string;
+        icon: string;
+      };
+    }> {
   asChild?: boolean;
 }
 

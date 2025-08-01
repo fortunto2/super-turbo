@@ -5,6 +5,7 @@ import {
   PromptData,
   Veo3PromptGenerator,
 } from "@turbo-super/veo3-tools";
+import { CreditBalance } from "@/components/ui/credit-balance";
 
 export function SimpleVeo3Generator() {
   const enhancePromptFunction = async (params: {
@@ -31,6 +32,11 @@ export function SimpleVeo3Generator() {
 
   return (
     <div className="max-w-7xl veo3-fixes">
+      {/* Credit Balance Section */}
+      <div className="mb-6">
+        <CreditBalance showPurchaseButton={true} />
+      </div>
+
       <Veo3PromptGenerator
         enhancePromptFunction={enhancePromptFunction}
         showInfoBanner={true}

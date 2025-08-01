@@ -430,7 +430,7 @@ function StripePaymentButton({
       {
         className: `border-2 border-purple-500/50 bg-gradient-to-r from-purple-50/80 to-blue-50/80 dark:from-purple-950/30 dark:to-blue-950/30 dark:border-purple-400/30 ${className}`,
         children: /* @__PURE__ */ jsxs(CardContent, { className: "flex items-center justify-center py-8", children: [
-          /* @__PURE__ */ jsx(Loader2, { className: "w-6 h-6 animate-spin mr-2" }),
+          /* @__PURE__ */ jsx(Loader2, { className: "size-6 animate-spin mr-2" }),
           /* @__PURE__ */ jsx("span", { children: "Loading payment options..." })
         ] })
       }
@@ -453,7 +453,7 @@ function StripePaymentButton({
       children: [
         /* @__PURE__ */ jsxs(CardHeader, { className: "pb-3", children: [
           /* @__PURE__ */ jsxs(CardTitle, { className: "flex items-center gap-2 text-lg", children: [
-            /* @__PURE__ */ jsx(Zap, { className: "w-5 h-5 text-yellow-500 dark:text-yellow-400" }),
+            /* @__PURE__ */ jsx(Zap, { className: "size-5 text-yellow-500 dark:text-yellow-400" }),
             isCreditsVariant ? "\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u0431\u0430\u043B\u0430\u043D\u0441" : "Generate VEO3 Videos"
           ] }),
           /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground", children: isCreditsVariant ? `\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0431\u0430\u043B\u0430\u043D\u0441 \u043D\u0430 ${creditAmount} \u043A\u0440\u0435\u0434\u0438\u0442\u043E\u0432 \u0434\u043B\u044F \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0438\u044F AI \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u043E\u0432` : "Your prompt is ready! Choose a plan to generate professional AI videos with Google VEO3." })
@@ -461,7 +461,7 @@ function StripePaymentButton({
         /* @__PURE__ */ jsxs(CardContent, { className: "space-y-3", children: [
           /* @__PURE__ */ jsx("div", { className: "max-w-md mx-auto", children: /* @__PURE__ */ jsxs("div", { className: "p-6 border-2 border-blue-200 dark:border-blue-700/50 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors text-center", children: [
             /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-center gap-2 mb-3", children: [
-              isCreditsVariant ? /* @__PURE__ */ jsx(CreditCard, { className: "w-5 h-5 text-blue-500 dark:text-blue-400" }) : /* @__PURE__ */ jsx(Video, { className: "w-5 h-5 text-blue-500 dark:text-blue-400" }),
+              isCreditsVariant ? /* @__PURE__ */ jsx(CreditCard, { className: "size-5 text-blue-500 dark:text-blue-400" }) : /* @__PURE__ */ jsx(Video, { className: "size-5 text-blue-500 dark:text-blue-400" }),
               /* @__PURE__ */ jsx("span", { className: "font-semibold text-lg", children: isCreditsVariant ? `\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043D\u0430 ${creditAmount} \u043A\u0440\u0435\u0434\u0438\u0442\u043E\u0432` : "Generate Video" })
             ] }),
             /* @__PURE__ */ jsx("div", { className: "mb-4", children: /* @__PURE__ */ jsxs(
@@ -484,10 +484,10 @@ function StripePaymentButton({
                 size: "lg",
                 disabled: isCreatingCheckout,
                 children: isCreatingCheckout ? /* @__PURE__ */ jsxs(Fragment, { children: [
-                  /* @__PURE__ */ jsx(Loader2, { className: "w-5 h-5 mr-2 animate-spin" }),
+                  /* @__PURE__ */ jsx(Loader2, { className: "size-5 mr-2 animate-spin" }),
                   "Creating Payment..."
                 ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-                  /* @__PURE__ */ jsx(ExternalLink, { className: "w-5 h-5 mr-2" }),
+                  /* @__PURE__ */ jsx(ExternalLink, { className: "size-5 mr-2" }),
                   isCreditsVariant ? `\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u0437\u0430 $${price.toFixed(2)}` : `Generate Video for $${price.toFixed(2)}`
                 ] })
               }
