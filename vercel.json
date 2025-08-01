@@ -2,7 +2,6 @@
   "buildCommand": "pnpm build",
   "installCommand": "pnpm install",
   "framework": null,
-  "nodeVersion": "20.18.1",
   "functions": {
     "apps/super-chatbot/src/app/api/**/*.ts": {
       "maxDuration": 30
