@@ -3,9 +3,12 @@ import Stripe from "stripe";
 import { storeSessionData, type SessionData } from "@/lib/kv";
 import { getCurrentPrices } from "@turbo-super/shared";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-06-30.basil",
-});
+const stripe = new Stripe(
+  process.env.STRIPE_SECRET_KEY || "sk_test_your_stripe_secret_key",
+  {
+    apiVersion: "2025-06-30.basil",
+  }
+);
 
 export async function POST(request: NextRequest) {
   try {

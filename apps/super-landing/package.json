@@ -14,6 +14,7 @@
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "generate-types": "pnpm exec ts-node scripts/generate-translation-types.ts",
+    "check-env": "node scripts/check-env.js",
     "preview": "NODE_OPTIONS='--no-warnings' pnpm dlx @opennextjs/cloudflare build && pnpm dlx @opennextjs/cloudflare preview",
     "deploy": "NODE_OPTIONS='--no-warnings' pnpm dlx @opennextjs/cloudflare build && pnpm dlx @opennextjs/cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
