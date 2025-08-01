@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* VEO3 Fixes - импортируем глобально для работы с MDX */
+@import "./veo3-fixes.css";
+
 @layer base {
   :root {
     --radius: 0.625rem;

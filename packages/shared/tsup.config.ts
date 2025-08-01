@@ -7,7 +7,14 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ["react", "react-dom"],
+  external: [
+    "react", 
+    "react-dom",
+    "@turbo-super/ui",
+    "sonner",
+    "clsx",
+    "lucide-react"
+  ],
   banner: {
     js: '"use client";',
   },

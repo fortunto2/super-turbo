@@ -14,7 +14,8 @@
     "src/styles.css"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "node build.js",
+    "build:types": "tsc -p tsconfig.build.json",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/",

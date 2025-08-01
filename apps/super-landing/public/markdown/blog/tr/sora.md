@@ -6,7 +6,18 @@ slug: sora
 locale: tr
 seo:
   title: "Sora text-to-video modeli"
-  description: "Hızlı video fikirleri için Sora kullanımı"
+  description: "Using Sora for quick video ideas"
+---
+
+---
+title: "Sora Text2Video"
+description: "Metin komutlarından kısa klipler üret"
+date: 2025-05-20
+slug: sora
+locale: tr
+seo:
+  title: "Sora text-to-video modeli"
+  description: "Using Sora for quick video ideas"
 ---
 
 # Sora text2video

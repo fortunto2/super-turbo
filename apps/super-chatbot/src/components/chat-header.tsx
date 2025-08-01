@@ -4,7 +4,7 @@ import { useWindowSize } from "usehooks-ts";
 
 import { ModelSelector } from "@/components/model-selector";
 import { SidebarToggle } from "@/components/sidebar-toggle";
-import { Button } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
 import { PlusIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
 import { memo } from "react";

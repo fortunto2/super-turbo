@@ -1,0 +1,143 @@
+/* Исправления для VEO3 компонента в super-landing */
+
+.veo3-fixes textarea {
+  background-color: #0a0a0a !important;
+  border-color: #333 !important;
+  color: #e5e5e5 !important;
+  resize: none !important;
+}
+
+.veo3-fixes textarea.min-h-\[400px\] {
+  min-height: 400px !important;
+}
+
+.veo3-fixes textarea.min-h-\[500px\] {
+  min-height: 500px !important;
+}
+
+.veo3-fixes input {
+  background-color: #0a0a0a !important;
+  border-color: #333 !important;
+  color: #e5e5e5 !important;
+}
+
+/* Цветные фоны для специфичных полей */
+
+/* Blue colors */
+.veo3-fixes .bg-blue-950\/10 {
+  background-color: rgba(23, 37, 84, 0.1) !important;
+}
+.veo3-fixes .bg-blue-950\/20 {
+  background-color: rgba(23, 37, 84, 0.2) !important;
+}
+
+/* Green colors */
+.veo3-fixes .bg-green-950\/10 {
+  background-color: rgba(5, 46, 22, 0.1) !important;
+}
+.veo3-fixes .bg-green-950\/20 {
+  background-color: rgba(5, 46, 22, 0.2) !important;
+}
+
+/* Orange colors */
+.veo3-fixes .bg-orange-950\/10 {
+  background-color: rgba(67, 20, 7, 0.1) !important;
+}
+.veo3-fixes .bg-orange-950\/20 {
+  background-color: rgba(67, 20, 7, 0.2) !important;
+}
+
+/* Yellow colors */
+.veo3-fixes .bg-yellow-950\/10 {
+  background-color: rgba(66, 32, 6, 0.1) !important;
+}
+.veo3-fixes .bg-yellow-950\/20 {
+  background-color: rgba(66, 32, 6, 0.2) !important;
+}
+
+/* Purple colors */
+.veo3-fixes .bg-purple-950\/10 {
+  background-color: rgba(59, 7, 100, 0.1) !important;
+}
+.veo3-fixes .bg-purple-950\/20 {
+  background-color: rgba(59, 7, 100, 0.2) !important;
+}
+
+/* Indigo colors */
+.veo3-fixes .bg-indigo-950\/10 {
+  background-color: rgba(30, 27, 75, 0.1) !important;
+}
+.veo3-fixes .bg-indigo-950\/20 {
+  background-color: rgba(30, 27, 75, 0.2) !important;
+}
+
+/* Pink colors */
+.veo3-fixes .bg-pink-950\/10 {
+  background-color: rgba(80, 7, 36, 0.1) !important;
+}
+.veo3-fixes .bg-pink-950\/20 {
+  background-color: rgba(80, 7, 36, 0.2) !important;
+}
+
+/* Rose colors */
+.veo3-fixes .bg-rose-950\/10 {
+  background-color: rgba(76, 5, 25, 0.1) !important;
+}
+.veo3-fixes .bg-rose-950\/20 {
+  background-color: rgba(76, 5, 25, 0.2) !important;
+}
+
+/* Border colors */
+.veo3-fixes .border-blue-500 {
+  border-color: rgb(59, 130, 246) !important;
+}
+.veo3-fixes .border-blue-600 {
+  border-color: rgb(37, 99, 235) !important;
+}
+.veo3-fixes .border-green-600 {
+  border-color: rgb(22, 163, 74) !important;
+}
+.veo3-fixes .border-orange-600 {
+  border-color: rgb(234, 88, 12) !important;
+}
+.veo3-fixes .border-yellow-600 {
+  border-color: rgb(202, 138, 4) !important;
+}
+.veo3-fixes .border-purple-600 {
+  border-color: rgb(147, 51, 234) !important;
+}
+.veo3-fixes .border-indigo-600 {
+  border-color: rgb(79, 70, 229) !important;
+}
+.veo3-fixes .border-pink-600 {
+  border-color: rgb(219, 39, 119) !important;
+}
+.veo3-fixes .border-rose-600 {
+  border-color: rgb(225, 29, 72) !important;
+}
+
+/* Text colors */
+.veo3-fixes .text-blue-300 {
+  color: rgb(147, 197, 253) !important;
+}
+.veo3-fixes .text-green-300 {
+  color: rgb(134, 239, 172) !important;
+}
+.veo3-fixes .text-orange-300 {
+  color: rgb(253, 186, 116) !important;
+}
+.veo3-fixes .text-yellow-300 {
+  color: rgb(253, 224, 71) !important;
+}
+.veo3-fixes .text-purple-300 {
+  color: rgb(196, 181, 253) !important;
+}
+.veo3-fixes .text-indigo-300 {
+  color: rgb(165, 180, 252) !important;
+}
+.veo3-fixes .text-pink-300 {
+  color: rgb(249, 168, 212) !important;
+}
+.veo3-fixes .text-rose-300 {
+  color: rgb(253, 164, 175) !important;
+} 
