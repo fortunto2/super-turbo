@@ -8,6 +8,9 @@ import type { DBMessage } from "@/lib/db/schema";
 import type { Attachment, UIMessage } from "ai";
 import * as Sentry from "@sentry/nextjs";
 import { ChatPageWrapper } from "@/components/chat-page-wrapper";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
+import Script from "next/script";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   try {
@@ -89,21 +92,17 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       const cookieStore = await cookies();
       const chatModelFromCookie = cookieStore.get("chat-model");
 
-      if (!chatModelFromCookie) {
-        return (
-          <ChatPageWrapper
-            id={chat.id}
-            initialMessages={convertToUIMessages(messagesFromDb)}
-            initialChatModel={DEFAULT_CHAT_MODEL}
-            initialVisibilityType={chat.visibility}
-            isReadonly={session?.user?.id !== chat.userId}
-            session={session}
-            autoResume={true}
-          />
-        );
-      }
-
-      return (
+      const chatContent = !chatModelFromCookie ? (
+        <ChatPageWrapper
+          id={chat.id}
+          initialMessages={convertToUIMessages(messagesFromDb)}
+          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialVisibilityType={chat.visibility}
+          isReadonly={session?.user?.id !== chat.userId}
+          session={session}
+          autoResume={true}
+        />
+      ) : (
         <ChatPageWrapper
           id={chat.id}
           initialMessages={convertToUIMessages(messagesFromDb)}
@@ -113,6 +112,17 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           session={session}
           autoResume={true}
         />
+      );
+
+      return (
+        <>
+          <Script
+            src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
+            strategy="beforeInteractive"
+          />
+          <AppSidebar user={session?.user} />
+          <SidebarInset>{chatContent}</SidebarInset>
+        </>
       );
     } catch (error) {
       // Логируем ошибку получения сообщений

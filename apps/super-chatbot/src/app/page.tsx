@@ -5,7 +5,7 @@ import { auth } from "./(auth)/auth";
 import { redirect } from "next/navigation";
 import { ChatPageWrapper } from "@/components/chat-page-wrapper";
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import Script from "next/script";
 
 export default async function HomePage() {
@@ -19,7 +19,6 @@ export default async function HomePage() {
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
-  const isCollapsed = cookieStore.get("sidebar:state")?.value !== "true";
 
   const chatContent = !modelIdFromCookie ? (
     <ChatPageWrapper
@@ -51,10 +50,8 @@ export default async function HomePage() {
         src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
         strategy="beforeInteractive"
       />
-      <SidebarProvider defaultOpen={!isCollapsed}>
-        <AppSidebar user={session?.user} />
-        <SidebarInset>{chatContent}</SidebarInset>
-      </SidebarProvider>
+      <AppSidebar user={session?.user} />
+      <SidebarInset>{chatContent}</SidebarInset>
     </>
   );
 }
