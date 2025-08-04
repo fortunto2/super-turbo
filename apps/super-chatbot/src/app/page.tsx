@@ -8,7 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import Script from "next/script";
 
-export default async function Page() {
+export default async function HomePage() {
   const session = await auth();
 
   if (!session) {
