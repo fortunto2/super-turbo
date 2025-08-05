@@ -43,7 +43,7 @@ export function PromptBuilder({
   MoodboardUploader,
 }: PromptBuilderProps) {
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>VEO3 Prompt Builder</CardTitle>
       </CardHeader>

@@ -76,7 +76,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -88,7 +88,9 @@ export default async function RootLayout({
             style={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "flex-start",
+              minHeight: "100vh",
+              width: "100%",
             }}
           >
             <Toaster position="top-center" />

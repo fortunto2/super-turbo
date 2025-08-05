@@ -12,9 +12,9 @@ import { ToolIcon } from "@/lib/config/tools-icons";
 
 export default function ToolsPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background w-full">
+      <div className="container mx-auto px-4 py-8 w-full max-w-6xl">
+        <div className="w-full space-y-8">
           {/* Main content */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -28,13 +28,13 @@ export default function ToolsPage() {
           </div>
 
           {/* Tools grid - Dynamic from TOOLS_CONFIG */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 w-full">
             {TOOLS_CONFIG.map((tool) => (
               <Link
                 key={tool.id}
                 href={tool.href}
               >
-                <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer group">
+                <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer group h-[400px] flex flex-col">
                   <CardHeader className="text-center">
                     <div className="flex items-center justify-center mb-4">
                       <div
@@ -51,7 +51,7 @@ export default function ToolsPage() {
                       {tool.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-1 flex flex-col justify-end">
                     <div className="space-y-4">
                       <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
                         {tool.features.map((feature, index) => (

@@ -33,7 +33,7 @@ export function PromptPreview({
   enhancePrompt,
 }: PromptPreviewProps) {
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Copy className="w-5 h-5" />

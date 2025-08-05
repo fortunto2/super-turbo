@@ -4,14 +4,14 @@ import { Suspense } from "react";
 import ScriptGeneratorForm from "./components/script-generator-form";
 import ScriptGenerationResult from "./components/script-generation-result";
 import { useScriptGenerator } from "./hooks/use-script-generator";
-import { Separator } from '@turbo-super/ui';
+import { Separator } from "@turbo-super/ui";
 import { Wand2, Sparkles } from "lucide-react";
 
 export default function ScriptGeneratorPage() {
   const scriptGenerator = useScriptGenerator();
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center space-x-2">
@@ -42,9 +42,9 @@ export default function ScriptGeneratorPage() {
       <Separator />
 
       {/* Main content grid */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 w-full">
         {/* Left column - Input Form */}
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           <Suspense fallback={<div>Loading form...</div>}>
             <ScriptGeneratorForm
               generateScript={scriptGenerator.generateScript}
@@ -53,7 +53,7 @@ export default function ScriptGeneratorPage() {
           </Suspense>
         </div>
         {/* Right column - Results */}
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           <Suspense fallback={<div>Loading editor...</div>}>
             <ScriptGenerationResult
               script={scriptGenerator.script}

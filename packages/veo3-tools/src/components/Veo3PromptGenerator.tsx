@@ -336,7 +336,7 @@ export function Veo3PromptGenerator({
   };
 
   return (
-    <div className={`max-w-6xl mx-auto ${className}`}>
+    <div className={`w-full max-w-6xl mx-auto ${className}`}>
       {/* Info Banner */}
       {showInfoBanner && (
         <div className="mb-6 p-4 bg-gradient-to-r from-green-50/10 to-blue-50/10 dark:from-green-950/20 dark:to-blue-950/20 border border-green-200/20 dark:border-green-600/20 rounded-lg">
