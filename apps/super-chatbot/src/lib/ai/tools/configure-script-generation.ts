@@ -1,9 +1,15 @@
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
 import { tool } from "ai";
 import { z } from "zod";
+import {
+  checkBalanceBeforeArtifact,
+  getOperationDisplayName,
+} from "@/lib/utils/ai-tools-balance";
+import type { Session } from "next-auth";
 
 interface CreateScriptDocumentParams {
   createDocument: any;
+  session?: Session | null;
 }
 
 export const configureScriptGeneration = (
@@ -20,6 +26,34 @@ export const configureScriptGeneration = (
     execute: async ({ prompt }) => {
       if (!params?.createDocument) {
         return { error: "createDocument function is not available." };
+      }
+
+      // Check balance before creating artifact
+      const operationType = "basic-script";
+      const multipliers: string[] = [];
+
+      // Determine if it's a long script
+      if (prompt && prompt.length > 200) {
+        multipliers.push("long-form");
+      }
+
+      const balanceCheck = await checkBalanceBeforeArtifact(
+        params.session || null,
+        "script-generation",
+        operationType,
+        multipliers,
+        getOperationDisplayName(operationType)
+      );
+
+      if (!balanceCheck.valid) {
+        console.log("🔧 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+        return {
+          error:
+            balanceCheck.userMessage ||
+            "Недостаточно средств для генерации сценария",
+          balanceError: true,
+          requiredCredits: balanceCheck.cost,
+        };
       }
 
       try {

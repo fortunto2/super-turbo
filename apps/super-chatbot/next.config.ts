@@ -1,10 +1,23 @@
-import { withSentryConfig } from "@sentry/nextjs";
+// import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Включаем экспериментальные функции для лучшей совместимости
   experimental: {
-    ppr: true,
+    // Отключаем PPR для стабильности
+    // ppr: true,
+
+    // Включаем поддержку турборепозитория
+    turbo: {
+      rules: {
+        "*.svg": {
+          loaders: ["@svgr/webpack"],
+          as: "*.js",
+        },
+      },
+    },
   },
+
   images: {
     remotePatterns: [
       {
@@ -15,36 +28,62 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  webpack: (config, { isServer, dev }) => {
+    // Игнорируем предупреждения о критических зависимостях для @opentelemetry
+    config.ignoreWarnings = [
+      {
+        module: /node_modules\/@opentelemetry\/instrumentation/,
+        message:
+          /Critical dependency: the request of a dependency is an expression/,
+      },
+    ];
+
+    // В dev режиме можно также отключить некоторые оптимизации для ускорения сборки
+    if (dev) {
+      config.optimization = {
+        ...config.optimization,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      };
+    }
+
+    return config;
+  },
 };
 
-export default withSentryConfig(nextConfig, {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+// Временно отключаем Sentry для диагностики проблемы с middleware
+export default nextConfig;
 
-  org: "superduperai",
-  project: "super-chat",
+// export default withSentryConfig(nextConfig, {
+//   // For all available options, see:
+//   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+//   org: "superduperai",
+//   project: "super-chat",
 
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+//   // Only print logs for uploading source maps in CI
+//   silent: !process.env.CI,
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+//   // For all available options, see:
+//   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: "/monitoring",
+//   // Upload a larger set of source maps for prettier stack traces (increases build time)
+//   widenClientFileUpload: true,
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
+//   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+//   // This can increase your server load as well as your hosting bill.
+//   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
+//   // side errors will fail.
+//   tunnelRoute: "/monitoring",
 
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
-});
+//   // Automatically tree-shake Sentry logger statements to reduce bundle size
+//   disableLogger: true,
+
+//   // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+//   // See the following for more information:
+//   // https://docs.sentry.io/product/crons/
+//   // https://vercel.com/docs/cron-jobs
+//   automaticVercelMonitors: true,
+// });

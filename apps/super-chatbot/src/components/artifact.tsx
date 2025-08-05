@@ -46,7 +46,7 @@ export interface UIArtifact {
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
-  status: "streaming" | "idle";
+  status: "streaming" | "idle" | "error";
   boundingBox: {
     top: number;
     left: number;

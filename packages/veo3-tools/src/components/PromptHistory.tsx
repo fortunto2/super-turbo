@@ -1,4 +1,11 @@
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@turbo-super/ui';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Badge,
+} from "@turbo-super/ui";
 import { Copy, Trash2 } from "lucide-react";
 import { HistoryItem } from "../types";
 
@@ -16,7 +23,7 @@ export function PromptHistory({
   setActiveTab,
 }: PromptHistoryProps) {
   return (
-    <Card>
+    <Card className="w-full">
       {promptHistory.length > 0 ? (
         <>
           <CardHeader>
@@ -109,4 +116,4 @@ export function PromptHistory({
       )}
     </Card>
   );
-} 
+}

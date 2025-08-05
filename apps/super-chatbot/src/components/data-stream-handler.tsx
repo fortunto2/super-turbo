@@ -3,6 +3,7 @@ import { useEffect, useRef, memo } from "react";
 import { artifactDefinitions, type ArtifactKind } from "./artifact";
 import type { Suggestion } from "@/lib/db/schema";
 import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
+import { toast } from "./toast";
 
 export type DataStreamDelta = {
   type:
@@ -14,7 +15,8 @@ export type DataStreamDelta = {
     | "suggestion"
     | "clear"
     | "finish"
-    | "kind";
+    | "kind"
+    | "error";
   content: string | Suggestion;
 };
 
@@ -127,6 +129,17 @@ function PureDataStreamHandler({
               return {
                 ...draftArtifact,
                 status: "idle",
+              };
+
+            case "error":
+              // Show error toast to user
+              toast({
+                type: "error",
+                description: delta.content as string,
+              });
+              return {
+                ...draftArtifact,
+                status: "error",
               };
 
             default:

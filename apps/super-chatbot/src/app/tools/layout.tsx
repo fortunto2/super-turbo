@@ -38,9 +38,9 @@ export default function ToolsLayout({ children }: { children: ReactNode }) {
   const header = tool ? TOOL_TITLES[tool] : null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background w-full">
+      <div className="container mx-auto px-4 py-8 w-full">
+        <div className="w-full max-w-7xl mx-auto">
           <ToolsNavigation />
           {header && (
             <div className="text-center space-y-4 mb-8">

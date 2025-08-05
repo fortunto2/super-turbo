@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { cookies } from "next/headers";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
@@ -54,6 +56,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const isCollapsed = cookieStore.get("sidebar:state")?.value !== "true";
+
   return (
     <html
       lang="en"
@@ -71,16 +76,27 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
-          <Analytics />
+          <SidebarProvider
+            defaultOpen={!isCollapsed}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              minHeight: "100vh",
+              width: "100%",
+            }}
+          >
+            <Toaster position="top-center" />
+            <SessionProvider>{children}</SessionProvider>
+            <Analytics />
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

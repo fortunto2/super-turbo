@@ -14,6 +14,7 @@ import {
   validateOperationBalance,
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
+import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,15 +46,11 @@ export async function POST(request: NextRequest) {
     );
 
     if (!balanceValidation.valid) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Insufficient balance",
-          details: balanceValidation.error,
-          requiredCredits: balanceValidation.cost,
-        },
-        { status: 402 } // Payment Required
+      const errorResponse = createBalanceErrorResponse(
+        balanceValidation,
+        generationType
       );
+      return NextResponse.json(errorResponse, { status: 402 });
     }
 
     console.log(
