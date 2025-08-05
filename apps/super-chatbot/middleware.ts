@@ -3,7 +3,6 @@ import { NextResponse, type NextRequest } from "next/server";
 // const isDevelopmentEnvironment = process.env.NODE_ENV === "development";
 
 // const guestRegex = /^guest-\d+$/;
-
 // // Убираем Sentry из middleware для Edge Runtime совместимости
 
 // // Упрощенная функция для получения токена в Edge Runtime
