@@ -1,10 +1,23 @@
-import { withSentryConfig } from "@sentry/nextjs";
+// import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // experimental: {
-  //   ppr: true,
-  // },
+  // Включаем экспериментальные функции для лучшей совместимости
+  experimental: {
+    // Отключаем PPR для стабильности
+    // ppr: true,
+
+    // Включаем поддержку турборепозитория
+    turbo: {
+      rules: {
+        "*.svg": {
+          loaders: ["@svgr/webpack"],
+          as: "*.js",
+        },
+      },
+    },
+  },
+
   images: {
     remotePatterns: [
       {
@@ -15,6 +28,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   webpack: (config, { isServer, dev }) => {
     // Игнорируем предупреждения о критических зависимостях для @opentelemetry
     config.ignoreWarnings = [
