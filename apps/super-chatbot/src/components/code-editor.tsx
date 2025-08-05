@@ -5,13 +5,13 @@ import { EditorState, Transaction } from "@codemirror/state";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { basicSetup } from "codemirror";
-import React, { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import type { Suggestion } from "@/lib/db/schema";
 
 type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
-  status: "streaming" | "idle";
+  status: "streaming" | "idle" | "error";
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;

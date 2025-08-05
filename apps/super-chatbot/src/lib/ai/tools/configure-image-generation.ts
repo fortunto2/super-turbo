@@ -113,7 +113,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
       if (style?.includes("ultra-quality")) multipliers.push("ultra-quality");
 
       const balanceCheck = await checkBalanceBeforeArtifact(
-        params.session,
+        params.session || null,
         "image-generation",
         operationType,
         multipliers,

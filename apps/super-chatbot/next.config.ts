@@ -15,6 +15,28 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer, dev }) => {
+    // Игнорируем предупреждения о критических зависимостях для @opentelemetry
+    config.ignoreWarnings = [
+      {
+        module: /node_modules\/@opentelemetry\/instrumentation/,
+        message:
+          /Critical dependency: the request of a dependency is an expression/,
+      },
+    ];
+
+    // В dev режиме можно также отключить некоторые оптимизации для ускорения сборки
+    if (dev) {
+      config.optimization = {
+        ...config.optimization,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      };
+    }
+
+    return config;
+  },
 };
 
 // Временно отключаем Sentry для диагностики проблемы с middleware

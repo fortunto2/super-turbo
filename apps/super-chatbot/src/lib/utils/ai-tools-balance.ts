@@ -14,7 +14,7 @@ export interface BalanceCheckResult {
  */
 export async function checkBalanceBeforeArtifact(
   session: Session | null,
-  operation: string,
+  operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[] = [],
   operationDisplayName: string

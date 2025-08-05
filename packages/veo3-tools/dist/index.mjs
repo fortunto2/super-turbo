@@ -221,7 +221,7 @@ function PromptBuilder({
   setMoodboardImages,
   MoodboardUploader: MoodboardUploader2
 }) {
-  return /* @__PURE__ */ jsxs2(Card2, { children: [
+  return /* @__PURE__ */ jsxs2(Card2, { className: "w-full", children: [
     /* @__PURE__ */ jsx2(CardHeader2, { children: /* @__PURE__ */ jsx2(CardTitle2, { children: "VEO3 Prompt Builder" }) }),
     /* @__PURE__ */ jsxs2(CardContent2, { className: "space-y-4", children: [
       /* @__PURE__ */ jsxs2("div", { className: "space-y-2 p-4 border-l-4 border-blue-500 bg-blue-950/20 rounded-lg", children: [
@@ -609,7 +609,7 @@ function PromptPreview({
   isEnhancing,
   enhancePrompt
 }) {
-  return /* @__PURE__ */ jsxs3(Card3, { children: [
+  return /* @__PURE__ */ jsxs3(Card3, { className: "w-full", children: [
     /* @__PURE__ */ jsx3(CardHeader3, { children: /* @__PURE__ */ jsxs3(CardTitle3, { className: "flex items-center gap-2", children: [
       /* @__PURE__ */ jsx3(Copy, { className: "w-5 h-5" }),
       "Generated Prompt",
@@ -749,7 +749,7 @@ function AIEnhancement({
   copied,
   copyToClipboard: copyToClipboard2
 }) {
-  return /* @__PURE__ */ jsxs4(Card4, { children: [
+  return /* @__PURE__ */ jsxs4(Card4, { className: "w-full", children: [
     /* @__PURE__ */ jsx4(CardHeader4, { children: /* @__PURE__ */ jsxs4(CardTitle4, { className: "flex items-center gap-2", children: [
       /* @__PURE__ */ jsx4(Sparkles2, { className: "w-5 h-5 text-purple-600" }),
       "AI Enhanced Prompt"
@@ -995,7 +995,14 @@ function AIEnhancement({
 }
 
 // src/components/PromptHistory.tsx
-import { Card as Card5, CardHeader as CardHeader5, CardTitle as CardTitle5, CardContent as CardContent5, Button as Button4, Badge as Badge5 } from "@turbo-super/ui";
+import {
+  Card as Card5,
+  CardHeader as CardHeader5,
+  CardTitle as CardTitle5,
+  CardContent as CardContent5,
+  Button as Button4,
+  Badge as Badge5
+} from "@turbo-super/ui";
 import { Copy as Copy3, Trash2 as Trash23 } from "lucide-react";
 import { Fragment as Fragment2, jsx as jsx5, jsxs as jsxs5 } from "react/jsx-runtime";
 function PromptHistory({
@@ -1004,7 +1011,7 @@ function PromptHistory({
   clearHistory,
   setActiveTab
 }) {
-  return /* @__PURE__ */ jsx5(Card5, { children: promptHistory.length > 0 ? /* @__PURE__ */ jsxs5(Fragment2, { children: [
+  return /* @__PURE__ */ jsx5(Card5, { className: "w-full", children: promptHistory.length > 0 ? /* @__PURE__ */ jsxs5(Fragment2, { children: [
     /* @__PURE__ */ jsx5(CardHeader5, { children: /* @__PURE__ */ jsxs5("div", { className: "flex items-center justify-between", children: [
       /* @__PURE__ */ jsxs5(CardTitle5, { className: "flex items-center gap-2", children: [
         /* @__PURE__ */ jsx5(Copy3, { className: "w-5 h-5" }),
@@ -1485,7 +1492,7 @@ function Veo3PromptGenerator({
       await enhancePrompt(selectedFocusTypes.join(","));
     }
   };
-  return /* @__PURE__ */ jsxs6("div", { className: `max-w-6xl mx-auto ${className}`, children: [
+  return /* @__PURE__ */ jsxs6("div", { className: `w-full max-w-6xl mx-auto ${className}`, children: [
     showInfoBanner && /* @__PURE__ */ jsx6("div", { className: "mb-6 p-4 bg-gradient-to-r from-green-50/10 to-blue-50/10 dark:from-green-950/20 dark:to-blue-950/20 border border-green-200/20 dark:border-green-600/20 rounded-lg", children: /* @__PURE__ */ jsxs6("div", { className: "flex items-start gap-3", children: [
       /* @__PURE__ */ jsx6("div", { className: "flex-shrink-0 w-8 h-8 bg-green-100/20 dark:bg-green-900/30 rounded-full flex items-center justify-center", children: /* @__PURE__ */ jsx6(BookOpen, { className: "w-4 h-4 text-green-600 dark:text-green-400" }) }),
       /* @__PURE__ */ jsxs6("div", { className: "flex-1", children: [

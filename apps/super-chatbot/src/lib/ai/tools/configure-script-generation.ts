@@ -38,7 +38,7 @@ export const configureScriptGeneration = (
       }
 
       const balanceCheck = await checkBalanceBeforeArtifact(
-        params.session,
+        params.session || null,
         "script-generation",
         operationType,
         multipliers,

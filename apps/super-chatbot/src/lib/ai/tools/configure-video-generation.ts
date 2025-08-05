@@ -493,16 +493,20 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
 
         // Check balance before creating artifact
         const operationType =
-          finalGenerationType === "image_to_video"
+          finalGenerationType === "image-to-video"
             ? "image-to-video"
             : "text-to-video";
         const multipliers: string[] = [];
 
         // Add duration multipliers
-        if (duration <= 5) multipliers.push("duration-5s");
-        else if (duration <= 10) multipliers.push("duration-10s");
-        else if (duration <= 15) multipliers.push("duration-15s");
-        else if (duration <= 30) multipliers.push("duration-30s");
+        if (duration) {
+          if (duration <= 5) multipliers.push("duration-5s");
+          else if (duration <= 10) multipliers.push("duration-10s");
+          else if (duration <= 15) multipliers.push("duration-15s");
+          else if (duration <= 30) multipliers.push("duration-30s");
+        } else {
+          multipliers.push("duration-5s");
+        }
 
         // Add quality multipliers
         if (
@@ -518,7 +522,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
-          params?.session,
+          params?.session || null,
           "video-generation",
           operationType,
           multipliers,

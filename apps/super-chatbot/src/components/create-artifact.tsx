@@ -38,7 +38,7 @@ interface ArtifactContent<M = any> {
   mode: "edit" | "diff";
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  status: "streaming" | "idle";
+  status: "streaming" | "idle" | "error";
   suggestions: Array<Suggestion>;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
   isInline: boolean;

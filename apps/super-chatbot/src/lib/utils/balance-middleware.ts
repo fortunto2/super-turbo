@@ -15,7 +15,7 @@ import {
  */
 export async function checkBalanceForArtifact(
   userId: string,
-  operation: string,
+  operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[],
   dataStream: DataStreamWriter
@@ -46,7 +46,7 @@ export async function checkBalanceForArtifact(
  */
 export async function checkBalanceForAPI(
   userId: string,
-  operation: string,
+  operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[]
 ): Promise<{ valid: boolean; errorResponse?: NextResponse }> {
@@ -79,7 +79,7 @@ export async function checkBalanceForAPI(
  */
 export async function deductBalanceAfterSuccess(
   userId: string,
-  operation: string,
+  operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[],
   operationDetails: Record<string, any>
@@ -109,7 +109,7 @@ export async function deductBalanceAfterSuccess(
  */
 export async function withBalanceCheck<T>(
   userId: string,
-  operation: string,
+  operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[],
   dataStream: DataStreamWriter,

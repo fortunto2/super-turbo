@@ -26,7 +26,7 @@ import {
 type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
-  status: "streaming" | "idle";
+  status: "streaming" | "idle" | "error";
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;

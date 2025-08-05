@@ -252,7 +252,7 @@ function PromptBuilder({
   setMoodboardImages,
   MoodboardUploader: MoodboardUploader2
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_ui2.Card, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_ui2.Card, { className: "w-full", children: [
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_ui2.CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_ui2.CardTitle, { children: "VEO3 Prompt Builder" }) }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_ui2.CardContent, { className: "space-y-4", children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2 p-4 border-l-4 border-blue-500 bg-blue-950/20 rounded-lg", children: [
@@ -632,7 +632,7 @@ function PromptPreview({
   isEnhancing,
   enhancePrompt
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_ui3.Card, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_ui3.Card, { className: "w-full", children: [
     /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_ui3.CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(import_ui3.CardTitle, { className: "flex items-center gap-2", children: [
       /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_lucide_react2.Copy, { className: "w-5 h-5" }),
       "Generated Prompt",
@@ -757,7 +757,7 @@ function AIEnhancement({
   copied,
   copyToClipboard: copyToClipboard2
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_ui4.Card, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_ui4.Card, { className: "w-full", children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_ui4.CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_ui4.CardTitle, { className: "flex items-center gap-2", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react3.Sparkles, { className: "w-5 h-5 text-purple-600" }),
       "AI Enhanced Prompt"
@@ -1012,7 +1012,7 @@ function PromptHistory({
   clearHistory,
   setActiveTab
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_ui5.Card, { children: promptHistory.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(import_jsx_runtime5.Fragment, { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_ui5.Card, { className: "w-full", children: promptHistory.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(import_jsx_runtime5.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_ui5.CardHeader, { children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center justify-between", children: [
       /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(import_ui5.CardTitle, { className: "flex items-center gap-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react4.Copy, { className: "w-5 h-5" }),
@@ -1493,7 +1493,7 @@ function Veo3PromptGenerator({
       await enhancePrompt(selectedFocusTypes.join(","));
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: `max-w-6xl mx-auto ${className}`, children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: `w-full max-w-6xl mx-auto ${className}`, children: [
     showInfoBanner && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "mb-6 p-4 bg-gradient-to-r from-green-50/10 to-blue-50/10 dark:from-green-950/20 dark:to-blue-950/20 border border-green-200/20 dark:border-green-600/20 rounded-lg", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-start gap-3", children: [
       /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "flex-shrink-0 w-8 h-8 bg-green-100/20 dark:bg-green-900/30 rounded-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react5.BookOpen, { className: "w-4 h-4 text-green-600 dark:text-green-400" }) }),
       /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex-1", children: [
