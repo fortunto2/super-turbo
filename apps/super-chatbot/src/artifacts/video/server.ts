@@ -16,6 +16,10 @@ import {
   validateOperationBalance,
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
+import {
+  handleBalanceError,
+  createBalanceError,
+} from "@/lib/utils/balance-error-handler";
 
 function convertToVideoModel(sdModel: VideoModel): VideoModel {
   return sdModel;
@@ -81,28 +85,8 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
             ? "image-to-video"
             : "text-to-video";
 
-        const balanceValidation = await validateOperationBalance(
-          session.user.id,
-          "video-generation",
-          operationType,
-          multipliers
-        );
-
-        if (!balanceValidation.valid) {
-          console.error("💳 Insufficient balance for video generation");
-
-          // Write error to datastream
-          dataStream.writeData({
-            type: "error",
-            content: `Insufficient balance: ${balanceValidation.error}. Required: ${balanceValidation.cost} credits.`,
-          });
-
-          throw new Error(`Insufficient balance: ${balanceValidation.error}`);
-        }
-
-        console.log(
-          `💳 Balance validated: ${balanceValidation.cost} credits will be deducted`
-        );
+        // Balance check is now done in AI tools before artifact creation
+        // No need for balance validation here as it's already checked
       }
 
       // Load dynamic models from SuperDuperAI API

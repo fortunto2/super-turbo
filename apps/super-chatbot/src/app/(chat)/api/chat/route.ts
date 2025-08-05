@@ -565,12 +565,15 @@ export async function POST(request: Request) {
             ...tools,
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
+              session,
             }),
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
+              session,
             }),
             configureScriptGeneration: configureScriptGeneration({
               createDocument: tools.createDocument,
+              session,
             }),
             listVideoModels,
             findBestVideoModel,

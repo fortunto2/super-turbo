@@ -2,9 +2,15 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { MediaOption } from "@/lib/types/media-settings";
 import { getImageGenerationConfig } from "@/lib/config/media-settings-factory";
+import {
+  checkBalanceBeforeArtifact,
+  getOperationDisplayName,
+} from "@/lib/utils/ai-tools-balance";
+import type { Session } from "next-auth";
 
 interface CreateImageDocumentParams {
   createDocument: any;
+  session?: Session | null;
 }
 
 export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
@@ -96,6 +102,33 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
           "🔧 ❌ createDocument not available, returning basic config"
         );
         return config;
+      }
+
+      // Check balance before creating artifact
+      const operationType = "text-to-image";
+      const multipliers: string[] = [];
+
+      // Check style for quality multipliers
+      if (style?.includes("high-quality")) multipliers.push("high-quality");
+      if (style?.includes("ultra-quality")) multipliers.push("ultra-quality");
+
+      const balanceCheck = await checkBalanceBeforeArtifact(
+        params.session,
+        "image-generation",
+        operationType,
+        multipliers,
+        getOperationDisplayName(operationType)
+      );
+
+      if (!balanceCheck.valid) {
+        console.log("🔧 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+        return {
+          error:
+            balanceCheck.userMessage ||
+            "Недостаточно средств для генерации изображения",
+          balanceError: true,
+          requiredCredits: balanceCheck.cost,
+        };
       }
 
       try {

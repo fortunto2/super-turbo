@@ -8,6 +8,10 @@ import {
   validateOperationBalance,
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
+import {
+  handleBalanceError,
+  createBalanceError,
+} from "@/lib/utils/balance-error-handler";
 
 // Import the same constants as in configure-image-generation
 const RESOLUTIONS: MediaResolution[] = [
@@ -153,43 +157,8 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         batchSize,
       } = params;
 
-      // Check user balance before proceeding
-      if (session?.user?.id) {
-        console.log("💳 Checking balance for image generation in chat...");
-
-        // Determine operation type and multipliers
-        const operationType = "text-to-image"; // Chat only supports text-to-image
-        const multipliers: string[] = [];
-
-        // Check style for quality multipliers
-        if (style?.id?.includes("high-quality"))
-          multipliers.push("high-quality");
-        if (style?.id?.includes("ultra-quality"))
-          multipliers.push("ultra-quality");
-
-        const balanceValidation = await validateOperationBalance(
-          session.user.id,
-          "image-generation",
-          operationType,
-          multipliers
-        );
-
-        if (!balanceValidation.valid) {
-          console.error("💳 Insufficient balance for image generation");
-
-          // Write error to datastream
-          dataStream.writeData({
-            type: "error",
-            content: `Insufficient balance: ${balanceValidation.error}. Required: ${balanceValidation.cost} credits.`,
-          });
-
-          throw new Error(`Insufficient balance: ${balanceValidation.error}`);
-        }
-
-        console.log(
-          `💳 Balance validated: ${balanceValidation.cost} credits will be deducted`
-        );
-      }
+      // Balance check is now done in AI tools before artifact creation
+      // No need for balance validation here as it's already checked
 
       // Load dynamic models from SuperDuperAI API
       let availableModels: ImageModel[] = [];

@@ -83,7 +83,14 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider defaultOpen={!isCollapsed}>
+          <SidebarProvider
+            defaultOpen={!isCollapsed}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <Toaster position="top-center" />
             <SessionProvider>{children}</SessionProvider>
             <Analytics />

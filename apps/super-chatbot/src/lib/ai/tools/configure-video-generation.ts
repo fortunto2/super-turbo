@@ -19,9 +19,15 @@ import {
   getDefaultResolutionForModel,
 } from "@/lib/config/video-constants";
 import { GenerationTypeEnum, GenerationSourceEnum } from "@/lib/api";
+import {
+  checkBalanceBeforeArtifact,
+  getOperationDisplayName,
+} from "@/lib/utils/ai-tools-balance";
+import type { Session } from "next-auth";
 
 interface CreateVideoDocumentParams {
   createDocument: any;
+  session?: Session | null;
 }
 
 // Helper function to convert string source to enum
@@ -484,6 +490,51 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         };
 
         console.log("🔧 ✅ CREATING VIDEO DOCUMENT WITH PARAMS:", videoParams);
+
+        // Check balance before creating artifact
+        const operationType =
+          finalGenerationType === "image_to_video"
+            ? "image-to-video"
+            : "text-to-video";
+        const multipliers: string[] = [];
+
+        // Add duration multipliers
+        if (duration <= 5) multipliers.push("duration-5s");
+        else if (duration <= 10) multipliers.push("duration-10s");
+        else if (duration <= 15) multipliers.push("duration-15s");
+        else if (duration <= 30) multipliers.push("duration-30s");
+
+        // Add quality multipliers
+        if (
+          selectedResolution.label.includes("HD") ||
+          selectedResolution.label.includes("720")
+        ) {
+          multipliers.push("hd-quality");
+        } else if (
+          selectedResolution.label.includes("4K") ||
+          selectedResolution.label.includes("2160")
+        ) {
+          multipliers.push("4k-quality");
+        }
+
+        const balanceCheck = await checkBalanceBeforeArtifact(
+          params?.session,
+          "video-generation",
+          operationType,
+          multipliers,
+          getOperationDisplayName(operationType)
+        );
+
+        if (!balanceCheck.valid) {
+          console.log("🔧 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+          return {
+            error:
+              balanceCheck.userMessage ||
+              "Недостаточно средств для генерации видео",
+            balanceError: true,
+            requiredCredits: balanceCheck.cost,
+          };
+        }
 
         if (params?.createDocument) {
           console.log("🔧 ✅ CALLING CREATE DOCUMENT WITH KIND: video");
