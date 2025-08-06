@@ -8,7 +8,7 @@ import {
   CardTitle,
   Badge,
 } from "@turbo-super/ui";
-import { Coins, Zap } from "lucide-react";
+import { Coins } from "lucide-react";
 import { StripePaymentButton } from "@turbo-super/shared";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
@@ -88,12 +88,16 @@ export function CreditBalance({
   if (loading) {
     return (
       <Card
-        className={`border-2 border-purple-500/50 bg-gradient-to-r from-purple-50/80 to-blue-50/80 dark:from-purple-950/30 dark:to-blue-950/30 dark:border-purple-400/30 ${className}`}
+        className={`card-enhanced border-purple-500/20 bg-gradient-to-br from-purple-950/30 via-blue-950/30 to-green-950/30 backdrop-blur-sm ${className}`}
       >
         <CardContent className="flex items-center justify-center py-8">
-          <div className="flex items-center gap-2">
-            <Coins className="w-5 h-5 animate-pulse" />
-            <span>{t("credit_balance.loading")}</span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30">
+              <Coins className="w-5 h-5 text-purple-400 animate-pulse" />
+            </div>
+            <span className="text-purple-300">
+              {t("credit_balance.loading")}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -103,12 +107,17 @@ export function CreditBalance({
   if (error || !data) {
     return (
       <Card
-        className={`border-2 border-red-500/50 bg-gradient-to-r from-red-50/80 to-orange-50/80 dark:from-red-950/30 dark:to-orange-950/30 dark:border-red-400/30 ${className}`}
+        className={`card-enhanced border-red-500/20 bg-gradient-to-br from-red-950/30 via-orange-950/30 to-red-950/30 backdrop-blur-sm ${className}`}
       >
         <CardContent className="flex items-center justify-center py-8">
-          <span className="text-red-600 dark:text-red-400">
-            {error || t("credit_balance.error")}
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30">
+              <Coins className="w-5 h-5 text-red-400" />
+            </div>
+            <span className="text-red-300">
+              {error || t("credit_balance.error")}
+            </span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -116,15 +125,6 @@ export function CreditBalance({
 
   const { balance, status, userType } = data;
   const { displayColor, isLow, isEmpty } = status;
-
-  // Color mapping for dark theme
-  const colorClasses = {
-    green:
-      "text-green-400 border-green-800 bg-green-950/50 dark:text-green-400 dark:border-green-800 dark:bg-green-950/50",
-    yellow:
-      "text-yellow-400 border-yellow-800 bg-yellow-950/50 dark:text-yellow-400 dark:border-yellow-800 dark:bg-yellow-950/50",
-    red: "text-red-400 border-red-800 bg-red-950/50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/50",
-  };
 
   const iconColorClasses = {
     green: "text-green-400 dark:text-green-400",
@@ -134,36 +134,48 @@ export function CreditBalance({
 
   return (
     <Card
-      className={`border-2 border-purple-500/50 bg-gradient-to-r from-purple-50/80 to-blue-50/80 dark:from-purple-950/30 dark:to-blue-950/30 dark:border-purple-400/30 ${className}`}
+      className={`card-enhanced border-purple-500/20 bg-gradient-to-br from-purple-950/30 via-blue-950/30 to-green-950/30 backdrop-blur-sm ${className}`}
     >
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Coins className={`w-5 h-5 ${iconColorClasses[displayColor]}`} />
-          {t("credit_balance.title")}
+        <CardTitle className="flex items-center gap-2 text-lg font-bold">
+          <div className="p-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30">
+            <Coins className={`w-5 h-5 ${iconColorClasses[displayColor]}`} />
+          </div>
+          <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            {t("credit_balance.title")}
+          </span>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {t("credit_balance.subtitle")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-gradient-to-br from-blue-950/40 to-purple-950/40 border border-blue-500/20 rounded-lg p-4 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Coins className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span className="font-medium">
+              <div className="p-1.5 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30">
+                <Coins className="w-4 h-4 text-blue-400" />
+              </div>
+              <span className="font-medium text-blue-300 text-sm">
                 {t("credit_balance.current_balance")}
               </span>
             </div>
-            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               {balance} {t("credit_balance.credits")}
             </span>
           </div>
-          <div className="mt-2">
+          <div className="mb-2">
             <Badge
               variant={
                 isEmpty ? "destructive" : isLow ? "secondary" : "default"
               }
-              className="text-xs"
+              className={`text-xs px-2 py-0.5 ${
+                isEmpty
+                  ? "bg-red-500/20 border-red-500/30 text-red-300"
+                  : isLow
+                    ? "bg-yellow-500/20 border-yellow-500/30 text-yellow-300"
+                    : "bg-green-500/20 border-green-500/30 text-green-300"
+              }`}
             >
               {isEmpty
                 ? t("credit_balance.empty")
@@ -172,17 +184,34 @@ export function CreditBalance({
                   : t("credit_balance.good_balance")}
             </Badge>
           </div>
-          <p className="text-xs mt-2 text-muted-foreground">
-            {t("credit_balance.user_type")} {userType}
+          <p className="text-xs text-muted-foreground">
+            {t("credit_balance.user_type")}{" "}
+            <span className="text-blue-300 font-medium">{userType}</span>
           </p>
         </div>
 
-        <div className="text-xs space-y-1 bg-gray-50 dark:bg-gray-900/30 p-3 rounded-lg">
-          <p className="font-medium">{t("credit_balance.tool_costs")}</p>
-          <p>• {t("credit_balance.image_generation")}</p>
-          <p>• {t("credit_balance.video_generation")}</p>
-          <p>• {t("credit_balance.script_generation")}</p>
-          <p>• {t("credit_balance.prompt_enhancement")}</p>
+        <div className="text-xs space-y-1.5 bg-gradient-to-br from-gray-900/40 to-gray-800/40 p-3 rounded-lg border border-gray-500/20 backdrop-blur-sm">
+          <p className="font-medium text-gray-300">
+            {t("credit_balance.tool_costs")}
+          </p>
+          <div className="grid grid-cols-1 gap-1">
+            <p className="text-gray-400 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/60"></span>
+              {t("credit_balance.image_generation")}
+            </p>
+            <p className="text-gray-400 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500/60"></span>
+              {t("credit_balance.video_generation")}
+            </p>
+            <p className="text-gray-400 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500/60"></span>
+              {t("credit_balance.script_generation")}
+            </p>
+            <p className="text-gray-400 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/60"></span>
+              {t("credit_balance.prompt_enhancement")}
+            </p>
+          </div>
         </div>
 
         {showPurchaseButton && (

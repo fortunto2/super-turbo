@@ -91,20 +91,6 @@ export function Navbar() {
           >
             {t("navbar.tools")}
           </Link>
-          <Link
-            href="/test-video-generator"
-            className="text-muted-foreground hover:text-accent transition-colors"
-            title="Тест генератора видео - SuperDuperAI"
-          >
-            Тест видео
-          </Link>
-          <Link
-            href="/test-all-generators"
-            className="text-muted-foreground hover:text-accent transition-colors"
-            title="Тест всех генераторов - SuperDuperAI"
-          >
-            Тест всех
-          </Link>
         </nav>
 
         {/* Кнопки действий - скрыты на мобильных */}
@@ -205,22 +191,6 @@ export function Navbar() {
                 title={t("navbar.tools") + " - SuperDuperAI"}
               >
                 {t("navbar.tools")}
-              </Link>
-              <Link
-                href="/test-video-generator"
-                className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-                title="Тест генератора видео - SuperDuperAI"
-              >
-                Тест видео
-              </Link>
-              <Link
-                href="/test-all-generators"
-                className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-                title="Тест всех генераторов - SuperDuperAI"
-              >
-                Тест всех
               </Link>
               <Link
                 href="/terms"
