@@ -4,6 +4,13 @@ description: एडवांस्ड एडिटिंग वर्कफ्�
 date: 2025-05-20
 slug: flux-kontext
 locale: hi
+modelName: "Flux Kontext"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_steampunk"
+  shotSize: "Medium Shot"
 seo:
   title: Flux Kontext एडिटिंग
   description: Kontext के साथ नॉन डिस्ट्रक्टिव एडिट्स

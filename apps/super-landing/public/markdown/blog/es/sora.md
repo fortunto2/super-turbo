@@ -1,12 +1,17 @@
 ---
 title: "Sora Text2Video"
-description: "Genera clips cortos desde prompts de texto"
 date: 2025-05-20
 slug: sora
 locale: es
+modelName: "Sora"
+modelConfig:
+  maxDuration: 10
+  aspectRatio: "16:9"
+  width: 1920
+  height: 1080
+  frameRate: 30
 seo:
   title: "Modelo text-to-video Sora"
-  description: "Usando Sora para ideas rapidas de video"
 ---
 
 # Sora Text2video

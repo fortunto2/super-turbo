@@ -4,6 +4,13 @@ description: Generación de imágenes de alta fidelidad de Google
 date: 2025-05-20
 slug: google-imagen-4
 locale: es
+modelName: "Google Imagen 4"
+modelConfig:
+  width: 1080
+  height: 1080
+  aspectRatio: "1:1"
+  style: "flux_watercolor"
+  shotSize: "Medium Shot"
 seo:
   title: Modelo de imagen Google Imagen 4
   description: Consejos de prompt para Imagen 4

@@ -1,12 +1,17 @@
 ---
 title: "Sora Text2Video"
-description: "Генерация коротких роликов по тексту"
 date: 2025-05-20
 slug: "sora"
 locale: "ru"
+modelName: "Sora"
+modelConfig:
+  maxDuration: 10
+  aspectRatio: "16:9"
+  width: 1920
+  height: 1080
+  frameRate: 30
 seo:
   title: "Модель Sora text-to-video"
-  description: "Использование Sora для быстрых идей"
 ---
 
 # Sora Text2Video

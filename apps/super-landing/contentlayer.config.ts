@@ -148,6 +148,8 @@ export const Blog = defineDocumentType(() => ({
     slug: { type: "string", required: true },
     seo: { type: "nested", of: SEO, required: false },
     locale: { type: "string", required: true },
+    modelName: { type: "string", required: false },
+    modelConfig: { type: "json", required: false },
   },
   computedFields: {
     url: {

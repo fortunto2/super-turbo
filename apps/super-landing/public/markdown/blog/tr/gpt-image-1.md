@@ -4,6 +4,31 @@ description: Yeni görüntü oluşturma modeli artık mevcut
 date: 2025-05-20
 slug: gpt-image-1
 locale: tr
+modelName: "GPT-Image-1"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_realistic"
+  shotSize: "Medium Shot"
+seo:
+  title: Openai GPT-IMAGE-1 Görüntü Üreticisi
+  description: Yaratıcı sanat eserleri için GPT-image-1'i kullanmak için ipuçları
+---
+
+---
+title: Openai GPT-İmage-1
+description: Yeni görüntü oluşturma modeli artık mevcut
+date: 2025-05-20
+slug: gpt-image-1
+locale: tr
+modelName: "GPT-Image-1"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_realistic"
+  shotSize: "Medium Shot"
 seo:
   title: Openai GPT-IMAGE-1 Görüntü Üreticisi
   description: Yaratıcı sanat eserleri için GPT-image-1'i kullanmak için ipuçları

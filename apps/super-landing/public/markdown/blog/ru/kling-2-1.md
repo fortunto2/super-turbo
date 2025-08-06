@@ -4,6 +4,14 @@ description: "Быстрая генерация коротких роликов"
 date: 2025-05-20
 slug: "kling-2-1"
 locale: "ru"
+modelName: "Kling 2.1"
+modelConfig:
+  maxDuration: 10
+  aspectRatio: "16:9"
+  width: 1280
+  height: 720
+  frameRate: 30
+  description: "Kling 2.1 - быстрая генерация коротких видео клипов с плавными движениями"
 seo:
   title: "Модель Kling 2.1"
   description: "Лучшие промпты для Kling 2.1"

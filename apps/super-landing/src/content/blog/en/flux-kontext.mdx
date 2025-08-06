@@ -1,12 +1,17 @@
 ---
 title: "Flux Kontext"
-description: "Advanced editing workflow"
 date: 2025-05-20
 slug: "flux-kontext"
 locale: en
+modelName: "Flux Kontext"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_steampunk"
+  shotSize: "Medium Shot"
 seo:
   title: "Flux Kontext Editing"
-  description: "Non destructive edits with Kontext"
 ---
 
 # Flux Kontext

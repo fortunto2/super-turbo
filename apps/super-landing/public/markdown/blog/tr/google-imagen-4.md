@@ -4,6 +4,31 @@ description: Google'dan yüksek kaliteli görüntü üretimi
 date: 2025-05-20
 slug: google-imagen-4
 locale: tr
+modelName: "Google Imagen 4"
+modelConfig:
+  width: 1080
+  height: 1080
+  aspectRatio: "1:1"
+  style: "flux_watercolor"
+  shotSize: "Medium Shot"
+seo:
+  title: Google Imagen 4 Görüntü Modeli
+  description: Imagen 4 için komut ipuçları
+---
+
+---
+title: Google Imagen 4
+description: Google'dan yüksek kaliteli görüntü üretimi
+date: 2025-05-20
+slug: google-imagen-4
+locale: tr
+modelName: "Google Imagen 4"
+modelConfig:
+  width: 1080
+  height: 1080
+  aspectRatio: "1:1"
+  style: "flux_watercolor"
+  shotSize: "Medium Shot"
 seo:
   title: Google Imagen 4 Görüntü Modeli
   description: Imagen 4 için komut ipuçları

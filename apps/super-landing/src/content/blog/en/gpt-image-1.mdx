@@ -1,12 +1,17 @@
 ---
 title: "OpenAI GPT-Image-1"
-description: "New image generation model now available"
 date: 2025-05-20
 slug: "gpt-image-1"
 locale: en
+modelName: "GPT-Image-1"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_realistic"
+  shotSize: "Medium Shot"
 seo:
   title: "OpenAI GPT-Image-1 Image Generator"
-  description: "Tips for using GPT-Image-1 for creative artwork"
 ---
 
 # OpenAI GPT-Image-1

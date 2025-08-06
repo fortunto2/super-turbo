@@ -4,6 +4,13 @@ description: टेक्स्ट प्रॉम्प्ट से छोट�
 date: 2025-05-20
 slug: sora
 locale: hi
+modelName: "Sora"
+modelConfig:
+  maxDuration: 10
+  aspectRatio: "16:9"
+  width: 1920
+  height: 1080
+  frameRate: 30
 seo:
   title: सोरा text-to-video मॉडल
   description: त्वरित वीडियो विचारों के लिए सोरा का उपयोग
