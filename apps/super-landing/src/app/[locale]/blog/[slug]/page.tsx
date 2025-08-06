@@ -7,6 +7,8 @@ import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
 import { Blog } from ".contentlayer/generated";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
+import { ModelVideoGenerator } from "@/components/content/model-video-generator";
+import { ModelImageGenerator } from "@/components/content/model-image-generator";
 
 export async function generateMetadata({
   params,
@@ -102,6 +104,28 @@ function BlogPageContent({
       hasH1Heading={hasH1Heading}
     >
       <MDXContent code={post.body.code} />
+
+      {/* Генератор для моделей */}
+      {post.modelName && (
+        <div className="mt-12 pt-8 border-t">
+          {/* Определяем тип модели по названию */}
+          {post.modelName.includes("Veo") ||
+          post.modelName === "Sora" ||
+          post.modelName === "Kling 2.1" ? (
+            <ModelVideoGenerator
+              modelName={post.modelName}
+              modelConfig={post.modelConfig}
+              locale={locale as Locale}
+            />
+          ) : (
+            <ModelImageGenerator
+              modelName={post.modelName}
+              modelConfig={post.modelConfig}
+              locale={locale as Locale}
+            />
+          )}
+        </div>
+      )}
     </PageWrapper>
   );
 }

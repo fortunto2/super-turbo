@@ -1,12 +1,17 @@
 ---
 title: "VEO2 Image2Video"
-description: "Convert images into dynamic video"
 date: 2025-05-20
 slug: "veo2"
 locale: en
+modelName: "Veo2"
+modelConfig:
+  maxDuration: 8
+  aspectRatio: "16:9"
+  width: 1280
+  height: 720
+  frameRate: 30
 seo:
   title: "VEO2 image-to-video"
-  description: "Guide to using VEO2"
 ---
 
 # VEO2 Image2Video

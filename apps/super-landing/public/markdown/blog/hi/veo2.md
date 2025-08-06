@@ -4,6 +4,13 @@ description: छवियों को गतिशील वीडियो म
 date: 2025-05-20
 slug: veo2
 locale: hi
+modelName: "Veo2"
+modelConfig:
+  maxDuration: 8
+  aspectRatio: "16:9"
+  width: 1280
+  height: 720
+  frameRate: 30
 seo:
   title: VEO2 छवि-से-वीडियो
   description: VEO2 का उपयोग करने के लिए गाइड

@@ -3,10 +3,17 @@ import ru from "@/config/dictionaries/ru.json";
 import tr from "@/config/dictionaries/tr.json";
 import es from "@/config/dictionaries/es.json";
 import hi from "@/config/dictionaries/hi.json";
+import generators from "@/lib/dictionaries/generators.json";
 import { Locale } from "@/config/i18n-config";
 import type { TranslationDictionary } from "@/types/translation";
 
-const dictionaries: Record<Locale, TranslationDictionary> = { en, ru, tr, es, hi };
+const dictionaries: Record<Locale, TranslationDictionary> = {
+  en,
+  ru,
+  tr,
+  es,
+  hi,
+};
 
 function getNested(obj: unknown, path: string | string[]) {
   const keys = Array.isArray(path) ? path : path.split(".");
@@ -20,10 +27,19 @@ function getNested(obj: unknown, path: string | string[]) {
 
 export function useTranslation(locale: Locale) {
   const dict = dictionaries[locale] || dictionaries.en;
+  const generatorDict =
+    (generators as Record<string, any>)[locale] ||
+    (generators as Record<string, any>).en;
 
   function t<T = string>(key: string, fallback?: T): T {
-    const value = getNested(dict, key);
+    // Сначала ищем в основных словарях
+    let value = getNested(dict, key);
     if (value !== undefined) return value as T;
+
+    // Затем ищем в словаре генераторов
+    value = getNested(generatorDict, key);
+    if (value !== undefined) return value as T;
+
     if (fallback !== undefined) return fallback;
     return key as unknown as T;
   }

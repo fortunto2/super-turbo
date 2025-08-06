@@ -4,6 +4,13 @@ description: Convierte imágenes en video dinámico
 date: 2025-05-20
 slug: veo2
 locale: es
+modelName: "Veo2"
+modelConfig:
+  maxDuration: 8
+  aspectRatio: "16:9"
+  width: 1280
+  height: 720
+  frameRate: 30
 seo:
   title: Veo2 image-to-video
   description: Guía para usar Veo2

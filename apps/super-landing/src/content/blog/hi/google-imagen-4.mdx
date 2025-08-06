@@ -4,6 +4,13 @@ description: Google से हाई फिडेलिटी इमेज ज�
 date: 2025-05-20
 slug: google-imagen-4
 locale: hi
+modelName: "Google Imagen 4"
+modelConfig:
+  width: 1080
+  height: 1080
+  aspectRatio: "1:1"
+  style: "flux_watercolor"
+  shotSize: "Medium Shot"
 seo:
   title: Google Imagen 4 इमेज मॉडल
   description: Imagen 4 के लिए प्रॉम्प्ट टिप्स

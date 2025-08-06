@@ -4,6 +4,13 @@ description: Flujo de trabajo de edición avanzada
 date: 2025-05-20
 slug: flux-kontext
 locale: es
+modelName: "Flux Kontext"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_steampunk"
+  shotSize: "Medium Shot"
 seo:
   title: Flux Kontext Editing
   description: Ediciones no destructivas con kontext

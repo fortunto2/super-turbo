@@ -4,6 +4,13 @@ description: नया इमेज जेनरेशन मॉडल अब �
 date: 2025-05-20
 slug: gpt-image-1
 locale: hi
+modelName: "GPT-Image-1"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_realistic"
+  shotSize: "Medium Shot"
 seo:
   title: OpenAI GPT-Image-1 इमेज जेनरेटर
   description: क्रिएटिव आर्टवर्क के लिए GPT-Image-1 का उपयोग करने के टिप्स

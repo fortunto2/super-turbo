@@ -1,12 +1,17 @@
 ---
 title: "Flux Kontext"
-description: "Продвинутая система редактирования"
 date: 2025-05-20
 slug: "flux-kontext"
 locale: "ru"
+modelName: "Flux Kontext"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_steampunk"
+  shotSize: "Medium Shot"
 seo:
   title: "Flux Kontext для редактирования"
-  description: "Неразрушающее редактирование через Kontext"
 ---
 
 # Flux Kontext

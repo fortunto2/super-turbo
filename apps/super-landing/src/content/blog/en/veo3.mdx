@@ -1,12 +1,17 @@
 ---
 title: "VEO3 AI Video Generator: Complete Professional Guide (2025)"
-description: "Master Google's VEO3 AI video generation with expert prompting techniques, real specifications, and viral content strategies. Create 8-second videos with synchronized audio."
 date: 2025-06-20
 slug: "veo3"
 locale: en
+modelName: "Veo3"
+modelConfig:
+  maxDuration: 8
+  aspectRatio: "16:9"
+  width: 1280
+  height: 720
+  frameRate: 30
 seo:
   title: "VEO3 AI Video Generator Guide 2025 | Real Specs & Prompting Tips"
-  description: "Complete VEO3 guide with real specifications and proven prompting techniques. Create viral 8-second videos with synchronized audio and realistic characters."
   keywords: ["VEO3 AI video", "Google VEO3 guide", "AI video generation", "VEO3 prompting", "viral video AI"]
 ---
 

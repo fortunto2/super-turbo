@@ -4,6 +4,13 @@ description: Nuevo modelo de generación de imágenes ahora disponible
 date: 2025-05-20
 slug: gpt-image-1
 locale: es
+modelName: "GPT-Image-1"
+modelConfig:
+  width: 1024
+  height: 1024
+  aspectRatio: "1:1"
+  style: "flux_realistic"
+  shotSize: "Medium Shot"
 seo:
   title: Operai GPT-Image-1 Generador de imágenes
   description: Consejos para usar GPT-Image-1 para obras de arte creativas

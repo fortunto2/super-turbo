@@ -10,6 +10,8 @@ import {
 } from "@turbo-super/ui";
 import { Coins, Zap } from "lucide-react";
 import { StripePaymentButton } from "@turbo-super/shared";
+import { useTranslation } from "@/hooks/use-translation";
+import { Locale } from "@/config/i18n-config";
 
 interface CreditBalanceData {
   balance: number;
@@ -26,12 +28,32 @@ interface CreditBalanceData {
 interface CreditBalanceProps {
   className?: string;
   showPurchaseButton?: boolean;
+  locale?: Locale;
 }
 
 export function CreditBalance({
   className,
   showPurchaseButton = true,
+  locale = "tr",
 }: CreditBalanceProps) {
+  const { t } = useTranslation(locale);
+
+  // Обертка для функции перевода с поддержкой параметров
+  const translateWithParams = (
+    key: string,
+    params?: Record<string, string | number>
+  ) => {
+    let translation = t(key);
+
+    // Заменяем параметры в переводе
+    if (params) {
+      Object.entries(params).forEach(([param, value]) => {
+        translation = translation.replace(`{${param}}`, String(value));
+      });
+    }
+
+    return translation;
+  };
   const [data, setData] = useState<CreditBalanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +93,7 @@ export function CreditBalance({
         <CardContent className="flex items-center justify-center py-8">
           <div className="flex items-center gap-2">
             <Coins className="w-5 h-5 animate-pulse" />
-            <span>Загрузка баланса...</span>
+            <span>{t("credit_balance.loading")}</span>
           </div>
         </CardContent>
       </Card>
@@ -85,7 +107,7 @@ export function CreditBalance({
       >
         <CardContent className="flex items-center justify-center py-8">
           <span className="text-red-600 dark:text-red-400">
-            {error || "Ошибка загрузки баланса"}
+            {error || t("credit_balance.error")}
           </span>
         </CardContent>
       </Card>
@@ -117,10 +139,10 @@ export function CreditBalance({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Coins className={`w-5 h-5 ${iconColorClasses[displayColor]}`} />
-          Баланс кредитов
+          {t("credit_balance.title")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Текущий баланс для использования AI инструментов
+          {t("credit_balance.subtitle")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -128,10 +150,12 @@ export function CreditBalance({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Coins className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span className="font-medium">Текущий баланс:</span>
+              <span className="font-medium">
+                {t("credit_balance.current_balance")}
+              </span>
             </div>
             <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-              {balance} кредитов
+              {balance} {t("credit_balance.credits")}
             </span>
           </div>
           <div className="mt-2">
@@ -141,20 +165,24 @@ export function CreditBalance({
               }
               className="text-xs"
             >
-              {isEmpty ? "Пустой" : isLow ? "Низкий баланс" : "Хороший баланс"}
+              {isEmpty
+                ? t("credit_balance.empty")
+                : isLow
+                  ? t("credit_balance.low_balance")
+                  : t("credit_balance.good_balance")}
             </Badge>
           </div>
           <p className="text-xs mt-2 text-muted-foreground">
-            Тип пользователя: {userType}
+            {t("credit_balance.user_type")} {userType}
           </p>
         </div>
 
         <div className="text-xs space-y-1 bg-gray-50 dark:bg-gray-900/30 p-3 rounded-lg">
-          <p className="font-medium">Стоимость инструментов:</p>
-          <p>• Генерация изображений: 2-6 кредитов</p>
-          <p>• Генерация видео: 7.5-90 кредитов</p>
-          <p>• Генерация скриптов: 1-2 кредита</p>
-          <p>• Улучшение промптов: 1-2 кредита</p>
+          <p className="font-medium">{t("credit_balance.tool_costs")}</p>
+          <p>• {t("credit_balance.image_generation")}</p>
+          <p>• {t("credit_balance.video_generation")}</p>
+          <p>• {t("credit_balance.script_generation")}</p>
+          <p>• {t("credit_balance.prompt_enhancement")}</p>
         </div>
 
         {showPurchaseButton && (
@@ -165,6 +193,8 @@ export function CreditBalance({
             apiEndpoint="/api/stripe-prices"
             checkoutEndpoint="/api/create-checkout"
             className="border-0 shadow-none"
+            locale={locale}
+            t={translateWithParams}
           />
         )}
       </CardContent>
