@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       toolSlug,
       toolTitle,
       creditAmount,
+      cancelUrl,
     } = await request.json();
 
     if (!priceId) {
@@ -89,9 +90,9 @@ export async function POST(request: NextRequest) {
       success_url: creditAmount
         ? `${appUrl}/payment-success/{CHECKOUT_SESSION_ID}`
         : `${appUrl}/en/payment-success/{CHECKOUT_SESSION_ID}`,
-      cancel_url: creditAmount
+      cancel_url: cancelUrl || (creditAmount
         ? `${appUrl}/`
-        : `${appUrl}/en/tool/veo3-prompt-generator`,
+        : `${appUrl}/en/tool/veo3-prompt-generator`),
       metadata,
     });
 

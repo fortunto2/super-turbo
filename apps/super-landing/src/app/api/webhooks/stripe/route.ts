@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 import { getSessionData, updateSessionData } from "@/lib/kv";
+import { addDemoBalance } from "@/lib/utils/tools-balance";
 
 const stripe = new Stripe(
   process.env.STRIPE_SECRET_KEY || "sk_test_your_stripe_secret_key",
@@ -32,8 +33,8 @@ const API_ENDPOINTS = {
   GENERATE_VIDEO: "/api/v1/file/generate-video",
 };
 
-// Generate single video using SuperDuperAI API
-async function generateVideoWithSuperDuperAI(
+// Generate single video using SuperDuperAI API (currently unused)
+async function _generateVideoWithSuperDuperAI(
   prompt: string,
   duration: number = 8,
   resolution: string = "1280x720",
@@ -167,10 +168,6 @@ export async function POST(request: NextRequest) {
         );
         break;
 
-      case "payment_intent.succeeded":
-        await handlePaymentSuccess(event.data.object as Stripe.PaymentIntent);
-        break;
-
       case "payment_intent.payment_failed":
         await handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
         break;
@@ -208,57 +205,47 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     promptLength: sessionData.prompt.length,
     videoCount: sessionData.videoCount,
     tool: sessionData.toolSlug,
+    cancelUrl: sessionData.cancelUrl,
   });
 
-  // Update status to processing
-  await updateSessionData(sessionId, { status: "processing" });
+  // Add credits to user balance
+  const userId = sessionData.userId || "demo-user-fallback"; // Use userId from session data
 
-  try {
-    console.log("🎬 Starting VEO3 generation with session data");
+  console.log(`💰 Webhook handler - userId: ${userId}`);
 
-    // Generate video using data from Redis
-    const fileId = await generateVideoWithSuperDuperAI(
-      sessionData.prompt,
-      sessionData.duration,
-      sessionData.resolution,
-      sessionData.style
-    );
+  // Fixed 100 credits per successful payment
+  const creditsToAdd = 100;
 
-    console.log("🎬 VEO3 generation started with fileId:", fileId);
-
-    // Update session data with fileId
-    await updateSessionData(sessionId, {
-      status: "processing",
-      fileId,
-    });
-
-    console.log("✅ Webhook completed, client can poll fileId:", fileId);
-
-    // TODO: Send email notification
-    const email = session.customer_details?.email;
-    if (email) {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";
-      const statusUrl = `${baseUrl}/en/file/${fileId}`;
+  if (creditsToAdd > 0) {
+    try {
+      const newBalance = addDemoBalance(userId, creditsToAdd);
       console.log(
-        "📧 TODO: Send email to",
-        email,
-        "with status URL:",
-        statusUrl
+        `💰 Added ${creditsToAdd} credits to user ${userId}. New balance: ${newBalance} credits`
       );
+    } catch (error) {
+      console.error("❌ Error adding credits:", error);
     }
-  } catch (error) {
-    console.error("❌ Failed to start VEO3 generation:", error);
+  }
 
-    // Update session with error
-    await updateSessionData(sessionId, {
-      status: "error",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+  // Update status to completed (payment successful, no automatic generation)
+  await updateSessionData(sessionId, { status: "completed" });
+
+  console.log(
+    "✅ Payment completed successfully. User can manually start generation when ready."
+  );
+
+  // TODO: Send email notification
+  const email = session.customer_details?.email;
+  if (email) {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";
+    const returnUrl =
+      sessionData.cancelUrl || `${baseUrl}/en/tool/veo3-prompt-generator`;
+    console.log("📧 TODO: Send email to", email, "with return URL:", returnUrl);
   }
 }
 
-async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
+async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   console.log("✅ Payment succeeded:", paymentIntent.id);
 
   // Get the checkout session from payment intent
@@ -288,51 +275,43 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       return;
     }
 
-    // Update status to processing
-    await updateSessionData(sessionId, { status: "processing" });
+    // Add credits to user balance
+    const userId = sessionData.userId || "demo-user-fallback"; // Use userId from session data
 
-    try {
-      console.log("🎬 Starting VEO3 generation with session data");
+    // Fixed 100 credits per successful payment
+    const creditsToAdd = 100;
 
-      // Generate video using data from Redis
-      const fileId = await generateVideoWithSuperDuperAI(
-        sessionData.prompt,
-        sessionData.duration,
-        sessionData.resolution,
-        sessionData.style
-      );
-
-      console.log("🎬 VEO3 generation started with fileId:", fileId);
-
-      // Update session data with fileId
-      await updateSessionData(sessionId, {
-        status: "processing",
-        fileId,
-      });
-
-      console.log("✅ Webhook completed, client can poll fileId:", fileId);
-
-      // TODO: Send email notification
-      const email = session.customer_details?.email;
-      if (email) {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";
-        const statusUrl = `${baseUrl}/en/file/${fileId}`;
+    if (creditsToAdd > 0) {
+      try {
+        const newBalance = addDemoBalance(userId, creditsToAdd);
         console.log(
-          "📧 TODO: Send email to",
-          email,
-          "with status URL:",
-          statusUrl
+          `💰 Added ${creditsToAdd} credits to user ${userId}. New balance: ${newBalance} credits`
         );
+      } catch (error) {
+        console.error("❌ Error adding credits:", error);
       }
-    } catch (error) {
-      console.error("❌ Failed to start VEO3 generation:", error);
+    }
 
-      // Update session with error
-      await updateSessionData(sessionId, {
-        status: "error",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+    // Update status to completed (payment successful, no automatic generation)
+    await updateSessionData(sessionId, { status: "completed" });
+
+    console.log(
+      "✅ Payment completed successfully. User can manually start generation when ready."
+    );
+
+    // TODO: Send email notification
+    const email = session.customer_details?.email;
+    if (email) {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";
+      const returnUrl =
+        sessionData.cancelUrl || `${baseUrl}/en/tool/veo3-prompt-generator`;
+      console.log(
+        "📧 TODO: Send email to",
+        email,
+        "with return URL:",
+        returnUrl
+      );
     }
   } catch (sessionError) {
     console.error(

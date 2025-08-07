@@ -429,6 +429,7 @@ function StripePaymentButton({
     setIsCreatingCheckout(true);
     onPaymentClick == null ? void 0 : onPaymentClick();
     try {
+      const currentUrl = typeof window !== "undefined" ? window.location.href : "";
       const response = await fetch(checkoutEndpoint, {
         method: "POST",
         headers: {
@@ -440,7 +441,8 @@ function StripePaymentButton({
           prompt: prompt == null ? void 0 : prompt.trim(),
           toolSlug,
           toolTitle,
-          creditAmount: variant === "credits" ? creditAmount : void 0
+          creditAmount: variant === "credits" ? creditAmount : void 0,
+          cancelUrl: currentUrl
         })
       });
       if (!response.ok) {

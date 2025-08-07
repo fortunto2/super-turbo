@@ -168,12 +168,20 @@ export async function POST(request: NextRequest) {
     const operationType =
       generationType === "image-to-video" ? "image-to-video" : "text-to-video";
 
+    // Генерируем стабильный userId на основе IP адреса
+    const forwarded = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const ip = forwarded?.split(",")[0] || realIp || "unknown";
+    const userId = `demo-user-${ip}`;
+
+    console.log(`🎬 Video generation API - IP: ${ip}, userId: ${userId}`);
+
     // Проверяем баланс перед генерацией
     const { validateOperationBalance } = await import(
       "@/lib/utils/tools-balance"
     );
     const balanceCheck = await validateOperationBalance(
-      "demo-user",
+      userId,
       "video-generation",
       operationType,
       multipliers
@@ -265,7 +273,7 @@ export async function POST(request: NextRequest) {
       // Списываем баланс после успешной генерации
       try {
         await deductOperationBalance(
-          "demo-user", // В демо-версии используем фиксированный ID
+          userId, // Используем тот же userId на основе IP
           "video-generation",
           operationType,
           multipliers,
@@ -280,7 +288,7 @@ export async function POST(request: NextRequest) {
           }
         );
         console.log(
-          `💳 Balance deducted for demo user after successful video generation`
+          `💳 Balance deducted for user ${userId} after successful video generation`
         );
       } catch (balanceError) {
         console.error(

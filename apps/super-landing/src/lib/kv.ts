@@ -215,6 +215,8 @@ export interface SessionData {
   style: string;
   toolSlug: string;
   toolTitle: string;
+  cancelUrl?: string;
+  userId?: string; // Add userId to track user across sessions
   createdAt: string;
   status: "pending" | "processing" | "completed" | "error";
   fileId?: string;

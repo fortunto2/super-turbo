@@ -109,6 +109,9 @@ export function StripePaymentButton({
     onPaymentClick?.();
 
     try {
+      // Получаем текущий URL для cancel_url
+      const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+
       const response = await fetch(checkoutEndpoint, {
         method: "POST",
         headers: {
@@ -121,6 +124,7 @@ export function StripePaymentButton({
           toolSlug: toolSlug,
           toolTitle: toolTitle,
           creditAmount: variant === "credits" ? creditAmount : undefined,
+          cancelUrl: currentUrl,
         }),
       });
 

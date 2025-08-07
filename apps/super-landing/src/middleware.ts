@@ -135,16 +135,41 @@ export function middleware(request: NextRequest) {
     // Для остальных путей используем обычный redirect
     const url = new URL(`/${locale}${pathname}`, request.url);
     return NextResponse.redirect(url);
+  } else {
+    // Если в URL есть локаль, обновляем cookie для синхронизации
+    const pathSegments = pathname.split("/").filter(Boolean);
+    if (pathSegments.length > 0 && i18n.locales.includes(pathSegments[0] as Locale)) {
+      const urlLocale = pathSegments[0];
+      const cookieLocale = request.cookies.get(i18n.cookieName)?.value;
+      
+      // Обновляем cookie только если она отличается от локали в URL
+      if (cookieLocale !== urlLocale) {
+        const response = NextResponse.next();
+        response.cookies.set(i18n.cookieName, urlLocale, {
+          path: "/",
+          maxAge: i18n.cookieMaxAge,
+        });
+        return response;
+      }
+    }
   }
 
   return NextResponse.next();
 }
 
 function getLocale(request: NextRequest): string | undefined {
-  // 1. Пробуем достать из куки
-  const cookieLocale = request.cookies.get(i18n.cookieName)?.value;
+  const { pathname } = request.nextUrl;
   const availableLocales = [...i18n.locales] as string[];
 
+  // 1. Сначала проверяем, есть ли локаль в URL
+  const pathSegments = pathname.split("/").filter(Boolean);
+  if (pathSegments.length > 0 && i18n.locales.includes(pathSegments[0] as Locale)) {
+    // Если в URL есть локаль, используем её
+    return pathSegments[0];
+  }
+
+  // 2. Если в URL нет локали, пробуем достать из куки
+  const cookieLocale = request.cookies.get(i18n.cookieName)?.value;
   if (
     cookieLocale &&
     (i18n.locales as readonly string[]).includes(cookieLocale)
@@ -152,7 +177,7 @@ function getLocale(request: NextRequest): string | undefined {
     return cookieLocale;
   }
 
-  // 2. Если куки нет, смотрим Accept-Language
+  // 3. Если куки нет, смотрим Accept-Language
   const negotiatorHeaders: Record<string, string> = {};
   request.headers.forEach((value, key) => {
     negotiatorHeaders[key] = value;
