@@ -18,6 +18,7 @@ seo:
   ogImage: /images/og/veo3-prompt-generator.webp
 ---
 
+import { Veo3ExamplesLoader } from "@/components/content/veo3-examples-loader";
 import { SimpleVeo3Generator } from "@/components/content/simple-veo3-generator";
 
 # Бесплатный VEO3 Генератор Вирусных Промптов
@@ -27,6 +28,12 @@ import { SimpleVeo3Generator } from "@/components/content/simple-veo3-generator"
 ## 🎬 Примеры Вирусных Видео
 
 Посмотрите, что возможно с детальными VEO3 промптами. Кликните на любое видео для просмотра, разверните для показа полного промпта и скопируйте для использования в ваших проектах.
+
+<Veo3ExamplesLoader
+  locale="ru"
+  gridCols={3}
+  onCopyPrompt={(prompt) => console.log("Copied prompt:", prompt)}
+/>
 
 <SimpleVeo3Generator />
 

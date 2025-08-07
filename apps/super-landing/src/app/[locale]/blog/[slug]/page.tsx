@@ -8,6 +8,7 @@ import { Blog } from ".contentlayer/generated";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
 import { ModelVideoGenerator } from "@/components/content/model-video-generator";
+import { EnhancedModelVideoGenerator } from "@/components/content/enhanced-model-video-generator";
 import { ModelImageGenerator } from "@/components/content/model-image-generator";
 
 export async function generateMetadata({
@@ -109,9 +110,18 @@ function BlogPageContent({
       {post.modelName && (
         <div className="mt-12 pt-8 border-t">
           {/* Определяем тип модели по названию */}
-          {post.modelName.includes("Veo") ||
-          post.modelName === "Sora" ||
-          post.modelName === "Kling 2.1" ? (
+          {post.modelName === "Veo2" ? (
+            <EnhancedModelVideoGenerator
+              modelName={post.modelName}
+              modelConfig={{
+                ...post.modelConfig,
+                supportsImageToVideo: true,
+              }}
+              locale={locale as Locale}
+            />
+          ) : post.modelName.includes("Veo") ||
+            post.modelName === "Sora" ||
+            post.modelName === "Kling 2.1" ? (
             <ModelVideoGenerator
               modelName={post.modelName}
               modelConfig={post.modelConfig}
