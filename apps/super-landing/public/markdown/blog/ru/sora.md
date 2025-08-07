@@ -1,5 +1,6 @@
 ---
 title: "Sora Text2Video"
+description: "Генерация видео из текста с высоким качеством"
 date: 2025-05-20
 slug: "sora"
 locale: "ru"
@@ -12,6 +13,7 @@ modelConfig:
   frameRate: 30
 seo:
   title: "Модель Sora text-to-video"
+  description: "Руководство по использованию Sora"
 ---
 
 # Sora Text2Video

@@ -1,5 +1,6 @@
 ---
 title: "Flux Kontext"
+description: "Создание изображений с контекстным пониманием"
 date: 2025-05-20
 slug: "flux-kontext"
 locale: "ru"
@@ -12,6 +13,7 @@ modelConfig:
   shotSize: "Medium Shot"
 seo:
   title: "Flux Kontext для редактирования"
+  description: "Руководство по использованию Flux Kontext"
 ---
 
 # Flux Kontext

@@ -1,5 +1,6 @@
 ---
 title: "VEO2 Image2Video"
+description: "Преобразование изображений в динамическое видео"
 date: 2025-05-20
 slug: "veo2"
 locale: "ru"
@@ -12,6 +13,7 @@ modelConfig:
   frameRate: 30
 seo:
   title: "VEO2 image-to-video"
+  description: "Руководство по использованию VEO2"
 ---
 
 # VEO2 Image2Video
