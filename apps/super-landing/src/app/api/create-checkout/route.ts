@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       prompt,
       toolSlug,
       toolTitle,
+      cancelUrl,
     } = await request.json();
 
     if (!priceId) {
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       ],
       mode: "payment",
       success_url: `${appUrl}/en/payment-success/{CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/en/tool/veo3-prompt-generator`,
+      cancel_url: cancelUrl || `${appUrl}/en/tool/veo3-prompt-generator`,
       metadata,
     });
 
