@@ -1,5 +1,6 @@
 ---
 title: "VEO2 Image2Video"
+description: "Transform images into dynamic videos"
 date: 2025-05-20
 slug: "veo2"
 locale: en
@@ -12,6 +13,7 @@ modelConfig:
   frameRate: 30
 seo:
   title: "VEO2 image-to-video"
+  description: "VEO2 Usage Guide"
 ---
 
 # VEO2 Image2Video

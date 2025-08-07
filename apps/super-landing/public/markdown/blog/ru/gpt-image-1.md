@@ -1,5 +1,6 @@
 ---
 title: "OpenAI GPT-Image-1"
+description: "Генерация изображений с помощью GPT"
 date: 2025-05-20
 slug: "gpt-image-1"
 locale: "ru"
@@ -12,6 +13,7 @@ modelConfig:
   shotSize: "Medium Shot"
 seo:
   title: "Генератор изображений GPT-Image-1"
+  description: "Руководство по использованию GPT Image 1"
 ---
 
 # OpenAI GPT-Image-1

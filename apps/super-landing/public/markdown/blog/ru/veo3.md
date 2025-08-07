@@ -1,5 +1,6 @@
 ---
 title: "Veo3 Text2Video"
+description: "Продвинутая генерация видео с улучшенным качеством"
 date: 2025-05-20
 slug: "veo3"
 locale: "ru"
@@ -12,6 +13,7 @@ modelConfig:
   frameRate: 30
 seo:
   title: "Veo3 text-to-video"
+  description: "Руководство по использованию VEO3"
 ---
 
 # Veo3 Text2Video

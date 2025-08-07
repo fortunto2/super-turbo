@@ -1,5 +1,6 @@
 ---
 title: "VEO3 AI Video Generator: Complete Professional Guide (2025)"
+description: "Advanced video generation with improved quality"
 date: 2025-06-20
 slug: "veo3"
 locale: en
@@ -12,6 +13,7 @@ modelConfig:
   frameRate: 30
 seo:
   title: "VEO3 AI Video Generator Guide 2025 | Real Specs & Prompting Tips"
+  description: "VEO3 Usage Guide"
   keywords: ["VEO3 AI video", "Google VEO3 guide", "AI video generation", "VEO3 prompting", "viral video AI"]
 ---
 

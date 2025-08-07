@@ -256,7 +256,7 @@ export function StripePaymentButton({
 
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
           <p>{getTranslation("stripe_payment.instant_access")}</p>
-          {true && (
+          {mode === "test" && (
             <p className="text-yellow-600 dark:text-yellow-400 mt-1">
               {getTranslation("stripe_payment.test_mode")}
             </p>
