@@ -442,17 +442,51 @@ function StripePaymentButton({
   price = 1,
   apiEndpoint = "/api/stripe-prices",
   checkoutEndpoint = "/api/create-checkout",
-  className
+  className,
+  locale = "en",
+  t
 }) {
   const [isCreatingCheckout, setIsCreatingCheckout] = (0, import_react6.useState)(false);
   const { prices, mode, loading, error } = useStripePrices(apiEndpoint);
+  const getTranslation = (key, params) => {
+    if (!t) {
+      const fallbackTranslations = {
+        "stripe_payment.loading_payment_options": "Loading payment options...",
+        "stripe_payment.failed_load_payment": "Failed to load payment options",
+        "stripe_payment.top_up_balance": "Top Up Balance",
+        "stripe_payment.generate_veo3_videos": "Generate VEO3 Videos",
+        "stripe_payment.top_up_balance_desc": `Top up your balance with ${creditAmount} credits for using AI tools`,
+        "stripe_payment.generate_video_desc": "Your prompt is ready! Choose a plan to generate professional AI videos with Google VEO3.",
+        "stripe_payment.top_up_credits": `Top up ${creditAmount} credits`,
+        "stripe_payment.generate_video": "Generate Video",
+        "stripe_payment.get_credits_desc": `Get ${creditAmount} credits for generating images, videos and scripts`,
+        "stripe_payment.generate_video_desc_short": "Generate 1 high-quality AI video with your custom prompt",
+        "stripe_payment.creating_payment": "Creating Payment...",
+        "stripe_payment.top_up_for": `Top up for $${price.toFixed(2)}`,
+        "stripe_payment.generate_for": `Generate Video for $${price.toFixed(2)}`,
+        "stripe_payment.instant_access": "\u2713 Instant access \u2022 \u2713 No subscription \u2022 \u2713 Secure Stripe payment",
+        "stripe_payment.test_mode": "\u{1F9EA} Test mode - Use test card 4242 4242 4242 4242",
+        "stripe_payment.generate_prompt_first": "Please generate a prompt first",
+        "stripe_payment.prices_not_loaded": "Prices not loaded yet, please try again",
+        "stripe_payment.failed_create_checkout": "Failed to create checkout session"
+      };
+      return fallbackTranslations[key] || key;
+    }
+    let translation = t(key);
+    if (params) {
+      Object.entries(params).forEach(([param, value]) => {
+        translation = translation.replace(`{${param}}`, String(value));
+      });
+    }
+    return translation;
+  };
   const handlePayment = async () => {
     if (variant === "video" && !(prompt == null ? void 0 : prompt.trim())) {
-      import_sonner.toast.error("Please generate a prompt first");
+      import_sonner.toast.error(getTranslation("stripe_payment.generate_prompt_first"));
       return;
     }
     if (!prices) {
-      import_sonner.toast.error("Prices not loaded yet, please try again");
+      import_sonner.toast.error(getTranslation("stripe_payment.prices_not_loaded"));
       return;
     }
     setIsCreatingCheckout(true);
@@ -479,7 +513,7 @@ function StripePaymentButton({
       window.location.href = url;
     } catch (error2) {
       console.error("\u274C Checkout creation failed:", error2);
-      import_sonner.toast.error("Failed to create checkout session");
+      import_sonner.toast.error(getTranslation("stripe_payment.failed_create_checkout"));
     } finally {
       setIsCreatingCheckout(false);
     }
@@ -494,7 +528,7 @@ function StripePaymentButton({
         className: `border-2 border-purple-500/50 bg-gradient-to-r from-purple-50/80 to-blue-50/80 dark:from-purple-950/30 dark:to-blue-950/30 dark:border-purple-400/30 ${className}`,
         children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_ui.CardContent, { className: "flex items-center justify-center py-8", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Loader2, { className: "size-6 animate-spin mr-2" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Loading payment options..." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: getTranslation("stripe_payment.loading_payment_options") })
         ] })
       }
     );
@@ -504,7 +538,7 @@ function StripePaymentButton({
       import_ui.Card,
       {
         className: `border-2 border-red-500/50 bg-gradient-to-r from-red-50/80 to-orange-50/80 dark:from-red-950/30 dark:to-orange-950/30 dark:border-red-400/30 ${className}`,
-        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_ui.CardContent, { className: "flex items-center justify-center py-8", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-red-600 dark:text-red-400", children: error || "Failed to load payment options" }) })
+        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_ui.CardContent, { className: "flex items-center justify-center py-8", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-red-600 dark:text-red-400", children: error || getTranslation("stripe_payment.failed_load_payment") }) })
       }
     );
   }
@@ -517,15 +551,19 @@ function StripePaymentButton({
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_ui.CardHeader, { className: "pb-3", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_ui.CardTitle, { className: "flex items-center gap-2 text-lg", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Zap, { className: "size-5 text-yellow-500 dark:text-yellow-400" }),
-            isCreditsVariant ? "\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u0431\u0430\u043B\u0430\u043D\u0441" : "Generate VEO3 Videos"
+            isCreditsVariant ? getTranslation("stripe_payment.top_up_balance") : getTranslation("stripe_payment.generate_veo3_videos")
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm text-muted-foreground", children: isCreditsVariant ? `\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0431\u0430\u043B\u0430\u043D\u0441 \u043D\u0430 ${creditAmount} \u043A\u0440\u0435\u0434\u0438\u0442\u043E\u0432 \u0434\u043B\u044F \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0438\u044F AI \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u043E\u0432` : "Your prompt is ready! Choose a plan to generate professional AI videos with Google VEO3." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm text-muted-foreground", children: isCreditsVariant ? getTranslation("stripe_payment.top_up_balance_desc", {
+            amount: creditAmount
+          }) : getTranslation("stripe_payment.generate_video_desc") })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_ui.CardContent, { className: "space-y-3", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "max-w-md mx-auto", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-6 border-2 border-blue-200 dark:border-blue-700/50 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors text-center", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-center gap-2 mb-3", children: [
               isCreditsVariant ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.CreditCard, { className: "size-5 text-blue-500 dark:text-blue-400" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Video, { className: "size-5 text-blue-500 dark:text-blue-400" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-semibold text-lg", children: isCreditsVariant ? `\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043D\u0430 ${creditAmount} \u043A\u0440\u0435\u0434\u0438\u0442\u043E\u0432` : "Generate Video" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-semibold text-lg", children: isCreditsVariant ? getTranslation("stripe_payment.top_up_credits", {
+                amount: creditAmount
+              }) : getTranslation("stripe_payment.generate_video") })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mb-4", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
               import_ui.Badge,
@@ -538,7 +576,9 @@ function StripePaymentButton({
                 ]
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm text-muted-foreground mb-4", children: isCreditsVariant ? `\u041F\u043E\u043B\u0443\u0447\u0438\u0442\u0435 ${creditAmount} \u043A\u0440\u0435\u0434\u0438\u0442\u043E\u0432 \u0434\u043B\u044F \u0433\u0435\u043D\u0435\u0440\u0430\u0446\u0438\u0438 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439, \u0432\u0438\u0434\u0435\u043E \u0438 \u0441\u043A\u0440\u0438\u043F\u0442\u043E\u0432` : "Generate 1 high-quality AI video with your custom prompt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-sm text-muted-foreground mb-4", children: isCreditsVariant ? getTranslation("stripe_payment.get_credits_desc", {
+              amount: creditAmount
+            }) : getTranslation("stripe_payment.generate_video_desc_short") }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               import_ui.Button,
               {
@@ -548,17 +588,21 @@ function StripePaymentButton({
                 disabled: isCreatingCheckout,
                 children: isCreatingCheckout ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Loader2, { className: "size-5 mr-2 animate-spin" }),
-                  "Creating Payment..."
+                  getTranslation("stripe_payment.creating_payment")
                 ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ExternalLink, { className: "size-5 mr-2" }),
-                  isCreditsVariant ? `\u041F\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u0437\u0430 $${price.toFixed(2)}` : `Generate Video for $${price.toFixed(2)}`
+                  isCreditsVariant ? getTranslation("stripe_payment.top_up_for", {
+                    price: price.toFixed(2)
+                  }) : getTranslation("stripe_payment.generate_for", {
+                    price: price.toFixed(2)
+                  })
                 ] })
               }
             )
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-xs text-muted-foreground text-center pt-2 border-t", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "\u2713 Instant access \u2022 \u2713 No subscription \u2022 \u2713 Secure Stripe payment" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-yellow-600 dark:text-yellow-400 mt-1", children: "\u{1F9EA} Test mode - Use test card 4242 4242 4242 4242" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: getTranslation("stripe_payment.instant_access") }),
+            mode === "test" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-yellow-600 dark:text-yellow-400 mt-1", children: getTranslation("stripe_payment.test_mode") })
           ] })
         ] })
       ]

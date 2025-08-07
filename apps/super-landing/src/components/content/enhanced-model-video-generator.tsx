@@ -66,7 +66,7 @@ export function EnhancedModelVideoGenerator({
   const [generationType, setGenerationType] = useState<
     "text-to-video" | "image-to-video"
   >("text-to-video");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [_selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -98,7 +98,7 @@ export function EnhancedModelVideoGenerator({
 
     setSelectedImage(file);
     // Сохраняем файл для передачи на сервер
-    setUploadedImageUrl(file as any); // Временно используем это поле для хранения файла
+    setUploadedImageUrl(file as unknown as string); // Временно используем это поле для хранения файла
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +124,7 @@ export function EnhancedModelVideoGenerator({
     }
 
     if (generationType === "image-to-video" && !uploadedImageUrl) {
-      alert("Пожалуйста, загрузите изображение для image-to-video генерации");
+      alert(t("video_generator.upload_image_required"));
       return;
     }
 
@@ -305,7 +305,7 @@ export function EnhancedModelVideoGenerator({
           {config.supportsImageToVideo && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-purple-300">
-                Тип генерации:
+                {t("video_generator.generation_type")}
               </label>
               <div className="flex gap-2">
                 <Button
@@ -347,7 +347,7 @@ export function EnhancedModelVideoGenerator({
             config.supportsImageToVideo && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-orange-300">
-                  Загрузите изображение:
+                  {t("video_generator.upload_image")}
                 </label>
                 <div className="border-2 border-dashed border-orange-500/30 rounded-lg p-4 text-center">
                   {imagePreview ? (
@@ -368,14 +368,14 @@ export function EnhancedModelVideoGenerator({
                         </Button>
                       </div>
                       <p className="text-sm text-green-300">
-                        ✓ Изображение загружено
+                        {t("video_generator.image_uploaded")}
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <Upload className="w-8 h-8 mx-auto text-orange-400" />
                       <p className="text-sm text-muted-foreground">
-                        Кликните для выбора изображения или перетащите файл
+                        {t("video_generator.click_to_select")}
                       </p>
                       <Button
                         variant="outline"
@@ -384,7 +384,7 @@ export function EnhancedModelVideoGenerator({
                         className="border-orange-500/30 text-orange-300 hover:bg-orange-500/10"
                       >
                         <Upload className="w-4 h-4 mr-1" />
-                        Выбрать файл
+                        {t("video_generator.select_file")}
                       </Button>
                     </div>
                   )}
@@ -403,13 +403,13 @@ export function EnhancedModelVideoGenerator({
           <div className="space-y-2">
             <label className="text-sm font-medium text-purple-300">
               {generationType === "image-to-video"
-                ? "Опишите, как анимировать изображение:"
+                ? t("video_generator.describe_animation")
                 : t("video_generator.description")}
             </label>
             <Textarea
               placeholder={
                 generationType === "image-to-video"
-                  ? "Например: медленно покачивать, плавно вращать, добавить движение облаков..."
+                  ? t("video_generator.animation_placeholder")
                   : t("video_generator.placeholder")
               }
               value={prompt}

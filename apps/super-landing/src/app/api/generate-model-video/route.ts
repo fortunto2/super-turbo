@@ -1,8 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { writeFile, readFile } from "fs/promises";
-import { join } from "path";
-import { generateVideoWithStrategy } from "@/lib/video-generation";
+
+
+import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
+import { getSuperduperAIConfig } from "@/lib/config/superduperai";
+import { deductOperationBalance } from "@/lib/utils/tools-balance";
+
+// Функция для маппинга названий моделей на правильные конфигурации SuperDuperAI
+function mapModelNameToConfig(
+  modelName: string,
+  generationType: "text-to-video" | "image-to-video"
+): string {
+  const modelMap: Record<string, Record<string, string>> = {
+    Veo2: {
+      "text-to-video": "google-cloud/veo2-text2video",
+      "image-to-video": "google-cloud/veo2",
+    },
+    Veo3: {
+      "text-to-video": "google-cloud/veo3-text2video",
+      "image-to-video": "google-cloud/veo3",
+    },
+    Sora: {
+      "text-to-video": "azure-openai/sora",
+      "image-to-video": "azure-openai/sora",
+    },
+  };
+
+  return modelMap[modelName]?.[generationType] || modelName;
+}
 
 // Схема запроса для генерации видео с моделью
 const modelVideoGenerationSchema = z.object({
@@ -49,41 +74,24 @@ const modelVideoGenerationSchema = z.object({
 
 type ModelVideoGenerationData = z.infer<typeof modelVideoGenerationSchema>;
 
-// Пути для хранения данных генерации
-const STORAGE_DIR = join(process.cwd(), ".model-video-generations");
-const getGenerationFilePath = (generationId: string) =>
-  join(STORAGE_DIR, `${generationId}.json`);
+// In-memory хранилище для данных генерации (вместо файлов)
+const generationStore = new Map<string, ModelVideoGenerationData>();
 
-// Обеспечиваем существование директории хранения
-async function ensureStorageDir() {
-  try {
-    const fs = await import("fs");
-    if (!fs.existsSync(STORAGE_DIR)) {
-      fs.mkdirSync(STORAGE_DIR, { recursive: true });
-    }
-  } catch (error) {
-    console.error("Error creating storage directory:", error);
-  }
-}
-
-// Сохраняем данные генерации в файл
+// Сохраняем данные генерации в память
 async function saveGenerationData(data: ModelVideoGenerationData) {
-  await ensureStorageDir();
-  const filePath = getGenerationFilePath(data.generationId);
-  await writeFile(filePath, JSON.stringify(data, null, 2));
+  generationStore.set(data.generationId, data);
+  console.log(`💾 Saved generation data for ${data.generationId}`);
 }
 
-// Загружаем данные генерации из файла
+// Загружаем данные генерации из памяти
 async function loadGenerationData(
   generationId: string
 ): Promise<ModelVideoGenerationData | null> {
-  try {
-    const filePath = getGenerationFilePath(generationId);
-    const data = await readFile(filePath, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
+  const data = generationStore.get(generationId);
+  if (data) {
+    console.log(`📂 Loaded generation data for ${generationId}`);
   }
+  return data || null;
 }
 
 // POST - Создаем/запускаем генерацию видео
@@ -142,33 +150,119 @@ export async function POST(request: NextRequest) {
 
     // Запускаем генерацию видео с помощью generateVideoWithStrategy
     try {
+      const config = getSuperduperAIConfig();
       let result;
+
+      // Маппим название модели на правильную конфигурацию SuperDuperAI
+      const mappedModelName = mapModelNameToConfig(modelName, generationType);
+      console.log(`🎬 Mapped model name: ${modelName} → ${mappedModelName}`);
 
       if (generationType === "image-to-video" && imageFile) {
         // Image-to-video генерация
         console.log("🖼️ Starting image-to-video generation with file");
-
-        result = await generateVideoWithStrategy("image-to-video", {
-          prompt,
-          file: imageFile,
-          modelName,
-          modelConfig,
-          videoCount,
+        console.log("📁 File details:", {
+          fileName: imageFile.name,
+          fileType: imageFile.type,
+          fileSize: imageFile.size,
+          hasFile: !!imageFile,
         });
+
+        result = await generateVideoWithStrategy(
+          "image-to-video",
+          {
+            prompt,
+            file: imageFile,
+            model: mappedModelName,
+            style: "flux_watercolor",
+            resolution: {
+              width: modelConfig?.width || 1280,
+              height: modelConfig?.height || 720,
+            },
+            shotSize: "medium_shot",
+            duration: modelConfig?.maxDuration || 8,
+            frameRate: modelConfig?.frameRate || 30,
+            negativePrompt: "",
+            seed: Math.floor(Math.random() * 1000000000000),
+          },
+          config
+        );
       } else {
         // Text-to-video генерация
         console.log("📝 Starting text-to-video generation");
 
-        result = await generateVideoWithStrategy("text-to-video", {
-          prompt,
-          modelName,
-          modelConfig,
-          videoCount,
-        });
+        result = await generateVideoWithStrategy(
+          "text-to-video",
+          {
+            prompt,
+            model: mappedModelName,
+            style: "flux_watercolor",
+            resolution: {
+              width: modelConfig?.width || 1280,
+              height: modelConfig?.height || 720,
+            },
+            shotSize: "medium_shot",
+            duration: modelConfig?.maxDuration || 8,
+            frameRate: modelConfig?.frameRate || 30,
+            negativePrompt: "",
+            seed: Math.floor(Math.random() * 1000000000000),
+          },
+          config
+        );
       }
 
       if (!result.success) {
         throw new Error(result.error);
+      }
+
+      // Списываем баланс после успешной генерации
+      try {
+        // Определяем множители стоимости на основе запроса
+        const multipliers: string[] = [];
+
+        // Множители длительности
+        const duration = modelConfig?.maxDuration || 8;
+        if (duration <= 5) multipliers.push("duration-5s");
+        else if (duration <= 10) multipliers.push("duration-10s");
+        else if (duration <= 15) multipliers.push("duration-15s");
+        else if (duration <= 30) multipliers.push("duration-30s");
+
+        // Множители качества
+        const width = modelConfig?.width || 1280;
+        if (width >= 2160) {
+          multipliers.push("4k-quality");
+        } else {
+          multipliers.push("hd-quality"); // HD по умолчанию
+        }
+
+        const operationType =
+          generationType === "image-to-video"
+            ? "image-to-video"
+            : "text-to-video";
+
+        await deductOperationBalance(
+          "demo-user", // В демо-версии используем фиксированный ID
+          "video-generation",
+          operationType,
+          multipliers,
+          {
+            projectId: result.projectId,
+            fileId: result.fileId,
+            prompt: prompt.substring(0, 100),
+            operationType,
+            duration,
+            resolution: `${width}x${modelConfig?.height || 720}`,
+            timestamp: new Date().toISOString(),
+          }
+        );
+        console.log(
+          `💳 Balance deducted for demo user after successful video generation`
+        );
+      } catch (balanceError) {
+        console.error(
+          "⚠️ Failed to deduct balance after video generation:",
+          balanceError
+        );
+        // Продолжаем - генерация видео уже запущена
       }
 
       // Создаем записи видео с fileIds

@@ -1,9 +1,9 @@
 ---
-title: "VEO2 Image2Video"
-description: "Преобразование изображений в динамическое видео"
+title: Veo2 Image2video
+description: Преобразование изображений в динамическое видео
 date: 2025-05-20
-slug: "veo2"
-locale: "ru"
+slug: veo2
+locale: ru
 modelName: "Veo2"
 modelConfig:
   maxDuration: 8
@@ -12,11 +12,11 @@ modelConfig:
   height: 720
   frameRate: 30
 seo:
-  title: "VEO2 image-to-video"
-  description: "Руководство по использованию VEO2"
+  title: Veo2 image-to-video
+  description: Руководство по использованию VEO2
 ---
 
-# VEO2 Image2Video
+# Veo2 Image2video
 
 VEO2 анимирует статичное изображение, создавая короткий HD ролик и сохраняя вид
 оригинала. Такие детали как вода или облака начинают двигаться естественно, что

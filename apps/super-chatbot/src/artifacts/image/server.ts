@@ -1,5 +1,6 @@
 import { createDocumentHandler } from "@/lib/artifacts/server";
-import { generateImageWithStrategy } from "@/lib/ai/api/image-generation";
+import { generateImageWithStrategy } from "@turbo-super/superduperai-api";
+import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 import { getStyles } from "@/lib/ai/api/get-styles";
 import type { MediaOption, MediaResolution } from "@/lib/types/media-settings";
 import type { ImageModel } from "@/lib/config/superduperai";
@@ -186,6 +187,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       }
 
       // Start image generation using new architecture (only text-to-image)
+      const config = getSuperduperAIConfig();
       const result = await generateImageWithStrategy(
         "text-to-image",
         {
@@ -198,7 +200,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           seed,
           batchSize,
         },
-        session
+        config
       );
 
       // AICODE-DEBUG: API payload removed to reduce duplication
@@ -324,6 +326,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       } = params;
       // Start image generation using new architecture (only text-to-image)
       // NOTE: onUpdateDocument doesn't have access to session, so using system token fallback
+      const config = getSuperduperAIConfig();
       const result = await generateImageWithStrategy("text-to-image", {
         prompt,
         model,
@@ -333,7 +336,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         negativePrompt,
         seed,
         batchSize,
-      });
+      }, config);
       if (!result.success) {
         draftContent = JSON.stringify({
           status: "failed",

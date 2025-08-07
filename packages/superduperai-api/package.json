@@ -1,0 +1,24 @@
+{
+  "name": "@turbo-super/superduperai-api",
+  "version": "1.0.0",
+  "description": "SuperDuperAI API client and generation strategies",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "generate-api": "openapi --input https://dev-editor.superduperai.co/openapi.json --output src/lib/api --client axios --useOptions",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.3",
+    "openapi-typescript-codegen": "^0.27.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}
