@@ -1,8 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentDemoBalance } from "@/lib/utils/tools-balance";
 
-export async function GET() {
-  const userId = "demo-user";
+export async function GET(request: NextRequest) {
+  // Используем IP адрес как стабильный идентификатор пользователя
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ip = forwarded?.split(",")[0] || realIp || "unknown";
+  const userId = `demo-user-${ip}`;
+
+  console.log(`🔍 Tools balance API - IP: ${ip}, userId: ${userId}`);
+
   const balance = getCurrentDemoBalance(userId);
 
   const isLow = balance <= 10 && balance > 0;

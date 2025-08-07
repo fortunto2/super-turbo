@@ -335,12 +335,18 @@ export async function POST(request: NextRequest) {
       multipliers.push("standard-quality"); // Стандартное качество по умолчанию
     }
 
+    // Генерируем стабильный userId на основе IP адреса
+    const forwarded = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const ip = forwarded?.split(",")[0] || realIp || "unknown";
+    const userId = `demo-user-${ip}`;
+
     // Проверяем баланс перед генерацией
     const { validateOperationBalance } = await import(
       "@/lib/utils/tools-balance"
     );
     const balanceCheck = await validateOperationBalance(
-      "demo-user",
+      userId,
       "image-generation",
       "text-to-image",
       multipliers
@@ -377,7 +383,7 @@ export async function POST(request: NextRequest) {
         // Списываем баланс за каждое изображение
         for (const fileId of fileIds) {
           await deductOperationBalance(
-            "demo-user", // В демо-версии используем фиксированный ID
+            userId, // Используем тот же userId на основе IP
             "image-generation",
             "text-to-image",
             multipliers,
@@ -392,7 +398,7 @@ export async function POST(request: NextRequest) {
           );
         }
         console.log(
-          `💳 Balance deducted for demo user after successful image generation (${fileIds.length} images)`
+          `💳 Balance deducted for user ${userId} after successful image generation (${fileIds.length} images)`
         );
       } catch (balanceError) {
         console.error(

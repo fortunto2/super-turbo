@@ -47,6 +47,12 @@ export async function POST(request: NextRequest) {
     const appUrl = getAppUrl();
     console.log("🔗 Using app URL:", appUrl);
 
+    // Generate stable user ID based on IP address
+    const forwarded = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const ip = forwarded?.split(",")[0] || realIp || request.ip || "unknown";
+    const userId = `demo-user-${ip}`;
+
     // Store everything in Redis, keep Stripe metadata minimal
     const sessionData: SessionData = {
       prompt: prompt || "",
@@ -56,6 +62,8 @@ export async function POST(request: NextRequest) {
       style: "cinematic",
       toolSlug: toolSlug || "veo3-prompt-generator",
       toolTitle: toolTitle || "Free VEO3 Viral Prompt Generator",
+      cancelUrl: cancelUrl || "",
+      userId: userId, // Add userId to session data
       createdAt: new Date().toISOString(),
       status: "pending" as const,
     };

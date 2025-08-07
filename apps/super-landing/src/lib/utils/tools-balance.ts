@@ -28,6 +28,17 @@ function setDemoBalance(userId: string, balance: number): void {
 }
 
 /**
+ * Add demo balance to user
+ */
+export function addDemoBalance(userId: string, amount: number): number {
+  const currentBalance = getDemoBalance(userId);
+  const newBalance = currentBalance + amount;
+  setDemoBalance(userId, newBalance);
+  console.log(`💰 Demo balance added for user ${userId}: +${amount} credits (${currentBalance} → ${newBalance})`);
+  return newBalance;
+}
+
+/**
  * Validate operation before execution
  */
 export async function validateOperationBalance(
