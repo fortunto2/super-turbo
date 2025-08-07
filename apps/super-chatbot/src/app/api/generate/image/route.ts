@@ -9,11 +9,9 @@ import {
   generateImageWithStrategy,
   ImageGenerationParams,
   ImageToImageParams,
-} from "@/lib/ai/api/image-generation";
-import {
-  validateOperationBalance,
-  deductOperationBalance,
-} from "@/lib/utils/tools-balance";
+} from "@turbo-super/superduperai-api";
+
+import { validateOperationBalance } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
 
 export async function POST(request: NextRequest) {
@@ -61,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Configure OpenAPI client with user token from session (with system token fallback)
     console.log("SESSION USER", session);
-    const config = getSuperduperAIConfigWithUserToken(session);
+    let config = getSuperduperAIConfigWithUserToken(session);
 
     // If using user token, ensure user exists in SuperDuperAI
     if (config.isUserToken && session?.user?.email) {
@@ -69,14 +67,15 @@ export async function POST(request: NextRequest) {
         `🔍 Checking if user ${session.user.email} exists in SuperDuperAI...`
       );
       try {
-        // Try a simple API call to verify user exists
+        // Use system token to check if user exists (more reliable)
+        const systemConfig = getSuperduperAIConfig();
         const testUrl = `${config.url}/api/v1/user/profile`;
         console.log(`🔍 Testing SuperDuperAI endpoint: ${testUrl}`);
 
         const testResponse = await fetch(testUrl, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${config.token}`,
+            Authorization: `Bearer ${systemConfig.token}`,
             "Content-Type": "application/json",
           },
         });
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
             `⚠️ User ${session.user.email} not found in SuperDuperAI (${testResponse.status}), falling back to system token`
           );
           // Fall back to system token
-          const systemConfig = getSuperduperAIConfig();
+          config = { ...config, token: systemConfig.token, isUserToken: false };
           OpenAPI.BASE = systemConfig.url;
           OpenAPI.TOKEN = systemConfig.token;
           console.log("🔄 Switched to system token for SuperDuperAI");
@@ -98,12 +97,20 @@ export async function POST(request: NextRequest) {
           console.log(
             `✅ User ${session.user.email} exists in SuperDuperAI, using user token`
           );
+          // User exists, but we'll still use system token for now since user token seems to be invalid
+          config = { ...config, token: systemConfig.token, isUserToken: false };
+          OpenAPI.BASE = systemConfig.url;
+          OpenAPI.TOKEN = systemConfig.token;
+          console.log(
+            "🔄 Using system token for SuperDuperAI (user token validation pending)"
+          );
         }
       } catch (error) {
         console.log(`❌ Error checking user existence in SuperDuperAI:`, error);
         console.log(`🔄 Falling back to system token due to error`);
         // Fall back to system token on error
         const systemConfig = getSuperduperAIConfig();
+        config = { ...config, token: systemConfig.token, isUserToken: false };
         OpenAPI.BASE = systemConfig.url;
         OpenAPI.TOKEN = systemConfig.token;
       }
@@ -122,35 +129,25 @@ export async function POST(request: NextRequest) {
     const result = await generateImageWithStrategy(
       generationType,
       strategyParams,
-      session
+      config
     );
 
     console.log("✅ Image generation result:", result);
 
-    // Deduct balance after successful generation
-    try {
-      await deductOperationBalance(
-        userId,
-        "image-generation",
-        generationType,
-        multipliers,
+    // Check if generation was successful
+    if (!result.success) {
+      console.log("❌ Image generation failed");
+      return NextResponse.json(
         {
-          fileId: result.fileId,
-          projectId: result.projectId,
-          operationType: generationType,
-          timestamp: new Date().toISOString(),
-        }
+          success: false,
+          error: result.error || "Image generation failed",
+        },
+        { status: 500 }
       );
-      console.log(
-        `💳 Balance deducted for user ${userId} after successful image generation`
-      );
-    } catch (balanceError) {
-      console.error(
-        "⚠️ Failed to deduct balance after image generation:",
-        balanceError
-      );
-      // Continue with response - image was generated successfully
     }
+
+    // Note: Balance is deducted in artifacts/image/server.ts when creating the artifact
+    // No need to deduct here to avoid double deduction
 
     const response = {
       success: true,

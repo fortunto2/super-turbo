@@ -1,11 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { writeFile, readFile } from "fs/promises";
-import { join } from "path";
-import {
-  configureSuperduperAI,
-  getSuperduperAIConfig,
-} from "@/lib/config/superduperai";
+
+import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
+import { getSuperduperAIConfig } from "@/lib/config/superduperai";
+import { deductOperationBalance } from "@/lib/utils/tools-balance";
+
+// Функция для маппинга названий моделей на правильные конфигурации SuperDuperAI
+function mapModelNameToConfig(
+  modelName: string,
+  generationType: "text-to-video" | "image-to-video"
+): string {
+  const modelMap: Record<string, Record<string, string>> = {
+    Veo2: {
+      "text-to-video": "google-cloud/veo2-text2video",
+      "image-to-video": "google-cloud/veo2",
+    },
+    Veo3: {
+      "text-to-video": "google-cloud/veo3-text2video",
+      "image-to-video": "google-cloud/veo3",
+    },
+    Sora: {
+      "text-to-video": "azure-openai/sora",
+      "image-to-video": "azure-openai/sora",
+    },
+  };
+
+  return modelMap[modelName]?.[generationType] || modelName;
+}
 
 // Схема запроса для генерации видео с моделью
 const modelVideoGenerationSchema = z.object({
@@ -43,262 +64,241 @@ const modelVideoGenerationSchema = z.object({
     )
     .optional(),
   error: z.string().optional(),
+  // Новые поля для поддержки изображений
+  imageFile: z.any().optional(), // File object
+  generationType: z
+    .enum(["text-to-video", "image-to-video"])
+    .default("text-to-video"),
 });
 
 type ModelVideoGenerationData = z.infer<typeof modelVideoGenerationSchema>;
 
-// Пути для хранения данных генерации
-const STORAGE_DIR = join(process.cwd(), ".model-video-generations");
-const getGenerationFilePath = (generationId: string) =>
-  join(STORAGE_DIR, `${generationId}.json`);
+// In-memory хранилище для данных генерации (вместо файлов)
+const generationStore = new Map<string, ModelVideoGenerationData>();
 
-// Обеспечиваем существование директории хранения
-async function ensureStorageDir() {
-  try {
-    const fs = await import("fs");
-    if (!fs.existsSync(STORAGE_DIR)) {
-      fs.mkdirSync(STORAGE_DIR, { recursive: true });
-    }
-  } catch (error) {
-    console.error("Error creating storage directory:", error);
-  }
-}
-
-// Сохраняем данные генерации в файл
+// Сохраняем данные генерации в память
 async function saveGenerationData(data: ModelVideoGenerationData) {
-  await ensureStorageDir();
-  const filePath = getGenerationFilePath(data.generationId);
-  await writeFile(filePath, JSON.stringify(data, null, 2));
+  generationStore.set(data.generationId, data);
+  console.log(`💾 Saved generation data for ${data.generationId}`);
 }
 
-// Загружаем данные генерации из файла
+// Загружаем данные генерации из памяти
 async function loadGenerationData(
   generationId: string
 ): Promise<ModelVideoGenerationData | null> {
-  try {
-    const filePath = getGenerationFilePath(generationId);
-    const data = await readFile(filePath, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
+  const data = generationStore.get(generationId);
+  if (data) {
+    console.log(`📂 Loaded generation data for ${generationId}`);
   }
-}
-
-// Конфигурация моделей - используем правильные названия из SuperDuperAI
-const MODEL_CONFIGS = {
-  Sora: {
-    generation_config_name: "azure-openai/sora",
-    maxDuration: 10,
-    aspectRatio: "16:9",
-    width: 1920,
-    height: 1080,
-    frameRate: 30,
-  },
-  Veo2: {
-    generation_config_name: "google-cloud/veo2-text2video",
-    maxDuration: 8,
-    aspectRatio: "16:9",
-    width: 1280,
-    height: 720,
-    frameRate: 30,
-  },
-  Veo3: {
-    generation_config_name: "google-cloud/veo3-text2video",
-    maxDuration: 8,
-    aspectRatio: "16:9",
-    width: 1280,
-    height: 720,
-    frameRate: 30,
-  },
-  default: {
-    generation_config_name: "google-cloud/veo3-text2video",
-    maxDuration: 8,
-    aspectRatio: "16:9",
-    width: 1280,
-    height: 720,
-    frameRate: 30,
-  },
-};
-
-// Генерируем видео с помощью SuperDuperAI API
-async function generateVideoWithModel(
-  prompt: string,
-  modelName: string,
-  videoCount: number,
-  modelConfig?: {
-    maxDuration?: number;
-    aspectRatio?: string;
-    width?: number;
-    height?: number;
-    frameRate?: number;
-  }
-): Promise<string[]> {
-  console.log("🎬 Starting model video generation:", {
-    prompt,
-    modelName,
-    videoCount,
-  });
-
-  // Конфигурируем SuperDuperAI клиент
-  configureSuperduperAI();
-  const config = getSuperduperAIConfig();
-
-  // Получаем конфигурацию модели
-  const modelSettings =
-    MODEL_CONFIGS[modelName as keyof typeof MODEL_CONFIGS] ||
-    MODEL_CONFIGS.default;
-  const finalConfig = { ...modelSettings, ...modelConfig };
-
-  const fileIds = [];
-
-  for (let i = 0; i < videoCount; i++) {
-    try {
-      const payload = {
-        type: "media", // CRITICAL: Always use this format
-        template_name: null,
-        style_name: "flux_watercolor", // Use working style
-        config: {
-          prompt,
-          negative_prompt: "",
-          width: finalConfig.width,
-          height: finalConfig.height,
-          aspect_ratio: finalConfig.aspectRatio,
-          seed: Math.floor(Math.random() * 1000000000000),
-          generation_config_name: finalConfig.generation_config_name,
-          duration: finalConfig.maxDuration,
-          frame_rate: finalConfig.frameRate,
-          batch_size: 1,
-          shot_size: "medium_shot", // Default shot size
-          style_name: "flux_watercolor", // Use working style
-          qualityType: "hd",
-          entity_ids: [],
-          references: [],
-        },
-      };
-
-      console.log("📤 Sending request to SuperDuperAI:", payload);
-
-      const response = await fetch(`${config.url}/api/v1/file/generate-video`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config.token}`,
-          "User-Agent": "SuperDuperAI-Landing/1.0",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      console.log(`📡 SuperDuperAI API Response Status: ${response.status}`);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ SuperDuperAI API Error:", errorText);
-        throw new Error(
-          `SuperDuperAI API failed: ${response.status} - ${errorText}`
-        );
-      }
-
-      const result = await response.json();
-      console.log("✅ SuperDuperAI response:", result);
-
-      // Извлекаем file ID из ответа
-      const fileId = result.id;
-      if (!fileId) {
-        throw new Error("No file ID returned from SuperDuperAI API");
-      }
-
-      fileIds.push(fileId);
-
-      console.log(
-        `✅ Video ${i + 1}/${videoCount} generation started with fileId: ${fileId}`
-      );
-    } catch (error) {
-      console.error(`❌ Error generating video ${i + 1}:`, error);
-      throw error;
-    }
-  }
-
-  return fileIds;
-}
-
-// Проверяем статус файла через SuperDuperAI API
-async function checkFileStatus(
-  fileId: string
-): Promise<{ url?: string; thumbnailUrl?: string; status: string }> {
-  try {
-    configureSuperduperAI();
-    const config = getSuperduperAIConfig();
-
-    const response = await fetch(`${config.url}/api/v1/file/${fileId}`, {
-      headers: {
-        Authorization: `Bearer ${config.token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      console.error(
-        `❌ Failed to check file ${fileId} status:`,
-        response.status
-      );
-      return { status: "error" };
-    }
-
-    const fileData = await response.json();
-    console.log(`📁 File ${fileId} status:`, fileData);
-
-    // Проверяем, завершен ли файл
-    if (fileData.url) {
-      return {
-        url: fileData.url,
-        thumbnailUrl: fileData.thumbnail_url,
-        status: "completed",
-      };
-    }
-
-    // Проверяем статус задачи
-    if (fileData.tasks && fileData.tasks.length > 0) {
-      const latestTask = fileData.tasks[fileData.tasks.length - 1];
-      if (latestTask.status === "error") {
-        return { status: "error" };
-      }
-      if (latestTask.status === "in_progress") {
-        return { status: "processing" };
-      }
-    }
-
-    return { status: "processing" };
-  } catch (error) {
-    console.error(`❌ Error checking file ${fileId}:`, error);
-    return { status: "error" };
-  }
+  return data || null;
 }
 
 // POST - Создаем/запускаем генерацию видео
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    console.log("🎬 Model video generation request:", body);
+    const formData = await request.formData();
+
+    // Извлекаем данные из FormData
+    const generationId = formData.get("generationId") as string;
+    const prompt = formData.get("prompt") as string;
+    const modelName = formData.get("modelName") as string;
+    const modelConfigStr = formData.get("modelConfig") as string;
+    const videoCount = parseInt(formData.get("videoCount") as string);
+    const status = formData.get("status") as string;
+    const progress = parseInt(formData.get("progress") as string);
+    const createdAt = formData.get("createdAt") as string;
+    const generationType = formData.get("generationType") as
+      | "text-to-video"
+      | "image-to-video";
+    const imageFile = formData.get("imageFile") as File | null;
+
+    console.log("🎬 Model video generation request:", {
+      generationId,
+      prompt,
+      modelName,
+      generationType,
+      hasImageFile: !!imageFile,
+    });
+
+    // Парсим modelConfig
+    let modelConfig;
+    try {
+      modelConfig = JSON.parse(modelConfigStr);
+    } catch {
+      modelConfig = {};
+    }
 
     // Валидируем данные запроса
-    const validatedData = modelVideoGenerationSchema.parse(body);
+    const validatedData = modelVideoGenerationSchema.parse({
+      generationId,
+      prompt,
+      modelName,
+      modelConfig,
+      videoCount,
+      status,
+      progress,
+      createdAt,
+      generationType,
+      imageFile,
+    });
 
-    // Запускаем генерацию видео с SuperDuperAI
-    try {
-      const fileIds = await generateVideoWithModel(
-        validatedData.prompt,
-        validatedData.modelName,
-        validatedData.videoCount,
-        validatedData.modelConfig
+    console.log("✅ Validated data:", {
+      generationType: validatedData.generationType,
+      hasImageFile: !!validatedData.imageFile,
+    });
+
+    // Проверяем баланс ПЕРЕД началом генерации
+    const multipliers: string[] = [];
+
+    // Множители длительности
+    const duration = modelConfig?.maxDuration || 8;
+    if (duration <= 5) multipliers.push("duration-5s");
+    else if (duration <= 10) multipliers.push("duration-10s");
+    else if (duration <= 15) multipliers.push("duration-15s");
+    else if (duration <= 30) multipliers.push("duration-30s");
+
+    // Множители качества
+    const width = modelConfig?.width || 1280;
+    if (width >= 2160) {
+      multipliers.push("4k-quality");
+    } else {
+      multipliers.push("hd-quality"); // HD по умолчанию
+    }
+
+    const operationType =
+      generationType === "image-to-video" ? "image-to-video" : "text-to-video";
+
+    // Проверяем баланс перед генерацией
+    const { validateOperationBalance } = await import(
+      "@/lib/utils/tools-balance"
+    );
+    const balanceCheck = await validateOperationBalance(
+      "demo-user",
+      "video-generation",
+      operationType,
+      multipliers
+    );
+
+    if (!balanceCheck.valid) {
+      console.log(
+        "❌ Insufficient balance for video generation:",
+        balanceCheck.error
       );
+      return NextResponse.json(
+        {
+          success: false,
+          error: balanceCheck.error || "Insufficient balance",
+          balanceRequired: balanceCheck.cost,
+        },
+        { status: 402 } // Payment Required
+      );
+    }
+
+    console.log("✅ Balance check passed, starting video generation...");
+
+    // Запускаем генерацию видео с помощью generateVideoWithStrategy
+    try {
+      const config = getSuperduperAIConfig();
+      let result;
+
+      // Маппим название модели на правильную конфигурацию SuperDuperAI
+      const mappedModelName = mapModelNameToConfig(modelName, generationType);
+      console.log(`🎬 Mapped model name: ${modelName} → ${mappedModelName}`);
+
+      if (generationType === "image-to-video" && imageFile) {
+        // Image-to-video генерация
+        console.log("🖼️ Starting image-to-video generation with file");
+        console.log("📁 File details:", {
+          fileName: imageFile.name,
+          fileType: imageFile.type,
+          fileSize: imageFile.size,
+          hasFile: !!imageFile,
+        });
+
+        result = await generateVideoWithStrategy(
+          "image-to-video",
+          {
+            prompt,
+            file: imageFile,
+            model: mappedModelName,
+            style: "flux_watercolor",
+            resolution: {
+              width: modelConfig?.width || 1280,
+              height: modelConfig?.height || 720,
+            },
+            shotSize: "medium_shot",
+            duration: modelConfig?.maxDuration || 8,
+            frameRate: modelConfig?.frameRate || 30,
+            negativePrompt: "",
+            seed: Math.floor(Math.random() * 1000000000000),
+          },
+          config
+        );
+      } else {
+        // Text-to-video генерация
+        console.log("📝 Starting text-to-video generation");
+
+        result = await generateVideoWithStrategy(
+          "text-to-video",
+          {
+            prompt,
+            model: mappedModelName,
+            style: "flux_watercolor",
+            resolution: {
+              width: modelConfig?.width || 1280,
+              height: modelConfig?.height || 720,
+            },
+            shotSize: "medium_shot",
+            duration: modelConfig?.maxDuration || 8,
+            frameRate: modelConfig?.frameRate || 30,
+            negativePrompt: "",
+            seed: Math.floor(Math.random() * 1000000000000),
+          },
+          config
+        );
+      }
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Списываем баланс после успешной генерации
+      try {
+        await deductOperationBalance(
+          "demo-user", // В демо-версии используем фиксированный ID
+          "video-generation",
+          operationType,
+          multipliers,
+          {
+            projectId: result.projectId,
+            fileId: result.fileId,
+            prompt: prompt.substring(0, 100),
+            operationType,
+            duration,
+            resolution: `${width}x${modelConfig?.height || 720}`,
+            timestamp: new Date().toISOString(),
+          }
+        );
+        console.log(
+          `💳 Balance deducted for demo user after successful video generation`
+        );
+      } catch (balanceError) {
+        console.error(
+          "⚠️ Failed to deduct balance after video generation:",
+          balanceError
+        );
+        // Продолжаем - генерация видео уже запущена
+      }
 
       // Создаем записи видео с fileIds
-      const videos = fileIds.map((fileId) => ({
-        fileId,
-        status: "processing" as const,
-        url: undefined,
-        thumbnailUrl: undefined,
-      }));
+      const videos = [
+        {
+          fileId: result.fileId!,
+          status: "processing" as const,
+          url: undefined,
+          thumbnailUrl: undefined,
+        },
+      ];
 
       // Обновляем данные генерации с file IDs
       const updatedData: ModelVideoGenerationData = {
@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
         success: true,
         generationId: validatedData.generationId,
         modelName: validatedData.modelName,
-        fileIds,
+        fileId: result.fileId,
         status: "started",
         estimatedTime: validatedData.videoCount * 50, // 50 секунд на видео
         message: "Model video generation started",
@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
         success: true,
         generationId: validatedData.generationId,
         modelName: validatedData.modelName,
-        fileIds,
+        fileIds: [result.fileId],
         status: "started",
         estimatedTime: validatedData.videoCount * 50,
         message: "Model video generation started",
@@ -412,29 +412,91 @@ export async function GET(request: NextRequest) {
       const updatedVideos = [];
 
       for (const video of generationData.videos) {
-        const fileStatus = await checkFileStatus(video.fileId);
+        // Используем существующую логику проверки статуса из generateVideoWithStrategy
+        try {
+          const { getSuperduperAIConfig } = await import(
+            "@/lib/config/superduperai"
+          );
+          const config = getSuperduperAIConfig();
 
-        if (fileStatus.status === "completed" && fileStatus.url) {
-          updatedVideos.push({
-            ...video,
-            url: fileStatus.url,
-            thumbnailUrl: fileStatus.thumbnailUrl,
-            status: "completed" as const,
-          });
-          totalProgress += 100;
-        } else if (fileStatus.status === "error") {
+          const response = await fetch(
+            `${config.url}/api/v1/file/${video.fileId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${config.token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            console.error(
+              `❌ Failed to check file ${video.fileId} status:`,
+              response.status
+            );
+            updatedVideos.push({
+              ...video,
+              status: "error" as const,
+            });
+            totalProgress += 0;
+            allCompleted = false;
+            continue;
+          }
+
+          const fileData = await response.json();
+          console.log(`📁 File ${video.fileId} status:`, fileData);
+
+          // Проверяем, завершен ли файл
+          if (fileData.url) {
+            updatedVideos.push({
+              ...video,
+              url: fileData.url,
+              thumbnailUrl: fileData.thumbnail_url,
+              status: "completed" as const,
+            });
+            totalProgress += 100;
+          } else {
+            // Проверяем статус задачи
+            if (fileData.tasks && fileData.tasks.length > 0) {
+              const latestTask = fileData.tasks[fileData.tasks.length - 1];
+              if (latestTask.status === "error") {
+                updatedVideos.push({
+                  ...video,
+                  status: "error" as const,
+                });
+                totalProgress += 0;
+                allCompleted = false;
+              } else if (latestTask.status === "in_progress") {
+                updatedVideos.push({
+                  ...video,
+                  status: "processing" as const,
+                });
+                totalProgress += 50; // Все еще обрабатывается
+                allCompleted = false;
+              } else {
+                updatedVideos.push({
+                  ...video,
+                  status: "processing" as const,
+                });
+                totalProgress += 50;
+                allCompleted = false;
+              }
+            } else {
+              updatedVideos.push({
+                ...video,
+                status: "processing" as const,
+              });
+              totalProgress += 50;
+              allCompleted = false;
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Error checking file ${video.fileId}:`, error);
           updatedVideos.push({
             ...video,
             status: "error" as const,
           });
           totalProgress += 0;
-          allCompleted = false;
-        } else {
-          updatedVideos.push({
-            ...video,
-            status: "processing" as const,
-          });
-          totalProgress += 50; // Все еще обрабатывается
           allCompleted = false;
         }
       }

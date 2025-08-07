@@ -1,5 +1,6 @@
 import { createDocumentHandler } from "@/lib/artifacts/server";
-import { generateVideoWithStrategy } from "@/lib/ai/api/video-generation";
+import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
+import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 import { getStyles } from "@/lib/ai/api/get-styles";
 import type { MediaOption } from "@/lib/types/media-settings";
 import type { VideoModel } from "@/lib/config/superduperai";
@@ -132,6 +133,7 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
       }
 
       // Start video generation using new architecture (only text-to-video)
+      const config = getSuperduperAIConfig();
       const result = await generateVideoWithStrategy(
         "text-to-video",
         {
@@ -145,8 +147,8 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
           negativePrompt,
           seed,
         },
-        session
-      ); // Pass session for user token
+        config
+      );
 
       console.log("result", result);
 
@@ -281,17 +283,22 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
         duration = DEFAULT_VIDEO_DURATION,
         seed,
       } = params;
-      const result = await generateVideoWithStrategy("text-to-video", {
-        prompt,
-        model,
-        style,
-        resolution,
-        shotSize,
-        frameRate,
-        duration,
-        negativePrompt,
-        seed,
-      }); // NOTE: onUpdateDocument doesn't have access to session, using system token fallback
+      const config = getSuperduperAIConfig();
+      const result = await generateVideoWithStrategy(
+        "text-to-video",
+        {
+          prompt,
+          model,
+          style,
+          resolution,
+          shotSize,
+          frameRate,
+          duration,
+          negativePrompt,
+          seed,
+        },
+        config
+      ); // NOTE: onUpdateDocument doesn't have access to session, using system token fallback
       if (!result.success) {
         draftContent = JSON.stringify({
           status: "failed",

@@ -1,8 +1,8 @@
 ---
-title: "VEO2 Image2Video"
-description: "Transform images into dynamic videos"
+title: Veo2 Image2video
+description: Transform images into dynamic videos
 date: 2025-05-20
-slug: "veo2"
+slug: veo2
 locale: en
 modelName: "Veo2"
 modelConfig:
@@ -12,11 +12,11 @@ modelConfig:
   height: 720
   frameRate: 30
 seo:
-  title: "VEO2 image-to-video"
-  description: "VEO2 Usage Guide"
+  title: Veo2 image-to-video
+  description: VEO2 Usage Guide
 ---
 
-# VEO2 Image2Video
+# Veo2 Image2video
 
 VEO2 converts a still image into a short HD video while preserving the original
 look. Elements such as water or clouds animate realistically, making it perfect

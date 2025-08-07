@@ -1,0 +1,1 @@
+{"version":3,"file":"IEntityLoraUpdate.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/IEntityLoraUpdate.ts"],"names":[],"mappings":"AAIA,MAAM,MAAM,iBAAiB,GAAG;IAC5B,MAAM,CAAC,EAAE,MAAM,CAAC;IAChB,EAAE,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IACpB,OAAO,EAAE,MAAM,CAAC;CACnB,CAAC"}

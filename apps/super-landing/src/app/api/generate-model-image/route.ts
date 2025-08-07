@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { writeFile, readFile } from "fs/promises";
-import { join } from "path";
+
 import {
   configureSuperduperAI,
   getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
+import { deductOperationBalance } from "@/lib/utils/tools-balance";
 
 // Схема запроса для генерации изображений с моделью
 const modelImageGenerationSchema = z.object({
@@ -47,41 +47,24 @@ const modelImageGenerationSchema = z.object({
 
 type ModelImageGenerationData = z.infer<typeof modelImageGenerationSchema>;
 
-// Пути для хранения данных генерации
-const STORAGE_DIR = join(process.cwd(), ".model-image-generations");
-const getGenerationFilePath = (generationId: string) =>
-  join(STORAGE_DIR, `${generationId}.json`);
+// In-memory хранилище для данных генерации изображений (вместо файлов)
+const imageGenerationStore = new Map<string, ModelImageGenerationData>();
 
-// Обеспечиваем существование директории хранения
-async function ensureStorageDir() {
-  try {
-    const fs = await import("fs");
-    if (!fs.existsSync(STORAGE_DIR)) {
-      fs.mkdirSync(STORAGE_DIR, { recursive: true });
-    }
-  } catch (error) {
-    console.error("Error creating storage directory:", error);
-  }
-}
-
-// Сохраняем данные генерации в файл
+// Сохраняем данные генерации в память
 async function saveGenerationData(data: ModelImageGenerationData) {
-  await ensureStorageDir();
-  const filePath = getGenerationFilePath(data.generationId);
-  await writeFile(filePath, JSON.stringify(data, null, 2));
+  imageGenerationStore.set(data.generationId, data);
+  console.log(`💾 Saved image generation data for ${data.generationId}`);
 }
 
-// Загружаем данные генерации из файла
+// Загружаем данные генерации из памяти
 async function loadGenerationData(
   generationId: string
 ): Promise<ModelImageGenerationData | null> {
-  try {
-    const filePath = getGenerationFilePath(generationId);
-    const data = await readFile(filePath, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
+  const data = imageGenerationStore.get(generationId);
+  if (data) {
+    console.log(`📂 Loaded image generation data for ${generationId}`);
   }
+  return data || null;
 }
 
 // Конфигурация моделей для изображений
@@ -339,6 +322,47 @@ export async function POST(request: NextRequest) {
     // Валидируем данные запроса
     const validatedData = modelImageGenerationSchema.parse(body);
 
+    // Проверяем баланс ПЕРЕД началом генерации
+    const multipliers: string[] = [];
+
+    // Множители качества
+    const width = validatedData.modelConfig?.width || 1024;
+    if (width >= 2048) {
+      multipliers.push("ultra-quality");
+    } else if (width >= 1536) {
+      multipliers.push("high-quality");
+    } else {
+      multipliers.push("standard-quality"); // Стандартное качество по умолчанию
+    }
+
+    // Проверяем баланс перед генерацией
+    const { validateOperationBalance } = await import(
+      "@/lib/utils/tools-balance"
+    );
+    const balanceCheck = await validateOperationBalance(
+      "demo-user",
+      "image-generation",
+      "text-to-image",
+      multipliers
+    );
+
+    if (!balanceCheck.valid) {
+      console.log(
+        "❌ Insufficient balance for image generation:",
+        balanceCheck.error
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: balanceCheck.error || "Insufficient balance",
+          balanceRequired: balanceCheck.cost,
+        },
+        { status: 402 } // Payment Required
+      );
+    }
+
+    console.log("✅ Balance check passed, starting image generation...");
+
     // Запускаем генерацию изображений с SuperDuperAI
     try {
       const fileIds = await generateImageWithModel(
@@ -347,6 +371,36 @@ export async function POST(request: NextRequest) {
         validatedData.imageCount,
         validatedData.modelConfig
       );
+
+      // Списываем баланс после успешной генерации
+      try {
+        // Списываем баланс за каждое изображение
+        for (const fileId of fileIds) {
+          await deductOperationBalance(
+            "demo-user", // В демо-версии используем фиксированный ID
+            "image-generation",
+            "text-to-image",
+            multipliers,
+            {
+              projectId: fileId,
+              fileId: fileId,
+              prompt: validatedData.prompt.substring(0, 100),
+              operationType: "text-to-image",
+              resolution: `${width}x${validatedData.modelConfig?.height || 1024}`,
+              timestamp: new Date().toISOString(),
+            }
+          );
+        }
+        console.log(
+          `💳 Balance deducted for demo user after successful image generation (${fileIds.length} images)`
+        );
+      } catch (balanceError) {
+        console.error(
+          "⚠️ Failed to deduct balance after image generation:",
+          balanceError
+        );
+        // Продолжаем - генерация изображений уже завершена
+      }
 
       // Создаем записи изображений с fileIds
       const images = fileIds.map((fileId) => ({

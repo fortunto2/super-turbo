@@ -1,0 +1,15 @@
+import type { IProjectVideoConfig_Input } from './IProjectVideoConfig_Input';
+export type IProjectVideoCreate = {
+    config: IProjectVideoConfig_Input;
+    thumbnail_url?: (string | null);
+    type?: IProjectVideoCreate.type;
+    template_name?: (string | null);
+    style_name?: (string | null);
+    music_id?: (string | null);
+};
+export declare namespace IProjectVideoCreate {
+    enum type {
+        FILM = "film"
+    }
+}
+//# sourceMappingURL=IProjectVideoCreate.d.ts.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"IMusicUpdate.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/IMusicUpdate.ts"],"names":[],"mappings":"AAIA,MAAM,MAAM,YAAY,GAAG;IACvB,KAAK,EAAE,MAAM,CAAC;IACd,MAAM,CAAC,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IACzB,cAAc,CAAC,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IACjC,EAAE,EAAE,MAAM,CAAC;CACd,CAAC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"IDataRead.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/IDataRead.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,gBAAgB,CAAC;AACnD,MAAM,MAAM,SAAS,GAAG;IACpB,KAAK,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,CAAC;IAC5B,EAAE,EAAE,MAAM,CAAC;IACX,UAAU,EAAE,MAAM,CAAC;IACnB,IAAI,EAAE,YAAY,CAAC;CACtB,CAAC"}

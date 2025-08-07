@@ -1,8 +1,8 @@
 ---
-title: "Sora Text2Video"
-description: "High-quality text-to-video generation"
+title: Sora Text2Video
+description: High-quality text-to-video generation
 date: 2025-05-20
-slug: "sora"
+slug: sora
 locale: en
 modelName: "Sora"
 modelConfig:
@@ -12,8 +12,8 @@ modelConfig:
   height: 1080
   frameRate: 30
 seo:
-  title: "Sora text-to-video model"
-  description: "Sora Usage Guide"
+  title: Sora text-to-video model
+  description: Sora Usage Guide
 ---
 
 # Sora Text2Video

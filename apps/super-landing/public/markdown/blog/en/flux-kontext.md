@@ -1,8 +1,8 @@
 ---
-title: "Flux Kontext"
-description: "Create images with contextual understanding"
+title: Flux Kontext
+description: Create images with contextual understanding
 date: 2025-05-20
-slug: "flux-kontext"
+slug: flux-kontext
 locale: en
 modelName: "Flux Kontext"
 modelConfig:
@@ -12,8 +12,8 @@ modelConfig:
   style: "flux_steampunk"
   shotSize: "Medium Shot"
 seo:
-  title: "Flux Kontext Editing"
-  description: "Flux Kontext Usage Guide"
+  title: Flux Kontext Editing
+  description: Flux Kontext Usage Guide
 ---
 
 # Flux Kontext

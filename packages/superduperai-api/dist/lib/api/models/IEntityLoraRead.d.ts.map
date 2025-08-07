@@ -1,0 +1,1 @@
+{"version":3,"file":"IEntityLoraRead.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/IEntityLoraRead.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,aAAa,CAAC;AAC7C,MAAM,MAAM,eAAe,GAAG;IAC1B,MAAM,CAAC,EAAE,MAAM,CAAC;IAChB,EAAE,EAAE,MAAM,CAAC;IACX,OAAO,EAAE,MAAM,CAAC;IAChB,IAAI,EAAE,SAAS,CAAC;CACnB,CAAC"}

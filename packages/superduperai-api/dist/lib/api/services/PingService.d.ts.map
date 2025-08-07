@@ -1,0 +1,1 @@
+{"version":3,"file":"PingService.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/services/PingService.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,2BAA2B,CAAC;AAGnE,qBAAa,WAAW;IACpB;;;;OAIG;WACW,QAAQ,IAAI,iBAAiB,CAAC,GAAG,CAAC;IAMhD;;;;OAIG;WACW,YAAY,IAAI,iBAAiB,CAAC,GAAG,CAAC;CAMvD"}

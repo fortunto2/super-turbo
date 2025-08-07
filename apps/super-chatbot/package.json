@@ -64,6 +64,7 @@
     "@radix-ui/react-visually-hidden": "^1.1.0",
     "@sentry/nextjs": "^9.17.0",
     "@turbo-super/shared": "workspace:*",
+    "@turbo-super/superduperai-api": "workspace:*",
     "@turbo-super/ui": "workspace:*",
     "@turbo-super/veo3-tools": "workspace:*",
     "@turbo-super/ai-tools": "workspace:*",
