@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-
 import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 import { deductOperationBalance } from "@/lib/utils/tools-balance";
@@ -148,6 +147,55 @@ export async function POST(request: NextRequest) {
       hasImageFile: !!validatedData.imageFile,
     });
 
+    // Проверяем баланс ПЕРЕД началом генерации
+    const multipliers: string[] = [];
+
+    // Множители длительности
+    const duration = modelConfig?.maxDuration || 8;
+    if (duration <= 5) multipliers.push("duration-5s");
+    else if (duration <= 10) multipliers.push("duration-10s");
+    else if (duration <= 15) multipliers.push("duration-15s");
+    else if (duration <= 30) multipliers.push("duration-30s");
+
+    // Множители качества
+    const width = modelConfig?.width || 1280;
+    if (width >= 2160) {
+      multipliers.push("4k-quality");
+    } else {
+      multipliers.push("hd-quality"); // HD по умолчанию
+    }
+
+    const operationType =
+      generationType === "image-to-video" ? "image-to-video" : "text-to-video";
+
+    // Проверяем баланс перед генерацией
+    const { validateOperationBalance } = await import(
+      "@/lib/utils/tools-balance"
+    );
+    const balanceCheck = await validateOperationBalance(
+      "demo-user",
+      "video-generation",
+      operationType,
+      multipliers
+    );
+
+    if (!balanceCheck.valid) {
+      console.log(
+        "❌ Insufficient balance for video generation:",
+        balanceCheck.error
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: balanceCheck.error || "Insufficient balance",
+          balanceRequired: balanceCheck.cost,
+        },
+        { status: 402 } // Payment Required
+      );
+    }
+
+    console.log("✅ Balance check passed, starting video generation...");
+
     // Запускаем генерацию видео с помощью generateVideoWithStrategy
     try {
       const config = getSuperduperAIConfig();
@@ -216,29 +264,6 @@ export async function POST(request: NextRequest) {
 
       // Списываем баланс после успешной генерации
       try {
-        // Определяем множители стоимости на основе запроса
-        const multipliers: string[] = [];
-
-        // Множители длительности
-        const duration = modelConfig?.maxDuration || 8;
-        if (duration <= 5) multipliers.push("duration-5s");
-        else if (duration <= 10) multipliers.push("duration-10s");
-        else if (duration <= 15) multipliers.push("duration-15s");
-        else if (duration <= 30) multipliers.push("duration-30s");
-
-        // Множители качества
-        const width = modelConfig?.width || 1280;
-        if (width >= 2160) {
-          multipliers.push("4k-quality");
-        } else {
-          multipliers.push("hd-quality"); // HD по умолчанию
-        }
-
-        const operationType =
-          generationType === "image-to-video"
-            ? "image-to-video"
-            : "text-to-video";
-
         await deductOperationBalance(
           "demo-user", // В демо-версии используем фиксированный ID
           "video-generation",

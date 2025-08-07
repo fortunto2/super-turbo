@@ -35,7 +35,9 @@
       "select_file": "Dosya Seç",
       "describe_animation": "Görüntünün nasıl canlandırılacağını açıklayın:",
       "animation_placeholder": "Örneğin: yavaşça sallan, yumuşakça döndür, bulut hareketi ekle...",
-      "upload_image_required": "Lütfen görüntü-video üretimi için bir görüntü yükleyin"
+      "upload_image_required": "Lütfen görüntü-video üretimi için bir görüntü yükleyin",
+      "insufficient_balance": "Yetersiz kredi. Gerekli: {required} kredi. Lütfen bakiyenizi yenileyin.",
+      "insufficient_balance_fallback": "Video üretimi için yeterli kredi yok. Lütfen bakiyenizi yenileyin."
     },
     "image_generator": {
       "title": "Görüntü üretimi",
@@ -73,7 +75,9 @@
       "generation_error_msg": "Üretim sırasında hata",
       "status_check_error": "Durum kontrolü sırasında hata",
       "created_images": "Oluşturulan görüntüler:",
-      "generated_image": "Oluşturulan görüntü"
+      "generated_image": "Oluşturulan görüntü",
+      "insufficient_balance": "Yetersiz kredi. Gerekli: {required} kredi. Lütfen bakiyenizi yenileyin.",
+      "insufficient_balance_fallback": "Görüntü üretimi için yeterli kredi yok. Lütfen bakiyenizi yenileyin."
     },
     "credit_balance": {
       "title": "Kredi bakiyesi",
@@ -157,7 +161,9 @@
       "select_file": "Выбрать файл",
       "describe_animation": "Опишите, как анимировать изображение:",
       "animation_placeholder": "Например: медленно покачивать, плавно вращать, добавить движение облаков...",
-      "upload_image_required": "Пожалуйста, загрузите изображение для image-to-video генерации"
+      "upload_image_required": "Пожалуйста, загрузите изображение для image-to-video генерации",
+      "insufficient_balance": "Недостаточно кредитов. Требуется: {required} кредитов. Пожалуйста, пополните баланс.",
+      "insufficient_balance_fallback": "Недостаточно кредитов для генерации видео. Пожалуйста, пополните баланс."
     },
     "image_generator": {
       "title": "Генерация изображений",
@@ -195,7 +201,9 @@
       "generation_error_msg": "Ошибка при генерации",
       "status_check_error": "Ошибка при проверке статуса генерации",
       "created_images": "Созданные изображения:",
-      "generated_image": "Сгенерированное изображение"
+      "generated_image": "Сгенерированное изображение",
+      "insufficient_balance": "Недостаточно кредитов. Требуется: {required} кредитов. Пожалуйста, пополните баланс.",
+      "insufficient_balance_fallback": "Недостаточно кредитов для генерации изображений. Пожалуйста, пополните баланс."
     },
     "credit_balance": {
       "title": "Баланс кредитов",
@@ -279,7 +287,9 @@
       "select_file": "Select File",
       "describe_animation": "Describe how to animate the image:",
       "animation_placeholder": "For example: slowly sway, smoothly rotate, add cloud movement...",
-      "upload_image_required": "Please upload an image for image-to-video generation"
+      "upload_image_required": "Please upload an image for image-to-video generation",
+      "insufficient_balance": "Insufficient credits. Required: {required} credits. Please top up your balance.",
+      "insufficient_balance_fallback": "Insufficient credits for video generation. Please top up your balance."
     },
     "image_generator": {
       "title": "Image Generation",
@@ -317,7 +327,9 @@
       "generation_error_msg": "Error during generation",
       "status_check_error": "Error checking generation status",
       "created_images": "Created images:",
-      "generated_image": "Generated image"
+      "generated_image": "Generated image",
+      "insufficient_balance": "Insufficient credits. Required: {required} credits. Please top up your balance.",
+      "insufficient_balance_fallback": "Insufficient credits for image generation. Please top up your balance."
     },
     "credit_balance": {
       "title": "Credit Balance",
@@ -401,7 +413,9 @@
       "select_file": "Seleccionar archivo",
       "describe_animation": "Describe cómo animar la imagen:",
       "animation_placeholder": "Por ejemplo: balancear lentamente, rotar suavemente, agregar movimiento de nubes...",
-      "upload_image_required": "Por favor sube una imagen para la generación de imagen-a-video"
+      "upload_image_required": "Por favor sube una imagen para la generación de imagen-a-video",
+      "insufficient_balance": "Créditos insuficientes. Requerido: {required} créditos. Por favor recarga tu saldo.",
+      "insufficient_balance_fallback": "Créditos insuficientes para la generación de video. Por favor recarga tu saldo."
     },
     "image_generator": {
       "title": "Generación de imágenes",
@@ -439,7 +453,9 @@
       "generation_error_msg": "Error durante la generación",
       "status_check_error": "Error al verificar el estado de generación",
       "created_images": "Imágenes creadas:",
-      "generated_image": "Imagen generada"
+      "generated_image": "Imagen generada",
+      "insufficient_balance": "Créditos insuficientes. Requerido: {required} créditos. Por favor recarga tu saldo.",
+      "insufficient_balance_fallback": "Créditos insuficientes para la generación de imágenes. Por favor recarga tu saldo."
     },
     "credit_balance": {
       "title": "Saldo de créditos",
@@ -523,7 +539,9 @@
       "select_file": "फ़ाइल चुनें",
       "describe_animation": "छवि को कैसे एनिमेट करना है उसका वर्णन करें:",
       "animation_placeholder": "उदाहरण: धीरे से हिलाएं, सहजता से घुमाएं, बादलों की गति जोड़ें...",
-      "upload_image_required": "कृपया इमेज-टू-वीडियो जनरेशन के लिए एक छवि अपलोड करें"
+      "upload_image_required": "कृपया इमेज-टू-वीडियो जनरेशन के लिए एक छवि अपलोड करें",
+      "insufficient_balance": "अपर्याप्त क्रेडिट। आवश्यक: {required} क्रेडिट। कृपया अपना बैलेंस टॉप अप करें।",
+      "insufficient_balance_fallback": "वीडियो जनरेशन के लिए अपर्याप्त क्रेडिट। कृपया अपना बैलेंस टॉप अप करें।"
     },
     "image_generator": {
       "title": "छवि जनरेशन",
@@ -561,7 +579,9 @@
       "generation_error_msg": "जनरेशन के दौरान त्रुटि",
       "status_check_error": "जनरेशन स्थिति जांचने में त्रुटि",
       "created_images": "बनाई गई छवियां:",
-      "generated_image": "उत्पन्न छवि"
+      "generated_image": "उत्पन्न छवि",
+      "insufficient_balance": "अपर्याप्त क्रेडिट। आवश्यक: {required} क्रेडिट। कृपया अपना बैलेंस टॉप अप करें।",
+      "insufficient_balance_fallback": "छवि जनरेशन के लिए अपर्याप्त क्रेडिट। कृपया अपना बैलेंस टॉप अप करें।"
     },
     "credit_balance": {
       "title": "क्रेडिट बैलेंस",

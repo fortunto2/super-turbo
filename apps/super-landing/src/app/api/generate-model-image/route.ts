@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-
 import {
   configureSuperduperAI,
   getSuperduperAIConfig,
@@ -323,6 +322,47 @@ export async function POST(request: NextRequest) {
     // Валидируем данные запроса
     const validatedData = modelImageGenerationSchema.parse(body);
 
+    // Проверяем баланс ПЕРЕД началом генерации
+    const multipliers: string[] = [];
+
+    // Множители качества
+    const width = validatedData.modelConfig?.width || 1024;
+    if (width >= 2048) {
+      multipliers.push("ultra-quality");
+    } else if (width >= 1536) {
+      multipliers.push("high-quality");
+    } else {
+      multipliers.push("standard-quality"); // Стандартное качество по умолчанию
+    }
+
+    // Проверяем баланс перед генерацией
+    const { validateOperationBalance } = await import(
+      "@/lib/utils/tools-balance"
+    );
+    const balanceCheck = await validateOperationBalance(
+      "demo-user",
+      "image-generation",
+      "text-to-image",
+      multipliers
+    );
+
+    if (!balanceCheck.valid) {
+      console.log(
+        "❌ Insufficient balance for image generation:",
+        balanceCheck.error
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: balanceCheck.error || "Insufficient balance",
+          balanceRequired: balanceCheck.cost,
+        },
+        { status: 402 } // Payment Required
+      );
+    }
+
+    console.log("✅ Balance check passed, starting image generation...");
+
     // Запускаем генерацию изображений с SuperDuperAI
     try {
       const fileIds = await generateImageWithModel(
@@ -334,19 +374,6 @@ export async function POST(request: NextRequest) {
 
       // Списываем баланс после успешной генерации
       try {
-        // Определяем множители стоимости на основе запроса
-        const multipliers: string[] = [];
-
-        // Множители качества
-        const width = validatedData.modelConfig?.width || 1024;
-        if (width >= 2048) {
-          multipliers.push("ultra-quality");
-        } else if (width >= 1536) {
-          multipliers.push("high-quality");
-        } else {
-          multipliers.push("standard-quality"); // Стандартное качество по умолчанию
-        }
-
         // Списываем баланс за каждое изображение
         for (const fileId of fileIds) {
           await deductOperationBalance(

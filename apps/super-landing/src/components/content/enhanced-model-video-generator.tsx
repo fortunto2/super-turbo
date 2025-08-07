@@ -164,11 +164,26 @@ export function EnhancedModelVideoGenerator({
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(t("video_generator.generation_error"));
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // Специальная обработка ошибок баланса
+        if (response.status === 402) {
+          const errorMessage = data.error === "Insufficient balance" 
+            ? t("video_generator.insufficient_balance", { 
+                required: data.balanceRequired || 0,
+                fallback: `Недостаточно кредитов. Требуется: ${data.balanceRequired || 0} кредитов. Пожалуйста, пополните баланс.`
+              })
+            : data.message || t("video_generator.insufficient_balance_fallback", { 
+                fallback: "Недостаточно кредитов для генерации видео. Пожалуйста, пополните баланс."
+              });
+          
+          alert(errorMessage);
+          throw new Error(errorMessage);
+        }
+        
+        throw new Error(data.message || t("video_generator.generation_error"));
+      }
       setGenerationStatus({
         id: generationId,
         status: "pending",
