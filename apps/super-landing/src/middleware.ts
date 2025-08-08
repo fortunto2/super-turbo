@@ -4,6 +4,32 @@ import { i18n, Locale } from "./config/i18n-config";
 import { match as matchLocale } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
 
+// Stable anonymous user cookie name
+const USER_ID_COOKIE = "superduperai_uid";
+
+function ensureUserIdCookie(request: NextRequest, response?: NextResponse) {
+  const uid = request.cookies.get(USER_ID_COOKIE)?.value;
+  if (uid) return response ?? NextResponse.next();
+
+  // Generate a UUID compatible with middleware runtime
+  const newUid =
+    globalThis.crypto && "randomUUID" in globalThis.crypto
+      ? (globalThis.crypto as any).randomUUID()
+      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}-${Math.random()
+          .toString(16)
+          .slice(2, 10)}`;
+
+  const res = response ?? NextResponse.next();
+  // 2 years
+  const twoYears = 60 * 60 * 24 * 365 * 2;
+  res.cookies.set(USER_ID_COOKIE, newUid, {
+    path: "/",
+    maxAge: twoYears,
+    sameSite: "lax",
+  });
+  return res;
+}
+
 // Список специальных файлов и путей, которые должны быть доступны без локали
 const PUBLIC_FILES = ["/llms.txt", "/favicon.ico", "/robots.txt"];
 
@@ -15,17 +41,18 @@ export function middleware(request: NextRequest) {
 
   // Пропускаем API маршруты без изменений
   if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
+    // Убедимся, что у пользователя есть стабильный анонимный идентификатор
+    return ensureUserIdCookie(request);
   }
 
   // Специальная обработка для sitemap.xml - полностью пропускаем через middleware
   if (pathname === "/sitemap.xml") {
-    return NextResponse.next();
+    return ensureUserIdCookie(request);
   }
 
   // Пропускаем специальные файлы без изменений
   if (PUBLIC_FILES.some((file) => pathname === file)) {
-    return NextResponse.next();
+    return ensureUserIdCookie(request);
   }
 
   // Проверяем, содержит ли URL .md в конце
@@ -101,7 +128,7 @@ export function middleware(request: NextRequest) {
       );
 
       // Перенаправляем запрос на API маршрут
-      return NextResponse.rewrite(apiUrl);
+      return ensureUserIdCookie(request, NextResponse.rewrite(apiUrl));
     }
   }
 
@@ -109,7 +136,10 @@ export function middleware(request: NextRequest) {
   if (isRscRequest) {
     const headers = new Headers(request.headers);
     headers.set("x-nextjs-data", "1");
-    return NextResponse.next({ request: { headers } });
+    return ensureUserIdCookie(
+      request,
+      NextResponse.next({ request: { headers } })
+    );
   }
 
   // Проверяем, является ли текущий путь корневым путем с локалью (например, /en, /ru)
@@ -129,22 +159,25 @@ export function middleware(request: NextRequest) {
     // Используем rewrite для корневого пути, сохраняя чистый URL
     if (pathname === "/" && i18n.preserveRouteOnHome) {
       const url = new URL(`/${locale}${pathname}`, request.url);
-      return NextResponse.rewrite(url);
+      return ensureUserIdCookie(request, NextResponse.rewrite(url));
     }
 
     // Для остальных путей используем обычный redirect
     const url = new URL(`/${locale}${pathname}`, request.url);
-    return NextResponse.redirect(url);
+    return ensureUserIdCookie(request, NextResponse.redirect(url));
   } else {
     // Если в URL есть локаль, обновляем cookie для синхронизации
     const pathSegments = pathname.split("/").filter(Boolean);
-    if (pathSegments.length > 0 && i18n.locales.includes(pathSegments[0] as Locale)) {
+    if (
+      pathSegments.length > 0 &&
+      i18n.locales.includes(pathSegments[0] as Locale)
+    ) {
       const urlLocale = pathSegments[0];
       const cookieLocale = request.cookies.get(i18n.cookieName)?.value;
-      
+
       // Обновляем cookie только если она отличается от локали в URL
       if (cookieLocale !== urlLocale) {
-        const response = NextResponse.next();
+        const response = ensureUserIdCookie(request, NextResponse.next());
         response.cookies.set(i18n.cookieName, urlLocale, {
           path: "/",
           maxAge: i18n.cookieMaxAge,
@@ -154,7 +187,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return ensureUserIdCookie(request, NextResponse.next());
 }
 
 function getLocale(request: NextRequest): string | undefined {
@@ -163,7 +196,10 @@ function getLocale(request: NextRequest): string | undefined {
 
   // 1. Сначала проверяем, есть ли локаль в URL
   const pathSegments = pathname.split("/").filter(Boolean);
-  if (pathSegments.length > 0 && i18n.locales.includes(pathSegments[0] as Locale)) {
+  if (
+    pathSegments.length > 0 &&
+    i18n.locales.includes(pathSegments[0] as Locale)
+  ) {
     // Если в URL есть локаль, используем её
     return pathSegments[0];
   }

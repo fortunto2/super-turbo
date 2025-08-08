@@ -168,13 +168,16 @@ export async function POST(request: NextRequest) {
     const operationType =
       generationType === "image-to-video" ? "image-to-video" : "text-to-video";
 
-    // Генерируем стабильный userId на основе IP адреса
+    // Стабильный userId: cookie → fallback IP
+    const cookieUid = request.cookies.get("superduperai_uid")?.value;
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
-    const ip = forwarded?.split(",")[0] || realIp || "unknown";
-    const userId = `demo-user-${ip}`;
+    const ip = forwarded?.split(",")[0] || realIp || request.ip || "unknown";
+    const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
-    console.log(`🎬 Video generation API - IP: ${ip}, userId: ${userId}`);
+    console.log(
+      `🎬 Video generation API - uid: ${cookieUid ?? "(no-cookie)"}, ip: ${ip}, userId: ${userId}`
+    );
 
     // Проверяем баланс перед генерацией
     const { validateOperationBalance } = await import(

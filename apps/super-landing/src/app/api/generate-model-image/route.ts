@@ -335,11 +335,12 @@ export async function POST(request: NextRequest) {
       multipliers.push("standard-quality"); // Стандартное качество по умолчанию
     }
 
-    // Генерируем стабильный userId на основе IP адреса
+    // Стабильный userId: cookie → fallback IP
+    const cookieUid = request.cookies.get("superduperai_uid")?.value;
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
-    const ip = forwarded?.split(",")[0] || realIp || "unknown";
-    const userId = `demo-user-${ip}`;
+    const ip = forwarded?.split(",")[0] || realIp || request.ip || "unknown";
+    const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
     // Проверяем баланс перед генерацией
     const { validateOperationBalance } = await import(
