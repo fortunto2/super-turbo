@@ -6,6 +6,7 @@
     "node": ">=18.17.0"
   },
   "scripts": {
+    "prebuild": "pnpm -w --filter @turbo-super/superduperai-api build && pnpm -w --filter @turbo-super/shared build && pnpm -w --filter @turbo-super/ui build && pnpm -w --filter @turbo-super/ai-tools build && pnpm -w --filter @turbo-super/veo3-tools build",
     "dev": "next dev",
     "build": "next build",
     "build:skip-migration": "next build",
