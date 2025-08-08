@@ -2,6 +2,7 @@ import type { MediaOption, MediaResolution } from "@/lib/types/media-settings";
 import type { ImageModel } from "@/lib/config/superduperai";
 import { configureSuperduperAI } from "@/lib/config/superduperai";
 import { FileService } from "@/lib/api/services/FileService";
+import { ensureNonEmptyPrompt } from "@/lib/generation/model-utils";
 
 export interface ImageGenerationResult {
   success: boolean;
@@ -37,6 +38,7 @@ function createImagePayload(
   batchSize?: number
 ) {
   const actualSeed = seed || Math.floor(Math.random() * 1000000000000);
+  const safePrompt = ensureNonEmptyPrompt(prompt, "Enhance this image");
 
   // Use correct style validation
   const styleId = style.id === "flux_watercolor" ? "flux_watercolor" : null;
@@ -53,7 +55,7 @@ function createImagePayload(
   const payload = {
     project_id: projectId,
     config: {
-      prompt: prompt,
+      prompt: safePrompt,
       negative_prompt: "",
       width: resolution.width, // Numbers as expected by API
       height: resolution.height, // Numbers as expected by API
@@ -61,7 +63,6 @@ function createImagePayload(
       shot_size: shotSize.id as any, // Cast to avoid enum issues
       seed: actualSeed, // Number as expected by API
       generation_config_name: model.name,
-      batch_size: batchSize || 1,
       style_name: styleId,
       references: [],
       entity_ids: [],

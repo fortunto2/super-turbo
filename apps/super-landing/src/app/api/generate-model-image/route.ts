@@ -153,7 +153,6 @@ async function generateImageWithModel(
           Date.now() +
           Math.floor(Math.random() * 1000),
         generation_config_name: finalConfig.generation_config_name,
-        batch_size: 1,
         entity_ids: [] as any[],
         references: [] as any[],
       } as const;

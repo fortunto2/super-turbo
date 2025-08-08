@@ -31,33 +31,49 @@ export async function generateImageApi(
   formData: ImageGenerationFormData
 ): Promise<ImageGenerationApiResult> {
   try {
-    let payload: any = {
-      prompt: formData.prompt,
-      model: { name: formData.model || "comfyui/flux" },
-      resolution: {
-        width: Number.parseInt(formData.resolution?.split("x")[0] || "1024"),
-        height: Number.parseInt(formData.resolution?.split("x")[1] || "1024"),
-      },
-      style: { id: "flux_watercolor" },
-      shotSize: { id: formData.shotSize || "medium_shot" },
-      seed: formData.seed,
-      chatId: "image-generator-tool",
-      steps: 30,
-      batchSize: 1,
-    };
+    let response: Response;
+
     if (formData.generationType === "image-to-image" && formData.file) {
-      payload.generationType = "image-to-image";
-      payload.sourceImageUrl = await fileToBase64(formData.file);
+      // Send multipart/form-data with raw File to Next backend
+      const fd = new FormData();
+      fd.append("prompt", formData.prompt);
+      fd.append("model", formData.model || "comfyui/flux");
+      fd.append("resolution", formData.resolution || "1024x1024");
+      fd.append("style", formData.style || "flux_watercolor");
+      fd.append("shotSize", formData.shotSize || "medium_shot");
+      if (typeof formData.seed === "number")
+        fd.append("seed", String(formData.seed));
+      fd.append("generationType", "image-to-image");
+      fd.append("chatId", "image-generator-tool");
+      fd.append("file", formData.file);
+
+      response = await fetch(API_NEXT_ROUTES.GENERATE_IMAGE, {
+        method: "POST",
+        body: fd,
+      });
     } else {
-      payload.generationType = "text-to-image";
+      // JSON request for text-to-image
+      const payload: any = {
+        prompt: formData.prompt,
+        model: { name: formData.model || "comfyui/flux" },
+        resolution: {
+          width: Number.parseInt(formData.resolution?.split("x")[0] || "1024"),
+          height: Number.parseInt(formData.resolution?.split("x")[1] || "1024"),
+        },
+        style: { id: formData.style || "flux_watercolor" },
+        shotSize: { id: formData.shotSize || "medium_shot" },
+        seed: formData.seed,
+        chatId: "image-generator-tool",
+        steps: 30,
+        generationType: "text-to-image",
+      };
+
+      response = await fetch(API_NEXT_ROUTES.GENERATE_IMAGE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     }
-    const response = await fetch(API_NEXT_ROUTES.GENERATE_IMAGE, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
 
     if (!response.ok) {
       const errorData = await response.json();

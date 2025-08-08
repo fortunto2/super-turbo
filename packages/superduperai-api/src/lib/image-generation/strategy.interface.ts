@@ -35,10 +35,11 @@ export interface ImageGenerationStrategy {
   readonly requiresSourceImage: boolean;
   readonly requiresPrompt: boolean;
   generatePayload(
-    params: ImageGenerationParams | ImageToImageParams
+    params: ImageGenerationParams | ImageToImageParams,
+    config?: { url: string; token: string }
   ): Promise<any>;
   validate(params: ImageGenerationParams | ImageToImageParams): {
     valid: boolean;
     error?: string;
   };
-} 
+}

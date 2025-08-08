@@ -24,11 +24,11 @@ export async function generateImageWithStrategy(
   let result: any;
 
   try {
-    const payload = await strategy.generatePayload(params);
+    const payload = await strategy.generatePayload(params, config);
     // Use correct SuperDuperAI endpoint for image generation
     const endpoint = "/api/v1/file/generate-image";
     const url = `${config.url}${endpoint}`;
-    
+
     // All requests use JSON payload
     response = await fetch(url, {
       method: "POST",
@@ -38,7 +38,7 @@ export async function generateImageWithStrategy(
       },
       body: JSON.stringify(payload),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       return {
@@ -46,7 +46,7 @@ export async function generateImageWithStrategy(
         error: `API Error: ${response.status} ${response.statusText} - ${errorText}`,
       };
     }
-    
+
     result = await response.json();
     console.log("result", result);
     const fileId = result[0].id || result[0].file_id;
@@ -56,7 +56,7 @@ export async function generateImageWithStrategy(
         error: "No file ID returned from API",
       };
     }
-    
+
     return {
       success: true,
       projectId: fileId,
@@ -73,4 +73,4 @@ export async function generateImageWithStrategy(
       error: errorMessage,
     };
   }
-} 
+}

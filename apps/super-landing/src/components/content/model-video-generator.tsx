@@ -119,7 +119,7 @@ export function ModelVideoGenerator({
         error: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
-      setIsGenerating(false);
+      // Не разблокируем кнопку сразу; пусть останется заблокированной до завершения
     }
   };
 
@@ -136,7 +136,10 @@ export function ModelVideoGenerator({
         const data = await response.json();
         setGenerationStatus(data);
 
-        if (data.status === "processing" || data.status === "pending") {
+        const busy = data.status === "processing" || data.status === "pending";
+        setIsGenerating(busy);
+
+        if (busy) {
           setTimeout(poll, 2000);
         }
       } catch (error) {
@@ -150,6 +153,7 @@ export function ModelVideoGenerator({
               }
             : null
         );
+        setIsGenerating(false);
       }
     };
 

@@ -228,7 +228,7 @@ export const generateVideoHybrid = async (
         generation_config_name: model.name,
         duration,
         frame_rate: frameRate,
-        batch_size: 1,
+        // batch_size removed for single generation consistency
         shot_size: shotSize.id,
         style_name: style.id,
         qualityType: resolution.qualityType || "hd",

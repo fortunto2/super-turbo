@@ -10,6 +10,10 @@ import {
   ImageGenerationParams,
   ImageToImageParams,
 } from "@turbo-super/superduperai-api";
+import {
+  ensureNonEmptyPrompt,
+  selectImageToImageModel,
+} from "@/lib/generation/model-utils";
 
 import { validateOperationBalance } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
@@ -22,7 +26,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const contentType = request.headers.get("content-type") || "";
+    const isMultipart = contentType.includes("multipart/form-data");
+
+    let body: any;
+    if (isMultipart) {
+      const form = await request.formData();
+      body = {
+        prompt: form.get("prompt"),
+        model: { name: String(form.get("model") || "comfyui/flux") },
+        resolution: (() => {
+          const res = String(form.get("resolution") || "1024x1024");
+          const [w, h] = res.split("x");
+          return { width: parseInt(w), height: parseInt(h) };
+        })(),
+        style: { id: String(form.get("style") || "flux_watercolor") },
+        shotSize: { id: String(form.get("shotSize") || "medium_shot") },
+        seed: form.get("seed") ? Number(form.get("seed")) : undefined,
+        chatId: form.get("chatId") || "image-generator-tool",
+        generationType: "image-to-image",
+        file: form.get("file") as File,
+      };
+    } else {
+      body = await request.json();
+    }
 
     console.log("🖼️ Image API: Processing image generation request");
     console.log("📦 Request parameters:", JSON.stringify(body, null, 2));
@@ -119,8 +146,78 @@ export async function POST(request: NextRequest) {
       OpenAPI.TOKEN = config.token;
     }
 
-    // Create image generation config using OpenAPI types
+    // If multipart with file: upload image first to obtain sourceImageId
+    if (body.generationType === "image-to-image" && body.file instanceof File) {
+      try {
+        const fd = new FormData();
+        fd.append("payload", body.file);
+        fd.append("type", "image");
 
+        const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${config.token}`,
+            "User-Agent": "SuperDuperAI-Chatbot/1.0",
+          },
+          body: fd,
+        });
+
+        if (!uploadResp.ok) {
+          const txt = await uploadResp.text();
+          throw new Error(`Upload failed: ${uploadResp.status} ${txt}`);
+        }
+        const up = await uploadResp.json();
+        console.log("🖼️ Upload success, imageId:", up?.id);
+        if (up?.id) {
+          body.sourceImageId = up.id as string;
+        }
+      } catch (e) {
+        console.error("❌ Image upload failed before generation:", e);
+        return NextResponse.json(
+          { success: false, error: "Image upload failed" },
+          { status: 400 }
+        );
+      } finally {
+        // prevent duplicate uploads by strategy
+        delete body.file;
+      }
+    }
+
+    // Normalize model for image-to-image: select proper image_to_image generation config (via cached models)
+    if (body.generationType === "image-to-image") {
+      try {
+        const { getAvailableImageModels } = await import(
+          "@/lib/config/superduperai"
+        );
+        const rawName =
+          typeof body.model === "string"
+            ? (body.model as string)
+            : String(body.model?.name || "");
+        const mapped = await selectImageToImageModel(
+          rawName,
+          getAvailableImageModels,
+          {
+            allowInpainting:
+              /inpaint/i.test(rawName) ||
+              Boolean(body.mask) ||
+              Boolean(body.editingMode),
+          }
+        );
+        if (mapped) {
+          console.log(
+            `🎯 Using image_to_image generation config: ${mapped} (was: ${rawName})`
+          );
+          body.model = { name: mapped };
+        }
+      } catch (e) {
+        console.warn("⚠️ Failed to remap model for image_to_image (cache):", e);
+      }
+    }
+
+    // Ensure non-empty prompt to avoid backend stalling
+    body.prompt = ensureNonEmptyPrompt(body.prompt, "Enhance this image");
+
+    // Create image generation config using OpenAPI types
     const strategyParams: ImageGenerationParams | ImageToImageParams = {
       ...body,
     };

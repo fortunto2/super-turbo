@@ -10,7 +10,7 @@ export async function generateImageWithStrategy(generationType, params, config) 
     let response;
     let result;
     try {
-        const payload = await strategy.generatePayload(params);
+        const payload = await strategy.generatePayload(params, config);
         // Use correct SuperDuperAI endpoint for image generation
         const endpoint = "/api/v1/file/generate-image";
         const url = `${config.url}${endpoint}`;

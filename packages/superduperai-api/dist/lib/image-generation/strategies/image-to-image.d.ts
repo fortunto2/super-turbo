@@ -7,6 +7,18 @@ export declare class ImageToImageStrategy implements ImageGenerationStrategy {
         valid: boolean;
         error?: string;
     };
-    generatePayload(params: ImageToImageParams): Promise<any>;
+    handleImageUpload(params: ImageToImageParams, config: {
+        url: string;
+        token: string;
+    }): Promise<{
+        imageId?: string;
+        imageUrl?: string;
+        method: "upload";
+        error?: string;
+    }>;
+    generatePayload(params: ImageToImageParams, config?: {
+        url: string;
+        token: string;
+    }): Promise<any>;
 }
 //# sourceMappingURL=image-to-image.d.ts.map
