@@ -78,12 +78,13 @@ const IMAGE_MODEL_CONFIGS = {
     shotSize: "Medium Shot",
   },
   "GPT-Image-1": {
-    generation_config_name: "comfyui/flux",
+    generation_config_name: "azure-openai/gpt-image-1",
     width: 1024,
     height: 1024,
     aspectRatio: "1:1",
-    style: "flux_realistic",
-    shotSize: "Medium Shot",
+    // OpenAI GPT-Image-1 не требует style/shot_size — не отправляем эти поля
+    style: undefined as unknown as string,
+    shotSize: undefined as unknown as string,
   },
   "Flux Kontext": {
     generation_config_name: "comfyui/flux",
@@ -136,30 +137,47 @@ async function generateImageWithModel(
 
   for (let i = 0; i < imageCount; i++) {
     try {
-      const payload = {
-        type: "media",
-        template_name: null,
-        style_name: finalConfig.style,
-        config: {
-          prompt,
-          negative_prompt: "",
-          width: finalConfig.width,
-          height: finalConfig.height,
-          aspect_ratio: finalConfig.aspectRatio,
-          seed:
-            Math.floor(Math.random() * 1000000000000) +
-            i +
-            Date.now() +
-            Math.floor(Math.random() * 1000), // Еще более уникальный seed
-          generation_config_name: finalConfig.generation_config_name,
-          batch_size: 1,
-          shot_size: finalConfig.shotSize,
-          style_name: finalConfig.style,
-          qualityType: "hd",
-          entity_ids: [],
-          references: [],
-        },
-      };
+      const isOpenAIModel = String(finalConfig.generation_config_name).includes(
+        "gpt-image-1"
+      );
+
+      const baseConfig = {
+        prompt,
+        negative_prompt: "",
+        width: finalConfig.width,
+        height: finalConfig.height,
+        aspect_ratio: finalConfig.aspectRatio,
+        seed:
+          Math.floor(Math.random() * 1000000000000) +
+          i +
+          Date.now() +
+          Math.floor(Math.random() * 1000),
+        generation_config_name: finalConfig.generation_config_name,
+        batch_size: 1,
+        entity_ids: [] as any[],
+        references: [] as any[],
+      } as const;
+
+      const payload = isOpenAIModel
+        ? {
+            type: "media",
+            template_name: null,
+            config: {
+              ...baseConfig,
+              // Не включаем shot_size/style_name/qualityType для OpenAI
+            },
+          }
+        : {
+            type: "media",
+            template_name: null,
+            style_name: finalConfig.style,
+            config: {
+              ...baseConfig,
+              shot_size: finalConfig.shotSize,
+              style_name: finalConfig.style,
+              qualityType: "hd",
+            },
+          };
 
       console.log("📤 Sending request to SuperDuperAI:", payload);
 
