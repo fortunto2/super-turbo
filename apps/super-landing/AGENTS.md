@@ -1,205 +1,168 @@
-# SuperDuperAI Coding Rules
+# Super Landing — App-level AGENTS.md
 
-## Технический стек и ограничения
-- Next.js 15.3 с Turbopack и App Router
-- TypeScript обязателен для всех файлов
-- Tailwind CSS 4.x для стилизации
-- React Server Components по умолчанию (используйте "use client" только при необходимости)
-- Cloudflare Workers с @opennextjs/cloudflare (НЕ Cloudflare Pages)
+Last updated: 2025-08-08 (Europe/Istanbul)
 
-## Основные правила кодирования
+Scope: App-specific guidance for AI assistants and contributors working on the Super Landing application. Language: English only.
 
-### Общие принципы
-- Следуйте структуре проекта, размещайте новые файлы в соответствующих директориях
-- Придерживайтесь принципа DRY (Don't Repeat Yourself)
-- Избегайте добавления новых зависимостей, если не обязательно
-- Оптимизируйте производительность (минимизируйте JS bundle, используйте Server Components)
+Canonical root guide: [AGENTS.md](../../AGENTS.md)
 
-### Компоненты и стилизация
-- Используйте темную тему (#0F172A фон, #ADFF2F акцент)
-- Для ссылок ВСЕГДА используйте:
-  ```tsx
-  import { default as Link } from '@/components/ui/optimized-link';
-  ```
-- Используйте shadcn/ui и custom компоненты из `/components/ui`
-- Все компоненты должны быть доступны (WCAG 2.1 AA)
-- Компоненты лендинга должны быть в `/components/landing/`
-- MDX-компоненты должны быть в `/components/content/`
+Contents
+- 1. Purpose and scope
+- 2. Technology stack
+- 3. Directory map
+- 4. Content system (Markdown-first)
+- 5. Routing, i18n, and SEO rules
+- 6. Build, deploy, and performance
+- 7. Security and configuration
+- 8. Development workflow
+- 9. Coding standards (app-specific)
+- 10. Testing strategy
+- 11. PR checklist (app-specific)
+- 12. Quick commands
+- 13. Reference links
 
-### Оптимизация и SEO
-- Каждая страница должна иметь метатеги через Next.js metadata API
-- Используйте структурированные данные Schema.org
-- Оптимизируйте изображения через next/image
-- Все статические страницы должны иметь настройки:
-  ```ts
-  export const dynamic = 'force-static';
-  export const revalidate = false;
-  ```
+## 1. Purpose and scope
+Super Landing is a multi-locale marketing and documentation site built on Next.js 15. It renders content from MDX sources under src/content and focuses on performance, SEO, accessibility, and operational simplicity (Cloudflare-first deployment).
 
-### ContentLayer и MDX
-- Не используйте клиентские компоненты в MDX напрямую
-- Создавайте обертки для клиентских компонентов
-- Соблюдайте схему данных ContentLayer для Tool, Case, Page
-- Не используйте вложенные компоненты в MDX
-- MDX-контент размещайте в `/src/content/`
+Do not edit built/derived content under public/markdown; those files are generated. Edit the MDX sources in src/content.
 
-### Cloudflare деплой
-- Оптимизируйте размер бандлов (лимит 3 МБ на Worker)
-- Используйте API-роуты для динамического контента
-- Не используйте функции Next.js, несовместимые с Cloudflare (Edge, ISR)
+Use the universal guidance in the root: [AGENTS.md](../../AGENTS.md)
 
-### Производительность
-- Оптимизируйте для Core Web Vitals (LCP < 2.5s, CLS < 0.1)
-- Используйте SSR только где необходимо
-- Lazy load для тяжелых компонентов ниже первого экрана
-- Префетч для критичных ресурсов
+## 2. Technology stack
+- Framework: Next.js 15 App Router
+- Language: TypeScript (strict)
+- Styling: Tailwind CSS
+- Content: MDX via Contentlayer; sources under src/content; generated data in .contentlayer (do not edit)
+- i18n: URL segment-based locales at [apps/super-landing/src/app/[locale]/](./src/app/%5Blocale%5D/)
+- Rendering: Static-first; use ISR/SSG where possible; minimal SSR
+- Images: next/image with optimization
+- Analytics/Observability: Sentry (optional), privacy-friendly analytics where applicable
+- Deployment: Cloudflare Pages/Workers recommended
+- Content pipeline: [contentlayer.config.ts](apps/super-landing/contentlayer.config.ts) , [mdx-components.tsx](apps/super-landing/src/components/content/mdx-components.tsx)
 
-## Ссылки на документацию
-- Полный PRD: [[docs/product_requirements_updated.md]]
-- Руководство по ContentLayer: [[docs/tasks/contentlayer-integration.md]]
-- SEO-стратегия: [[docs/seo/keywords.md]]
-- Чеклист тестирования: [[docs/tasks/testing-checklist.md]] 
+## 3. Directory map
+Key areas (click to open):
+- App Router (localized root): [apps/super-landing/src/app/[locale]/](./src/app/%5Blocale%5D/)
+- MDX source content root: [apps/super-landing/src/content/](./src/content/)
+  - blog: [apps/super-landing/src/content/blog/](./src/content/blog/)
+  - case: [apps/super-landing/src/content/case/](./src/content/case/)
+  - docs: [apps/super-landing/src/content/docs/](./src/content/docs/)
+  - homes: [apps/super-landing/src/content/homes/](./src/content/homes/)
+  - pages: [apps/super-landing/src/content/pages/](./src/content/pages/)
+  - tool: [apps/super-landing/src/content/tool/](./src/content/tool/)
+- MDX components (renderers): [apps/super-landing/src/components/content/](./src/components/content/)
+  - Main MDX components: [apps/super-landing/src/components/content/mdx-components.tsx](./src/components/content/mdx-components.tsx)
+- Public images (og/screens): [apps/super-landing/public/images/](./public/images/)
+- Engineering docs: [apps/super-landing/docs/](./docs/)
+  - SEO: [apps/super-landing/docs/seo/](./docs/seo/)
+  - Tasks: [apps/super-landing/docs/tasks/](./docs/tasks/)
+- Generated data: [apps/super-landing/.contentlayer/](./.contentlayer/) (auto-generated; do not edit)
 
-## Структура проекта
+## 4. Content source vs build output
+- Source of truth (edit here): src/content — all primary site content authored as .mdx
+- Built/derived content (do not edit):
+  - .contentlayer — typed JSON/cache generated by Contentlayer
+  - public/markdown — legacy/built mirrors for static delivery
 
-```
-SuperDuperAI/
-├── src/
-│   ├── app/                     # Next.js App Router
-│   │   ├── [locale]/            # Locale-based routing
-│   │   │   ├── (landing)/       # Route group for landing pages
-│   │   │   │   ├── layout.tsx   # Layout for landing pages
-│   │   │   │   └── page.tsx     # Main landing page component
-│   │   │   ├── layout.tsx       # Layout for localized routes
-│   │   │   ├── not-found.tsx    # Custom 404 page
-│   │   │   ├── sitemap.ts       # Sitemap generation
-│   │   │   └── template.tsx     # Template for localized routes
-│   │   ├── api/                 # API endpoints
-│   │   ├── favicon.ico          # Favicon
-│   │   ├── globals.css          # Global CSS styles
-│   │   ├── layout.tsx           # Root layout
-│   │   ├── opengraph-image.tsx  # OpenGraph image generation
-│   │   └── page.tsx             # Root page
-│   ├── components/              # React components
-│   │   ├── content/             # Components for MDX content
-│   │   ├── landing/             # Components for the landing page
-│   │   └── ui/                  # General UI components
-│   ├── config/                  # Configuration files
-│   │   ├── dictionaries/        # i18n dictionaries
-│   │   ├── i18n-config.ts       # i18n configuration
-│   │   └── site.ts              # Site-wide configuration
-│   ├── content/                 # Content collections for Contentlayer
-│   │   ├── blog/                # Blog posts
-│   │   ├── case/                # Case studies
-│   │   ├── docs/                # Documentation pages
-│   │   ├── homes/               # Home page content
-│   │   ├── pages/               # Static pages
-│   │   └── tool/                # Tool pages
-│   ├── hooks/                   # Custom React hooks
-│   │   └── use-translation.ts   # Hook for translations
-│   ├── lib/                     # Library functions and utilities
-│   │   ├── constants.ts         # Project constants
-│   │   ├── generate-og-image.tsx # OG image generation utility
-│   │   ├── get-dictionary.ts    # Function to get i18n dictionaries
-│   │   ├── get-valid-locale.ts  # Function to validate locales
-│   │   ├── metadata.ts          # Metadata generation utilities
-│   │   ├── user-identifier.ts   # User identification logic
-│   │   └── utils.ts             # General utility functions
-│   ├── middleware.ts            # Next.js middleware
-│   ├── tests/                   # Test files
-│   └── types/                   # TypeScript type definitions
-│       └── translation.d.ts   # Types for translations
-├── public/                      # Static assets
-│   ├── images/                  # Images
-│   ├── markdown/                # Raw markdown files (if any)
-│   ├── llms.txt                 # LLM instructions file
-│   └── robots.txt               # Robots.txt file
-├── docs/                        # Project documentation
-│   ├── api/                     # API documentation
-│   ├── seo/                     # SEO documentation
-│   └── tasks/                   # Task descriptions
-├── scripts/                     # Node.js scripts
-├── .contentlayer/               # Generated files from Contentlayer
-├── .next/                       # Next.js build output
-└── ... (config files)           # Configuration files
-```
+### MDX approach (Contentlayer)
+- Schemas: defined in contentlayer.config.ts; typical types: Tool, Case, Page, Home, Blog
+- Frontmatter recommended:
+  - title, description, slug, date (YYYY-MM-DD), updated (YYYY-MM-DD), author
+  - tags (array), locale (en|es|hi|ru|tr), image (OG), canonical (absolute URL), draft (boolean)
+- Authoring rules:
+  - Avoid client components directly in MDX; wrap via components in src/components/content/mdx-components.tsx
+  - Keep slugs stable; avoid retroactive slug changes for published content
+  - Media: place images under public/images and reference with /images/...; OG images under /images/og
 
-## Дерево документации SuperDuperAI
+## 5. Routing, i18n, and SEO rules
+- Locales
+  - Supported locales observed: en, es, hi, ru, tr
+  - Locale is the first segment of the URL (e.g., /en/blog/slug)
+- Routing
+  - Dynamic routes should map to Markdown slugs; ensure slug uniqueness within a section per locale
+  - Use static generation where possible; fallback to ISR if content changes frequently
+- SEO policy
+  - Title and meta description must be set from frontmatter or page config
+  - Canonical URLs are required for multi-locale pages; set to the default locale’s URL if no language-specific canonical
+  - Include hreflang tags for all available locales of a page
+  - Structured data (JSON-LD) for articles and breadcrumbs should reflect frontmatter and URL
+  - Open Graph/Twitter tags must reference existing images under /images/og
+- Sitemaps and robots
+  - Keep sitemaps up to date for all locales
+  - Ensure robots.txt allows indexing of canonical pages; avoid indexing drafts
+- Accessibility
+  - Provide alt text for images
+  - Maintain heading hierarchy and focus management for interactive components
 
-### 1. Основные требования и концепция
-- [[docs/product_requirements_updated.md|Полный PRD]] - главный документ проекта
-  - **Ключевые концепции**: Vibe Filmmaking, Agent-Director Paradigm
-  - **Целевая аудитория**: Контент-креаторы, Маркетологи, Музыканты, Малый бизнес
-  - **Структура лендинга**: Hero, Features, How it Works, Use Cases, Testimonials, CTA
+## 6. Build, deploy, and performance
+- Build strategy
+  - Prefer static export where feasible; otherwise hybrid with ISR
+  - Avoid server-side secrets or heavy SSR in landing pages
+- Deployment
+  - Cloudflare Pages/Workers recommended
+  - Verify environment compatibility (Edge Runtime if used)
+- Performance targets
+  - Lighthouse: 95+ Performance and SEO on key pages
+  - Images: next/image, proper sizes and formats; avoid large unoptimized assets
+  - CSS and JS: tree-shake, avoid heavy client bundles; use server components where possible
+- Caching
+  - Long cache for static assets with hash
+  - Stale-while-revalidate for content pages updated via ISR
 
-- [[docs/project_quick_reference.md|Краткий справочник]] - концентрированная версия для быстрого доступа
-  - **Технический стек**: Next.js 15.3, TypeScript, Tailwind CSS, ContentLayer
-  - **Текущий статус**: что готово, что в процессе, что запланировано
-  - **Команды разработки**: pnpm install, pnpm dev, pnpm lint, pnpm build, pnpm preview
+## 7. Security and configuration
+- No client-side secrets; landing should generally avoid runtime secrets
+- If any integration requires tokens, proxy through an internal API within the landing app or via the chatbot app’s typed proxy, never from client
+- Validate any user-supplied inputs in forms; sanitize outputs if rendering user content
+- Centralize any configuration under a dedicated config module and document required env vars in [apps/super-landing/docs/](./docs/)
 
-### 2. Технические руководства и правила
+## 8. Development workflow
+Follow the root AI-First methodology:
+1) Planning
+- Author an implementation plan if change is non-trivial (architecture, i18n, content structure)
+- Validate against SEO/i18n and performance sections here
+2) Implementation
+- Keep changes small and reversible; update docs alongside
+- Maintain AICODE comments near complex logic or routing
+3) PR
+- Include link-check results and Lighthouse snapshot for changed page types when applicable
 
-#### 2.1 Кодовая база
-- [[.cursor/rules/superduperai.md|Правила разработки Cursor]] - правила для AI-кодинга
-  - **Технический стек и ограничения**: Next.js, TypeScript, Tailwind, Server Components
-  - **Компоненты и стилизация**: темная тема, оптимизированные ссылки
-  - **Производительность**: Core Web Vitals, Lazy loading, SSR
+## 9. Coding standards (app-specific)
+- TypeScript strict; avoid any without justification via AICODE-NOTE
+- Keep components server-first; minimize client-side scripts
+- Avoid direct external API fetches from the client; use internal routes if needed
+- Enforce consistent frontmatter keys and types in content loaders
+- Prefer small, composable UI components; keep Tailwind classes readable
+- Link hygiene: use internal links for site pages and absolute canonical where necessary
 
-#### 2.2 Инфраструктура и деплой
-- [[docs/tasks/cloudflare-deployment.md|Деплой на Cloudflare]] - настройка Cloudflare Worker
-  - **Важно**: использовать OpenNext + Workers, не Pages!
-  - **Ограничения**: лимит 3 МБ на Worker
-  - **Статические страницы**: настройки force-static и revalidate: false
+## 10. Testing strategy
+- Link validation for all changed MDX pages under src/content
+- i18n routing tests (locale segment and fallbacks)
+- Basic rendering tests for page templates
+- Lighthouse checks for representative pages in CI where feasible
 
-#### 2.3 Контент-менеджмент
-- [[docs/tasks/contentlayer-integration.md|Интеграция ContentLayer]] - настройка и использование MDX
-  - **Схемы документов**: Tool, Case, Page, Home
-  - **Правила MDX**: избегать клиентских компонентов, не вкладывать компоненты
-  - **Структура контента**: /src/content/tool/, /case/, /pages/
+## 11. PR checklist (app-specific)
+- Content validated (frontmatter, links, images, locales)
+- SEO reviewed (title, description, canonical, hreflang, OG)
+- Performance checked (image sizes, bundle diff if components changed)
+- AICODE review (close TODOs, convert ASK → NOTE)
+- Docs updated under [apps/super-landing/docs/](./docs/)
 
-### 3. SEO и маркетинг
+## 12. Quick commands
+- Install: pnpm install
+- Dev: pnpm dev
+- Lint: pnpm lint
+- Type check: pnpm typecheck
+- Test: pnpm test
+- Build: pnpm build
+- Start (prod): pnpm start
 
-#### 3.1 SEO-стратегия
-- [[docs/seo/keywords.md|Стратегия ключевых слов]] - оптимизация под поисковые системы
-  - **Метатеги**: уникальные для каждой страницы
-  - **Schema.org**: разметка для разных типов контента
-  - **OpenGraph**: генерация изображений для соцсетей
+Note: Commands may live at the monorepo root; run from appropriate workspace.
 
-- [[docs/seo/metadata-guide.md|Руководство по метаданным]] - настройка метаданных страниц
-  - **Оптимальная длина**: title (50-60 символов), description (120-155 символов)
-  - **Иерархия заголовков**: H1 → H2 → H3
-
-- [[docs/seo/schema-org-guide.md|Руководство по Schema.org]] - структурированные данные
-  - **Типы разметки**: Organization, WebSite, Product, Article
-
-#### 3.2 Маркетинговые материалы
-- [[docs/marketing.md|Маркетинговая стратегия]] - материалы для продвижения
-  - **Основной месседж**: "Turn Vibes into Videos – Instantly"
-  - **Точки боли**: ограниченные ресурсы, сложность традиционных инструментов
-  - **Отзывы**: "We saved weeks", "My music video, no budget, huge vibe"
-
-#### 3.3 Аналитика
-- [[docs/analytics.md|Аналитика и метрики]] - отслеживание эффективности
-  - **Бизнес-метрики**: конверсия > 3%, время на сайте > 2 минуты
-  - **Технические метрики**: PageSpeed > 90, Core Web Vitals в зеленой зоне
-  - **Настройка**: Google Analytics 4, Search Console
-
-### 4. Тестирование и оптимизация
-- [[docs/tasks/testing-checklist.md|Чеклист тестирования]] - проверка перед запуском
-  - **Устройства**: мобильные (320-480px), планшеты (481-768px), десктопы (769px+)
-  - **Доступность**: WCAG 2.1 AA, контраст, клавиатурная навигация
-  - **Производительность**: LCP < 2.5s, CLS < 0.1, FID < 100ms
-
-### 5. Справочные материалы
-- [[docs/saas.md|SaaS бизнес-модель]] - информация по модели подписки
-  - **Тарифные планы**: Free, Pro, Team, Enterprise
-  - **Ценообразование**: экономия vs. традиционное видеопроизводство
-  - **Retention**: стратегии удержания пользователей
-
-### Порядок использования документации
-1. Начните с [[docs/project_quick_reference.md|Краткого справочника]] для общего понимания
-2. Изучите [[docs/product_requirements_updated.md|Полный PRD]] для детального погружения
-3. Используйте [[.cursor/rules/superduperai.md|Правила разработки]] при написании кода
-4. Обращайтесь к специфическим документам по мере необходимости (SEO, деплой и т.д.)
-
-
+## 13. Reference links
+- Root guide: [AGENTS.md](../../AGENTS.md)
+- Content pipeline: [contentlayer.config.ts](apps/super-landing/contentlayer.config.ts)
+- MDX components: [mdx-components.tsx](apps/super-landing/src/components/content/mdx-components.tsx)
+- Source content root: [src/content/](apps/super-landing/src/content/)
+- SEO guides: [apps/super-landing/docs/seo/](./docs/seo/)
+- Tasks: [apps/super-landing/docs/tasks/](./docs/tasks/)
+- Troubleshooting: [apps/super-landing/docs/troubleshooting/](./docs/troubleshooting/)
