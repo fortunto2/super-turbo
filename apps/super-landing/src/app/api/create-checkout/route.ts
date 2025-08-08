@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { storeSessionData, type SessionData } from "@/lib/kv";
-import { getCurrentPrices } from "@turbo-super/shared";
 
 const stripe = new Stripe(
   process.env.STRIPE_SECRET_KEY || "sk_test_your_stripe_secret_key",
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
     const cookieUid = request.cookies.get("superduperai_uid")?.value;
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
-    const ip = forwarded?.split(",")[0] || realIp || request.ip || "unknown";
+    const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
     const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
     // Store everything in Redis, keep Stripe metadata minimal

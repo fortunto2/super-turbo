@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     const cookieUid = request.cookies.get("superduperai_uid")?.value;
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
-    const ip = forwarded?.split(",")[0] || realIp || request.ip || "unknown";
+    const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
     const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
     console.log(
