@@ -454,8 +454,8 @@ importers:
         specifier: ^0.3.39
         version: 0.3.49(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))
       lucide-react:
-        specifier: ^0.279.0
-        version: 0.279.0(react@19.1.1)
+        specifier: ^0.446.0
+        version: 0.446.0(react@19.1.1)
       mdx-bundler:
         specifier: ^10.1.1
         version: 10.1.1(acorn@8.15.0)(esbuild@0.25.8)
@@ -7536,11 +7536,6 @@ packages:
 
   lucide-react@0.263.1:
     resolution: {integrity: sha512-keqxAx97PlaEN89PXZ6ki1N8nRjGWtDa4021GFYLNj0RgruM5odbpl8GHTExj0hhPq3sF6Up0gnxt6TSHu+ovw==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0
-
-  lucide-react@0.279.0:
-    resolution: {integrity: sha512-LJ8g66+Bxc3t3x9vKTeK3wn3xucrOQGfJ9ou9GsBwCt2offsrT2BB90XrTrIzE1noYYDe2O8jZaRHi6sAHXNxw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
 
@@ -18608,10 +18603,6 @@ snapshots:
   lucide-react@0.263.1(react@18.3.1):
     dependencies:
       react: 18.3.1
-
-  lucide-react@0.279.0(react@19.1.1):
-    dependencies:
-      react: 19.1.1
 
   lucide-react@0.446.0(react@19.0.0-rc-45804af1-20241021):
     dependencies:
