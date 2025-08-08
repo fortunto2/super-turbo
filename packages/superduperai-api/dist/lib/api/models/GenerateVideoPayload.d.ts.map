@@ -1,1 +1,0 @@
-{"version":3,"file":"GenerateVideoPayload.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/GenerateVideoPayload.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,sBAAsB,EAAE,MAAM,0BAA0B,CAAC;AACvE,MAAM,MAAM,oBAAoB,GAAG;IAC/B,UAAU,CAAC,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IAC7B,QAAQ,CAAC,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IAC3B,MAAM,EAAE,sBAAsB,CAAC;CAClC,CAAC"}

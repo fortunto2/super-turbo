@@ -1,1 +1,0 @@
-{"version":3,"file":"IVideoGenerationReferenceCreate.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/IVideoGenerationReferenceCreate.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAC;AAC7D,MAAM,MAAM,+BAA+B,GAAG;IAC1C,IAAI,EAAE,iBAAiB,CAAC;IACxB,YAAY,EAAE,MAAM,CAAC;CACxB,CAAC"}
