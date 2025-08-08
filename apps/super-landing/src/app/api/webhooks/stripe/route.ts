@@ -283,7 +283,7 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
 
     if (creditsToAdd > 0) {
       try {
-        const newBalance = addDemoBalance(userId, creditsToAdd);
+        const newBalance = await addDemoBalance(userId, creditsToAdd);
         console.log(
           `💰 Added ${creditsToAdd} credits to user ${userId}. New balance: ${newBalance} credits`
         );

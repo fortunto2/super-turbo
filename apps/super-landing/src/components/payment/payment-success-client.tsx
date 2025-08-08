@@ -36,6 +36,7 @@ export default function PaymentSuccessClient({
   const [countdown, setCountdown] = useState(60); // 60 seconds timeout
   const [isDev, setIsDev] = useState(false);
   const [returnUrl, setReturnUrl] = useState<string>("");
+  const [toolSlug, setToolSlug] = useState<string>("");
   const router = useRouter();
 
   // Check if we're in development
@@ -61,7 +62,7 @@ export default function PaymentSuccessClient({
           console.log("✅ Payment completed successfully");
           toast.success("Payment completed successfully!");
 
-          // Get session data to find cancelUrl
+          // Get session data to find cancelUrl and tool slug
           try {
             const sessionResponse = await fetch(
               `/api/session-data/${sessionId}`
@@ -70,6 +71,9 @@ export default function PaymentSuccessClient({
               const sessionData = await sessionResponse.json();
               if (sessionData.cancelUrl) {
                 setReturnUrl(sessionData.cancelUrl);
+              }
+              if (sessionData.toolSlug) {
+                setToolSlug(sessionData.toolSlug);
               }
             }
           } catch (sessionError) {
@@ -100,7 +104,11 @@ export default function PaymentSuccessClient({
             "Processing is taking longer than expected. Please contact support."
           );
           setTimeout(() => {
-            router.push(`/${locale}/tool/veo3-prompt-generator`);
+            if (toolSlug) {
+              router.push(`/${locale}/tool/${toolSlug}`);
+            } else {
+              router.push(`/${locale}`);
+            }
           }, 100);
           return 0;
         }
@@ -115,7 +123,7 @@ export default function PaymentSuccessClient({
       clearInterval(interval);
       clearInterval(countdownInterval);
     };
-  }, [sessionId, locale, router]);
+  }, [sessionId, locale, router, toolSlug]);
 
   const getStatusIcon = () => {
     switch (status.status) {
@@ -171,21 +179,26 @@ export default function PaymentSuccessClient({
             <p className="text-lg font-medium mb-2">{getStatusMessage()}</p>
           </div>
 
-          {/* Return button - always show when completed */}
+          {/* Return button - show when completed; enable when target is known */}
           {status.status === "completed" && (
             <div className="text-center">
               <Button
                 onClick={() => {
                   if (returnUrl) {
                     window.location.href = returnUrl;
+                  } else if (toolSlug) {
+                    router.push(`/${locale}/tool/${toolSlug}`);
                   } else {
-                    router.push(`/${locale}/tool/veo3-prompt-generator`);
+                    router.push(`/${locale}`);
                   }
                 }}
+                disabled={!returnUrl && !toolSlug}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <ArrowRight className="h-4 w-4 mr-2" />
-                Return to Tool Page
+                {returnUrl || toolSlug
+                  ? "Return to Tool Page"
+                  : "Preparing return link..."}
               </Button>
             </div>
           )}

@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentDemoBalance } from "@/lib/utils/tools-balance";
 
 export async function GET(request: NextRequest) {
-  // Используем IP адрес как стабильный идентификатор пользователя
+  // Приоритет: cookie → fallback IP
+  const cookieUid = request.cookies.get("superduperai_uid")?.value;
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
-  const ip = forwarded?.split(",")[0] || realIp || "unknown";
-  const userId = `demo-user-${ip}`;
+  const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+  const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
-  console.log(`🔍 Tools balance API - IP: ${ip}, userId: ${userId}`);
+  console.log(
+    `🔍 Tools balance API - uid: ${cookieUid ?? "(no-cookie)"}, ip: ${ip}, userId: ${userId}`
+  );
 
-  const balance = getCurrentDemoBalance(userId);
+  const balance = await getCurrentDemoBalance(userId);
 
   const isLow = balance <= 10 && balance > 0;
   const isEmpty = balance <= 0;

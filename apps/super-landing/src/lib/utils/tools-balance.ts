@@ -6,35 +6,54 @@ import {
   createBalanceTransaction,
   type BalanceTransaction,
 } from "@turbo-super/superduperai-api";
+import { getUserBalance, setUserBalance, incrementUserBalance } from "@/lib/kv";
 
-// Простое хранилище баланса в памяти для демо
+// Простое хранилище баланса в памяти для демо (fallback, если Redis недоступен)
 const demoBalances = new Map<string, number>();
 
 /**
  * Get demo balance for user
  */
-function getDemoBalance(userId: string): number {
-  if (!demoBalances.has(userId)) {
-    demoBalances.set(userId, 0); // Начальный баланс - 0 кредитов
-  }
+async function getDemoBalance(userId: string): Promise<number> {
+  // Пробуем Redis
+  const persisted = await getUserBalance(userId);
+  if (persisted != null) return persisted;
+  // Фоллбек в память
+  if (!demoBalances.has(userId)) demoBalances.set(userId, 0);
   return demoBalances.get(userId)!;
 }
 
 /**
  * Set demo balance for user
  */
-function setDemoBalance(userId: string, balance: number): void {
+async function setDemoBalance(userId: string, balance: number): Promise<void> {
+  // Сохраняем в Redis, фоллбек в память
+  await setUserBalance(userId, balance);
   demoBalances.set(userId, balance);
 }
 
 /**
  * Add demo balance to user
  */
-export function addDemoBalance(userId: string, amount: number): number {
-  const currentBalance = getDemoBalance(userId);
+export async function addDemoBalance(
+  userId: string,
+  amount: number
+): Promise<number> {
+  // Пробуем атомарное увеличение в Redis
+  const inc = await incrementUserBalance(userId, amount);
+  if (inc != null) {
+    demoBalances.set(userId, inc);
+    console.log(
+      `💰 Demo balance added for user ${userId}: +${amount} credits (${inc - amount} → ${inc})`
+    );
+    return inc;
+  }
+  const currentBalance = await getDemoBalance(userId);
   const newBalance = currentBalance + amount;
-  setDemoBalance(userId, newBalance);
-  console.log(`💰 Demo balance added for user ${userId}: +${amount} credits (${currentBalance} → ${newBalance})`);
+  await setDemoBalance(userId, newBalance);
+  console.log(
+    `💰 Demo balance added for user ${userId}: +${amount} credits (${currentBalance} → ${newBalance})`
+  );
   return newBalance;
 }
 
@@ -52,7 +71,7 @@ export async function validateOperationBalance(
     operationType,
     multipliers
   );
-  const currentBalance = getDemoBalance(userId);
+  const currentBalance = await getDemoBalance(userId);
 
   if (currentBalance < cost) {
     return {
@@ -80,7 +99,7 @@ export async function deductOperationBalance(
     operationType,
     multipliers
   );
-  const balanceBefore = getDemoBalance(userId);
+  const balanceBefore = await getDemoBalance(userId);
 
   if (balanceBefore < cost) {
     throw new Error(
@@ -89,7 +108,7 @@ export async function deductOperationBalance(
   }
 
   const balanceAfter = balanceBefore - cost;
-  setDemoBalance(userId, balanceAfter);
+  await setDemoBalance(userId, balanceAfter);
 
   const transaction = createBalanceTransaction(
     userId,
@@ -110,6 +129,6 @@ export async function deductOperationBalance(
 /**
  * Get current demo balance
  */
-export function getCurrentDemoBalance(userId: string): number {
+export async function getCurrentDemoBalance(userId: string): Promise<number> {
   return getDemoBalance(userId);
 }

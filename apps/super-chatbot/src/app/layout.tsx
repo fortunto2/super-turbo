@@ -76,7 +76,10 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased overflow-x-hidden">
+      <body
+        suppressHydrationWarning
+        className="antialiased overflow-x-hidden"
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

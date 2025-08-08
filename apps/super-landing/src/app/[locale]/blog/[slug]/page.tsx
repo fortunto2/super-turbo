@@ -116,6 +116,7 @@ function BlogPageContent({
               modelConfig={{
                 ...post.modelConfig,
                 supportsImageToVideo: true,
+                description: post.seo?.description || post.description,
               }}
               locale={locale as Locale}
             />
@@ -124,13 +125,19 @@ function BlogPageContent({
             post.modelName === "Kling 2.1" ? (
             <ModelVideoGenerator
               modelName={post.modelName}
-              modelConfig={post.modelConfig}
+              modelConfig={{
+                ...post.modelConfig,
+                description: post.seo?.description || post.description,
+              }}
               locale={locale as Locale}
             />
           ) : (
             <ModelImageGenerator
               modelName={post.modelName}
-              modelConfig={post.modelConfig}
+              modelConfig={{
+                ...post.modelConfig,
+                description: post.seo?.description || post.description,
+              }}
               locale={locale as Locale}
             />
           )}

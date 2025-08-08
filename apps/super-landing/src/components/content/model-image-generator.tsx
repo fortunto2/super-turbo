@@ -76,19 +76,22 @@ export function ModelImageGenerator({
       if (!response.ok) {
         // Специальная обработка ошибок баланса
         if (response.status === 402) {
-          const errorMessage = data.error === "Insufficient balance" 
-            ? t("image_generator.insufficient_balance", { 
-                required: data.balanceRequired || 0,
-                fallback: `Недостаточно кредитов. Требуется: ${data.balanceRequired || 0} кредитов. Пожалуйста, пополните баланс.`
-              })
-            : data.message || t("image_generator.insufficient_balance_fallback", { 
-                fallback: "Недостаточно кредитов для генерации изображений. Пожалуйста, пополните баланс."
-              });
-          
+          const errorMessage =
+            data.error === "Insufficient balance"
+              ? t("image_generator.insufficient_balance", {
+                  required: data.balanceRequired || 0,
+                  fallback: `Недостаточно кредитов. Требуется: ${data.balanceRequired || 0} кредитов. Пожалуйста, пополните баланс.`,
+                })
+              : data.message ||
+                t("image_generator.insufficient_balance_fallback", {
+                  fallback:
+                    "Недостаточно кредитов для генерации изображений. Пожалуйста, пополните баланс.",
+                });
+
           alert(errorMessage);
           throw new Error(errorMessage);
         }
-        
+
         throw new Error(data.message || t("image_generator.generation_error"));
       }
 
@@ -99,8 +102,6 @@ export function ModelImageGenerator({
     } catch (error) {
       console.error("Error generating image:", error);
       setStatus(t("image_generator.generation_error_msg"));
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -118,7 +119,10 @@ export function ModelImageGenerator({
         setStatus(data.status);
 
         if (data.status === "completed" && data.images) {
-          setGeneratedImages(data.images);
+          const urls = (data.images || [])
+            .map((img: any) => img?.url)
+            .filter((u: any) => typeof u === "string" && u.length > 0);
+          setGeneratedImages(urls);
           setIsGenerating(false);
         } else if (data.status === "processing" || data.status === "pending") {
           setTimeout(poll, 2000);
@@ -162,7 +166,10 @@ export function ModelImageGenerator({
           <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {modelConfig?.description ||
               t(
-                `model_descriptions.${modelName.toLowerCase().replace(/\s+/g, "_").replace(/\./g, "")}`
+                `model_descriptions.${modelName
+                  .toLowerCase()
+                  .replace(/\s+/g, "_")
+                  .replace(/\./g, "")}`
               ) ||
               `Создавайте изображения с помощью ${modelName}`}
           </p>
@@ -211,7 +218,10 @@ export function ModelImageGenerator({
           <CardDescription className="text-muted-foreground text-sm">
             {modelConfig?.description ||
               t(
-                `model_descriptions.${modelName.toLowerCase().replace(/\s+/g, "_").replace(/\./g, "")}`
+                `model_descriptions.${modelName
+                  .toLowerCase()
+                  .replace(/\s+/g, "_")
+                  .replace(/\./g, "")}`
               ) ||
               `Создавайте изображения с помощью ${modelName}`}
           </CardDescription>
