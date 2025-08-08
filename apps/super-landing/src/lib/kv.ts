@@ -44,6 +44,7 @@ export interface WebhookStatusData {
 const WEBHOOK_PREFIX = "webhook:";
 const SESSION_PREFIX = "session:";
 const PROMPT_PREFIX = "prompt:";
+const BALANCE_PREFIX = "balance:";
 
 // Helper to create webhook key
 const getWebhookKey = (sessionId: string) => `${WEBHOOK_PREFIX}${sessionId}`;
@@ -53,6 +54,66 @@ const getSessionKey = (sessionId: string) => `${SESSION_PREFIX}${sessionId}`;
 
 // Helper to create prompt key
 const getPromptKey = (sessionId: string) => `${PROMPT_PREFIX}${sessionId}`;
+
+// Helper to create balance key
+const getBalanceKey = (userId: string) => `${BALANCE_PREFIX}${userId}`;
+
+// Balance helpers (persistent demo credits)
+export async function getUserBalance(userId: string): Promise<number | null> {
+  try {
+    const client = await getRedisClient();
+    if (!client || !redisConnected) {
+      console.warn("⚠️ Redis not available, returning null for user balance");
+      return null;
+    }
+    const key = getBalanceKey(userId);
+    const value = await client.get(key);
+    if (value == null) return 0;
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  } catch (error) {
+    console.error("❌ Failed to get user balance from Redis:", error);
+    return null;
+  }
+}
+
+export async function setUserBalance(
+  userId: string,
+  balance: number
+): Promise<void> {
+  try {
+    const client = await getRedisClient();
+    if (!client || !redisConnected) {
+      console.warn("⚠️ Redis not available, skipping setting user balance");
+      return;
+    }
+    const key = getBalanceKey(userId);
+    await client.set(key, String(Math.max(0, Math.floor(balance))));
+  } catch (error) {
+    console.error("❌ Failed to set user balance in Redis:", error);
+  }
+}
+
+export async function incrementUserBalance(
+  userId: string,
+  amount: number
+): Promise<number | null> {
+  try {
+    const client = await getRedisClient();
+    if (!client || !redisConnected) {
+      console.warn(
+        "⚠️ Redis not available, returning null for increment balance"
+      );
+      return null;
+    }
+    const key = getBalanceKey(userId);
+    const newValue = await client.incrBy(key, Math.floor(amount));
+    return newValue;
+  } catch (error) {
+    console.error("❌ Failed to increment user balance in Redis:", error);
+    return null;
+  }
+}
 
 // Store webhook status data
 export async function storeWebhookStatus(

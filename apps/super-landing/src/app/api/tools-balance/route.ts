@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     `🔍 Tools balance API - uid: ${cookieUid ?? "(no-cookie)"}, ip: ${ip}, userId: ${userId}`
   );
 
-  const balance = getCurrentDemoBalance(userId);
+  const balance = await getCurrentDemoBalance(userId);
 
   const isLow = balance <= 10 && balance > 0;
   const isEmpty = balance <= 0;
