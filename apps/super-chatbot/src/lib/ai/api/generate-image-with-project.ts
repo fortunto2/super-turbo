@@ -231,12 +231,11 @@ export const generateImageWithProject = async (
       project_id: projectId, // Keep project_id for this variant
       style_name: styleId, // Move style_name outside config
       config: {
-        prompt: prompt,
+        prompt: prompt || "Enhance this image",
         shot_size: shotSize.id, // FIXED: Use id instead of label for snake_case format
         style_name: styleId, // Keep for backward compatibility
         seed: String(actualSeed), // Convert to string
         aspect_ratio: resolution.aspectRatio || "16:9", // FIXED: Use correct aspect_ratio parameter name
-        batch_size: 1, // Use default batch_size
         entity_ids: [],
         generation_config_name: model.name,
         height: String(resolution.height), // Convert to string

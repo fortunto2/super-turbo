@@ -242,30 +242,32 @@ export function ModelImageGenerator({
             />
           </div>
 
-          {/* Количество изображений */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-blue-300">
-              {t("image_generator.image_count")}
-            </label>
-            <div className="flex gap-2">
-              {[1, 2, 3].map((count) => (
-                <Button
-                  key={count}
-                  variant={imageCount === count ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setImageCount(count)}
-                  disabled={isGenerating}
-                  className={
-                    imageCount === count
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                      : "border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
-                  }
-                >
-                  {count}
-                </Button>
-              ))}
+          {/* Количество изображений — временно отключено */}
+          {false && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-blue-300">
+                {t("image_generator.image_count")}
+              </label>
+              <div className="flex gap-2">
+                {[1, 2, 3].map((count) => (
+                  <Button
+                    key={count}
+                    variant={imageCount === count ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setImageCount(count)}
+                    disabled={isGenerating}
+                    className={
+                      imageCount === count
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                        : "border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
+                    }
+                  >
+                    {count}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Кнопка генерации */}
           <Button
@@ -282,7 +284,6 @@ export function ModelImageGenerator({
               <>
                 <Image className="w-4 h-4 mr-2" />
                 {t("image_generator.generate")}
-                {imageCount > 1 ? ` (${imageCount})` : ""}
               </>
             )}
           </Button>

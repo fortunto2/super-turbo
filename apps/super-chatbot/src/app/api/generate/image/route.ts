@@ -10,6 +10,10 @@ import {
   ImageGenerationParams,
   ImageToImageParams,
 } from "@turbo-super/superduperai-api";
+import {
+  ensureNonEmptyPrompt,
+  selectImageToImageModel,
+} from "@/lib/generation/model-utils";
 
 import { validateOperationBalance } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
@@ -185,51 +189,25 @@ export async function POST(request: NextRequest) {
         const { getAvailableImageModels } = await import(
           "@/lib/config/superduperai"
         );
-        const allImageModels = await getAvailableImageModels();
-        // Prefer non-inpainting configs unless explicitly requested
-        const allI2I = allImageModels.filter(
-          (m: any) => m.type === "image_to_image"
-        );
-
         const rawName =
           typeof body.model === "string"
             ? (body.model as string)
             : String(body.model?.name || "");
-        const baseToken = rawName.toLowerCase().includes("flux")
-          ? "flux"
-          : rawName.split("/").pop()?.split("-")[0] || rawName.toLowerCase();
-
-        const wantsInpainting =
-          /inpaint/i.test(rawName) ||
-          Boolean(body.mask) ||
-          Boolean(body.editingMode);
-        const candidates = wantsInpainting
-          ? allI2I
-          : allI2I.filter((m: any) => !/inpaint/i.test(String(m.name || "")));
-
-        let pick = candidates.find(
-          (m: any) =>
-            String(m.name || "").toLowerCase() === rawName.toLowerCase() ||
-            String(m.label || "").toLowerCase() === rawName.toLowerCase()
+        const mapped = await selectImageToImageModel(
+          rawName,
+          getAvailableImageModels,
+          {
+            allowInpainting:
+              /inpaint/i.test(rawName) ||
+              Boolean(body.mask) ||
+              Boolean(body.editingMode),
+          }
         );
-        if (!pick && baseToken) {
-          pick = candidates.find(
-            (m: any) =>
-              String(m.name || "")
-                .toLowerCase()
-                .includes(baseToken) ||
-              String(m.label || "")
-                .toLowerCase()
-                .includes(baseToken)
-          );
-        }
-        if (!pick && candidates.length > 0) pick = candidates[0];
-
-        if (pick?.name) {
+        if (mapped) {
           console.log(
-            `🎯 Using image_to_image generation config: ${pick.name} (was: ${rawName})`
+            `🎯 Using image_to_image generation config: ${mapped} (was: ${rawName})`
           );
-          body.model = { name: pick.name };
+          body.model = { name: mapped };
         }
       } catch (e) {
         console.warn("⚠️ Failed to remap model for image_to_image (cache):", e);
@@ -237,9 +215,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure non-empty prompt to avoid backend stalling
-    if (!body.prompt || String(body.prompt).trim().length === 0) {
-      body.prompt = "Enhance this image";
-    }
+    body.prompt = ensureNonEmptyPrompt(body.prompt, "Enhance this image");
 
     // Create image generation config using OpenAPI types
     const strategyParams: ImageGenerationParams | ImageToImageParams = {

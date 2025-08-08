@@ -169,19 +169,22 @@ export function EnhancedModelVideoGenerator({
       if (!response.ok) {
         // Специальная обработка ошибок баланса
         if (response.status === 402) {
-          const errorMessage = data.error === "Insufficient balance" 
-            ? t("video_generator.insufficient_balance", { 
-                required: data.balanceRequired || 0,
-                fallback: `Недостаточно кредитов. Требуется: ${data.balanceRequired || 0} кредитов. Пожалуйста, пополните баланс.`
-              })
-            : data.message || t("video_generator.insufficient_balance_fallback", { 
-                fallback: "Недостаточно кредитов для генерации видео. Пожалуйста, пополните баланс."
-              });
-          
+          const errorMessage =
+            data.error === "Insufficient balance"
+              ? t("video_generator.insufficient_balance", {
+                  required: data.balanceRequired || 0,
+                  fallback: `Недостаточно кредитов. Требуется: ${data.balanceRequired || 0} кредитов. Пожалуйста, пополните баланс.`,
+                })
+              : data.message ||
+                t("video_generator.insufficient_balance_fallback", {
+                  fallback:
+                    "Недостаточно кредитов для генерации видео. Пожалуйста, пополните баланс.",
+                });
+
           alert(errorMessage);
           throw new Error(errorMessage);
         }
-        
+
         throw new Error(data.message || t("video_generator.generation_error"));
       }
       setGenerationStatus({
@@ -202,7 +205,7 @@ export function EnhancedModelVideoGenerator({
         error: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
-      setIsGenerating(false);
+      // Не разблокируем здесь; оставим блокировку до завершения генерации
     }
   };
 
@@ -219,7 +222,11 @@ export function EnhancedModelVideoGenerator({
         const data = await response.json();
         setGenerationStatus(data);
 
-        if (data.status === "processing" || data.status === "pending") {
+        // Держим кнопку заблокированной, пока идёт генерация
+        const busy = data.status === "processing" || data.status === "pending";
+        setIsGenerating(busy);
+
+        if (busy) {
           setTimeout(poll, 2000);
         }
       } catch (error) {
@@ -233,6 +240,7 @@ export function EnhancedModelVideoGenerator({
               }
             : null
         );
+        setIsGenerating(false);
       }
     };
 
