@@ -4,13 +4,35 @@ import {
   getSuperduperAIConfigWithUserToken,
   getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
-import { generateVideoHybrid } from "@/lib/ai/api/generate-video";
+import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
 import { IGenerationConfigRead } from "@/lib/api";
 import {
   validateOperationBalance,
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
+
+// Map human-readable model name to generation_config_name
+function mapModelNameToConfig(
+  modelName: string,
+  generationType: "text-to-video" | "image-to-video"
+): string {
+  const modelMap: Record<string, Record<string, string>> = {
+    Veo2: {
+      "text-to-video": "google-cloud/veo2-text2video",
+      "image-to-video": "google-cloud/veo2",
+    },
+    Veo3: {
+      "text-to-video": "google-cloud/veo3-text2video",
+      "image-to-video": "google-cloud/veo3",
+    },
+    Sora: {
+      "text-to-video": "azure-openai/sora",
+      "image-to-video": "azure-openai/sora",
+    },
+  };
+  return modelMap[modelName]?.[generationType] || modelName;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,16 +42,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse request body
-    const body = await request.json();
-    console.log(
-      "🎬 Video API: Processing request:",
-      JSON.stringify(body, null, 2)
-    );
+    const contentType = request.headers.get("content-type") || "";
+    const isMultipart = contentType.includes("multipart/form-data");
+
+    // Support both JSON (text-to-video) and multipart (image-to-video)
+    let body: any;
+    if (isMultipart) {
+      const form = await request.formData();
+      body = Object.fromEntries(form.entries());
+      // File stays as File object on the server runtime
+      body.file = form.get("file");
+    } else {
+      body = await request.json();
+    }
+
+    console.log("🎬 Video API: Processing request:", {
+      isMultipart,
+      keys: Object.keys(body || {}),
+    });
 
     // Validate user balance before proceeding
     const userId = session.user.id;
-    const generationType = body.generationType || "text-to-video";
+    const generationType: "text-to-video" | "image-to-video" =
+      (body.generationType as any) === "image-to-video"
+        ? "image-to-video"
+        : "text-to-video";
 
     // Determine cost multipliers based on request
     const multipliers: string[] = [];
@@ -109,66 +146,81 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { OpenAPI } = await import("@/lib/api");
-    OpenAPI.BASE = config.url;
-    OpenAPI.TOKEN = config.token;
+    // Normalize inputs
 
-    // Convert string parameters to proper objects
-    const modelObj =
+    const rawModel =
       typeof body.model === "string"
-        ? { name: body.model, label: body.model }
-        : { name: "azure-openai/sora", label: "Sora" };
+        ? body.model
+        : body?.model?.name || "azure-openai/sora";
+    const mappedModelName = mapModelNameToConfig(rawModel, generationType);
 
-    const styleObj =
-      typeof body.style === "string"
-        ? { id: body.style, label: body.style }
-        : { id: "flux_watercolor", label: "Watercolor" };
+    const styleId =
+      (typeof body.style === "string" ? body.style : body?.style?.id) ||
+      "flux_watercolor";
+    const shotId =
+      (typeof body.shotSize === "string"
+        ? body.shotSize
+        : body?.shotSize?.id) || "medium_shot";
 
-    const shotSizeObj =
-      typeof body.shotSize === "string"
-        ? {
-            id: body.shotSize.toLowerCase().replace(" ", "_"),
-            label: body.shotSize,
-          }
-        : { id: "medium_shot", label: "Medium Shot" };
-
-    // Parse resolution string like "1280x720 (HD)"
-    let resolutionObj = {
-      width: 1216,
-      height: 704,
-      label: "1216x704",
-      aspectRatio: "16:9",
-    };
-    if (body.resolution && typeof body.resolution === "string") {
-      const match = body.resolution.match(/(\d+)x(\d+)/);
-      if (match) {
-        const width = parseInt(match[1]);
-        const height = parseInt(match[2]);
-        const ratio = width / height;
-        resolutionObj = {
-          width,
-          height,
-          label: `${width}x${height}`,
-          aspectRatio: ratio === 1 ? "1:1" : ratio > 1 ? "16:9" : "9:16",
-        };
+    // Parse resolution "WxH" or default
+    let width = 1280;
+    let height = 720;
+    if (typeof body.resolution === "string") {
+      const m = body.resolution.match(/(\d+)x(\d+)/);
+      if (m) {
+        width = parseInt(m[1]);
+        height = parseInt(m[2]);
       }
     }
 
-    // Generate video using hybrid approach
-    const result = await generateVideoHybrid(
-      body.prompt || "",
-      modelObj as IGenerationConfigRead,
-      styleObj,
-      resolutionObj,
-      shotSizeObj,
-      body.duration || 5,
-      body.frameRate || 30,
-      body.negativePrompt || "",
-      body.sourceImageId,
-      body.sourceImageUrl,
-      body.generationType || "text-to-video",
-      session // Pass session for user token
-    );
+    // Build params for shared generator
+    let result;
+    if (generationType === "image-to-video" && body.file instanceof File) {
+      result = await generateVideoWithStrategy(
+        "image-to-video",
+        {
+          prompt: body.prompt || "animate this image naturally",
+          file: body.file as File,
+          model: mappedModelName,
+          style: { id: styleId, label: styleId },
+          resolution: {
+            width,
+            height,
+            label: `${width}x${height}`,
+            aspectRatio:
+              width === height ? "1:1" : width > height ? "16:9" : "9:16",
+          },
+          shotSize: { id: shotId, label: shotId },
+          duration: Number(body.duration) || 5,
+          frameRate: Number(body.frameRate) || 30,
+          negativePrompt: body.negativePrompt || "",
+          seed: body.seed ? Number(body.seed) : undefined,
+        },
+        config
+      );
+    } else {
+      result = await generateVideoWithStrategy(
+        "text-to-video",
+        {
+          prompt: body.prompt || "",
+          model: mappedModelName,
+          style: { id: styleId, label: styleId },
+          resolution: {
+            width,
+            height,
+            label: `${width}x${height}`,
+            aspectRatio:
+              width === height ? "1:1" : width > height ? "16:9" : "9:16",
+          },
+          shotSize: { id: shotId, label: shotId },
+          duration: Number(body.duration) || 5,
+          frameRate: Number(body.frameRate) || 30,
+          negativePrompt: body.negativePrompt || "",
+          seed: body.seed ? Number(body.seed) : undefined,
+        },
+        config
+      );
+    }
 
     console.log("✅ Video generation result:", result);
 
