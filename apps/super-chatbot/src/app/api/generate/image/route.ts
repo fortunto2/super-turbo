@@ -146,6 +146,28 @@ export async function POST(request: NextRequest) {
       OpenAPI.TOKEN = config.token;
     }
 
+    // Helper: normalize shot size to API enum (Medium Shot, Long Shot, ...)
+    const normalizeShotSize = (val: any) => {
+      const raw = typeof val === "string" ? val : val?.id || val?.label || "";
+      if (!raw) return undefined;
+      // If already has spaces and capitalized, keep as is
+      if (/[A-Z][a-z]+\s[A-Z][a-z]+/.test(raw)) return raw;
+      // Convert snake_case to Title Case with space
+      const pretty = String(raw)
+        .replace(/[_-]+/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      return pretty;
+    };
+
+    // Normalize shotSize for API (avoid 422)
+    if (body.shotSize) {
+      const pretty = normalizeShotSize(body.shotSize);
+      if (pretty) {
+        body.shotSize = { id: pretty };
+      }
+    }
+
     // If multipart with file: upload image first to obtain sourceImageId
     if (body.generationType === "image-to-image" && body.file instanceof File) {
       try {
@@ -183,6 +205,53 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // If JSON with sourceImageUrl (no file), upload it to obtain sourceImageId as well
+    if (
+      (!body.generationType || body.generationType === "image-to-image") &&
+      !body.sourceImageId &&
+      body.sourceImageUrl &&
+      typeof body.sourceImageUrl === "string"
+    ) {
+      try {
+        const url = body.sourceImageUrl as string;
+        const resp = await fetch(url);
+        if (!resp.ok) {
+          const txt = await resp.text().catch(() => "");
+          throw new Error(`Fetch source failed: ${resp.status} ${txt}`);
+        }
+        const blob = await resp.blob();
+        const fd = new FormData();
+        fd.append("payload", blob, "source-image.png");
+        fd.append("type", "image");
+        const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${config.token}`,
+            "User-Agent": "SuperDuperAI-Chatbot/1.0",
+          },
+          body: fd,
+        });
+        if (!uploadResp.ok) {
+          const txt = await uploadResp.text();
+          throw new Error(`Upload failed: ${uploadResp.status} ${txt}`);
+        }
+        const up = await uploadResp.json();
+        if (up?.id) {
+          body.sourceImageId = up.id as string;
+          // keep original http(s) url so SDK can include reference_url in payload
+          if (/^https?:\/\//.test(String(body.sourceImageUrl))) {
+            body.sourceImageUrl = String(url);
+          }
+        }
+      } catch (e) {
+        console.error("❌ Image URL upload failed before generation:", e);
+        return NextResponse.json(
+          { success: false, error: "Image URL upload failed" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Normalize model for image-to-image: select proper image_to_image generation config (via cached models)
     if (body.generationType === "image-to-image") {
       try {
@@ -216,6 +285,11 @@ export async function POST(request: NextRequest) {
 
     // Ensure non-empty prompt to avoid backend stalling
     body.prompt = ensureNonEmptyPrompt(body.prompt, "Enhance this image");
+
+    // Ensure correct generation type if we have a sourceImageId
+    if (body.sourceImageId && generationType !== "image-to-image") {
+      body.generationType = "image-to-image";
+    }
 
     // Create image generation config using OpenAPI types
     const strategyParams: ImageGenerationParams | ImageToImageParams = {

@@ -11,18 +11,26 @@ import type { Session } from "next-auth";
 interface CreateImageDocumentParams {
   createDocument: any;
   session?: Session | null;
+  defaultSourceImageUrl?: string;
 }
 
 export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
   tool({
     description:
-      "Configure image generation settings or generate an image directly if prompt is provided. When prompt is provided, this will create an image artifact that shows generation progress in real-time. Models are loaded dynamically from SuperDuperAI API.",
+      "Configure image generation settings or generate an image directly if prompt is provided. Supports text-to-image by default, and image-to-image when a sourceImageUrl is provided. When triggered, creates an image artifact that shows generation progress in real-time.",
     parameters: z.object({
       prompt: z
         .string()
         .optional()
         .describe(
           "Detailed description of the image to generate. If provided, will immediately create image artifact and start generation"
+        ),
+      sourceImageUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe(
+          "Optional source image URL for image-to-image generation (e.g., when the user uploaded an image in chat). If provided, the system will run image-to-image."
         ),
       style: z
         .string()
@@ -60,6 +68,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
     }),
     execute: async ({
       prompt,
+      sourceImageUrl,
       style,
       resolution,
       shotSize,
@@ -104,32 +113,10 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         return config;
       }
 
-      // Check balance before creating artifact
-      const operationType = "text-to-image";
-      const multipliers: string[] = [];
-
       // Check style for quality multipliers
+      const multipliers: string[] = [];
       if (style?.includes("high-quality")) multipliers.push("high-quality");
       if (style?.includes("ultra-quality")) multipliers.push("ultra-quality");
-
-      const balanceCheck = await checkBalanceBeforeArtifact(
-        params.session || null,
-        "image-generation",
-        operationType,
-        multipliers,
-        getOperationDisplayName(operationType)
-      );
-
-      if (!balanceCheck.valid) {
-        console.log("🔧 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
-        return {
-          error:
-            balanceCheck.userMessage ||
-            "Недостаточно средств для генерации изображения",
-          balanceError: true,
-          requiredCredits: balanceCheck.cost,
-        };
-      }
 
       try {
         // Find the selected options or use defaults from factory
@@ -171,6 +158,58 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             ) || config.defaultSettings.model
           : config.defaultSettings.model;
 
+        // If attachment:// provided, try to use the latest http(s) image from user attachments in this message
+        let normalizedSourceUrl = sourceImageUrl;
+
+        console.log("🔍 configureImageGeneration sourceImageUrl resolution:", {
+          sourceImageUrl,
+          defaultSourceImageUrl: params?.defaultSourceImageUrl,
+          normalizedSourceUrl,
+        });
+
+        // If sourceImageUrl is invalid (attachment://), use defaultSourceImageUrl instead
+        if (!normalizedSourceUrl || !/^https?:\/\//.test(normalizedSourceUrl)) {
+          if (
+            params?.defaultSourceImageUrl &&
+            /^https?:\/\//.test(params.defaultSourceImageUrl)
+          ) {
+            console.log(
+              "🔍 Using defaultSourceImageUrl instead of invalid sourceImageUrl:",
+              params.defaultSourceImageUrl
+            );
+            normalizedSourceUrl = params.defaultSourceImageUrl;
+          } else {
+            console.log(
+              "🔍 No valid source image URL available, will be text-to-image"
+            );
+            normalizedSourceUrl = undefined;
+          }
+        }
+
+        // Determine operation type and check balance
+        const operationType = normalizedSourceUrl
+          ? "image-to-image"
+          : "text-to-image";
+
+        const balanceCheck = await checkBalanceBeforeArtifact(
+          params.session || null,
+          "image-generation",
+          operationType,
+          multipliers,
+          getOperationDisplayName(operationType)
+        );
+
+        if (!balanceCheck.valid) {
+          console.log("🔧 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+          return {
+            error:
+              balanceCheck.userMessage ||
+              "Недостаточно средств для генерации изображения",
+            balanceError: true,
+            requiredCredits: balanceCheck.cost,
+          };
+        }
+
         // Create the image document with all parameters
         const imageParams = {
           prompt,
@@ -180,6 +219,9 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
           model: selectedModel,
           seed: seed || undefined,
           batchSize: batchSize || 1,
+          ...(normalizedSourceUrl
+            ? { sourceImageUrl: normalizedSourceUrl }
+            : {}),
         };
 
         console.log("🔧 ✅ CREATING IMAGE DOCUMENT WITH PARAMS:", imageParams);
@@ -196,7 +238,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
 
           return {
             ...result,
-            message: `I'm creating an image with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution. Artifact created and generation started.`,
+            message: `I'm creating ${operationType.replace("-", " ")} with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution. Artifact created and generation started.`,
           };
         } catch (error) {
           console.error("🔧 ❌ CREATE DOCUMENT ERROR:", error);

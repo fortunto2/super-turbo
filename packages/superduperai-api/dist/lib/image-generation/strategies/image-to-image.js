@@ -70,6 +70,7 @@ export class ImageToImageStrategy {
         const modelName = params.model?.name || "fal-ai/flux-dev";
         const isGPTImage = String(modelName).includes("gpt-image-1");
         const imageId = params.sourceImageId;
+        const sourceUrl = params.sourceImageUrl;
         // Если передан файл, сначала загружаем его и используем reference_id
         // Примечание: загрузку выполним в generate() уровне выше, где доступен config.
         if (isGPTImage) {
@@ -77,8 +78,8 @@ export class ImageToImageStrategy {
                 config: {
                     prompt: params.prompt,
                     negative_prompt: params.negativePrompt || "",
-                    width: params.resolution?.width || 1024,
-                    height: params.resolution?.height || 1024,
+                    width: params.resolution?.width || 1920,
+                    height: params.resolution?.height || 1088,
                     seed: params.seed || Math.floor(Math.random() * 1000000000000),
                     generation_config_name: modelName,
                     references: imageId
@@ -86,35 +87,48 @@ export class ImageToImageStrategy {
                             {
                                 type: "source",
                                 reference_id: imageId,
+                                ...(sourceUrl ? { reference_url: sourceUrl } : {}),
                             },
                         ]
                         : [],
                     entity_ids: [],
                 },
+                ...(imageId ? { file_ids: [imageId] } : {}),
             };
         }
-        return {
+        const requestedSteps = params?.steps;
+        const payload = {
             config: {
                 prompt: params.prompt,
                 negative_prompt: params.negativePrompt || "",
-                width: params.resolution?.width || 512,
-                height: params.resolution?.height || 512,
-                steps: 30,
-                shot_size: params.shotSize?.id || null,
+                width: params.resolution?.width || 1920,
+                height: params.resolution?.height || 1088,
+                steps: typeof requestedSteps === "number" ? requestedSteps : 20,
+                shot_size: null,
                 seed: params.seed || Math.floor(Math.random() * 1000000000000),
                 generation_config_name: modelName,
-                style_name: params.style?.id || null,
+                style_name: null,
                 references: imageId
                     ? [
                         {
                             type: "source",
                             reference_id: imageId,
+                            ...(sourceUrl ? { reference_url: sourceUrl } : {}),
                         },
                     ]
                     : [],
                 entity_ids: [],
             },
+            ...(imageId ? { file_ids: [imageId] } : {}),
         };
+        console.log("🔍 ImageToImageStrategy: generated payload:", {
+            modelName,
+            imageId,
+            sourceUrl,
+            resolution: params.resolution,
+            payload,
+        });
+        return payload;
     }
 }
 //# sourceMappingURL=image-to-image.js.map

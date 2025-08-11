@@ -5,6 +5,8 @@ import { getStyles } from "@/lib/ai/api/get-styles";
 import type { MediaOption, MediaResolution } from "@/lib/types/media-settings";
 import type { ImageModel } from "@/lib/config/superduperai";
 import { getAvailableImageModels } from "@/lib/config/superduperai";
+import { selectImageToImageModel } from "@/lib/generation/model-utils";
+import { getMessagesByChatId } from "@/lib/db/queries";
 import {
   validateOperationBalance,
   deductOperationBalance,
@@ -152,7 +154,8 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           qualityType: "hd",
         },
         model = { id: "flux-dev", label: "Flux Dev" },
-        shotSize = { id: "long_shot", label: "Long Shot" },
+        // Use label form for shot size to match API enum expectations
+        shotSize = { id: "Medium Shot", label: "Medium Shot" },
         negativePrompt = "",
         seed,
         batchSize,
@@ -186,22 +189,219 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         console.error("🎨 ❌ ERROR GETTING STYLES:", err);
       }
 
-      // Start image generation using new architecture (only text-to-image)
+      // Resolve source image URL (support attachment:// and missing param via chat history)
       const config = getSuperduperAIConfig();
-      const result = await generateImageWithStrategy(
-        "text-to-image",
-        {
+      let effectiveSourceImageUrl: string | undefined = params.sourceImageUrl;
+
+      console.log("🔍 Image artifact: resolving source image URL:", {
+        sourceImageUrl: params.sourceImageUrl,
+        chatId,
+        needsResolve:
+          !effectiveSourceImageUrl ||
+          effectiveSourceImageUrl.startsWith("attachment://"),
+      });
+
+      try {
+        const needsResolve =
+          !effectiveSourceImageUrl ||
+          effectiveSourceImageUrl.startsWith("attachment://");
+        if (needsResolve) {
+          const history = await getMessagesByChatId({ id: chatId });
+          console.log("🔍 Image artifact: searching chat history:", {
+            historyLength: history.length,
+          });
+
+          for (let i = history.length - 1; i >= 0; i--) {
+            const m = history[i] as any;
+            console.log("🔍 Image artifact: checking message:", {
+              role: m.role,
+              hasAttachments: !!m.attachments,
+              attachmentsLength: m.attachments?.length || 0,
+              attachments: m.attachments,
+            });
+
+            if (m.role === "user" && Array.isArray(m.attachments)) {
+              const img = m.attachments.find(
+                (a: any) =>
+                  typeof a?.url === "string" &&
+                  /^https?:\/\//.test(a.url) &&
+                  String(a?.contentType || "").startsWith("image/")
+              );
+              if (img?.url) {
+                effectiveSourceImageUrl = img.url;
+                console.log(
+                  "🔍 Image artifact: found source image in history:",
+                  img.url
+                );
+                break;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error(
+          "🔍 Image artifact: error searching chat history:",
+          error
+        );
+      }
+
+      // Decide generation type based on resolved source URL
+      const generationType = effectiveSourceImageUrl
+        ? "image-to-image"
+        : "text-to-image";
+
+      console.log("🔍 Image artifact: generation type determined:", {
+        effectiveSourceImageUrl,
+        generationType,
+      });
+
+      // If image-to-image, upload source image first to obtain sourceImageId
+      let sourceImageId: string | undefined = undefined;
+      if (
+        generationType === "image-to-image" &&
+        effectiveSourceImageUrl &&
+        /^https?:\/\//.test(effectiveSourceImageUrl)
+      ) {
+        try {
+          const resp = await fetch(effectiveSourceImageUrl);
+          if (!resp.ok)
+            throw new Error(`Failed to fetch source image: ${resp.status}`);
+          const blob = await resp.blob();
+          const fd = new FormData();
+          fd.append("payload", blob, "source-image.png");
+          fd.append("type", "image");
+          const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${config.token}`,
+              "User-Agent": "SuperDuperAI-Chatbot/1.0",
+            },
+            body: fd,
+          });
+          if (!uploadResp.ok) {
+            const t = await uploadResp.text();
+            throw new Error(`Upload failed: ${uploadResp.status} ${t}`);
+          }
+          const up = await uploadResp.json();
+          sourceImageId = up?.id;
+        } catch (e) {
+          console.error("🎨 ❌ Failed to upload source image for img2img:", e);
+        }
+      }
+
+      // Remap model for image-to-image if needed (e.g., inpainting variant)
+      let modelForGeneration: any = model;
+      if (generationType === "image-to-image") {
+        try {
+          const rawName = (model as any)?.name || (model as any)?.id || "";
+          const availableModels = await getAvailableImageModels();
+          console.log("🔍 Image artifact: remapping model for img2img:", {
+            originalModel: rawName,
+            availableModels: availableModels.map((m) => m.name),
+          });
+
+          const mapped = await selectImageToImageModel(
+            rawName,
+            getAvailableImageModels,
+            { allowInpainting: true }
+          );
+
+          // Force fal-ai/flux-pro/kontext for img2img as it's proven to work
+          const kontextModel = availableModels.find(
+            (m) => m.name === "fal-ai/flux-pro/kontext"
+          );
+
+          if (kontextModel) {
+            modelForGeneration = {
+              ...(model as any),
+              name: kontextModel.name,
+            };
+            console.log(
+              "🔍 Image artifact: FORCED kontext model for img2img:",
+              kontextModel.name
+            );
+          } else {
+            // Fallback to mapped model if kontext not available
+            if (mapped) {
+              modelForGeneration = { ...(model as any), name: mapped };
+              console.log(
+                "🔍 Image artifact: fallback to mapped model:",
+                mapped
+              );
+            } else {
+              console.log(
+                "🔍 Image artifact: kontext model not found, using original:",
+                rawName
+              );
+            }
+          }
+        } catch (error) {
+          console.error("🔍 Image artifact: error remapping model:", error);
+        }
+      }
+      // For image-to-image: require uploaded sourceImageId and send minimal payload (no style/resolution/shotSize)
+      if (generationType === "image-to-image" && !sourceImageId) {
+        draftContent = JSON.stringify({
+          status: "failed",
+          error:
+            "Не удалось получить исходное изображение для image-to-image (attachment не разрешился в URL)",
           prompt,
-          model,
-          style,
-          resolution,
-          shotSize,
-          negativePrompt,
-          seed,
-          batchSize,
-        },
+        });
+        return draftContent;
+      }
+
+      const generationParams: any = {
+        prompt,
+        model: modelForGeneration,
+        negativePrompt,
+        seed,
+        batchSize,
+      };
+      if (generationType === "image-to-image") {
+        generationParams.sourceImageId = sourceImageId;
+        if (
+          effectiveSourceImageUrl &&
+          /^https?:\/\//.test(effectiveSourceImageUrl)
+        ) {
+          generationParams.sourceImageUrl = effectiveSourceImageUrl;
+        }
+        // Add default resolution for img2img to prevent NaN values in SDK
+        // Use 1024x1024 as it's proven to work with fal-ai/flux-pro/kontext
+        generationParams.resolution = {
+          width: 1024,
+          height: 1024,
+        };
+      } else {
+        generationParams.style = style;
+        generationParams.resolution = resolution;
+        generationParams.shotSize = shotSize;
+      }
+
+      console.log(
+        "🔍 Image artifact: calling generateImageWithStrategy with params:",
+        {
+          generationType,
+          generationParams,
+          config: {
+            url: config.url,
+            hasToken: !!config.token,
+          },
+        }
+      );
+
+      const result = await generateImageWithStrategy(
+        generationType,
+        generationParams,
         config
       );
+
+      console.log("🔍 Image artifact: generateImageWithStrategy result:", {
+        success: result.success,
+        projectId: result.projectId,
+        requestId: result.requestId,
+        fileId: result.fileId,
+        error: result.error,
+      });
 
       // AICODE-DEBUG: API payload removed to reduce duplication
       // If needed for debugging, can be reconstructed from stored parameters
@@ -239,7 +439,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       // Deduct balance after successful generation start
       if (session?.user?.id) {
         try {
-          const operationType = "text-to-image";
+          const operationType = generationType;
           const multipliers: string[] = [];
 
           // Check style for quality multipliers
@@ -319,24 +519,130 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           qualityType: "hd",
         },
         model = { id: "flux-dev", label: "Flux Dev" },
-        shotSize = { id: "long_shot", label: "Long Shot" },
+        // Use label form for shot size to match API enum expectations
+        shotSize = { id: "Medium Shot", label: "Medium Shot" },
         negativePrompt = "",
         seed,
         batchSize,
       } = params;
-      // Start image generation using new architecture (only text-to-image)
+      // Start image generation using new architecture
       // NOTE: onUpdateDocument doesn't have access to session, so using system token fallback
       const config = getSuperduperAIConfig();
-      const result = await generateImageWithStrategy("text-to-image", {
+      // Resolve source image URL again for update flow
+      let effectiveSourceImageUrl: string | undefined = params.sourceImageUrl;
+      try {
+        const needsResolve =
+          !effectiveSourceImageUrl ||
+          effectiveSourceImageUrl.startsWith("attachment://");
+        if (needsResolve) {
+          const history = await getMessagesByChatId({ id: chatId });
+          for (let i = history.length - 1; i >= 0; i--) {
+            const m = history[i] as any;
+            if (m.role === "user" && Array.isArray(m.attachments)) {
+              const img = m.attachments.find(
+                (a: any) =>
+                  typeof a?.url === "string" &&
+                  /^https?:\/\//.test(a.url) &&
+                  String(a?.contentType || "").startsWith("image/")
+              );
+              if (img?.url) {
+                effectiveSourceImageUrl = img.url;
+                break;
+              }
+            }
+          }
+        }
+      } catch (_) {}
+
+      const generationType = effectiveSourceImageUrl
+        ? "image-to-image"
+        : "text-to-image";
+
+      // If img2img with source URL, upload first
+      let sourceImageId: string | undefined = undefined;
+      if (
+        generationType === "image-to-image" &&
+        effectiveSourceImageUrl &&
+        /^https?:\/\//.test(effectiveSourceImageUrl)
+      ) {
+        try {
+          const resp = await fetch(effectiveSourceImageUrl);
+          if (!resp.ok)
+            throw new Error(`Failed to fetch source image: ${resp.status}`);
+          const blob = await resp.blob();
+          const fd = new FormData();
+          fd.append("payload", blob, "source-image.png");
+          fd.append("type", "image");
+          const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${config.token}`,
+              "User-Agent": "SuperDuperAI-Chatbot/1.0",
+            },
+            body: fd,
+          });
+          if (!uploadResp.ok) {
+            const t = await uploadResp.text();
+            throw new Error(`Upload failed: ${uploadResp.status} ${t}`);
+          }
+          const up = await uploadResp.json();
+          sourceImageId = up?.id;
+        } catch (e) {
+          console.error("🎨 ❌ Failed to upload source image for img2img:", e);
+        }
+      }
+
+      // Remap model for image-to-image
+      let modelForUpdate: any = model;
+      if (generationType === "image-to-image") {
+        try {
+          const rawName = (model as any)?.name || (model as any)?.id || "";
+          const mapped = await selectImageToImageModel(
+            rawName,
+            getAvailableImageModels,
+            { allowInpainting: true }
+          );
+          if (mapped) {
+            modelForUpdate = { ...(model as any), name: mapped };
+          }
+        } catch (_) {}
+      }
+      if (generationType === "image-to-image" && !sourceImageId) {
+        draftContent = JSON.stringify({
+          status: "failed",
+          error:
+            "Не удалось получить исходное изображение для image-to-image (attachment не разрешился в URL)",
+          prompt,
+        });
+        return draftContent;
+      }
+
+      const updateParams: any = {
         prompt,
-        model,
-        style,
-        resolution,
-        shotSize,
+        model: modelForUpdate,
         negativePrompt,
         seed,
         batchSize,
-      }, config);
+      };
+      if (generationType === "image-to-image") {
+        updateParams.sourceImageId = sourceImageId;
+        if (
+          effectiveSourceImageUrl &&
+          /^https?:\/\//.test(effectiveSourceImageUrl)
+        ) {
+          updateParams.sourceImageUrl = effectiveSourceImageUrl;
+        }
+      } else {
+        updateParams.style = style;
+        updateParams.resolution = resolution;
+        updateParams.shotSize = shotSize;
+      }
+
+      const result = await generateImageWithStrategy(
+        generationType,
+        updateParams,
+        config
+      );
       if (!result.success) {
         draftContent = JSON.stringify({
           status: "failed",

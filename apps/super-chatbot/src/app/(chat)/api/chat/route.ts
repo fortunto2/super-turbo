@@ -540,6 +540,15 @@ export async function POST(request: Request) {
           }),
         };
 
+        // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
+
+        console.log("🔍 Message structure for configureImageGeneration:", {
+          hasMessage: !!message,
+          messageKeys: message ? Object.keys(message) : [],
+          experimentalAttachments: (message as any)?.experimental_attachments,
+          attachments: (message as any)?.attachments,
+        });
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
@@ -566,6 +575,31 @@ export async function POST(request: Request) {
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
               session,
+              defaultSourceImageUrl: (() => {
+                try {
+                  const atts = (message as any)?.experimental_attachments || [];
+                  console.log("🔍 Looking for image attachments in message:", {
+                    hasMessage: !!message,
+                    hasAttachments: !!atts,
+                    attachmentsCount: atts?.length || 0,
+                    attachments: atts,
+                  });
+                  const img = atts.find(
+                    (a: any) =>
+                      typeof a?.url === "string" &&
+                      /^https?:\/\//.test(a.url) &&
+                      String(a?.contentType || "").startsWith("image/")
+                  );
+                  console.log("🔍 Found image attachment:", img);
+                  return img?.url;
+                } catch (error) {
+                  console.error(
+                    "🔍 Error extracting defaultSourceImageUrl:",
+                    error
+                  );
+                  return undefined;
+                }
+              })(),
             }),
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
@@ -579,6 +613,7 @@ export async function POST(request: Request) {
             findBestVideoModel,
             enhancePrompt,
           },
+          // Note: explicit toolChoice removed due to type constraints; tool remains available
           onFinish: async ({ response }) => {
             if (session.user?.id) {
               try {
