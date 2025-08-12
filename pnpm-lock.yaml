@@ -101,6 +101,15 @@ importers:
       '@turbo-super/ai-tools':
         specifier: workspace:*
         version: link:../../packages/ai-tools
+      '@turbo-super/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@turbo-super/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@turbo-super/features':
+        specifier: workspace:*
+        version: link:../../packages/features
       '@turbo-super/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -408,6 +417,12 @@ importers:
       '@radix-ui/react-tabs':
         specifier: ^1.1.12
         version: 1.1.12(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@turbo-super/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@turbo-super/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@turbo-super/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -675,6 +690,47 @@ importers:
         specifier: ^5.6.3
         version: 5.8.3
 
+  packages/api:
+    dependencies:
+      '@turbo-super/core':
+        specifier: workspace:*
+        version: link:../core
+      axios:
+        specifier: ^1.10.0
+        version: 1.11.0
+      next:
+        specifier: ^15.0.0
+        version: 15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.89.2)
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.0(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.8.3
+
+  packages/core:
+    dependencies:
+      next:
+        specifier: ^15.0.0
+        version: 15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.89.2)
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.9
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.0(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.8.3
+
   packages/data:
     devDependencies:
       '@turbo-super/eslint-config':
@@ -722,6 +778,28 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.32.0(jiti@1.21.7))
+
+  packages/features:
+    dependencies:
+      '@turbo-super/api':
+        specifier: workspace:*
+        version: link:../api
+      '@turbo-super/core':
+        specifier: workspace:*
+        version: link:../core
+      next:
+        specifier: ^15.0.0
+        version: 15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.89.2)
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.0(jiti@1.21.7)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.8.3
 
   packages/shared:
     dependencies:
@@ -15178,7 +15256,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/cookie@0.6.0': {}
 
@@ -15213,7 +15291,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 6.0.0
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/hast@3.0.4':
     dependencies:
@@ -15257,7 +15335,7 @@ snapshots:
 
   '@types/mysql@2.15.26':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/negotiator@0.6.4': {}
 
@@ -15271,11 +15349,11 @@ snapshots:
 
   '@types/papaparse@5.3.16':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/pdf-parse@1.1.5':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/pg-pool@2.0.6':
     dependencies:
@@ -15283,13 +15361,13 @@ snapshots:
 
   '@types/pg@8.11.6':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
       pg-protocol: 1.10.3
       pg-types: 4.0.2
 
   '@types/pg@8.6.1':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
@@ -15317,11 +15395,11 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/through@0.0.33':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@types/tinycolor2@1.4.6': {}
 
@@ -15338,7 +15416,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
 
   '@typescript-eslint/eslint-plugin@8.38.0(@typescript-eslint/parser@8.38.0(eslint@9.32.0(jiti@1.21.7))(typescript@5.8.3))(eslint@9.32.0(jiti@1.21.7))(typescript@5.8.3)':
     dependencies:
@@ -18411,7 +18489,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -19910,7 +19988,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 22.17.0
+      '@types/node': 20.19.9
       long: 5.3.2
 
   proxy-addr@2.0.7:

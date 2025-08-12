@@ -17,6 +17,21 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const { id } = params;
 
+    // Валидация UUID
+    if (
+      !id ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id
+      )
+    ) {
+      Sentry.captureMessage(`Invalid chat ID format: ${id}`, {
+        level: "error",
+        tags: { error_type: "invalid_uuid", entity: "chat" },
+        extra: { chatId: id },
+      });
+      notFound();
+    }
+
     Sentry.addBreadcrumb({
       category: "chat",
       message: `Loading chat page: ${id}`,
@@ -42,6 +57,16 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         category: "auth",
         message: `No session found when accessing chat: ${id}`,
         level: "info",
+      });
+      redirect("/api/auth/guest");
+    }
+
+    // Дополнительная проверка существования пользователя
+    if (!session.user || !session.user.id) {
+      Sentry.captureMessage(`Invalid session user when accessing chat: ${id}`, {
+        level: "warning",
+        tags: { error_type: "invalid_session", entity: "chat" },
+        extra: { chatId: id, session: session },
       });
       redirect("/api/auth/guest");
     }

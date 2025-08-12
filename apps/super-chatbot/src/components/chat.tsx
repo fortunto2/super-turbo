@@ -2,7 +2,7 @@
 
 import type { Attachment, UIMessage } from "ai";
 import { useChat } from "@ai-sdk/react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { ChatHeader } from "@/components/chat-header";
 import type { Vote } from "@/lib/db/schema";
@@ -81,6 +81,7 @@ function ChatContent({
   session,
   autoResume,
   onDataStream,
+  onError,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
@@ -90,6 +91,7 @@ function ChatContent({
   session: Session;
   autoResume: boolean;
   onDataStream?: (dataStream: any[]) => void;
+  onError?: (error: Error) => void;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -140,14 +142,31 @@ function ChatContent({
       };
     },
     onFinish: () => {
+      // Обновляем URL после успешного завершения чата
+      // Проверяем, что у нас есть ID чата и он валидный
+      if (
+        id &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          id
+        )
+      ) {
+        window.history.replaceState({}, "", `/chat/${id}`);
+      }
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
+      // При ошибке не обновляем URL, чтобы избежать 404
+      console.error("Chat error:", error);
+
+      // Передаем ошибку в родительский компонент
+      if (onError) {
+        onError(error);
+      }
+
       toast({
         type: "error",
         description: error.message,
       });
-      console.log(error);
     },
   });
 
@@ -159,9 +178,26 @@ function ChatContent({
     "idle"
   );
 
+  const handleAppend = useCallback(
+    (message: any, options?: any) => {
+      // Обновляем URL при добавлении сообщения
+      if (
+        id &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          id
+        )
+      ) {
+        window.history.replaceState({}, "", `/chat/${id}`);
+      }
+
+      append(message, options);
+    },
+    [append, id]
+  );
+
   useEffect(() => {
     if (query && !hasAppendedQuery) {
-      append({
+      handleAppend({
         role: "user",
         content: query,
       });
@@ -169,7 +205,7 @@ function ChatContent({
       setHasAppendedQuery(true);
       window.history.replaceState({}, "", `/chat/${id}`);
     }
-  }, [query, append, hasAppendedQuery, id]);
+  }, [query, handleAppend, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
@@ -248,6 +284,30 @@ function ChatContent({
     }
   }, [chatImageSSE, chatVideoSSE, messages, setMessages, id]);
 
+  const handleFormSubmit = useCallback(
+    (
+      event?: { preventDefault?: (() => void) | undefined } | undefined,
+      chatRequestOptions?: any
+    ) => {
+      if (event?.preventDefault) {
+        event.preventDefault();
+      }
+
+      // Обновляем URL сразу при отправке сообщения
+      if (
+        id &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          id
+        )
+      ) {
+        window.history.replaceState({}, "", `/chat/${id}`);
+      }
+
+      handleSubmit(event, chatRequestOptions);
+    },
+    [handleSubmit, id]
+  );
+
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -279,7 +339,7 @@ function ChatContent({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleFormSubmit}
               status={status}
               stop={stop}
               attachments={attachments}

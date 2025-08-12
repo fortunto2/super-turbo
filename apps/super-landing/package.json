@@ -35,6 +35,8 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.2.2",
     "@radix-ui/react-tabs": "^1.1.12",
+    "@turbo-super/core": "workspace:*",
+    "@turbo-super/api": "workspace:*",
     "@turbo-super/shared": "workspace:*",
     "@turbo-super/superduperai-api": "workspace:*",
     "@turbo-super/ui": "workspace:*",

@@ -15,7 +15,24 @@ export default async function HomePage() {
     redirect("/api/auth/guest");
   }
 
+  // Проверяем, что у нас есть валидная сессия
+  if (!session.user || !session.user.id) {
+    console.error("Invalid session user:", session);
+    redirect("/api/auth/guest");
+  }
+
   const id = generateUUID();
+
+  // Валидация сгенерированного UUID
+  if (
+    !id ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  ) {
+    console.error("Failed to generate valid UUID:", id);
+    // В случае ошибки генерации, используем fallback
+    const fallbackId = `fallback-${Date.now()}-${Math.random().toString(36).substring(2)}`;
+    console.warn("Using fallback ID:", fallbackId);
+  }
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("chat-model");
