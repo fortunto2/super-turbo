@@ -1,8 +1,11 @@
 "use client";
 
-import { Veo3PromptGenerator } from "@turbo-super/veo3-tools";
-import type { PromptData, MoodboardImage } from "@turbo-super/veo3-tools";
+import { Veo3PromptGenerator, PromptDataType, MoodboardImageType } from "@turbo-super/features";
 import { enhancePromptVeo3 } from "@/lib/ai/api/enhance-prompt-veo3";
+
+// Define types from exported values
+type PromptData = typeof PromptDataType;
+type MoodboardImage = typeof MoodboardImageType;
 
 export default function Veo3PromptGeneratorPage() {
   const enhancePromptFunction = async (params: {
@@ -26,6 +29,7 @@ export default function Veo3PromptGeneratorPage() {
   return (
     <Veo3PromptGenerator
       enhancePromptFunction={enhancePromptFunction}
+      MoodboardUploader={undefined}
       showInfoBanner={true}
     />
   );

@@ -6,10 +6,24 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs", 
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./data": {
+      "import": "./dist/data/index.mjs",
+      "require": "./dist/data/index.js"
+    },
+    "./tsconfig": "./tsconfig/base.json",
+    "./tsconfig/library.json": "./tsconfig/library.json",
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json"
+  },
   "sideEffects": false,
   "license": "MIT",
   "files": [
-    "dist/**"
+    "dist/**",
+    "tsconfig/**"
   ],
   "scripts": {
     "build": "tsup",
@@ -24,7 +38,6 @@
   },
   "devDependencies": {
     "@turbo-super/eslint-config": "workspace:*",
-    "@turbo-super/tsconfig": "workspace:*",
     "@types/node": "^20.17.32",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",
@@ -35,7 +48,6 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@turbo-super/ui": "workspace:*",
     "clsx": "^2.1.0",
     "lucide-react": "^0.446.0",
     "sonner": "^1.4.0"

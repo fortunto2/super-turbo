@@ -1,1 +1,0 @@
-{"version":3,"file":"IFileReferenceRead.d.ts","sourceRoot":"","sources":["../../../../src/lib/api/models/IFileReferenceRead.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,gBAAgB,CAAC;AACnD,MAAM,MAAM,kBAAkB,GAAG;IAC7B,EAAE,EAAE,MAAM,CAAC;IACX,GAAG,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IACrB,aAAa,EAAE,CAAC,MAAM,GAAG,IAAI,CAAC,CAAC;IAC/B,IAAI,EAAE,YAAY,CAAC;CACtB,CAAC"}

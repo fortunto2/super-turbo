@@ -9,7 +9,7 @@ import {
   Badge,
 } from "@turbo-super/ui";
 import { Coins } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/shared";
+import { StripePaymentButton } from "@turbo-super/ui";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
 
@@ -54,6 +54,7 @@ export function CreditBalance({
 
     return translation;
   };
+
   const [data, setData] = useState<CreditBalanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +94,7 @@ export function CreditBalance({
         <CardContent className="flex items-center justify-center py-8">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30">
-              <Coins className="w-5 h-5 text-purple-400 animate-pulse" />
+              <Coins className="size-5 text-purple-400 animate-pulse" />
             </div>
             <span className="text-purple-300">
               {t("credit_balance.loading")}
@@ -112,7 +113,7 @@ export function CreditBalance({
         <CardContent className="flex items-center justify-center py-8">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30">
-              <Coins className="w-5 h-5 text-red-400" />
+              <Coins className="size-5 text-red-400" />
             </div>
             <span className="text-red-300">
               {error || t("credit_balance.error")}
@@ -139,7 +140,7 @@ export function CreditBalance({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg font-bold">
           <div className="p-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30">
-            <Coins className={`w-5 h-5 ${iconColorClasses[displayColor]}`} />
+            <Coins className={`size-5 ${iconColorClasses[displayColor]}`} />
           </div>
           <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
             {t("credit_balance.title")}
@@ -154,7 +155,7 @@ export function CreditBalance({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30">
-                <Coins className="w-4 h-4 text-blue-400" />
+                <Coins className="size-4 text-blue-400" />
               </div>
               <span className="font-medium text-blue-300 text-sm">
                 {t("credit_balance.current_balance")}
@@ -196,19 +197,19 @@ export function CreditBalance({
           </p>
           <div className="grid grid-cols-1 gap-1">
             <p className="text-gray-400 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/60"></span>
+              <span className="size-1.5 rounded-full bg-blue-500/60"></span>
               {t("credit_balance.image_generation")}
             </p>
             <p className="text-gray-400 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500/60"></span>
+              <span className="size-1.5 rounded-full bg-purple-500/60"></span>
               {t("credit_balance.video_generation")}
             </p>
             <p className="text-gray-400 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500/60"></span>
+              <span className="size-1.5 rounded-full bg-green-500/60"></span>
               {t("credit_balance.script_generation")}
             </p>
             <p className="text-gray-400 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/60"></span>
+              <span className="size-1.5 rounded-full bg-yellow-500/60"></span>
               {t("credit_balance.prompt_enhancement")}
             </p>
           </div>

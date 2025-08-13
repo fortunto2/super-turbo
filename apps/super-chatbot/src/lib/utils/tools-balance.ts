@@ -5,12 +5,12 @@ import postgres from "postgres";
 import { FREE_BALANCE_BY_USER_TYPE } from "@/lib/config/tools-pricing";
 import type { UserType } from "@/app/(auth)/auth";
 import {
-  calculateOperationCost,
   checkOperationBalance as checkOperationBalanceShared,
   createBalanceTransaction as createBalanceTransactionShared,
-  type BalanceTransaction,
-  type BalanceCheckResult,
-} from "@turbo-super/superduperai-api";
+  getOperationCost,
+  getPricingInfo,
+  TOOLS_PRICING,
+} from "@turbo-super/api";
 
 // Create database connection
 // biome-ignore lint: Forbidden non-null assertion.
@@ -46,15 +46,15 @@ export async function getUserToolsBalance(userId: string): Promise<number> {
  */
 export async function checkOperationBalance(
   userId: string,
-  toolCategory: keyof typeof import("@/lib/config/tools-pricing").TOOLS_PRICING,
+  toolCategory: string,
   operationType: string,
   multipliers: string[] = []
-): Promise<BalanceCheckResult> {
+): Promise<any> {
   try {
     const currentBalance = await getUserToolsBalance(userId);
     return checkOperationBalanceShared(
       currentBalance,
-      toolCategory,
+      toolCategory as "image-generation" | "video-generation" | "script-generation" | "prompt-enhancement",
       operationType,
       multipliers
     );
@@ -73,10 +73,10 @@ export async function deductOperationBalance(
   operationType: string,
   multipliers: string[] = [],
   metadata?: Record<string, any>
-): Promise<BalanceTransaction> {
+): Promise<any> {
   try {
     const currentBalance = await getUserToolsBalance(userId);
-    const amount = calculateOperationCost(
+    const amount = getOperationCost(
       toolCategory,
       operationType,
       multipliers
@@ -125,7 +125,7 @@ export async function addUserBalance(
   amount: number,
   reason?: string,
   metadata?: Record<string, any>
-): Promise<BalanceTransaction> {
+): Promise<any> {
   try {
     if (amount <= 0) {
       throw new Error("Amount must be positive");
@@ -199,7 +199,7 @@ export async function setUserBalance(
   userId: string,
   newBalance: number,
   reason?: string
-): Promise<BalanceTransaction> {
+): Promise<any> {
   try {
     if (newBalance < 0) {
       throw new Error("Balance cannot be negative");
@@ -297,5 +297,124 @@ export async function validateOperationBalance(
       valid: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
+  }
+}
+
+export async function createOperationTransaction(
+  userId: string,
+  toolCategory: string,
+  operationType: string,
+  multipliers: string[] = [],
+  metadata?: Record<string, any>
+): Promise<any> {
+  try {
+    const currentBalance = await getUserToolsBalance(userId);
+    const amount = getOperationCost(
+      toolCategory as "image-generation" | "video-generation" | "script-generation" | "prompt-enhancement",
+      operationType,
+      multipliers
+    );
+
+    if (currentBalance < amount) {
+      throw new Error(`Insufficient balance. Required: ${amount}, Available: ${currentBalance}`);
+    }
+
+    const newBalance = currentBalance - amount;
+
+    // Update user balance in database
+    await db
+      .update(user)
+      .set({ balance: newBalance })
+      .where(eq(user.id, userId));
+
+    // Create transaction record using shared function
+    const transaction = createBalanceTransactionShared(
+      userId,
+      operationType,
+      toolCategory,
+      currentBalance,
+      newBalance,
+      metadata
+    );
+
+    // Here you would typically save the transaction to your database
+    console.log("Transaction created:", transaction);
+
+    return transaction;
+  } catch (error) {
+    console.error("Error creating operation transaction:", error);
+    throw error;
+  }
+}
+
+export async function addToBalance(
+  userId: string,
+  amount: number,
+  reason?: string,
+  metadata?: Record<string, any>
+): Promise<any> {
+  try {
+    if (amount <= 0) {
+      throw new Error("Amount must be positive");
+    }
+
+    const currentBalance = await getUserToolsBalance(userId);
+    const newBalance = currentBalance + amount;
+
+    // Update user balance in database
+    await db
+      .update(user)
+      .set({ balance: newBalance })
+      .where(eq(user.id, userId));
+
+    // Create transaction record using shared function
+    const transaction = createBalanceTransactionShared(
+      userId,
+      reason || "manual_addition",
+      "balance_adjustment",
+      currentBalance,
+      newBalance,
+      metadata
+    );
+
+    console.log("Balance added:", transaction);
+    return transaction;
+  } catch (error) {
+    console.error("Error adding to balance:", error);
+    throw error;
+  }
+}
+
+export async function setBalance(
+  userId: string,
+  newBalance: number,
+  reason?: string
+): Promise<any> {
+  try {
+    if (newBalance < 0) {
+      throw new Error("Balance cannot be negative");
+    }
+
+    const currentBalance = await getUserToolsBalance(userId);
+
+    // Update user balance in database
+    await db
+      .update(user)
+      .set({ balance: newBalance })
+      .where(eq(user.id, userId));
+
+    const transaction = createBalanceTransactionShared(
+      userId,
+      reason || "admin_set_balance",
+      "balance_adjustment",
+      currentBalance,
+      newBalance
+    );
+
+    console.log("Balance set:", transaction);
+    return transaction;
+  } catch (error) {
+    console.error("Error setting balance:", error);
+    throw error;
   }
 }

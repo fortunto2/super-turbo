@@ -5,5 +5,8 @@ export * from "./hooks/use-local-storage";
 export * from "./hooks/use-media-query";
 export * from "./hooks/use-click-outside";
 
-// Платежные компоненты
-export * from "./payment";
+// Data exports
+export * from "./data";
+
+// Payment utilities
+export * from "./payment/stripe-config";

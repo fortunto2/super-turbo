@@ -7,9 +7,8 @@ import {
 import { OpenAPI } from "@/lib/api/core/OpenAPI";
 import {
   generateImageWithStrategy,
-  ImageGenerationParams,
-  ImageToImageParams,
-} from "@turbo-super/superduperai-api";
+  type ImageGenerationParams,
+} from "@turbo-super/api";
 import {
   ensureNonEmptyPrompt,
   selectImageToImageModel,
@@ -292,7 +291,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create image generation config using OpenAPI types
-    const strategyParams: ImageGenerationParams | ImageToImageParams = {
+    const strategyParams: ImageGenerationParams = {
       ...body,
     };
 

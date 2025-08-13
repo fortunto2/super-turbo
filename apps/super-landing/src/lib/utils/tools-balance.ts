@@ -2,10 +2,12 @@
 // В реальном приложении здесь была бы интеграция с базой данных
 
 import {
-  calculateOperationCost,
+  checkOperationBalance,
   createBalanceTransaction,
-  type BalanceTransaction,
-} from "@turbo-super/superduperai-api";
+  getOperationCost,
+  getPricingInfo,
+  TOOLS_PRICING,
+} from "@turbo-super/api";
 import { getUserBalance, setUserBalance, incrementUserBalance } from "@/lib/kv";
 
 // Простое хранилище баланса в памяти для демо (fallback, если Redis недоступен)
@@ -66,7 +68,7 @@ export async function validateOperationBalance(
   operationType: string,
   multipliers: string[] = []
 ): Promise<{ valid: boolean; error?: string; cost?: number }> {
-  const cost = calculateOperationCost(
+  const cost = getOperationCost(
     toolCategory as any,
     operationType,
     multipliers
@@ -93,8 +95,8 @@ export async function deductOperationBalance(
   operationType: string,
   multipliers: string[] = [],
   metadata?: Record<string, any>
-): Promise<BalanceTransaction> {
-  const cost = calculateOperationCost(
+): Promise<any> { // Changed from BalanceTransaction to any as BalanceTransaction is no longer imported
+  const cost = getOperationCost(
     toolCategory as any,
     operationType,
     multipliers

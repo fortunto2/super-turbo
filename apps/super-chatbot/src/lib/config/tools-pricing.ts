@@ -1,20 +1,17 @@
 import type { UserType } from "@/app/(auth)/auth";
 import {
   TOOLS_PRICING,
-  FREE_BALANCE_BY_USER_TYPE as SHARED_FREE_BALANCE,
-  type ToolOperation,
   calculateOperationCost,
-  getToolOperations,
-  getToolPricingDisplay,
-} from "@turbo-super/superduperai-api";
+  getOperationCost,
+  getPricingInfo,
+} from "@turbo-super/api";
 
 // Re-export shared pricing configuration
 export {
   TOOLS_PRICING,
-  type ToolOperation,
   calculateOperationCost,
-  getToolOperations,
-  getToolPricingDisplay,
+  getOperationCost,
+  getPricingInfo,
 };
 
 /**
@@ -22,8 +19,8 @@ export {
  * Extends the shared configuration with local user types
  */
 export const FREE_BALANCE_BY_USER_TYPE: Record<UserType, number> = {
-  ...SHARED_FREE_BALANCE,
-  // Add any local user types here if needed
+  guest: 100,
+  regular: 500,
 };
 
 /**
