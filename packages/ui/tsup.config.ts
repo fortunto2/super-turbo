@@ -6,13 +6,17 @@ export default defineConfig({
   dts: false,
   splitting: false,
   sourcemap: true,
-  clean: false,
-  external: ["react", "react-dom"],
-  banner: {
-    js: '"use client";',
-  },
-  // Копируем CSS файлы
-  loader: {
-    ".css": "copy",
+  clean: true,
+  external: [
+    "react",
+    "react-dom",
+    "sonner",
+    "clsx",
+    "lucide-react",
+    "class-variance-authority",
+    "tailwind-merge",
+  ],
+  esbuildOptions(options) {
+    options.jsx = "automatic";
   },
 });

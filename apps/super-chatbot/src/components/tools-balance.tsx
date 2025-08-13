@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Badge } from "@turbo-super/ui";
 import { cn } from "@turbo-super/ui";
 import { CreditCard, Coins, Zap } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/shared";
+import { StripePaymentButton } from "@turbo-super/ui";
 import {
   Dialog,
   DialogContent,

@@ -1,7 +1,10 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: {
+    index: "src/index.ts",
+    "data/index": "src/data/index.ts"
+  },
   format: ["cjs", "esm"],
   dts: false,
   splitting: false,
@@ -10,7 +13,6 @@ export default defineConfig({
   external: [
     "react", 
     "react-dom",
-    "@turbo-super/ui",
     "sonner",
     "clsx",
     "lucide-react"

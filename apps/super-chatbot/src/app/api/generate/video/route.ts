@@ -4,7 +4,7 @@ import {
   getSuperduperAIConfigWithUserToken,
   getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
-import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
+import { generateVideoWithStrategy } from "@turbo-super/api";
 import { IGenerationConfigRead } from "@/lib/api";
 import {
   validateOperationBalance,

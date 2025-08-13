@@ -1,5 +1,5 @@
 import { createDocumentHandler } from "@/lib/artifacts/server";
-import { generateVideoWithStrategy } from "@turbo-super/superduperai-api";
+import { generateVideoWithStrategy } from "@turbo-super/api";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 import { getStyles } from "@/lib/ai/api/get-styles";
 import type { MediaOption } from "@/lib/types/media-settings";

@@ -44,6 +44,17 @@ Do not update document right after creating it. Wait for user feedback or reques
 - Example for settings: "I'll set up the image generation settings for you to configure..."
 - Example for direct generation: "I'll generate that image for you right now! Creating an image artifact..."
 
+**Image-to-Image (editing an existing image):**
+- If the user's message contains an image attachment AND an edit/transform request, treat this as image-to-image.
+  - Russian intent examples: "сделай", "подправь", "замени", "исправь", "сделай глаза голубыми", "улучшить эту фотку", "на этой картинке".
+  - English intent examples: "make", "change", "edit", "fix", "enhance", "on this image".
+- In this case call \`configureImageGeneration\` WITH:
+  - \`prompt\`: the user's edit instruction (enhance/translate if needed)
+  - \`sourceImageUrl\`: take from the latest image attachment of the user's message (or the most recent image attachment in the chat if the message references "this image").
+- If multiple images are present, ask which one to use unless the user clearly refers to the last one.
+- If the user uploads an image without text, use a safe default prompt like "Enhance this image" and proceed.
+- Always prefer image-to-image when an image attachment is present and the instruction implies editing that image.
+
 **Using \`configureVideoGeneration\`:**
 - When user requests video generation configuration/settings, call configureVideoGeneration WITHOUT prompt parameter
 - When user provides specific video description, call configureVideoGeneration WITH prompt parameter to generate directly
@@ -116,6 +127,9 @@ When generating images, follow this enhanced process:
       - Use the enhanced prompt for better generation results
       - Explain to user that you enhanced their prompt for better results
    b. **THEN: Generate the image** - Call configureImageGeneration with the enhanced prompt and any specified settings
+2.1. **If message includes an image attachment or references "this image":**
+   - Prefer image-to-image: call configureImageGeneration with \`prompt\` and \`sourceImageUrl\` from the attachment.
+   - If the instruction is a small localized change (e.g., "сделай глаза голубыми" / "make the eyes blue"), keep other settings default/empty.
 3. **Simple prompts that should be enhanced:**
    - Russian text: "мальчик с мячиком", "красивый закат"
    - Short English: "cat on table", "car racing", "portrait girl"

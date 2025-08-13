@@ -1,6 +1,6 @@
 "use client";
 
-import { StripePaymentButton } from '@turbo-super/shared';
+import { StripePaymentButton } from '@turbo-super/ui';
 
 interface Veo3PaymentButtonsProps {
   prompt: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from '@turbo-super/ui';
+import { Card } from "@turbo-super/ui";
 import {
   FileIcon,
   ImageIcon,
@@ -138,12 +138,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
           </div>
         </div>
 
-        {/* Username */}
-        {document.username && (
-          <div className="text-xs text-muted-foreground">
-            by {document.username}
-          </div>
-        )}
+        {/* Username - removed to hide user email */}
       </div>
     </Card>
   );

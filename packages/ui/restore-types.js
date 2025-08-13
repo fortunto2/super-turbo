@@ -14,7 +14,10 @@ export * from "./components/skeleton";
 export * from "./components/tabs";
 export * from "./components/textarea";
 export * from "./components/dialog";
-export * from "./lib/utils";`;
+export * from "./lib/utils";
+
+// Payment components
+export * from "./payment";`;
 
 fs.writeFileSync(path.join(__dirname, 'dist', 'index.d.ts'), indexContent);
 
@@ -255,5 +258,66 @@ const utilsContent = `import { ClassValue } from "clsx";
 export declare function cn(...inputs: ClassValue[]): string;`;
 
 fs.writeFileSync(path.join(libDir, 'utils.d.ts'), utilsContent);
+
+// Создаем папку payment если её нет
+const paymentDir = path.join(__dirname, 'dist', 'payment');
+if (!fs.existsSync(paymentDir)) {
+  fs.mkdirSync(paymentDir, { recursive: true });
+}
+
+// Создаем payment/index.d.ts
+const paymentIndexContent = `// Хуки
+export * from "./use-stripe-prices";
+
+// Компоненты
+export * from "./stripe-payment-button";`;
+
+fs.writeFileSync(path.join(paymentDir, 'index.d.ts'), paymentIndexContent);
+
+// Создаем payment/use-stripe-prices.d.ts
+const useStripePricesContent = `export interface StripePrices {
+  single: string;
+  bulk?: string;
+}
+
+export interface StripeConfig {
+  prices: StripePrices;
+  mode: "live" | "test";
+}
+
+export function useStripePrices(apiEndpoint?: string): {
+  prices: StripePrices | null;
+  mode: "live" | "test";
+  loading: boolean;
+  error: string | null;
+};
+
+export function useStripeConfig(apiEndpoint?: string): StripeConfig | null;`;
+
+fs.writeFileSync(path.join(paymentDir, 'use-stripe-prices.d.ts'), useStripePricesContent);
+
+// Создаем payment/stripe-payment-button.d.ts
+const stripePaymentButtonContent = `import * as React from "react";
+
+export interface StripePaymentButtonProps {
+  prompt?: string;
+  onPaymentClick?: () => void;
+  toolSlug?: string;
+  toolTitle?: string;
+  variant?: "video" | "credits";
+  creditAmount?: number;
+  price?: number;
+  apiEndpoint?: string;
+  checkoutEndpoint?: string;
+  className?: string;
+  locale?: string;
+  t?: (key: string, params?: Record<string, string | number>) => string;
+}
+
+export declare const StripePaymentButton: React.ForwardRefExoticComponent<
+  StripePaymentButtonProps & React.RefAttributes<HTMLDivElement>
+>;`;
+
+fs.writeFileSync(path.join(paymentDir, 'stripe-payment-button.d.ts'), stripePaymentButtonContent);
 
 console.log('Type files restored successfully!'); 

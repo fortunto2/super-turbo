@@ -1,0 +1,4219 @@
+import { superDuperAIClient } from '@turbo-super/api';
+import { z } from 'zod';
+import Link from 'next/link';
+import { cn, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Label, Badge, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '@turbo-super/ui';
+import { ImagesIcon, LanguagesIcon, PlayIcon, ZapIcon, SparklesIcon, Wand2Icon, VideoIcon, ImageIcon, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown, BookOpen } from 'lucide-react';
+import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { useState, useCallback, useRef, useEffect } from 'react';
+
+// src/image-generation/strategies/text-to-image.ts
+var TextToImageStrategy = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  async generate(params) {
+    try {
+      this.validateParams(params);
+      const payload = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        width: params.width,
+        height: params.height,
+        steps: params.steps || 20,
+        cfg_scale: params.cfgScale || 7.5,
+        seed: params.seed || -1,
+        model: params.model || "stable-diffusion-xl"
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/generation/image",
+        data: payload
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Text-to-image generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  validateParams(params) {
+    if (!params.prompt || params.prompt.trim().length === 0) {
+      throw new Error("Prompt is required");
+    }
+    if (params.width <= 0 || params.height <= 0) {
+      throw new Error("Width and height must be positive numbers");
+    }
+    if (params.steps && (params.steps < 1 || params.steps > 100)) {
+      throw new Error("Steps must be between 1 and 100");
+    }
+    if (params.cfgScale && (params.cfgScale < 1 || params.cfgScale > 20)) {
+      throw new Error("CFG Scale must be between 1 and 20");
+    }
+  }
+};
+var textToImageStrategy = new TextToImageStrategy();
+var ImageToImageStrategy = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  async generate(params) {
+    try {
+      this.validateParams(params);
+      const payload = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        input_image: params.inputImage,
+        width: params.width,
+        height: params.height,
+        steps: params.steps || 20,
+        cfg_scale: params.cfgScale || 7.5,
+        seed: params.seed || -1,
+        model: params.model || "stable-diffusion-xl",
+        strength: params.strength || 0.75,
+        denoising_strength: params.denoisingStrength || 0.75
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/generation/image-to-image",
+        data: payload
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Image-to-image generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  validateParams(params) {
+    if (!params.prompt || params.prompt.trim().length === 0) {
+      throw new Error("Prompt is required");
+    }
+    if (!params.inputImage) {
+      throw new Error("Input image is required");
+    }
+    if (params.width <= 0 || params.height <= 0) {
+      throw new Error("Width and height must be positive numbers");
+    }
+    if (params.steps && (params.steps < 1 || params.steps > 100)) {
+      throw new Error("Steps must be between 1 and 100");
+    }
+    if (params.cfgScale && (params.cfgScale < 1 || params.cfgScale > 20)) {
+      throw new Error("CFG Scale must be between 1 and 20");
+    }
+    if (params.strength && (params.strength < 0 || params.strength > 1)) {
+      throw new Error("Strength must be between 0 and 1");
+    }
+    if (params.denoisingStrength && (params.denoisingStrength < 0 || params.denoisingStrength > 1)) {
+      throw new Error("Denoising strength must be between 0 and 1");
+    }
+  }
+};
+var imageToImageStrategy = new ImageToImageStrategy();
+var InpaintingStrategy = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  async generate(params) {
+    try {
+      this.validateParams(params);
+      const payload = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        input_image: params.inputImage,
+        mask: params.mask,
+        width: params.width,
+        height: params.height,
+        steps: params.steps || 20,
+        cfg_scale: params.cfgScale || 7.5,
+        seed: params.seed || -1,
+        model: params.model || "stable-diffusion-xl",
+        strength: params.strength || 0.75,
+        mask_blur: params.maskBlur || 4
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/generation/inpainting",
+        data: payload
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Inpainting generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  validateParams(params) {
+    if (!params.prompt || params.prompt.trim().length === 0) {
+      throw new Error("Prompt is required");
+    }
+    if (!params.inputImage) {
+      throw new Error("Input image is required");
+    }
+    if (!params.mask) {
+      throw new Error("Mask is required for inpainting");
+    }
+    if (params.width <= 0 || params.height <= 0) {
+      throw new Error("Width and height must be positive numbers");
+    }
+    if (params.steps && (params.steps < 1 || params.steps > 100)) {
+      throw new Error("Steps must be between 1 and 100");
+    }
+    if (params.cfgScale && (params.cfgScale < 1 || params.cfgScale > 20)) {
+      throw new Error("CFG Scale must be between 1 and 20");
+    }
+    if (params.strength && (params.strength < 0 || params.strength > 1)) {
+      throw new Error("Strength must be between 0 and 1");
+    }
+    if (params.maskBlur && (params.maskBlur < 0 || params.maskBlur > 64)) {
+      throw new Error("Mask blur must be between 0 and 64");
+    }
+  }
+};
+var inpaintingStrategy = new InpaintingStrategy();
+
+// src/image-generation/utils.ts
+var DEFAULT_IMAGE_CONFIG = {
+  defaultModel: "stable-diffusion-xl",
+  maxSteps: 50,
+  maxCfgScale: 20,
+  supportedResolutions: [
+    { width: 512, height: 512 },
+    { width: 768, height: 768 },
+    { width: 1024, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 }
+  ],
+  defaultStrength: 0.75
+};
+var ImageGenerationUtils = class {
+  /**
+   * Validate if resolution is supported
+   */
+  static isResolutionSupported(width, height) {
+    return DEFAULT_IMAGE_CONFIG.supportedResolutions.some(
+      (res) => res.width === width && res.height === height
+    );
+  }
+  /**
+   * Get closest supported resolution
+   */
+  static getClosestResolution(width, height) {
+    let closest = DEFAULT_IMAGE_CONFIG.supportedResolutions[0];
+    let minDistance = Infinity;
+    for (const res of DEFAULT_IMAGE_CONFIG.supportedResolutions) {
+      const distance = Math.sqrt(
+        Math.pow(res.width - width, 2) + Math.pow(res.height - height, 2)
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = res;
+      }
+    }
+    return closest;
+  }
+  /**
+   * Calculate aspect ratio
+   */
+  static getAspectRatio(width, height) {
+    return width / height;
+  }
+  /**
+   * Check if image is square
+   */
+  static isSquare(width, height) {
+    return width === height;
+  }
+  /**
+   * Check if image is portrait
+   */
+  static isPortrait(width, height) {
+    return height > width;
+  }
+  /**
+   * Check if image is landscape
+   */
+  static isLandscape(width, height) {
+    return width > height;
+  }
+  /**
+   * Generate a random seed
+   */
+  static generateRandomSeed() {
+    return Math.floor(Math.random() * 2147483647);
+  }
+  /**
+   * Validate prompt length
+   */
+  static validatePromptLength(prompt, maxLength = 1e3) {
+    return prompt.length <= maxLength;
+  }
+  /**
+   * Sanitize prompt text
+   */
+  static sanitizePrompt(prompt) {
+    return prompt.trim().replace(/\s+/g, " ").replace(/[^\w\s\-.,!?()]/g, "");
+  }
+  /**
+   * Normalize image generation type
+   */
+  static normalizeImageGenerationType(value) {
+    return value === "image-to-image" ? "image-to-image" : "text-to-image";
+  }
+  /**
+   * Ensure non-empty prompt with fallback
+   */
+  static ensureNonEmptyPrompt(input, fallback) {
+    const str = typeof input === "string" ? input.trim() : "";
+    return str.length > 0 ? str : fallback;
+  }
+  /**
+   * Select image-to-image model
+   */
+  static async selectImageToImageModel(rawModelName, getAvailableImageModels, options) {
+    const allowInpainting = options?.allowInpainting ?? false;
+    const allImageModels = await getAvailableImageModels();
+    const allI2I = allImageModels.filter(
+      (m) => m.type === "image_to_image"
+    );
+    const wants = String(rawModelName || "");
+    const baseToken = wants.toLowerCase().includes("flux") ? "flux" : wants.split("/").pop()?.split("-")[0] || wants.toLowerCase();
+    const candidates = allowInpainting ? allI2I : allI2I.filter((m) => !/inpaint/i.test(String(m.name || "")));
+    let pick = candidates.find(
+      (m) => String(m.name || "").toLowerCase() === wants.toLowerCase() || String(m.label || "").toLowerCase() === wants.toLowerCase()
+    );
+    if (!pick && baseToken) {
+      pick = candidates.find(
+        (m) => String(m.name || "").toLowerCase().includes(baseToken) || String(m.label || "").toLowerCase().includes(baseToken)
+      );
+    }
+    if (!pick && candidates.length > 0) pick = candidates[0];
+    return pick?.name || null;
+  }
+};
+var TextToVideoStrategy = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  async generate(params) {
+    try {
+      this.validateParams(params);
+      const payload = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        width: params.width,
+        height: params.height,
+        duration: params.duration,
+        fps: params.fps || 24,
+        model: params.model || "veo-2",
+        seed: params.seed || -1
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/generation/video",
+        data: payload
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Text-to-video generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  validateParams(params) {
+    if (!params.prompt || params.prompt.trim().length === 0) {
+      throw new Error("Prompt is required");
+    }
+    if (params.width <= 0 || params.height <= 0) {
+      throw new Error("Width and height must be positive numbers");
+    }
+    if (params.duration <= 0 || params.duration > 60) {
+      throw new Error("Duration must be between 0 and 60 seconds");
+    }
+    if (params.fps && (params.fps < 1 || params.fps > 60)) {
+      throw new Error("FPS must be between 1 and 60");
+    }
+  }
+};
+var textToVideoStrategy = new TextToVideoStrategy();
+var VideoToVideoStrategy = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  async generate(params) {
+    try {
+      this.validateParams(params);
+      const payload = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        input_video: params.inputVideo,
+        width: params.width,
+        height: params.height,
+        duration: params.duration,
+        fps: params.fps || 24,
+        model: params.model || "veo-2",
+        seed: params.seed || -1,
+        strength: params.strength || 0.75
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/generation/video-to-video",
+        data: payload
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Video-to-video generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  validateParams(params) {
+    if (!params.prompt || params.prompt.trim().length === 0) {
+      throw new Error("Prompt is required");
+    }
+    if (!params.inputVideo) {
+      throw new Error("Input video is required");
+    }
+    if (params.width <= 0 || params.height <= 0) {
+      throw new Error("Width and height must be positive numbers");
+    }
+    if (params.duration <= 0 || params.duration > 60) {
+      throw new Error("Duration must be between 0 and 60 seconds");
+    }
+    if (params.fps && (params.fps < 1 || params.fps > 60)) {
+      throw new Error("FPS must be between 1 and 60");
+    }
+    if (params.strength && (params.strength < 0 || params.strength > 1)) {
+      throw new Error("Strength must be between 0 and 1");
+    }
+  }
+};
+var videoToVideoStrategy = new VideoToVideoStrategy();
+
+// src/video-generation/utils.ts
+var DEFAULT_VIDEO_CONFIG = {
+  defaultModel: "veo-2",
+  maxDuration: 60,
+  minDuration: 1,
+  supportedFps: [24, 25, 30, 60],
+  supportedResolutions: [
+    { width: 512, height: 512 },
+    { width: 768, height: 768 },
+    { width: 1024, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 }
+  ],
+  defaultStrength: 0.75
+};
+var VideoGenerationUtils = class {
+  /**
+   * Validate if resolution is supported
+   */
+  static isResolutionSupported(width, height) {
+    return DEFAULT_VIDEO_CONFIG.supportedResolutions.some(
+      (res) => res.width === width && res.height === height
+    );
+  }
+  /**
+   * Get closest supported resolution
+   */
+  static getClosestResolution(width, height) {
+    let closest = DEFAULT_VIDEO_CONFIG.supportedResolutions[0];
+    let minDistance = Infinity;
+    for (const res of DEFAULT_VIDEO_CONFIG.supportedResolutions) {
+      const distance = Math.sqrt(
+        Math.pow(res.width - width, 2) + Math.pow(res.height - height, 2)
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = res;
+      }
+    }
+    return closest;
+  }
+  /**
+   * Validate duration
+   */
+  static validateDuration(duration) {
+    return duration >= DEFAULT_VIDEO_CONFIG.minDuration && duration <= DEFAULT_VIDEO_CONFIG.maxDuration;
+  }
+  /**
+   * Validate FPS
+   */
+  static validateFps(fps) {
+    return DEFAULT_VIDEO_CONFIG.supportedFps.includes(fps);
+  }
+  /**
+   * Get closest supported FPS
+   */
+  static getClosestFps(fps) {
+    let closest = DEFAULT_VIDEO_CONFIG.supportedFps[0];
+    let minDistance = Infinity;
+    for (const supportedFps of DEFAULT_VIDEO_CONFIG.supportedFps) {
+      const distance = Math.abs(supportedFps - fps);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = supportedFps;
+      }
+    }
+    return closest;
+  }
+  /**
+   * Calculate video file size estimate
+   */
+  static estimateFileSize(width, height, duration, fps) {
+    const pixelsPerFrame = width * height;
+    const totalFrames = duration * fps;
+    return pixelsPerFrame * totalFrames;
+  }
+};
+var BalanceService = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  async getUserBalance(userId) {
+    try {
+      const response = await this.client.request({
+        method: "GET",
+        url: `/user/${userId}/balance`
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Failed to get user balance: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  async addCredits(userId, amount, type) {
+    try {
+      const response = await this.client.request({
+        method: "POST",
+        url: `/user/${userId}/credits`,
+        data: {
+          amount,
+          type,
+          description: `${type === "purchase" ? "Credit purchase" : "Bonus credits"}`
+        }
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Failed to add credits: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  async useCredits(userId, usage) {
+    try {
+      const response = await this.client.request({
+        method: "POST",
+        url: `/user/${userId}/credits/use`,
+        data: usage
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Failed to use credits: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  async getTransactionHistory(userId, limit = 50, offset = 0) {
+    try {
+      const response = await this.client.request({
+        method: "GET",
+        url: `/user/${userId}/transactions`,
+        params: { limit, offset }
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Failed to get transaction history: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  async getBalanceConfig() {
+    try {
+      const response = await this.client.request({
+        method: "GET",
+        url: "/config/balance"
+      });
+      return response;
+    } catch (error) {
+      throw new Error(
+        `Failed to get balance config: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+};
+var balanceService = new BalanceService();
+var _PromptEnhancer = class _PromptEnhancer {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  /**
+   * Enhance a prompt using AI
+   */
+  async enhancePrompt(params) {
+    try {
+      this.validateParams(params);
+      const enhancementRequest = {
+        prompt: params.prompt,
+        style: params.style || "professional",
+        language: params.language || "en",
+        targetModel: params.targetModel || "image",
+        length: params.length || "medium",
+        includeExamples: params.includeExamples || false
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/ai/enhance-prompt",
+        data: enhancementRequest
+      });
+      const metadata = {
+        language: params.language || "en",
+        style: params.style || "professional",
+        length: params.length || "medium",
+        targetModel: params.targetModel || "image",
+        wordCount: this.countWords(response.enhancedPrompt),
+        estimatedTokens: this.estimateTokens(response.enhancedPrompt)
+      };
+      return {
+        original: params.prompt,
+        enhanced: response.enhancedPrompt,
+        suggestions: response.suggestions,
+        confidence: response.confidence,
+        metadata
+      };
+    } catch (error) {
+      throw new Error(
+        `Prompt enhancement failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  /**
+   * Get available prompt styles
+   */
+  getPromptStyles() {
+    return _PromptEnhancer.DEFAULT_STYLES;
+  }
+  /**
+   * Get supported languages
+   */
+  getSupportedLanguages() {
+    return _PromptEnhancer.SUPPORTED_LANGUAGES;
+  }
+  /**
+   * Get style by ID
+   */
+  getStyleById(styleId) {
+    return _PromptEnhancer.DEFAULT_STYLES.find((style) => style.id === styleId);
+  }
+  /**
+   * Get language by code
+   */
+  getLanguageByCode(code) {
+    return _PromptEnhancer.SUPPORTED_LANGUAGES.find((lang) => lang.code === code);
+  }
+  /**
+   * Validate enhancement parameters
+   */
+  validateParams(params) {
+    if (!params.prompt || params.prompt.trim().length === 0) {
+      throw new Error("Prompt is required");
+    }
+    if (params.prompt.length > 1e3) {
+      throw new Error("Prompt is too long (max 1000 characters)");
+    }
+    if (params.style && !this.getStyleById(params.style)) {
+      throw new Error(`Invalid style: ${params.style}`);
+    }
+    if (params.language && !this.getLanguageByCode(params.language)) {
+      throw new Error(`Unsupported language: ${params.language}`);
+    }
+  }
+  /**
+   * Count words in text
+   */
+  countWords(text) {
+    return text.trim().split(/\s+/).filter((word) => word.length > 0).length;
+  }
+  /**
+   * Estimate token count (rough approximation)
+   */
+  estimateTokens(text) {
+    return Math.ceil(text.length / 4);
+  }
+};
+// Default prompt styles
+_PromptEnhancer.DEFAULT_STYLES = [
+  {
+    id: "professional",
+    name: "Professional",
+    description: "Formal, business-like language with clear structure",
+    examples: [
+      "A high-quality, professional photograph of a modern office space",
+      "A sophisticated, elegant design suitable for corporate use"
+    ],
+    keywords: ["professional", "business", "corporate", "formal", "sophisticated"]
+  },
+  {
+    id: "creative",
+    name: "Creative",
+    description: "Artistic, imaginative language with vivid descriptions",
+    examples: [
+      "A whimsical, dreamlike scene with vibrant colors and magical elements",
+      "An artistic masterpiece with bold brushstrokes and dramatic lighting"
+    ],
+    keywords: ["creative", "artistic", "imaginative", "vibrant", "dramatic"]
+  },
+  {
+    id: "technical",
+    name: "Technical",
+    description: "Precise, detailed language with specific parameters",
+    examples: [
+      "A technical diagram with precise measurements and clear labeling",
+      "A schematic illustration with detailed specifications and annotations"
+    ],
+    keywords: ["technical", "precise", "detailed", "specific", "accurate"]
+  },
+  {
+    id: "casual",
+    name: "Casual",
+    description: "Relaxed, friendly language with natural expressions",
+    examples: [
+      "A cozy, relaxed scene that feels warm and inviting",
+      "A friendly, approachable design with a welcoming atmosphere"
+    ],
+    keywords: ["casual", "friendly", "relaxed", "warm", "inviting"]
+  }
+];
+// Supported languages
+_PromptEnhancer.SUPPORTED_LANGUAGES = [
+  { code: "en", name: "English", nativeName: "English", supported: true },
+  { code: "es", name: "Spanish", nativeName: "Espa\xF1ol", supported: true },
+  { code: "fr", name: "French", nativeName: "Fran\xE7ais", supported: true },
+  { code: "de", name: "German", nativeName: "Deutsch", supported: true },
+  { code: "it", name: "Italian", nativeName: "Italiano", supported: true },
+  { code: "pt", name: "Portuguese", nativeName: "Portugu\xEAs", supported: true },
+  { code: "ru", name: "Russian", nativeName: "\u0420\u0443\u0441\u0441\u043A\u0438\u0439", supported: true },
+  { code: "ja", name: "Japanese", nativeName: "\u65E5\u672C\u8A9E", supported: true },
+  { code: "ko", name: "Korean", nativeName: "\uD55C\uAD6D\uC5B4", supported: true },
+  { code: "zh", name: "Chinese", nativeName: "\u4E2D\u6587", supported: true }
+];
+var PromptEnhancer = _PromptEnhancer;
+
+// src/ai-tools/prompt-enhancement-tool.ts
+var enhancePrompt = (config) => ({
+  description: "Enhance and improve prompts for better AI generation results",
+  parameters: {
+    originalPrompt: { type: "string", description: "The original prompt text to enhance" },
+    mediaType: { type: "string", enum: ["image", "video", "text", "general"], optional: true },
+    enhancementLevel: { type: "string", enum: ["basic", "detailed", "creative"], optional: true },
+    targetAudience: { type: "string", optional: true },
+    includeNegativePrompt: { type: "boolean", optional: true },
+    modelHint: { type: "string", optional: true }
+  },
+  execute: async (params) => {
+    try {
+      const enhancer = new PromptEnhancer();
+      const result = await enhancer.enhancePrompt(params);
+      return result;
+    } catch (error) {
+      throw new Error(`Prompt enhancement failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }
+});
+var _ScriptGenerator = class _ScriptGenerator {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  /**
+   * Generate a script using AI
+   */
+  async generateScript(params) {
+    try {
+      this.validateParams(params);
+      const generationRequest = {
+        topic: params.topic,
+        genre: params.genre || "educational",
+        length: params.length || "medium",
+        format: params.format || "markdown",
+        targetAudience: params.targetAudience || "general",
+        tone: params.tone || "informative",
+        includeDialogue: params.includeDialogue || false,
+        includeStageDirections: params.includeStageDirections || false
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/ai/generate-script",
+        data: generationRequest
+      });
+      const id = this.generateId();
+      const generatedScript = {
+        id,
+        topic: params.topic,
+        script: response.script,
+        outline: this.parseOutline(response.outline),
+        metadata: this.parseMetadata(response.metadata, params),
+        createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+        status: "draft"
+      };
+      return generatedScript;
+    } catch (error) {
+      throw new Error(
+        `Script generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  /**
+   * Get available script templates
+   */
+  getScriptTemplates() {
+    return _ScriptGenerator.DEFAULT_TEMPLATES;
+  }
+  /**
+   * Get template by ID
+   */
+  getTemplateById(templateId) {
+    return _ScriptGenerator.DEFAULT_TEMPLATES.find((template) => template.id === templateId);
+  }
+  /**
+   * Get templates by genre
+   */
+  getTemplatesByGenre(genre) {
+    return _ScriptGenerator.DEFAULT_TEMPLATES.filter(
+      (template) => template.genre.includes(genre)
+    );
+  }
+  /**
+   * Get templates suitable for target audience
+   */
+  getTemplatesByAudience(audience) {
+    return _ScriptGenerator.DEFAULT_TEMPLATES.filter(
+      (template) => template.suitableFor.includes(audience)
+    );
+  }
+  /**
+   * Validate generation parameters
+   */
+  validateParams(params) {
+    if (!params.topic || params.topic.trim().length === 0) {
+      throw new Error("Topic is required");
+    }
+    if (params.topic.length > 500) {
+      throw new Error("Topic is too long (max 500 characters)");
+    }
+    if (params.genre && !this.isValidGenre(params.genre)) {
+      throw new Error(`Invalid genre: ${params.genre}`);
+    }
+    if (params.length && !this.isValidLength(params.length)) {
+      throw new Error(`Invalid length: ${params.length}`);
+    }
+    if (params.format && !this.isValidFormat(params.format)) {
+      throw new Error(`Invalid format: ${params.format}`);
+    }
+  }
+  /**
+   * Check if genre is valid
+   */
+  isValidGenre(genre) {
+    const validGenres = ["drama", "comedy", "action", "romance", "thriller", "documentary", "educational"];
+    return validGenres.includes(genre);
+  }
+  /**
+   * Check if length is valid
+   */
+  isValidLength(length) {
+    const validLengths = ["short", "medium", "long"];
+    return validLengths.includes(length);
+  }
+  /**
+   * Check if format is valid
+   */
+  isValidFormat(format) {
+    const validFormats = ["markdown", "plain", "structured", "screenplay"];
+    return validFormats.includes(format);
+  }
+  /**
+   * Parse outline from API response
+   */
+  parseOutline(outlineData) {
+    return outlineData.map((item, index) => ({
+      section: item.section || `Section ${index + 1}`,
+      title: item.title || `Title ${index + 1}`,
+      description: item.description || "",
+      duration: item.duration,
+      keyPoints: Array.isArray(item.keyPoints) ? item.keyPoints : []
+    }));
+  }
+  /**
+   * Parse metadata from API response and params
+   */
+  parseMetadata(metadataData, params) {
+    return {
+      genre: params.genre || "educational",
+      estimatedDuration: metadataData.estimatedDuration || "5-10 minutes",
+      scenes: metadataData.scenes || 3,
+      characters: metadataData.characters || 2,
+      wordCount: this.countWords(metadataData.script || ""),
+      targetAudience: params.targetAudience || "general",
+      tone: params.tone || "informative",
+      format: params.format || "markdown",
+      language: "en"
+    };
+  }
+  /**
+   * Generate unique ID
+   */
+  generateId() {
+    return `script_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+  /**
+   * Count words in text
+   */
+  countWords(text) {
+    return text.trim().split(/\s+/).filter((word) => word.length > 0).length;
+  }
+};
+// Default script templates
+_ScriptGenerator.DEFAULT_TEMPLATES = [
+  {
+    id: "educational",
+    name: "Educational Script",
+    description: "Structured format for educational content",
+    structure: ["Introduction", "Main Content", "Examples", "Summary", "Quiz/Questions"],
+    examples: ["Science lesson", "History documentary", "Tutorial video"],
+    genre: ["educational", "documentary"],
+    suitableFor: ["children", "teens", "adults"]
+  },
+  {
+    id: "storytelling",
+    name: "Storytelling Script",
+    description: "Narrative format for engaging stories",
+    structure: ["Hook", "Setup", "Conflict", "Rising Action", "Climax", "Resolution"],
+    examples: ["Fairy tale", "Adventure story", "Mystery tale"],
+    genre: ["drama", "adventure", "mystery"],
+    suitableFor: ["children", "teens", "adults"]
+  },
+  {
+    id: "commercial",
+    name: "Commercial Script",
+    description: "Persuasive format for marketing content",
+    structure: ["Attention", "Interest", "Desire", "Action"],
+    examples: ["Product advertisement", "Service promotion", "Brand story"],
+    genre: ["commercial", "marketing"],
+    suitableFor: ["teens", "adults"]
+  }
+];
+var ScriptGenerator = _ScriptGenerator;
+
+// src/ai-tools/script-generation-tool.ts
+var configureScriptGeneration = (config) => ({
+  description: "Generate scripts for various content types (educational, storytelling, commercial)",
+  parameters: {
+    topic: { type: "string", description: "The main topic or theme for the script" },
+    genre: { type: "string", enum: ["educational", "storytelling", "commercial"], optional: true },
+    length: { type: "string", enum: ["short", "medium", "long"], optional: true },
+    format: { type: "string", enum: ["markdown", "plain", "structured"], optional: true },
+    targetAudience: { type: "string", optional: true },
+    tone: { type: "string", optional: true },
+    includeDialogue: { type: "boolean", optional: true },
+    includeStageDirections: { type: "boolean", optional: true }
+  },
+  execute: async (params) => {
+    try {
+      const generator = new ScriptGenerator();
+      const result = await generator.generateScript(params);
+      return result;
+    } catch (error) {
+      throw new Error(`Script generation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }
+});
+
+// src/ai-tools/video-models-tools.ts
+var tool = (config) => config;
+async function getAvailableVideoModels() {
+  return [];
+}
+var listVideoModels = tool({
+  description: "List all available video generation models from SuperDuperAI API with their capabilities, pricing, and requirements. Use this to see what models are available before generating videos.",
+  parameters: {
+    format: {
+      type: "string",
+      enum: ["detailed", "simple", "agent-friendly"],
+      optional: true,
+      description: "Format of the output: detailed (full info), simple (names only), agent-friendly (formatted for AI agents)"
+    },
+    filterByPrice: {
+      type: "number",
+      optional: true,
+      description: "Filter models by maximum price per second"
+    },
+    filterByDuration: {
+      type: "number",
+      optional: true,
+      description: "Filter models that support this duration in seconds"
+    },
+    excludeVip: {
+      type: "boolean",
+      optional: true,
+      description: "Exclude VIP-only models"
+    }
+  },
+  execute: async ({
+    format = "agent-friendly",
+    filterByPrice,
+    filterByDuration,
+    excludeVip
+  }) => {
+    try {
+      console.log(
+        "\u{1F3AC} \u{1F4CB} Listing video models from SuperDuperAI with format:",
+        format
+      );
+      const allModels = await getAvailableVideoModels();
+      let videoModels = allModels.map((m) => m);
+      if (filterByPrice) {
+        videoModels = videoModels.filter(
+          (m) => (m.params.price_per_second || m.params.price || 0) <= filterByPrice
+        );
+      }
+      if (filterByDuration) {
+        videoModels = videoModels.filter(
+          (m) => (m.params.max_duration || m.params.available_durations?.[0] || 60) >= filterByDuration
+        );
+      }
+      if (excludeVip) {
+        videoModels = videoModels.filter((m) => !m.params.is_vip);
+      }
+      if (format === "agent-friendly") {
+        const agentInfo = {
+          models: videoModels.map((m) => ({
+            id: m.name,
+            // Use name as id
+            name: m.name,
+            description: m.label || m.name,
+            price_per_second: m.params.price_per_second || m.params.price || 0,
+            max_duration: m.params.max_duration || 60,
+            vip_required: m.params.is_vip || false,
+            supported_resolutions: `${m.params.max_width || 1920}x${m.params.max_height || 1080}`,
+            frame_rates: m.params.frame_rates || [24, 30],
+            aspect_ratios: m.params.aspect_ratios || ["16:9"]
+          })),
+          usage_examples: [
+            'Use model ID like "comfyui/ltx" when calling configureVideoGeneration',
+            "Check max_duration before setting video duration",
+            "Consider price_per_second for cost optimization"
+          ],
+          total: videoModels.length
+        };
+        return {
+          success: true,
+          data: agentInfo,
+          message: `Found ${videoModels.length} video models from SuperDuperAI API`
+        };
+      }
+      if (format === "simple") {
+        const simpleList = videoModels.map((m) => ({
+          id: m.name,
+          name: m.name,
+          price: m.params.price_per_second || m.params.price || 0,
+          max_duration: m.params.max_duration || 60,
+          vip: m.params.is_vip || false
+        }));
+        return {
+          success: true,
+          data: simpleList,
+          total: simpleList.length,
+          message: `Found ${simpleList.length} video models`
+        };
+      }
+      const detailedList = videoModels.map((m) => ({
+        id: m.name,
+        name: m.name,
+        description: m.label || m.name,
+        price_per_second: m.params.price_per_second || m.params.price || 0,
+        max_duration: m.params.max_duration || 60,
+        max_resolution: {
+          width: m.params.max_width || 1920,
+          height: m.params.max_height || 1080
+        },
+        supported_frame_rates: m.params.frame_rates || [24, 30],
+        supported_aspect_ratios: m.params.aspect_ratios || ["16:9"],
+        supported_qualities: m.params.qualities || ["hd"],
+        vip_required: m.params.is_vip || false,
+        workflow_path: m.params.workflow_path || ""
+      }));
+      return {
+        success: true,
+        data: detailedList,
+        total: detailedList.length,
+        message: `Found ${detailedList.length} video models with detailed information`,
+        filters_applied: {
+          max_price: filterByPrice,
+          duration: filterByDuration,
+          exclude_vip: excludeVip
+        }
+      };
+    } catch (error) {
+      console.error("\u{1F3AC} \u274C Error listing video models:", error);
+      return {
+        success: false,
+        error: error?.message || "Failed to list video models from SuperDuperAI API",
+        message: "Could not retrieve video models. Please check SUPERDUPERAI_TOKEN and SUPERDUPERAI_URL environment variables."
+      };
+    }
+  }
+});
+var findBestVideoModel = tool({
+  description: "Find the best video model from SuperDuperAI based on specific requirements like price, duration, and VIP access. Use this to automatically select the optimal model for your needs.",
+  parameters: {
+    maxPrice: {
+      type: "number",
+      optional: true,
+      description: "Maximum price per second you want to pay"
+    },
+    preferredDuration: {
+      type: "number",
+      optional: true,
+      description: "Preferred video duration in seconds"
+    },
+    vipAllowed: {
+      type: "boolean",
+      optional: true,
+      description: "Whether VIP models are allowed (default: true)"
+    },
+    prioritizeQuality: {
+      type: "boolean",
+      optional: true,
+      description: "Prioritize quality over price (default: false)"
+    }
+  },
+  execute: async ({
+    maxPrice,
+    preferredDuration,
+    vipAllowed = true,
+    prioritizeQuality = false
+  }) => {
+    try {
+      console.log("\u{1F3AC} \u{1F50D} Finding best video model with criteria:", {
+        maxPrice,
+        preferredDuration,
+        vipAllowed,
+        prioritizeQuality
+      });
+      const allModels = await getAvailableVideoModels();
+      let candidates = allModels.map((m) => m);
+      if (maxPrice) {
+        candidates = candidates.filter(
+          (m) => (m.params.price_per_second || m.params.price || 0) <= maxPrice
+        );
+      }
+      if (preferredDuration) {
+        candidates = candidates.filter(
+          (m) => (m.params.max_duration || 60) >= preferredDuration
+        );
+      }
+      if (!vipAllowed) {
+        candidates = candidates.filter((m) => !m.params.is_vip);
+      }
+      if (candidates.length === 0) {
+        return {
+          success: false,
+          message: "No video model found matching your criteria",
+          suggestion: "Try relaxing your requirements (higher price limit, allow VIP models, etc.)",
+          available_models: allModels.map((m) => ({
+            id: m.name,
+            name: m.name,
+            price: m.params.price_per_second || m.params.price || 0,
+            max_duration: m.params.max_duration || 60,
+            vip: m.params.is_vip || false
+          }))
+        };
+      }
+      let bestModel;
+      if (prioritizeQuality) {
+        bestModel = candidates.sort(
+          (a, b) => (b.params.price_per_second || b.params.price || 0) - (a.params.price_per_second || a.params.price || 0)
+        )[0];
+      } else {
+        bestModel = candidates.sort(
+          (a, b) => (a.params.price_per_second || a.params.price || 0) - (b.params.price_per_second || b.params.price || 0)
+        )[0];
+      }
+      return {
+        success: true,
+        data: {
+          id: bestModel.name,
+          name: bestModel.name,
+          description: bestModel.label || bestModel.name,
+          price_per_second: bestModel.params.price_per_second || bestModel.params.price || 0,
+          max_duration: bestModel.params.max_duration || 60,
+          max_resolution: {
+            width: bestModel.params.max_width || 1920,
+            height: bestModel.params.max_height || 1080
+          },
+          vip_required: bestModel.params.is_vip || false,
+          recommendation_reason: `Selected based on ${prioritizeQuality ? "quality" : "price"} optimization`
+        },
+        message: `Best model found: ${bestModel.name} at $${bestModel.params.price_per_second || bestModel.params.price || 0}/sec`,
+        usage_tip: `Use model ID "${bestModel.name}" when calling configureVideoGeneration`
+      };
+    } catch (error) {
+      console.error("\u{1F3AC} \u274C Error finding best video model:", error);
+      return {
+        success: false,
+        error: error?.message || "Failed to find best video model",
+        message: "Could not find optimal video model. Please check SuperDuperAI API connection."
+      };
+    }
+  }
+});
+
+// src/ai-tools/video-generation-tools.ts
+var tool2 = (config) => config;
+async function getStyles() {
+  return { items: [] };
+}
+function findStyle(style, styles) {
+  return styles.find((s) => s.id === style || s.label === style);
+}
+async function createVideoMediaSettings() {
+  return { availableModels: [] };
+}
+async function getBestVideoModel(params) {
+  return null;
+}
+var VIDEO_RESOLUTIONS = [];
+var SHOT_SIZES = [];
+var VIDEO_FRAME_RATES = [];
+var DEFAULT_VIDEO_RESOLUTION = { label: "HD" };
+var DEFAULT_VIDEO_DURATION = 5;
+function getModelCompatibleResolutions(modelName) {
+  return VIDEO_RESOLUTIONS;
+}
+function getDefaultResolutionForModel(modelName) {
+  return DEFAULT_VIDEO_RESOLUTION;
+}
+async function checkBalanceBeforeArtifact(session, operation, operationType, multipliers, operationDisplayName) {
+  return { valid: true, cost: 0 };
+}
+function getOperationDisplayName(operationType) {
+  return operationType;
+}
+function convertSourceToEnum(source) {
+  switch (source) {
+    case "local":
+      return "local" /* LOCAL */;
+    case "fal_ai":
+      return "fal_ai" /* FAL_AI */;
+    case "google_cloud":
+      return "google_cloud" /* GOOGLE_CLOUD */;
+    case "azure_openai_sora":
+      return "azure_openai_sora" /* AZURE_OPENAI_SORA */;
+    case "azure_openai_image":
+      return "azure_openai_image" /* AZURE_OPENAI_IMAGE */;
+    default:
+      return "local" /* LOCAL */;
+  }
+}
+function convertTypeToEnum(type) {
+  switch (type) {
+    case "text_to_video":
+      return "text_to_video" /* TEXT_TO_VIDEO */;
+    case "image_to_video":
+      return "image_to_video" /* IMAGE_TO_VIDEO */;
+    case "text_to_image":
+      return "text_to_image" /* TEXT_TO_IMAGE */;
+    case "image_to_image":
+      return "image_to_image" /* IMAGE_TO_IMAGE */;
+    default:
+      return "text_to_video" /* TEXT_TO_VIDEO */;
+  }
+}
+var configureVideoGeneration = (params) => tool2({
+  description: "Configure video generation settings or generate a video directly if prompt is provided. When prompt is provided, this will create a video artifact that shows generation progress in real-time. Available models are loaded dynamically from SuperDuperAI API.",
+  parameters: {
+    prompt: {
+      type: "string",
+      optional: true,
+      description: "Detailed description of the video to generate. If provided, will immediately create video artifact and start generation"
+    },
+    negativePrompt: {
+      type: "string",
+      optional: true,
+      description: "What to avoid in the video generation"
+    },
+    style: {
+      type: "string",
+      optional: true,
+      description: "Style of the video"
+    },
+    resolution: {
+      type: "string",
+      optional: true,
+      description: 'Video resolution (e.g., "1344x768", "1024x1024"). Default is HD 1344x768 for cost efficiency.'
+    },
+    shotSize: {
+      type: "string",
+      optional: true,
+      description: "Shot size for the video (extreme-long-shot, long-shot, medium-shot, medium-close-up, close-up, extreme-close-up, two-shot, detail-shot)"
+    },
+    model: {
+      type: "string",
+      optional: true,
+      description: 'AI model to use. Models are loaded dynamically from SuperDuperAI API. Use model name like "LTX" or full model ID. For image-to-video models (VEO, KLING), a source image is required.'
+    },
+    frameRate: {
+      type: "number",
+      optional: true,
+      description: "Frame rate in FPS (24, 30, 60, 120)"
+    },
+    duration: {
+      type: "number",
+      optional: true,
+      description: "Video duration in seconds. Default is 5 seconds for cost efficiency."
+    },
+    sourceImageId: {
+      type: "string",
+      optional: true,
+      description: "ID of source image for image-to-video models (VEO, KLING). Required for image-to-video generation."
+    },
+    sourceImageUrl: {
+      type: "string",
+      optional: true,
+      description: "URL of source image for image-to-video models. Alternative to sourceImageId."
+    },
+    generationType: {
+      type: "string",
+      enum: ["text-to-video", "image-to-video"],
+      optional: true,
+      description: 'Generation mode: "text-to-video" for text prompts only, "image-to-video" when using source image'
+    }
+  },
+  execute: async ({
+    prompt,
+    negativePrompt,
+    style,
+    resolution,
+    shotSize,
+    model,
+    frameRate,
+    duration,
+    sourceImageId,
+    sourceImageUrl,
+    generationType
+  }) => {
+    console.log("\u{1F527} configureVideoGeneration called with:", {
+      prompt,
+      negativePrompt,
+      style,
+      resolution,
+      shotSize,
+      model,
+      frameRate,
+      duration
+    });
+    console.log("\u{1F527} createDocument available:", !!params?.createDocument);
+    const defaultResolution = DEFAULT_VIDEO_RESOLUTION;
+    const defaultStyle = {
+      id: "flux_steampunk",
+      label: "Steampunk",
+      description: "Steampunk style"
+    };
+    const defaultShotSize = SHOT_SIZES.find((s) => s.id === "long-shot") || SHOT_SIZES[0];
+    console.log(
+      "\u{1F3AC} Loading video models from SuperDuperAI API via factory..."
+    );
+    const videoSettings = await createVideoMediaSettings();
+    const availableModels = videoSettings.availableModels;
+    console.log(
+      "\u{1F3AC} \u2705 Loaded video models:",
+      availableModels.map((m) => m.id)
+    );
+    const bestModel = await getBestVideoModel();
+    const defaultModel = bestModel ? {
+      ...bestModel,
+      id: bestModel.name,
+      label: bestModel.label || bestModel.name,
+      description: `${bestModel.label || bestModel.name} - ${bestModel.type}`,
+      value: bestModel.name,
+      workflowPath: bestModel.params?.workflow_path || "",
+      price: bestModel.params?.price_per_second || bestModel.price || 0,
+      type: convertTypeToEnum(bestModel.type),
+      source: convertSourceToEnum(bestModel.source)
+    } : availableModels.find((m) => m.name === "azure-openai/sora") || availableModels[0];
+    console.log(
+      "\u{1F3AF} Smart default model selected:",
+      defaultModel.label,
+      "(type:",
+      defaultModel.type,
+      ")"
+    );
+    let styles = [];
+    try {
+      const response = await getStyles();
+      if ("error" in response) {
+        console.error(response.error);
+      } else {
+        styles = response.items.map((style2) => ({
+          id: style2.name,
+          label: style2.title ?? style2.name,
+          description: style2.title ?? style2.name
+        }));
+      }
+    } catch (err) {
+      console.log(err);
+    }
+    if (!prompt) {
+      console.log(
+        "\u{1F527} No prompt provided, returning video configuration panel"
+      );
+      const config = {
+        type: "video-generation-settings",
+        availableResolutions: getModelCompatibleResolutions(
+          defaultModel.name || defaultModel.id || ""
+        ),
+        availableStyles: styles,
+        availableShotSizes: SHOT_SIZES,
+        availableModels,
+        availableFrameRates: VIDEO_FRAME_RATES,
+        defaultSettings: {
+          resolution: getDefaultResolutionForModel(
+            defaultModel.name || defaultModel.id || ""
+          ),
+          style: defaultStyle,
+          shotSize: defaultShotSize,
+          model: defaultModel,
+          frameRate: 30,
+          duration: DEFAULT_VIDEO_DURATION,
+          // 5 seconds for economy
+          negativePrompt: "",
+          seed: void 0
+        }
+      };
+      return config;
+    }
+    console.log("\u{1F527} \u2705 PROMPT PROVIDED, CREATING VIDEO DOCUMENT:", prompt);
+    console.log("\u{1F527} \u2705 PARAMS OBJECT:", !!params);
+    console.log("\u{1F527} \u2705 CREATE DOCUMENT AVAILABLE:", !!params?.createDocument);
+    if (!params?.createDocument) {
+      console.log(
+        "\u{1F527} \u274C createDocument not available, returning basic config"
+      );
+      const config = {
+        type: "video-generation-settings",
+        availableResolutions: getModelCompatibleResolutions(
+          defaultModel.name || defaultModel.id || ""
+        ),
+        availableStyles: styles,
+        availableShotSizes: SHOT_SIZES,
+        availableModels,
+        availableFrameRates: VIDEO_FRAME_RATES,
+        defaultSettings: {
+          resolution: getDefaultResolutionForModel(
+            defaultModel.name || defaultModel.id || ""
+          ),
+          style: defaultStyle,
+          shotSize: defaultShotSize,
+          model: defaultModel,
+          frameRate: frameRate || 30,
+          duration: duration || DEFAULT_VIDEO_DURATION,
+          negativePrompt: negativePrompt || "",
+          seed: void 0
+        }
+      };
+      return config;
+    }
+    try {
+      const selectedModel = model ? availableModels.find(
+        (m) => m.label === model || m.id === model || m.apiName === model
+      ) || defaultModel : defaultModel;
+      const compatibleResolutions = getModelCompatibleResolutions(
+        selectedModel.name || selectedModel.id || ""
+      );
+      let selectedResolution = defaultResolution;
+      if (resolution) {
+        const requestedResolution = VIDEO_RESOLUTIONS.find(
+          (r) => r.label === resolution
+        );
+        if (requestedResolution) {
+          const isCompatible = compatibleResolutions.some(
+            (r) => r.label === requestedResolution.label
+          );
+          if (isCompatible) {
+            selectedResolution = requestedResolution;
+          } else {
+            selectedResolution = getDefaultResolutionForModel(
+              selectedModel.name || selectedModel.id || ""
+            );
+            console.log(
+              `\u{1F527} \u26A0\uFE0F Resolution ${resolution} not compatible with model ${selectedModel.name}, using ${selectedResolution.label} instead`
+            );
+          }
+        }
+      } else {
+        selectedResolution = getDefaultResolutionForModel(
+          selectedModel.name || selectedModel.id || ""
+        );
+      }
+      let selectedStyle = defaultStyle;
+      if (style) {
+        const foundStyle = findStyle(style, styles);
+        if (foundStyle) {
+          selectedStyle = foundStyle;
+          console.log(
+            "\u{1F527} \u2705 STYLE MATCHED:",
+            style,
+            "->",
+            selectedStyle.label
+          );
+        } else {
+          console.log(
+            "\u{1F527} \u26A0\uFE0F STYLE NOT FOUND:",
+            style,
+            "using default:",
+            defaultStyle.label
+          );
+          console.log(
+            "\u{1F527} \u{1F4CB} Available styles:",
+            styles.map((s) => s.label).slice(0, 5).join(", "),
+            "..."
+          );
+          const commonStyleFallbacks = [
+            "flux_steampunk",
+            "steampunk",
+            "flux_realistic",
+            "realistic",
+            "flux_cinematic",
+            "cinematic",
+            "flux_anime",
+            "anime",
+            "flux_fantasy",
+            "fantasy",
+            "default"
+          ];
+          for (const fallbackId of commonStyleFallbacks) {
+            const fallbackStyle = styles.find(
+              (s) => s.id.toLowerCase().includes(fallbackId.toLowerCase()) || s.label.toLowerCase().includes(fallbackId.toLowerCase())
+            );
+            if (fallbackStyle) {
+              selectedStyle = fallbackStyle;
+              console.log(
+                "\u{1F527} \u{1F504} FALLBACK STYLE FOUND:",
+                fallbackId,
+                "->",
+                selectedStyle.label
+              );
+              break;
+            }
+          }
+          if (selectedStyle === defaultStyle && styles.length > 0) {
+            selectedStyle = styles[0];
+            console.log(
+              "\u{1F527} \u{1F504} USING FIRST AVAILABLE STYLE:",
+              selectedStyle.label
+            );
+          }
+        }
+      } else {
+        const preferredDefaults = [
+          "flux_steampunk",
+          "steampunk",
+          "flux_realistic",
+          "realistic"
+        ];
+        for (const preferredId of preferredDefaults) {
+          const preferredStyle = styles.find(
+            (s) => s.id.toLowerCase().includes(preferredId.toLowerCase()) || s.label.toLowerCase().includes(preferredId.toLowerCase())
+          );
+          if (preferredStyle) {
+            selectedStyle = preferredStyle;
+            console.log(
+              "\u{1F527} \u{1F3AF} USING PREFERRED DEFAULT STYLE:",
+              preferredStyle.label
+            );
+            break;
+          }
+        }
+        if (selectedStyle === defaultStyle && styles.length > 0) {
+          selectedStyle = styles[0];
+          console.log(
+            "\u{1F527} \u{1F3AF} USING FIRST AVAILABLE AS DEFAULT:",
+            selectedStyle.label
+          );
+        }
+      }
+      const selectedShotSize = shotSize ? SHOT_SIZES.find((s) => s.label === shotSize || s.id === shotSize) || defaultShotSize : defaultShotSize;
+      const isImageToVideoModel = selectedModel.type === "image_to_video";
+      console.log("\u{1F527} \u{1F3AF} Model type check:", {
+        modelId: selectedModel.id,
+        modelName: selectedModel.label,
+        apiType: selectedModel.type,
+        isImageToVideo: isImageToVideoModel
+      });
+      if (isImageToVideoModel && !sourceImageId && !sourceImageUrl) {
+        return {
+          error: `The selected model "${selectedModel.label}" is an image-to-video model and requires a source image. Please provide either sourceImageId or sourceImageUrl parameter, or select a text-to-video model.`,
+          suggestion: "You can use a recently generated image from this chat as the source, or upload a new image first.",
+          availableTextToVideoModels: availableModels.filter(
+            (m) => m.type === "text_to_video" || m.type !== "image_to_video"
+          ).map((m) => `${m.label} (${m.id})`)
+        };
+      }
+      const autoGenerationType = sourceImageId || sourceImageUrl ? "image-to-video" : "text-to-video";
+      const finalGenerationType = generationType || autoGenerationType;
+      console.log("\u{1F527} \u{1F3AF} Generation type determination:", {
+        provided: generationType,
+        autoDetected: autoGenerationType,
+        final: finalGenerationType,
+        hasSourceImage: !!(sourceImageId || sourceImageUrl)
+      });
+      const videoParams = {
+        prompt,
+        negativePrompt: negativePrompt || "",
+        style: selectedStyle,
+        resolution: selectedResolution,
+        shotSize: selectedShotSize,
+        model: selectedModel,
+        frameRate: frameRate || 30,
+        duration: duration || DEFAULT_VIDEO_DURATION,
+        // Use economical default
+        sourceImageId: sourceImageId || void 0,
+        sourceImageUrl: sourceImageUrl || void 0,
+        generationType: finalGenerationType
+      };
+      console.log("\u{1F527} \u2705 CREATING VIDEO DOCUMENT WITH PARAMS:", videoParams);
+      const operationType = finalGenerationType === "image-to-video" ? "image-to-video" : "text-to-video";
+      const multipliers = [];
+      if (duration) {
+        if (duration <= 5) multipliers.push("duration-5s");
+        else if (duration <= 10) multipliers.push("duration-10s");
+        else if (duration <= 15) multipliers.push("duration-15s");
+        else if (duration <= 30) multipliers.push("duration-30s");
+      } else {
+        multipliers.push("duration-5s");
+      }
+      if (selectedResolution.label.includes("HD") || selectedResolution.label.includes("720")) {
+        multipliers.push("hd-quality");
+      } else if (selectedResolution.label.includes("4K") || selectedResolution.label.includes("2160")) {
+        multipliers.push("4k-quality");
+      }
+      const balanceCheck = await checkBalanceBeforeArtifact(
+        params?.session || null,
+        "video-generation",
+        operationType,
+        multipliers,
+        getOperationDisplayName(operationType)
+      );
+      if (!balanceCheck.valid) {
+        console.log("\u{1F527} \u274C INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+        return {
+          error: balanceCheck.userMessage || "\u041D\u0435\u0434\u043E\u0441\u0442\u0430\u0442\u043E\u0447\u043D\u043E \u0441\u0440\u0435\u0434\u0441\u0442\u0432 \u0434\u043B\u044F \u0433\u0435\u043D\u0435\u0440\u0430\u0446\u0438\u0438 \u0432\u0438\u0434\u0435\u043E",
+          balanceError: true,
+          requiredCredits: balanceCheck.cost
+        };
+      }
+      if (params?.createDocument) {
+        console.log("\u{1F527} \u2705 CALLING CREATE DOCUMENT WITH KIND: video");
+        try {
+          const readableTitle2 = `Video: "${prompt}" ${JSON.stringify(videoParams)}`;
+          const result = await params.createDocument.execute({
+            title: readableTitle2,
+            kind: "video"
+          });
+          console.log("\u{1F527} \u2705 CREATE DOCUMENT RESULT:", result);
+          return {
+            ...result,
+            message: `I'm creating a video with description: "${prompt}". Using economical HD settings (${selectedResolution.label}, ${duration || DEFAULT_VIDEO_DURATION}s) for cost efficiency. Artifact created and generation started.`
+          };
+        } catch (error) {
+          console.error("\u{1F527} \u274C CREATE DOCUMENT ERROR:", error);
+          console.error(
+            "\u{1F527} \u274C ERROR STACK:",
+            error instanceof Error ? error.stack : "No stack"
+          );
+          throw error;
+        }
+      }
+      console.log("\u{1F527} \u274C CREATE DOCUMENT NOT AVAILABLE, RETURNING FALLBACK");
+      const readableTitle = `Video: "${prompt}" ${JSON.stringify(videoParams)}`;
+      return {
+        message: `I'll create a video with description: "${prompt}". However, artifact cannot be created - createDocument unavailable.`,
+        parameters: {
+          title: readableTitle,
+          kind: "video"
+        }
+      };
+    } catch (error) {
+      console.error("\u{1F527} \u274C ERROR CREATING VIDEO DOCUMENT:", error);
+      return {
+        error: `Failed to create video document: ${error.message}`,
+        fallbackConfig: {
+          type: "video-generation-settings",
+          availableResolutions: getModelCompatibleResolutions(
+            defaultModel.name || defaultModel.id || ""
+          ),
+          availableStyles: styles,
+          availableShotSizes: SHOT_SIZES,
+          availableModels,
+          availableFrameRates: VIDEO_FRAME_RATES,
+          defaultSettings: {
+            resolution: getDefaultResolutionForModel(
+              defaultModel.name || defaultModel.id || ""
+            ),
+            style: defaultStyle,
+            shotSize: defaultShotSize,
+            model: defaultModel,
+            frameRate: frameRate || 30,
+            duration: duration || DEFAULT_VIDEO_DURATION,
+            negativePrompt: negativePrompt || "",
+            seed: void 0
+          }
+        }
+      };
+    }
+  }
+});
+
+// src/ai-tools/image-generation-tools.ts
+var tool3 = (config) => config;
+var getImageGenerationConfig = async () => {
+  return {
+    availableModels: [],
+    availableResolutions: [],
+    availableStyles: []
+  };
+};
+var checkBalanceBeforeArtifact2 = async (session, operation) => {
+  return { hasBalance: true };
+};
+var getOperationDisplayName2 = (operation) => {
+  return operation;
+};
+var configureImageGeneration = (params) => tool3({
+  description: "Configure image generation settings or generate an image directly if prompt is provided. Supports text-to-image by default, and image-to-image when a sourceImageUrl is provided. When triggered, creates an image artifact that shows generation progress in real-time.",
+  parameters: {
+    prompt: {
+      type: "string",
+      optional: true,
+      description: "Detailed description of the image to generate. If provided, will immediately create image artifact and start generation"
+    },
+    sourceImageUrl: {
+      type: "string",
+      optional: true,
+      description: "Optional source image URL for image-to-image generation (e.g., when the user uploaded an image in chat). If provided, the system will run image-to-image."
+    },
+    style: {
+      type: "string",
+      optional: true,
+      description: 'Style of the image. Supports many formats: "realistic", "cinematic", "anime", "cartoon", "sketch", "painting", "steampunk", "fantasy", "sci-fi", "horror", "minimalist", "abstract", "portrait", "landscape", and many more available styles'
+    },
+    resolution: {
+      type: "string",
+      optional: true,
+      description: 'Image resolution. Accepts various formats: "1920x1080", "1920\xD71080", "1920 x 1080", "full hd", "fhd", "1080p", "square", "vertical", "horizontal", etc.'
+    },
+    shotSize: {
+      type: "string",
+      optional: true,
+      description: 'Shot size/camera angle. Accepts: "close-up", "medium-shot", "long-shot", "extreme-close-up", "portrait", "two-shot", etc.'
+    },
+    model: {
+      type: "string",
+      optional: true,
+      description: 'AI model to use. Models are loaded dynamically from SuperDuperAI API. Use model name like "FLUX" or full model ID.'
+    },
+    seed: {
+      type: "number",
+      optional: true,
+      description: "Seed for reproducible results"
+    },
+    batchSize: {
+      type: "number",
+      optional: true,
+      min: 1,
+      max: 3,
+      description: "Number of images to generate simultaneously (1-3). Higher batch sizes generate multiple variations at once."
+    }
+  },
+  execute: async ({
+    prompt,
+    sourceImageUrl,
+    style,
+    resolution,
+    shotSize,
+    model,
+    seed,
+    batchSize
+  }) => {
+    console.log("\u{1F527} configureImageGeneration called with:", {
+      prompt,
+      style,
+      resolution,
+      shotSize,
+      model,
+      seed,
+      batchSize
+    });
+    console.log("\u{1F5BC}\uFE0F Loading image configuration from OpenAPI factory...");
+    const config = await getImageGenerationConfig();
+    console.log("\u{1F5BC}\uFE0F \u2705 Loaded image config:", {
+      modelsCount: config.availableModels.length,
+      resolutionsCount: config.availableResolutions.length,
+      stylesCount: config.availableStyles.length
+    });
+    if (!prompt) {
+      console.log("\u{1F5BC}\uFE0F No prompt provided, returning configuration panel");
+      return {
+        type: "configuration_panel",
+        message: "Image generation configuration panel opened. Please provide a prompt to generate an image.",
+        config: {
+          availableModels: config.availableModels,
+          availableResolutions: config.availableResolutions,
+          availableStyles: config.availableStyles
+        }
+      };
+    }
+    if (params?.session) {
+      const balanceCheck = await checkBalanceBeforeArtifact2(
+        params.session);
+      if (!balanceCheck.hasBalance) {
+        return {
+          error: "Insufficient balance for image generation",
+          operation: getOperationDisplayName2("image_generation")
+        };
+      }
+    }
+    console.log("\u{1F5BC}\uFE0F Creating image artifact and starting generation...");
+    return {
+      type: "image_generation_started",
+      message: "Image generation started successfully",
+      prompt,
+      sourceImageUrl,
+      style,
+      resolution,
+      shotSize,
+      model,
+      seed,
+      batchSize,
+      artifactId: "placeholder-artifact-id"
+    };
+  }
+});
+
+// src/ai-tools/tools.ts
+var tool4 = (config) => config;
+var generateUUID = () => {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+};
+var getDocumentById = async ({
+  id
+}) => {
+  return null;
+};
+var saveSuggestions = async ({
+  suggestions
+}) => {
+};
+var documentHandlersByArtifactKind = [
+  // This should be imported from the actual application
+];
+var artifactKinds = ["text", "sheet", "image", "video", "script"];
+var createDocument = ({ session, dataStream }) => tool4({
+  description: "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
+  parameters: {
+    title: { type: "string" },
+    kind: { type: "string", enum: artifactKinds },
+    content: { type: "string", optional: true }
+  },
+  execute: async ({
+    title,
+    kind,
+    content
+  }) => {
+    console.log("\u{1F4C4} ===== CREATE DOCUMENT TOOL CALLED =====");
+    console.log("\u{1F4C4} KIND:", kind);
+    console.log("\u{1F4C4} TITLE (first 100 chars):", title.substring(0, 100));
+    console.log("\u{1F4C4} CONTENT provided:", content ? "Yes" : "No");
+    console.log("\u{1F4C4} CONTENT length:", content?.length || 0);
+    const id = generateUUID();
+    console.log("\u{1F4C4} GENERATED ID:", id);
+    console.log("\u{1F4C4} \u2705 WRITING KIND TO DATA STREAM...");
+    dataStream.writeData({
+      type: "kind",
+      content: kind
+    });
+    console.log("\u{1F4C4} \u2705 WRITING ID TO DATA STREAM...");
+    dataStream.writeData({
+      type: "id",
+      content: id
+    });
+    console.log("\u{1F4C4} \u2705 WRITING TITLE TO DATA STREAM...");
+    dataStream.writeData({
+      type: "title",
+      content: title
+    });
+    console.log("\u{1F4C4} \u2705 WRITING CLEAR TO DATA STREAM...");
+    dataStream.writeData({
+      type: "clear",
+      content: ""
+    });
+    console.log("\u{1F4C4} \u{1F50D} LOOKING FOR DOCUMENT HANDLER FOR KIND:", kind);
+    console.log(
+      "\u{1F4C4} \u{1F4CB} AVAILABLE HANDLERS:",
+      documentHandlersByArtifactKind.map((h) => h.kind)
+    );
+    const documentHandler = documentHandlersByArtifactKind.find(
+      (documentHandlerByArtifactKind) => documentHandlerByArtifactKind.kind === kind
+    );
+    if (!documentHandler) {
+      console.error("\u{1F4C4} \u274C NO DOCUMENT HANDLER FOUND FOR KIND:", kind);
+      throw new Error(`No document handler found for kind: ${kind}`);
+    }
+    console.log("\u{1F4C4} \u2705 FOUND DOCUMENT HANDLER, CALLING onCreateDocument...");
+    try {
+      await documentHandler.onCreateDocument({
+        id,
+        title,
+        content,
+        dataStream,
+        session
+      });
+      console.log("\u{1F4C4} \u2705 DOCUMENT HANDLER COMPLETED SUCCESSFULLY");
+    } catch (error) {
+      console.error("\u{1F4C4} \u274C DOCUMENT HANDLER ERROR:", error);
+      console.error(
+        "\u{1F4C4} \u274C ERROR STACK:",
+        error instanceof Error ? error.stack : "No stack"
+      );
+      throw error;
+    }
+    console.log("\u{1F4C4} \u2705 WRITING FINISH TO DATA STREAM...");
+    dataStream.writeData({ type: "finish", content: "" });
+    const result = {
+      id,
+      title,
+      kind,
+      content: "Document created successfully"
+    };
+    console.log("\u{1F4C4} \u2705 FINAL RESULT:", result);
+    return result;
+  }
+});
+var updateDocument = ({ session, dataStream }) => tool4({
+  description: "Update a document with the given description.",
+  parameters: {
+    id: { type: "string", description: "The ID of the document to update" },
+    description: {
+      type: "string",
+      description: "The description of changes that need to be made"
+    }
+  },
+  execute: async ({
+    id,
+    description
+  }) => {
+    const document2 = await getDocumentById({ id });
+    if (!document2) {
+      return {
+        error: "Document not found"
+      };
+    }
+    dataStream.writeData({
+      type: "clear",
+      content: document2.title
+    });
+    const documentHandler = documentHandlersByArtifactKind.find(
+      (documentHandlerByArtifactKind) => documentHandlerByArtifactKind.kind === document2.kind
+    );
+    if (!documentHandler) {
+      throw new Error(`No document handler found for kind: ${document2.kind}`);
+    }
+    await documentHandler.onUpdateDocument({
+      document: document2,
+      description,
+      dataStream,
+      session
+    });
+    dataStream.writeData({ type: "finish", content: "" });
+    return {
+      id,
+      title: document2.title,
+      kind: document2.kind,
+      content: "The document has been updated successfully."
+    };
+  }
+});
+var requestSuggestions = ({
+  session,
+  dataStream
+}) => tool4({
+  description: "Request suggestions for a document",
+  parameters: {
+    documentId: {
+      type: "string",
+      description: "The ID of the document to request edits"
+    }
+  },
+  execute: async ({ documentId }) => {
+    const document2 = await getDocumentById({ id: documentId });
+    if (!document2 || !document2.content) {
+      return {
+        error: "Document not found"
+      };
+    }
+    const suggestions = [];
+    const mockSuggestions = [
+      {
+        originalText: "This is a sample sentence.",
+        suggestedText: "This is an improved sample sentence.",
+        description: "Enhanced clarity and flow",
+        id: generateUUID(),
+        documentId,
+        isResolved: false
+      }
+    ];
+    for (const suggestion of mockSuggestions) {
+      dataStream.writeData({
+        type: "suggestion",
+        content: suggestion
+      });
+      suggestions.push(suggestion);
+    }
+    if (session.user?.id) {
+      const userId = session.user.id;
+      await saveSuggestions({
+        suggestions: suggestions.map((suggestion) => ({
+          ...suggestion,
+          userId,
+          createdAt: /* @__PURE__ */ new Date(),
+          documentCreatedAt: document2.createdAt
+        }))
+      });
+    }
+    return {
+      id: documentId,
+      title: document2.title,
+      kind: document2.kind,
+      message: "Suggestions have been added to the document"
+    };
+  }
+});
+var enhancePromptSchema = z.object({
+  originalPrompt: z.string().describe("The original prompt text that needs enhancement. Can be in any language, simple or complex."),
+  mediaType: z.enum(["image", "video", "text", "general"]).optional().describe("The type of content being generated. Helps optimize the prompt for specific AI models."),
+  enhancementLevel: z.enum(["basic", "detailed", "creative"]).optional().describe("Level of enhancement: basic (translation + cleanup), detailed (add structure + quality terms), creative (add artistic style + composition details)"),
+  targetAudience: z.string().optional().describe('Target audience or use case (e.g., "professional presentation", "social media", "artistic portfolio")'),
+  includeNegativePrompt: z.boolean().optional().describe("Whether to generate a negative prompt for what to avoid (useful for image/video generation)"),
+  modelHint: z.string().optional().describe('Specific AI model being used (e.g., "FLUX", "Sora", "VEO2") to optimize prompt for that model')
+});
+var PromptEnhancementTool = class {
+  constructor() {
+    this.client = superDuperAIClient;
+  }
+  /**
+   * Enhance a prompt using AI
+   */
+  async enhancePrompt(params) {
+    try {
+      const validatedParams = enhancePromptSchema.parse(params);
+      const enhancementRequest = {
+        originalPrompt: validatedParams.originalPrompt,
+        mediaType: validatedParams.mediaType || "general",
+        enhancementLevel: validatedParams.enhancementLevel || "detailed",
+        targetAudience: validatedParams.targetAudience,
+        includeNegativePrompt: validatedParams.includeNegativePrompt || false,
+        modelHint: validatedParams.modelHint
+      };
+      const response = await this.client.request({
+        method: "POST",
+        url: "/ai/enhance-prompt",
+        data: enhancementRequest
+      });
+      return {
+        originalPrompt: validatedParams.originalPrompt,
+        enhancedPrompt: response.enhancedPrompt,
+        negativePrompt: response.negativePrompt,
+        mediaType: validatedParams.mediaType || "general",
+        enhancementLevel: validatedParams.enhancementLevel || "detailed",
+        modelHint: validatedParams.modelHint,
+        improvements: response.improvements || [],
+        reasoning: response.reasoning || "",
+        usage: {
+          copyPrompt: "Copy the enhanced prompt to use in image/video generation tools",
+          negativePrompt: response.negativePrompt ? "Use the negative prompt to avoid unwanted elements" : void 0
+        }
+      };
+    } catch (error) {
+      throw new Error(
+        `Prompt enhancement failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+  /**
+   * Build system prompt for enhancement
+   */
+  buildSystemPrompt(mediaType, enhancementLevel, modelHint) {
+    const basePrompt = `You are a professional prompt engineering expert specializing in improving prompts for AI generation. Your task is to enhance user prompts to achieve the best possible results.
+
+CORE RESPONSIBILITIES:
+1. Translate non-English text to English while preserving meaning and intent
+2. Apply prompt engineering best practices (specificity, clarity, quality keywords)
+3. Optimize for the target media type and AI model
+4. Structure prompts for maximum effectiveness
+
+ENHANCEMENT PRINCIPLES:
+- Keep the original creative intent intact
+- Add relevant technical terms and quality descriptors
+- Optimize for the specific AI model if provided
+- Consider the target media type requirements
+- Maintain natural, readable language`;
+    const mediaSpecific = this.getMediaSpecificInstructions(mediaType);
+    const levelSpecific = this.getLevelSpecificInstructions(enhancementLevel);
+    const modelSpecific = modelHint ? this.getModelSpecificInstructions(modelHint) : "";
+    return `${basePrompt}
+
+${mediaSpecific}
+
+${levelSpecific}
+
+${modelSpecific}
+
+RESPONSE FORMAT:
+Return a JSON object with:
+- enhancedPrompt: The improved prompt
+- negativePrompt: What to avoid (if requested)
+- improvements: List of specific improvements made
+- reasoning: Brief explanation of changes`;
+  }
+  /**
+   * Get media-specific enhancement instructions
+   */
+  getMediaSpecificInstructions(mediaType) {
+    switch (mediaType) {
+      case "image":
+        return `IMAGE GENERATION OPTIMIZATION:
+- Add visual descriptors (lighting, composition, style, mood)
+- Include technical parameters (resolution, aspect ratio, quality)
+- Specify artistic style and technique
+- Add environmental and atmospheric details`;
+      case "video":
+        return `VIDEO GENERATION OPTIMIZATION:
+- Include motion and temporal elements
+- Specify camera angles and movement
+- Add scene composition and pacing
+- Include audio and visual effects considerations`;
+      case "text":
+        return `TEXT GENERATION OPTIMIZATION:
+- Add structure and organization elements
+- Specify tone, style, and voice
+- Include context and audience considerations
+- Add formatting and presentation details`;
+      default:
+        return `GENERAL OPTIMIZATION:
+- Focus on clarity and specificity
+- Add relevant context and details
+- Optimize for general AI model understanding`;
+    }
+  }
+  /**
+   * Get level-specific enhancement instructions
+   */
+  getLevelSpecificInstructions(level) {
+    switch (level) {
+      case "basic":
+        return `BASIC ENHANCEMENT:
+- Translate to English if needed
+- Clean up grammar and spelling
+- Add basic quality descriptors
+- Maintain simplicity and clarity`;
+      case "detailed":
+        return `DETAILED ENHANCEMENT:
+- Add comprehensive visual/contextual details
+- Include technical specifications
+- Optimize for professional results
+- Balance detail with readability`;
+      case "creative":
+        return `CREATIVE ENHANCEMENT:
+- Add artistic and stylistic elements
+- Include mood and atmosphere details
+- Enhance creative expression
+- Add inspirational and evocative language`;
+      default:
+        return `STANDARD ENHANCEMENT:
+- Apply balanced improvements
+- Focus on clarity and effectiveness
+- Maintain original intent`;
+    }
+  }
+  /**
+   * Get model-specific optimization instructions
+   */
+  getModelSpecificInstructions(model) {
+    const modelLower = model.toLowerCase();
+    if (modelLower.includes("flux")) {
+      return `FLUX MODEL OPTIMIZATION:
+- Focus on artistic and creative elements
+- Include style and technique specifications
+- Optimize for visual quality and composition
+- Add relevant artistic terminology`;
+    } else if (modelLower.includes("veo") || modelLower.includes("sora")) {
+      return `VIDEO MODEL OPTIMIZATION:
+- Emphasize motion and temporal elements
+- Include scene composition details
+- Add camera and cinematography elements
+- Specify visual effects and transitions`;
+    } else if (modelLower.includes("dalle") || modelLower.includes("midjourney")) {
+      return `IMAGE MODEL OPTIMIZATION:
+- Focus on visual composition and style
+- Include artistic and technical details
+- Add quality and resolution specifications
+- Optimize for visual impact`;
+    }
+    return `GENERAL MODEL OPTIMIZATION:
+- Apply standard prompt engineering practices
+- Focus on clarity and specificity
+- Optimize for general AI understanding`;
+  }
+};
+var promptEnhancementTool = new PromptEnhancementTool();
+var iconMap = {
+  image: ImageIcon,
+  video: VideoIcon,
+  wand: Wand2Icon,
+  sparkles: SparklesIcon,
+  zap: ZapIcon,
+  play: PlayIcon,
+  languages: LanguagesIcon,
+  gallery: ImagesIcon
+};
+var ToolIcon = ({ name, className }) => {
+  const IconComponent = iconMap[name];
+  if (!IconComponent) {
+    console.warn(`Unknown icon name: ${name}`);
+    return null;
+  }
+  return /* @__PURE__ */ jsx(IconComponent, { className: cn("size-4", className) });
+};
+var ToolsGrid = ({ tools, className }) => {
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      className: `grid md:grid-cols-2 lg:grid-cols-3 gap-6 ${className || ""}`,
+      children: tools.map((tool5) => /* @__PURE__ */ jsx(
+        Link,
+        {
+          href: tool5.href,
+          children: /* @__PURE__ */ jsxs(Card, { className: "hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer group", children: [
+            /* @__PURE__ */ jsxs(CardHeader, { className: "text-center", children: [
+              /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center mb-4", children: /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: `p-4 rounded-full bg-${tool5.bgColor} group-hover:bg-${tool5.hoverBgColor} transition-colors`,
+                  children: /* @__PURE__ */ jsx(
+                    ToolIcon,
+                    {
+                      name: tool5.iconName,
+                      className: `size-8 text-${tool5.primaryColor}`
+                    }
+                  )
+                }
+              ) }),
+              /* @__PURE__ */ jsx(CardTitle, { className: "text-2xl", children: tool5.name }),
+              /* @__PURE__ */ jsx(CardDescription, { className: "text-base", children: tool5.description })
+            ] }),
+            /* @__PURE__ */ jsx(CardContent, { children: /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+              /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center space-x-6 text-sm text-muted-foreground", children: tool5.features.map((feature, index) => /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "flex items-center space-x-2",
+                  children: [
+                    /* @__PURE__ */ jsx(ToolIcon, { name: feature.iconName }),
+                    /* @__PURE__ */ jsx("span", { children: feature.label })
+                  ]
+                },
+                index
+              )) }),
+              /* @__PURE__ */ jsxs(
+                Button,
+                {
+                  className: `w-full group-hover:bg-${tool5.hoverColor}`,
+                  size: "lg",
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      ToolIcon,
+                      {
+                        name: tool5.iconName,
+                        className: "size-4 mr-2"
+                      }
+                    ),
+                    tool5.id === "image-generator" ? "Generate Images" : tool5.id === "video-generator" ? "Generate Videos" : "Enhance Prompts"
+                  ]
+                }
+              )
+            ] }) })
+          ] })
+        },
+        tool5.id
+      ))
+    }
+  );
+};
+
+// src/ai-tools/config/tools-config.ts
+var TOOLS_CONFIG = [
+  {
+    id: "image-generator",
+    name: "Image Generator",
+    description: "Generate high-quality images using AI models like FLUX Pro, FLUX Dev, and more from SuperDuperAI",
+    shortDescription: "AI Image Generator",
+    iconName: "image",
+    href: "/tools/image-generator",
+    category: "generation",
+    features: [
+      { iconName: "sparkles", label: "Professional Quality" },
+      { iconName: "zap", label: "Real-time Progress" }
+    ],
+    primaryColor: "blue-600",
+    hoverColor: "blue-600",
+    bgColor: "blue-100",
+    hoverBgColor: "blue-200"
+  },
+  {
+    id: "video-generator",
+    name: "Video Generator",
+    description: "Generate high-quality videos using AI models like VEO3, KLING, LTX, and more from SuperDuperAI",
+    shortDescription: "AI Video Generator",
+    iconName: "video",
+    href: "/tools/video-generator",
+    category: "generation",
+    features: [
+      { iconName: "play", label: "Professional Quality" },
+      { iconName: "zap", label: "Real-time Progress" }
+    ],
+    primaryColor: "purple-600",
+    hoverColor: "purple-600",
+    bgColor: "purple-100",
+    hoverBgColor: "purple-200"
+  },
+  {
+    id: "prompt-enhancer",
+    name: "Prompt Enhancer",
+    description: "Transform simple prompts into detailed, professional descriptions for better AI generation results",
+    shortDescription: "AI Prompt Enhancer",
+    iconName: "wand",
+    href: "/tools/prompt-enhancer",
+    category: "enhancement",
+    features: [
+      { iconName: "languages", label: "Auto Translation" },
+      { iconName: "sparkles", label: "Smart Enhancement" }
+    ],
+    primaryColor: "pink-600",
+    hoverColor: "pink-600",
+    bgColor: "pink-100",
+    hoverBgColor: "pink-200"
+  },
+  {
+    id: "prompt-enhancer-veo3",
+    name: "Prompt Enhancer Veo3",
+    description: "Transform simple prompts into detailed, professional descriptions for better AI generation results",
+    shortDescription: "AI Prompt Enhancer VEO3",
+    iconName: "wand",
+    href: "/tools/prompt-enhancer-veo3",
+    category: "enhancement",
+    features: [
+      { iconName: "languages", label: "Auto Translation" },
+      { iconName: "sparkles", label: "Smart Enhancement" }
+    ],
+    primaryColor: "pink-600",
+    hoverColor: "pink-600",
+    bgColor: "pink-100",
+    hoverBgColor: "pink-200"
+  },
+  {
+    id: "script-generator",
+    name: "Script Generator",
+    description: "Generate detailed scripts and scenarios in Markdown format using AI. Edit and refine your script with a powerful Markdown editor.",
+    shortDescription: "AI Script Generator",
+    iconName: "wand",
+    href: "/tools/script-generator",
+    category: "generation",
+    features: [
+      { iconName: "sparkles", label: "Markdown Output" },
+      { iconName: "sparkles", label: "Script Structuring" }
+    ],
+    primaryColor: "green-600",
+    hoverColor: "green-600",
+    bgColor: "green-100",
+    hoverBgColor: "green-200"
+  },
+  {
+    id: "gallery",
+    name: "Artifact Gallery",
+    description: "Browse and discover AI-generated images, videos, text documents, and spreadsheets. View your own creations or explore public artifacts from the community.",
+    shortDescription: "Artifacts",
+    iconName: "image",
+    href: "/gallery",
+    category: "gallery",
+    features: [
+      { iconName: "sparkles", label: "All Artifact Types" },
+      { iconName: "zap", label: "Advanced Search & Filters" }
+    ],
+    primaryColor: "indigo-600",
+    hoverColor: "indigo-600",
+    bgColor: "indigo-100",
+    hoverBgColor: "indigo-200"
+  }
+];
+var getToolById = (id) => {
+  return TOOLS_CONFIG.find((tool5) => tool5.id === id);
+};
+var getToolByHref = (href) => {
+  return TOOLS_CONFIG.find((tool5) => tool5.href === href);
+};
+var getToolsByCategory = (category) => {
+  return TOOLS_CONFIG.filter((tool5) => tool5.category === category);
+};
+var getToolNavigation = () => {
+  return TOOLS_CONFIG.map((tool5) => ({
+    id: tool5.id,
+    name: tool5.name,
+    shortName: tool5.shortDescription || tool5.name,
+    iconName: tool5.iconName,
+    href: tool5.href
+  }));
+};
+var getToolDisplayName = (pathname) => {
+  const tool5 = TOOLS_CONFIG.find((tool6) => pathname.includes(tool6.href));
+  return tool5?.name || "Unknown Tool";
+};
+var ToolsPage = ({
+  title = "AI Tools",
+  description = "Powerful AI-powered tools for generating high-quality images, videos, and enhancing your prompts. Choose the tool that fits your creative needs.",
+  className = ""
+}) => {
+  return /* @__PURE__ */ jsx("div", { className: `min-h-screen bg-background ${className}`, children: /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxs("div", { className: "max-w-4xl mx-auto space-y-8", children: [
+    /* @__PURE__ */ jsxs("div", { className: "text-center space-y-4", children: [
+      /* @__PURE__ */ jsx("h1", { className: "text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent", children: title }),
+      /* @__PURE__ */ jsx("p", { className: "text-lg text-muted-foreground max-w-2xl mx-auto", children: description })
+    ] }),
+    /* @__PURE__ */ jsx(
+      ToolsGrid,
+      {
+        tools: TOOLS_CONFIG,
+        className: "mt-12"
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-center text-sm text-muted-foreground border-t pt-8 mt-12", children: /* @__PURE__ */ jsxs("p", { children: [
+      "Powered by ",
+      /* @__PURE__ */ jsx("strong", { children: "SuperDuperAI" }),
+      " \u2022 State-of-the-art AI models for creative content generation \u2022 Fast, reliable, and high-quality results"
+    ] }) })
+  ] }) }) });
+};
+function useImageGenerator(options = {}) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState([]);
+  const [currentGeneration, setCurrentGeneration] = useState(null);
+  const [generationStatus, setGenerationStatus] = useState({
+    status: "idle",
+    message: ""
+  });
+  const generateImage = useCallback(
+    async (params) => {
+      if (!options.onGenerate) {
+        console.warn("No onGenerate function provided to useImageGenerator");
+        return;
+      }
+      try {
+        setIsGenerating(true);
+        setGenerationStatus({
+          status: "generating",
+          message: "Starting image generation...",
+          progress: 0
+        });
+        const image = await options.onGenerate(params);
+        setCurrentGeneration(image);
+        setGeneratedImages((prev) => [image, ...prev]);
+        setGenerationStatus({
+          status: "completed",
+          message: "Image generation completed!",
+          progress: 100
+        });
+        options.onSuccess?.(image);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Image generation failed";
+        setGenerationStatus({
+          status: "error",
+          message: errorMessage,
+          error: errorMessage
+        });
+        options.onError?.(errorMessage);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [options]
+  );
+  const clearCurrentGeneration = useCallback(() => {
+    setCurrentGeneration(null);
+    setGenerationStatus({
+      status: "idle",
+      message: ""
+    });
+  }, []);
+  const deleteImage = useCallback((imageId) => {
+    setGeneratedImages((prev) => prev.filter((img) => img.id !== imageId));
+  }, []);
+  const clearAllImages = useCallback(() => {
+    setGeneratedImages([]);
+  }, []);
+  const downloadImage = useCallback(async (image) => {
+    try {
+      const response = await fetch(image.imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `image-${image.id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download image:", error);
+    }
+  }, []);
+  const copyImageUrl = useCallback(async (image) => {
+    try {
+      await navigator.clipboard.writeText(image.imageUrl);
+    } catch (error) {
+      console.error("Failed to copy URL:", error);
+    }
+  }, []);
+  return {
+    isGenerating,
+    generationStatus,
+    generatedImages,
+    currentGeneration,
+    generateImage,
+    clearCurrentGeneration,
+    deleteImage,
+    clearAllImages,
+    downloadImage,
+    copyImageUrl
+  };
+}
+function useVideoGenerator(options = {}) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedVideos, setGeneratedVideos] = useState([]);
+  const [currentGeneration, setCurrentGeneration] = useState(null);
+  const [generationStatus, setGenerationStatus] = useState({
+    status: "idle",
+    message: ""
+  });
+  const generateVideo = useCallback(
+    async (params) => {
+      if (!options.onGenerate) {
+        console.warn("No onGenerate function provided to useVideoGenerator");
+        return;
+      }
+      try {
+        setIsGenerating(true);
+        setGenerationStatus({
+          status: "generating",
+          message: "Starting video generation...",
+          progress: 0
+        });
+        const video = await options.onGenerate(params);
+        setCurrentGeneration(video);
+        setGeneratedVideos((prev) => [video, ...prev]);
+        setGenerationStatus({
+          status: "completed",
+          message: "Video generation completed!",
+          progress: 100
+        });
+        options.onSuccess?.(video);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Video generation failed";
+        setGenerationStatus({
+          status: "error",
+          message: errorMessage,
+          error: errorMessage
+        });
+        options.onError?.(errorMessage);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [options]
+  );
+  const clearCurrentGeneration = useCallback(() => {
+    setCurrentGeneration(null);
+    setGenerationStatus({
+      status: "idle",
+      message: ""
+    });
+  }, []);
+  const deleteVideo = useCallback((videoId) => {
+    setGeneratedVideos((prev) => prev.filter((video) => video.id !== videoId));
+  }, []);
+  const clearAllVideos = useCallback(() => {
+    setGeneratedVideos([]);
+  }, []);
+  const downloadVideo = useCallback(async (video) => {
+    try {
+      const response = await fetch(video.videoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `video-${video.id}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download video:", error);
+    }
+  }, []);
+  const copyVideoUrl = useCallback(async (video) => {
+    try {
+      await navigator.clipboard.writeText(video.videoUrl);
+    } catch (error) {
+      console.error("Failed to copy URL:", error);
+    }
+  }, []);
+  return {
+    isGenerating,
+    generationStatus,
+    generatedVideos,
+    currentGeneration,
+    generateVideo,
+    clearCurrentGeneration,
+    deleteVideo,
+    clearAllVideos,
+    downloadVideo,
+    copyVideoUrl
+  };
+}
+function usePromptEnhancer(options = {}) {
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancedPrompts, setEnhancedPrompts] = useState([]);
+  const [currentEnhanced, setCurrentEnhanced] = useState(null);
+  const enhancePrompt2 = useCallback(
+    async (params) => {
+      if (!options.onEnhance) {
+        console.warn("No onEnhance function provided to usePromptEnhancer");
+        return;
+      }
+      try {
+        setIsEnhancing(true);
+        const enhanced = await options.onEnhance(params);
+        const enhancedPrompt = {
+          id: Date.now().toString(),
+          original: params.originalPrompt,
+          enhanced,
+          mediaType: params.mediaType || "general",
+          enhancementLevel: params.enhancementLevel || "detailed",
+          createdAt: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        setCurrentEnhanced(enhanced);
+        setEnhancedPrompts((prev) => [enhancedPrompt, ...prev]);
+        options.onSuccess?.(enhanced);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Prompt enhancement failed";
+        options.onError?.(errorMessage);
+      } finally {
+        setIsEnhancing(false);
+      }
+    },
+    [options]
+  );
+  const clearCurrent = useCallback(() => {
+    setCurrentEnhanced(null);
+  }, []);
+  const deleteEnhanced = useCallback((id) => {
+    setEnhancedPrompts((prev) => prev.filter((prompt) => prompt.id !== id));
+  }, []);
+  const clearAll = useCallback(() => {
+    setEnhancedPrompts([]);
+    setCurrentEnhanced(null);
+  }, []);
+  const copyEnhanced = useCallback(async (enhancedPrompt) => {
+    try {
+      await navigator.clipboard.writeText(enhancedPrompt);
+    } catch (error) {
+      console.error("Failed to copy enhanced prompt:", error);
+    }
+  }, []);
+  return {
+    isEnhancing,
+    enhancedPrompts,
+    currentEnhanced,
+    enhancePrompt: enhancePrompt2,
+    clearCurrent,
+    deleteEnhanced,
+    clearAll,
+    copyEnhanced
+  };
+}
+function MoodboardUploader({
+  enabled,
+  onEnabledChange,
+  onImagesChange,
+  maxImages = 3,
+  value = []
+}) {
+  const fileInputRef = useRef(null);
+  const handleFileSelect = (event) => {
+    const files = event.target.files;
+    if (!files) return;
+    for (let i = 0; i < Math.min(files.length, maxImages - value.length); i++) {
+      const file = files[i];
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result;
+          const newImage = {
+            id: Date.now().toString() + i,
+            file,
+            base64,
+            tags: [],
+            description: "",
+            weight: 1
+          };
+          const updatedImages = [...value, newImage];
+          onImagesChange(updatedImages);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+  const handleDropZoneClick = () => {
+    fileInputRef.current?.click();
+  };
+  const removeImage = (imageId) => {
+    const updatedImages = value.filter((img) => img.id !== imageId);
+    onImagesChange(updatedImages);
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center space-x-3", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center space-x-2", children: [
+        /* @__PURE__ */ jsx(
+          "input",
+          {
+            type: "checkbox",
+            id: "moodboard-toggle",
+            checked: enabled,
+            onChange: (e) => onEnabledChange(e.target.checked),
+            className: "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "moodboard-toggle",
+            className: "text-sm font-medium",
+            children: "Enable Moodboard References"
+          }
+        )
+      ] }),
+      enabled && /* @__PURE__ */ jsxs(
+        Badge,
+        {
+          variant: "outline",
+          className: "text-xs",
+          children: [
+            value.length,
+            "/",
+            maxImages,
+            " images"
+          ]
+        }
+      )
+    ] }),
+    enabled && /* @__PURE__ */ jsxs("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxs(Card, { children: [
+        /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsx(CardTitle, { className: "text-lg", children: "Visual References" }) }),
+        /* @__PURE__ */ jsxs(CardContent, { children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              ref: fileInputRef,
+              type: "file",
+              multiple: true,
+              accept: "image/*",
+              onChange: handleFileSelect,
+              className: "hidden"
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors",
+              onClick: handleDropZoneClick,
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "text-gray-500 dark:text-gray-400 mb-2", children: "\u{1F4C1} Click to Upload Images" }),
+                /* @__PURE__ */ jsxs("p", { className: "text-sm text-gray-400 dark:text-gray-500", children: [
+                  "Select up to ",
+                  maxImages,
+                  " images to use as visual references"
+                ] }),
+                /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400 dark:text-gray-500 mt-1", children: "Supported formats: JPG, PNG, GIF, WebP" })
+              ]
+            }
+          )
+        ] })
+      ] }),
+      value.length > 0 && /* @__PURE__ */ jsx("div", { className: "space-y-4", children: value.map((image) => /* @__PURE__ */ jsx(
+        Card,
+        {
+          className: "group relative",
+          children: /* @__PURE__ */ jsxs(CardContent, { className: "pt-6", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => removeImage(image.id),
+                className: "absolute top-2 right-2 z-10 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity",
+                title: "Remove image",
+                children: "\u2715"
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-3 gap-6", children: [
+              /* @__PURE__ */ jsx("div", { className: "lg:col-span-1", children: /* @__PURE__ */ jsx("div", { className: "aspect-square relative rounded-lg overflow-hidden bg-muted", children: image.url ? /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: image.url,
+                  alt: "Moodboard reference",
+                  className: "w-full h-full object-cover"
+                }
+              ) : image.base64 ? /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: image.base64,
+                  alt: "Moodboard reference",
+                  className: "w-full h-full object-cover"
+                }
+              ) : /* @__PURE__ */ jsx("div", { className: "w-full h-full flex items-center justify-center text-muted-foreground", children: "Image Preview" }) }) }),
+              /* @__PURE__ */ jsx("div", { className: "lg:col-span-2 space-y-4", children: /* @__PURE__ */ jsxs("div", { className: "text-sm text-muted-foreground", children: [
+                /* @__PURE__ */ jsxs("p", { children: [
+                  "Image ID: ",
+                  image.id
+                ] }),
+                image.description && /* @__PURE__ */ jsxs("p", { children: [
+                  "Description: ",
+                  image.description
+                ] }),
+                image.tags.length > 0 && /* @__PURE__ */ jsxs("p", { children: [
+                  "Tags: ",
+                  image.tags.join(", ")
+                ] }),
+                /* @__PURE__ */ jsxs("p", { children: [
+                  "Weight: ",
+                  image.weight
+                ] })
+              ] }) })
+            ] })
+          ] })
+        },
+        image.id
+      )) }),
+      /* @__PURE__ */ jsx(Card, { className: "border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20", children: /* @__PURE__ */ jsx(CardContent, { className: "pt-6", children: /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsx("h4", { className: "text-sm font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-2", children: "\u{1F3A8} Moodboard Tips" }),
+        /* @__PURE__ */ jsxs("ul", { className: "text-sm text-blue-800 dark:text-blue-200 space-y-2", children: [
+          /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-blue-600 dark:text-blue-400", children: "\u2022" }),
+            /* @__PURE__ */ jsx("span", { children: "Upload reference images to influence your VEO3 generation" })
+          ] }),
+          /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-blue-600 dark:text-blue-400", children: "\u2022" }),
+            /* @__PURE__ */ jsx("span", { children: "Add descriptions to highlight specific elements you want emphasized" })
+          ] }),
+          /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-blue-600 dark:text-blue-400", children: "\u2022" }),
+            /* @__PURE__ */ jsx("span", { children: "Adjust influence weight to control how much each image affects the result" })
+          ] })
+        ] })
+      ] }) }) })
+    ] })
+  ] });
+}
+function PromptBuilder({
+  promptData,
+  setPromptData,
+  addCharacter,
+  updateCharacter,
+  removeCharacter,
+  presetOptions,
+  moodboardEnabled = false,
+  setMoodboardEnabled,
+  moodboardImages = [],
+  setMoodboardImages,
+  MoodboardUploader: MoodboardUploader2
+}) {
+  return /* @__PURE__ */ jsxs(Card, { className: "w-full", children: [
+    /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsx(CardTitle, { children: "VEO3 Prompt Builder" }) }),
+    /* @__PURE__ */ jsxs(CardContent, { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-blue-500 bg-blue-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "scene",
+            className: "flex items-center gap-2 text-blue-300 font-medium",
+            children: "\u{1F3AC} Scene Description"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Textarea,
+          {
+            id: "scene",
+            placeholder: "Describe the main scene (e.g., A cozy coffee shop in the morning)",
+            value: promptData.scene,
+            onChange: (e) => setPromptData({ ...promptData, scene: e.target.value }),
+            className: "min-h-[80px] border-blue-600 bg-blue-950/10 focus:border-blue-400 focus:ring-blue-400"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-4 p-4 border-l-4 border-green-500 bg-green-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxs(Label, { className: "flex items-center gap-2 text-green-300 font-medium", children: [
+            "\u{1F465} Characters (",
+            promptData.characters.length,
+            ")"
+          ] }),
+          /* @__PURE__ */ jsx(
+            Button,
+            {
+              type: "button",
+              variant: "outline",
+              size: "sm",
+              onClick: addCharacter,
+              className: "text-xs border-green-600 text-green-300 hover:bg-green-950/30",
+              children: "+ Add Character"
+            }
+          )
+        ] }),
+        promptData.characters.length === 0 && /* @__PURE__ */ jsx("div", { className: "text-sm text-muted-foreground p-4 border border-dashed rounded-lg text-center", children: 'No characters added yet. Click "Add Character" to start.' }),
+        promptData.characters.map((character, index) => /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "p-4 border border-green-600 bg-green-950/10 rounded-lg space-y-3",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+                /* @__PURE__ */ jsxs(Label, { className: "text-sm font-medium", children: [
+                  "Character ",
+                  index + 1
+                ] }),
+                promptData.characters.length > 1 && /* @__PURE__ */ jsx(
+                  Button,
+                  {
+                    type: "button",
+                    variant: "ghost",
+                    size: "sm",
+                    onClick: () => removeCharacter(character.id),
+                    className: "text-red-500 hover:text-red-700 size-6 p-0",
+                    children: /* @__PURE__ */ jsx(Trash2, { className: "size-3" })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-3", children: [
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx(
+                    Label,
+                    {
+                      htmlFor: `char-name-${character.id}`,
+                      className: "text-xs",
+                      children: "Name"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "input",
+                    {
+                      id: `char-name-${character.id}`,
+                      type: "text",
+                      placeholder: "Character name (e.g., Sarah, Vendor)",
+                      value: character.name,
+                      onChange: (e) => updateCharacter(character.id, "name", e.target.value),
+                      className: "w-full px-3 py-2 border border-green-600 bg-green-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx(
+                    Label,
+                    {
+                      htmlFor: `char-desc-${character.id}`,
+                      className: "text-xs",
+                      children: "Description"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    Textarea,
+                    {
+                      id: `char-desc-${character.id}`,
+                      placeholder: "Describe the character (e.g., A young woman with wavy brown hair)",
+                      value: character.description,
+                      onChange: (e) => updateCharacter(
+                        character.id,
+                        "description",
+                        e.target.value
+                      ),
+                      className: "min-h-[60px] text-sm border-green-600 bg-green-950/10 focus:border-green-400 focus:ring-green-400"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsx(
+                      Label,
+                      {
+                        htmlFor: `char-speech-${character.id}`,
+                        className: "text-xs",
+                        children: "Speech/Dialogue"
+                      }
+                    ),
+                    character.speech && /* @__PURE__ */ jsx(
+                      Badge,
+                      {
+                        variant: "secondary",
+                        className: "text-xs px-2 py-0.5",
+                        children: "\u{1F399}\uFE0F Has Voice"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    Textarea,
+                    {
+                      id: `char-speech-${character.id}`,
+                      placeholder: "What they say (e.g., Hello there! or \u041F\u0440\u0438\u0432\u0435\u0442!)",
+                      value: character.speech,
+                      onChange: (e) => updateCharacter(character.id, "speech", e.target.value),
+                      className: `min-h-[50px] text-sm border-green-600 bg-green-950/10 focus:border-green-400 focus:ring-green-400 ${character.speech ? "border-blue-400 bg-blue-950/20" : ""}`
+                    }
+                  ),
+                  character.speech && /* @__PURE__ */ jsxs("div", { className: "mt-1 text-xs text-blue-300 flex items-center gap-1", children: [
+                    /* @__PURE__ */ jsx("span", { children: "\u{1F50A}" }),
+                    /* @__PURE__ */ jsx("span", { children: "This dialogue will be highlighted in the enhanced prompt" })
+                  ] })
+                ] })
+              ] })
+            ]
+          },
+          character.id
+        ))
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-orange-500 bg-orange-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "action",
+            className: "flex items-center gap-2 text-orange-300 font-medium",
+            children: "\u{1F3AD} Action/Activity"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Textarea,
+          {
+            id: "action",
+            placeholder: "What are they doing? (e.g., slowly sipping coffee while turning pages)",
+            value: promptData.action,
+            onChange: (e) => setPromptData({ ...promptData, action: e.target.value }),
+            className: "border-orange-600 bg-orange-950/10 focus:border-orange-400 focus:ring-orange-400"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-yellow-500 bg-yellow-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "language",
+            className: "flex items-center gap-2 text-yellow-300 font-medium",
+            children: "\u{1F5E3}\uFE0F Speech Language"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: "language",
+              type: "text",
+              placeholder: "Enter language (e.g., English, Russian, Spanish...)",
+              value: promptData.language,
+              onChange: (e) => setPromptData({ ...promptData, language: e.target.value }),
+              className: "w-full px-3 py-2 border border-yellow-600 bg-yellow-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-xs text-yellow-300", children: "Quick select:" }),
+            presetOptions.languages.map((language) => /* @__PURE__ */ jsx(
+              Badge,
+              {
+                variant: promptData.language === language ? "default" : "outline",
+                className: `cursor-pointer text-xs ${promptData.language === language ? "bg-yellow-600 text-white" : "border-yellow-600 text-yellow-300 hover:bg-yellow-950/30"}`,
+                onClick: () => setPromptData({ ...promptData, language }),
+                children: language
+              },
+              language
+            ))
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-purple-500 bg-purple-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "style",
+            className: "flex items-center gap-2 text-purple-300 font-medium",
+            children: "\u{1F3A8} Visual Style"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: "style",
+              type: "text",
+              placeholder: "Enter visual style (e.g., Cinematic, Documentary, Anime...)",
+              value: promptData.style,
+              onChange: (e) => setPromptData({ ...promptData, style: e.target.value }),
+              className: "w-full px-3 py-2 border border-purple-600 bg-purple-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-xs text-purple-300", children: "Quick select:" }),
+            presetOptions.styles.map((style) => /* @__PURE__ */ jsx(
+              Badge,
+              {
+                variant: promptData.style === style ? "default" : "outline",
+                className: `cursor-pointer text-xs ${promptData.style === style ? "bg-purple-600 text-white" : "border-purple-600 text-purple-300 hover:bg-purple-950/30"}`,
+                onClick: () => setPromptData({ ...promptData, style }),
+                children: style
+              },
+              style
+            ))
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-indigo-500 bg-indigo-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "camera",
+            className: "flex items-center gap-2 text-indigo-300 font-medium",
+            children: "\u{1F4F9} Camera Angle"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: "camera",
+              type: "text",
+              placeholder: "Enter camera angle (e.g., Close-up, Wide shot, Drone view...)",
+              value: promptData.camera,
+              onChange: (e) => setPromptData({ ...promptData, camera: e.target.value }),
+              className: "w-full px-3 py-2 border border-indigo-600 bg-indigo-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-xs text-indigo-300", children: "Quick select:" }),
+            presetOptions.cameras.map((camera) => /* @__PURE__ */ jsx(
+              Badge,
+              {
+                variant: promptData.camera === camera ? "default" : "outline",
+                className: `cursor-pointer text-xs ${promptData.camera === camera ? "bg-indigo-600 text-white" : "border-indigo-600 text-indigo-300 hover:bg-indigo-950/30"}`,
+                onClick: () => setPromptData({ ...promptData, camera }),
+                children: camera
+              },
+              camera
+            ))
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-pink-500 bg-pink-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "lighting",
+            className: "flex items-center gap-2 text-pink-300 font-medium",
+            children: "\u{1F4A1} Lighting"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: "lighting",
+              type: "text",
+              placeholder: "Enter lighting type (e.g., Natural, Golden hour, Dramatic...)",
+              value: promptData.lighting,
+              onChange: (e) => setPromptData({ ...promptData, lighting: e.target.value }),
+              className: "w-full px-3 py-2 border border-pink-600 bg-pink-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-xs text-pink-300", children: "Quick select:" }),
+            presetOptions.lighting.map((light) => /* @__PURE__ */ jsx(
+              Badge,
+              {
+                variant: promptData.lighting === light ? "default" : "outline",
+                className: `cursor-pointer text-xs ${promptData.lighting === light ? "bg-pink-600 text-white" : "border-pink-600 text-pink-300 hover:bg-pink-950/30"}`,
+                onClick: () => setPromptData({ ...promptData, lighting: light }),
+                children: light
+              },
+              light
+            ))
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-4 border-l-4 border-rose-500 bg-rose-950/20 rounded-lg", children: [
+        /* @__PURE__ */ jsx(
+          Label,
+          {
+            htmlFor: "mood",
+            className: "flex items-center gap-2 text-rose-300 font-medium",
+            children: "\u{1F31F} Mood"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: "mood",
+              type: "text",
+              placeholder: "Enter mood (e.g., Peaceful, Energetic, Mysterious...)",
+              value: promptData.mood,
+              onChange: (e) => setPromptData({ ...promptData, mood: e.target.value }),
+              className: "w-full px-3 py-2 border border-rose-600 bg-rose-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent"
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
+            /* @__PURE__ */ jsx(Label, { className: "text-xs text-rose-300", children: "Quick select:" }),
+            presetOptions.moods.map((mood) => /* @__PURE__ */ jsx(
+              Badge,
+              {
+                variant: promptData.mood === mood ? "default" : "outline",
+                className: `cursor-pointer text-xs ${promptData.mood === mood ? "bg-rose-600 text-white" : "border-rose-600 text-rose-300 hover:bg-rose-950/30"}`,
+                onClick: () => setPromptData({ ...promptData, mood }),
+                children: mood
+              },
+              mood
+            ))
+          ] })
+        ] })
+      ] }),
+      moodboardEnabled !== void 0 && setMoodboardEnabled && setMoodboardImages && (MoodboardUploader2 ? /* @__PURE__ */ jsx(
+        MoodboardUploader2,
+        {
+          images: moodboardImages,
+          setImages: setMoodboardImages
+        }
+      ) : /* @__PURE__ */ jsx(
+        MoodboardUploader,
+        {
+          enabled: moodboardEnabled,
+          onEnabledChange: setMoodboardEnabled,
+          onImagesChange: setMoodboardImages,
+          maxImages: 3,
+          value: moodboardImages
+        }
+      ))
+    ] })
+  ] });
+}
+function PromptPreview({
+  generatedPrompt,
+  setGeneratedPrompt,
+  randomizePrompt,
+  clearAll,
+  copyToClipboard: copyToClipboard2,
+  copied,
+  setActiveTab,
+  isEnhancing,
+  enhancePrompt: enhancePrompt2
+}) {
+  return /* @__PURE__ */ jsxs(Card, { className: "w-full", children: [
+    /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsxs(CardTitle, { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx(Copy, { className: "w-5 h-5" }),
+      "Generated Prompt",
+      /* @__PURE__ */ jsx(
+        Badge,
+        {
+          variant: "secondary",
+          className: "ml-auto text-xs",
+          children: "Preview"
+        }
+      )
+    ] }) }),
+    /* @__PURE__ */ jsx(CardContent, { children: /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx(
+          Textarea,
+          {
+            value: generatedPrompt,
+            onChange: (e) => setGeneratedPrompt(e.target.value),
+            placeholder: "Your generated prompt will appear here, or type your own prompt...",
+            className: "min-h-[400px] font-mono text-sm resize-none pr-20 bg-background border-border text-foreground"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "absolute top-2 right-2 flex gap-1", children: [
+          /* @__PURE__ */ jsx(
+            Button,
+            {
+              size: "sm",
+              variant: "ghost",
+              onClick: () => setGeneratedPrompt(""),
+              disabled: !generatedPrompt,
+              className: "size-8 p-0 hover:bg-background/80",
+              title: "Clear text",
+              children: /* @__PURE__ */ jsx(Trash2, { className: "size-4" })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            Button,
+            {
+              size: "sm",
+              variant: "ghost",
+              onClick: () => copyToClipboard2(generatedPrompt),
+              disabled: !generatedPrompt,
+              className: "size-8 p-0 hover:bg-background/80",
+              title: copied ? "Copied!" : "Copy to clipboard",
+              children: /* @__PURE__ */ jsx(Copy, { className: "size-4" })
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsxs(
+            Button,
+            {
+              onClick: randomizePrompt,
+              variant: "outline",
+              className: "flex-1",
+              children: [
+                /* @__PURE__ */ jsx(Shuffle, { className: "size-4 mr-2" }),
+                "Randomize All"
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            Button,
+            {
+              onClick: clearAll,
+              variant: "outline",
+              className: "flex-1",
+              children: [
+                /* @__PURE__ */ jsx(Trash2, { className: "size-4 mr-2" }),
+                "Clear All"
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs(
+          Button,
+          {
+            onClick: () => {
+              setActiveTab("enhance");
+              setTimeout(() => {
+                if (generatedPrompt && !isEnhancing) {
+                  enhancePrompt2();
+                }
+              }, 100);
+            },
+            disabled: !generatedPrompt,
+            size: "lg",
+            className: "w-full h-16 text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200",
+            children: [
+              /* @__PURE__ */ jsx(Sparkles, { className: "size-6 mr-3" }),
+              "Continue to AI Enhancement \u2192"
+            ]
+          }
+        )
+      ] })
+    ] }) })
+  ] });
+}
+function AIEnhancement({
+  enhancedPrompt,
+  setEnhancedPrompt,
+  enhanceWithSelectedFocus,
+  isEnhancing,
+  enhanceError,
+  enhancementInfo,
+  selectedFocusTypes,
+  toggleFocusType,
+  includeAudio,
+  setIncludeAudio,
+  customCharacterLimit,
+  setCustomCharacterLimit,
+  showSettings,
+  setShowSettings,
+  copied,
+  copyToClipboard: copyToClipboard2
+}) {
+  return /* @__PURE__ */ jsxs(Card, { className: "w-full", children: [
+    /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsxs(CardTitle, { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx(Sparkles, { className: "w-5 h-5 text-purple-600" }),
+      "AI Enhanced Prompt"
+    ] }) }),
+    /* @__PURE__ */ jsx(CardContent, { children: /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          onClick: enhanceWithSelectedFocus,
+          disabled: isEnhancing,
+          size: "lg",
+          className: "w-full h-16 text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200",
+          children: isEnhancing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(Loader2, { className: "w-6 h-6 mr-3 animate-spin" }),
+            "Enhancing with AI..."
+          ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(Sparkles, { className: "w-6 h-6 mr-3" }),
+            enhancedPrompt.trim() ? "Re-enhance with AI" : "Enhance with AI",
+            selectedFocusTypes.length > 0 && /* @__PURE__ */ jsxs("span", { className: "ml-2 text-sm opacity-90", children: [
+              "(",
+              selectedFocusTypes.length,
+              " focus",
+              selectedFocusTypes.length !== 1 ? "es" : "",
+              ")"
+            ] })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2", children: [
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            variant: selectedFocusTypes.includes("character") ? "default" : "outline",
+            size: "sm",
+            onClick: () => toggleFocusType("character"),
+            className: "text-xs",
+            children: "\u{1F464} Focus Character"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            variant: selectedFocusTypes.includes("action") ? "default" : "outline",
+            size: "sm",
+            onClick: () => toggleFocusType("action"),
+            className: "text-xs",
+            children: "\u{1F3AC} Focus Action"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            variant: selectedFocusTypes.includes("cinematic") ? "default" : "outline",
+            size: "sm",
+            onClick: () => toggleFocusType("cinematic"),
+            className: "text-xs",
+            children: "\u{1F3A5} More Cinematic"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            variant: includeAudio ? "default" : "outline",
+            size: "sm",
+            onClick: () => setIncludeAudio(!includeAudio),
+            className: `text-xs ${includeAudio ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700" : "bg-blue-50 border-blue-200 hover:bg-blue-100"}`,
+            children: "\u{1F50A} Audio & Voice"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            variant: selectedFocusTypes.includes("safe") ? "default" : "outline",
+            size: "sm",
+            onClick: () => toggleFocusType("safe"),
+            className: `text-xs ${selectedFocusTypes.includes("safe") ? "bg-green-600 text-white border-green-600 hover:bg-green-700" : "bg-green-50 border-green-200 hover:bg-green-100"}`,
+            children: "\u{1F6E1}\uFE0F Safe Content"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "border rounded-lg", children: [
+        /* @__PURE__ */ jsxs(
+          Button,
+          {
+            variant: "ghost",
+            onClick: () => setShowSettings(!showSettings),
+            className: "w-full justify-between p-3 h-auto",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx(Settings, { className: "w-4 h-4" }),
+                /* @__PURE__ */ jsx("span", { className: "text-sm", children: "Enhancement Settings" }),
+                /* @__PURE__ */ jsxs(
+                  Badge,
+                  {
+                    variant: "outline",
+                    className: "text-xs",
+                    children: [
+                      customCharacterLimit,
+                      " chars \u2022 GPT-4.1"
+                    ]
+                  }
+                )
+              ] }),
+              showSettings ? /* @__PURE__ */ jsx(ChevronUp, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx(ChevronDown, { className: "w-4 h-4" })
+            ]
+          }
+        ),
+        showSettings && /* @__PURE__ */ jsxs("div", { className: "px-3 pb-3 space-y-3 border-t", children: [
+          /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ jsx("span", { className: "text-xs text-muted-foreground", children: "Character Limit" }),
+              /* @__PURE__ */ jsxs(
+                Badge,
+                {
+                  variant: "outline",
+                  className: "text-xs",
+                  children: [
+                    customCharacterLimit,
+                    " chars"
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "range",
+                  min: "200",
+                  max: "10000",
+                  step: "100",
+                  value: customCharacterLimit,
+                  onChange: (e) => setCustomCharacterLimit(Number(e.target.value)),
+                  className: "w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                }
+              ),
+              /* @__PURE__ */ jsxs("div", { className: "flex justify-between text-xs text-muted-foreground", children: [
+                /* @__PURE__ */ jsx("span", { children: "200" }),
+                /* @__PURE__ */ jsx("span", { children: "2K" }),
+                /* @__PURE__ */ jsx("span", { children: "5K" }),
+                /* @__PURE__ */ jsx("span", { children: "10K" })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "text-xs text-muted-foreground", children: [
+              customCharacterLimit < 600 && "Concise and focused",
+              customCharacterLimit >= 600 && customCharacterLimit < 1500 && "Balanced detail",
+              customCharacterLimit >= 1500 && customCharacterLimit < 3e3 && "Rich and detailed",
+              customCharacterLimit >= 3e3 && "Extremely detailed"
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-xs text-muted-foreground", children: "AI Model" }),
+            /* @__PURE__ */ jsxs("div", { className: "p-2 bg-muted rounded text-xs", children: [
+              /* @__PURE__ */ jsx("div", { className: "font-medium", children: "GPT-4.1" }),
+              /* @__PURE__ */ jsx("div", { className: "text-muted-foreground", children: "Best quality enhancement model" })
+            ] })
+          ] })
+        ] })
+      ] }),
+      enhanceError && /* @__PURE__ */ jsx("div", { className: "p-3 bg-red-50 border border-red-200 rounded-lg", children: /* @__PURE__ */ jsx("p", { className: "text-sm text-red-600", children: enhanceError }) }),
+      /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx(
+          Textarea,
+          {
+            value: enhancedPrompt,
+            onChange: (e) => setEnhancedPrompt(e.target.value),
+            placeholder: "Click 'Enhance with AI' to generate a professional, detailed prompt...",
+            className: "min-h-[500px] font-mono text-sm resize-none whitespace-pre-wrap pr-12 bg-background border-border text-foreground"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            size: "sm",
+            variant: "ghost",
+            onClick: () => copyToClipboard2(enhancedPrompt),
+            disabled: !enhancedPrompt,
+            className: "absolute top-2 right-2 h-8 w-8 p-0 hover:bg-background/80",
+            title: copied ? "Copied!" : "Copy enhanced prompt",
+            children: /* @__PURE__ */ jsx(Copy, { className: "w-4 h-4" })
+          }
+        )
+      ] }),
+      enhancementInfo && /* @__PURE__ */ jsx("div", { className: "p-3 bg-muted/50 rounded-lg", children: /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center text-xs text-muted-foreground", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+          /* @__PURE__ */ jsxs("span", { children: [
+            "Model:",
+            " ",
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-foreground", children: enhancementInfo.modelName || enhancementInfo.model })
+          ] }),
+          /* @__PURE__ */ jsxs("span", { children: [
+            "Length:",
+            " ",
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-foreground", children: enhancementInfo.length })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxs("span", { children: [
+            "Characters:",
+            " ",
+            /* @__PURE__ */ jsxs("span", { className: "font-medium text-foreground", children: [
+              enhancementInfo.actualCharacters,
+              " /",
+              " ",
+              enhancementInfo.targetCharacters
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(
+            Badge,
+            {
+              variant: enhancementInfo.actualCharacters <= enhancementInfo.targetCharacters ? "default" : "secondary",
+              className: "text-xs",
+              children: enhancementInfo.actualCharacters <= enhancementInfo.targetCharacters ? "\u2713 Within limit" : "\u26A0 Over limit"
+            }
+          )
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          onClick: enhanceWithSelectedFocus,
+          disabled: isEnhancing,
+          size: "lg",
+          className: "w-full h-16 text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200",
+          children: isEnhancing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(Loader2, { className: "w-6 h-6 mr-3 animate-spin" }),
+            "Enhancing with AI..."
+          ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(Sparkles, { className: "w-6 h-6 mr-3" }),
+            enhancedPrompt.trim() ? "Re-enhance with AI" : "Enhance with AI",
+            selectedFocusTypes.length > 0 && /* @__PURE__ */ jsxs("span", { className: "ml-2 text-sm opacity-90", children: [
+              "(",
+              selectedFocusTypes.length,
+              " focus",
+              selectedFocusTypes.length !== 1 ? "es" : "",
+              ")"
+            ] })
+          ] })
+        }
+      )
+    ] }) })
+  ] });
+}
+function PromptHistory({
+  promptHistory,
+  loadFromHistory,
+  clearHistory,
+  setActiveTab
+}) {
+  return /* @__PURE__ */ jsx(Card, { className: "w-full", children: promptHistory.length > 0 ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs(CardTitle, { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsx(Copy, { className: "w-5 h-5" }),
+        "Recent Prompts History",
+        /* @__PURE__ */ jsxs(
+          Badge,
+          {
+            variant: "outline",
+            className: "ml-2",
+            children: [
+              promptHistory.length,
+              "/10"
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          onClick: clearHistory,
+          variant: "ghost",
+          size: "sm",
+          className: "text-muted-foreground hover:text-destructive",
+          children: /* @__PURE__ */ jsx(Trash2, { className: "w-4 h-4" })
+        }
+      )
+    ] }) }),
+    /* @__PURE__ */ jsx(CardContent, { children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: promptHistory.slice(0, 10).map((historyItem) => /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "p-4 border rounded-lg hover:bg-muted/50 transition-colors",
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-3", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground", children: historyItem.timestamp && typeof historyItem.timestamp === "object" && "toLocaleString" in historyItem.timestamp ? historyItem.timestamp.toLocaleString() : String(historyItem.timestamp) }),
+            /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
+              historyItem.model && /* @__PURE__ */ jsx(
+                Badge,
+                {
+                  variant: "outline",
+                  className: "text-xs",
+                  children: historyItem.model
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                Badge,
+                {
+                  variant: "secondary",
+                  className: "text-xs",
+                  children: historyItem.length
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm mb-3 line-clamp-3", children: historyItem.basicPrompt && historyItem.basicPrompt.length > 120 ? historyItem.basicPrompt.substring(0, 120) + "..." : historyItem.basicPrompt }),
+          /* @__PURE__ */ jsx(
+            Button,
+            {
+              onClick: () => loadFromHistory(historyItem),
+              variant: "outline",
+              size: "sm",
+              className: "w-full",
+              children: "Load This Version"
+            }
+          )
+        ]
+      },
+      historyItem.id
+    )) }) })
+  ] }) : /* @__PURE__ */ jsxs(CardContent, { className: "flex flex-col items-center justify-center py-12", children: [
+    /* @__PURE__ */ jsx(Copy, { className: "w-12 h-12 text-muted-foreground mb-4" }),
+    /* @__PURE__ */ jsx("h3", { className: "text-lg font-semibold mb-2", children: "No History Yet" }),
+    /* @__PURE__ */ jsx("p", { className: "text-muted-foreground text-center mb-4", children: "Generate and enhance prompts to see them here" }),
+    /* @__PURE__ */ jsx(
+      Button,
+      {
+        variant: "outline",
+        onClick: () => setActiveTab("builder"),
+        children: "Start Building"
+      }
+    )
+  ] }) });
+}
+
+// src/veo3-tools/utils/index.ts
+var generatePrompt = (data) => {
+  const parts = [];
+  if (data.scene) parts.push(data.scene);
+  if (data.characters.length > 0) {
+    const validCharacters = data.characters.filter(
+      (char) => char.name || char.description
+    );
+    if (validCharacters.length > 0) {
+      const characterDescriptions = validCharacters.map((char) => {
+        let desc = char.description || char.name || "a character";
+        if (char.speech && data.language) {
+          desc += ` who says in ${data.language.toLowerCase()}: "${char.speech}"`;
+        }
+        return desc;
+      });
+      parts.push(`featuring ${characterDescriptions.join(", ")}`);
+    }
+  }
+  if (data.action) parts.push(`${data.action}`);
+  if (data.camera) parts.push(`Shot with ${data.camera.toLowerCase()}`);
+  if (data.style) parts.push(`${data.style.toLowerCase()} style`);
+  if (data.lighting) parts.push(`${data.lighting.toLowerCase()} lighting`);
+  if (data.mood) parts.push(`${data.mood.toLowerCase()} mood`);
+  return parts.length > 0 ? parts.join(", ") + "." : "Your generated prompt will appear here, or type your own prompt...";
+};
+var createRandomPromptData = () => {
+  const styles = [
+    "Cinematic",
+    "Documentary",
+    "Anime",
+    "Realistic",
+    "Artistic",
+    "Vintage",
+    "Modern"
+  ];
+  const cameras = [
+    "Close-up",
+    "Wide shot",
+    "Over-the-shoulder",
+    "Drone view",
+    "Handheld",
+    "Static"
+  ];
+  const lighting = [
+    "Natural",
+    "Golden hour",
+    "Blue hour",
+    "Dramatic",
+    "Soft",
+    "Neon",
+    "Candlelight"
+  ];
+  const moods = [
+    "Peaceful",
+    "Energetic",
+    "Mysterious",
+    "Romantic",
+    "Tense",
+    "Joyful",
+    "Melancholic"
+  ];
+  const languages = [
+    "English",
+    "Spanish",
+    "French",
+    "German",
+    "Italian",
+    "Russian",
+    "Japanese",
+    "Chinese"
+  ];
+  return {
+    scene: "A serene lakeside at sunset",
+    characters: [
+      {
+        id: "1",
+        name: "Person",
+        description: "A person in casual clothes",
+        speech: Math.random() > 0.5 ? "Perfect evening for this!" : ""
+      }
+    ],
+    action: "skipping stones across the water",
+    language: languages[Math.floor(Math.random() * languages.length)],
+    style: styles[Math.floor(Math.random() * styles.length)],
+    camera: cameras[Math.floor(Math.random() * cameras.length)],
+    lighting: lighting[Math.floor(Math.random() * lighting.length)],
+    mood: moods[Math.floor(Math.random() * moods.length)]
+  };
+};
+var createEmptyPromptData = () => ({
+  scene: "",
+  style: "",
+  camera: "",
+  characters: [],
+  action: "",
+  lighting: "",
+  mood: "",
+  language: "English"
+});
+var createCharacter = (id) => ({
+  id: id || Date.now().toString(),
+  name: "",
+  description: "",
+  speech: ""
+});
+var copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    console.error("Failed to copy to clipboard:", error);
+    return false;
+  }
+};
+var getLocaleLanguage = () => {
+  if (typeof window === "undefined") return "English";
+  const locale = window.location.pathname.split("/")[1];
+  const localeToLanguage = {
+    en: "English",
+    ru: "Russian",
+    es: "Spanish",
+    hi: "Hindi",
+    tr: "Turkish"
+  };
+  return localeToLanguage[locale] || "English";
+};
+
+// src/veo3-tools/constants/index.ts
+var PRESET_OPTIONS = {
+  styles: [
+    "Cinematic",
+    "Documentary",
+    "Anime",
+    "Realistic",
+    "Artistic",
+    "Vintage",
+    "Modern"
+  ],
+  cameras: [
+    "Close-up",
+    "Wide shot",
+    "Over-the-shoulder",
+    "Drone view",
+    "Handheld",
+    "Static"
+  ],
+  lighting: [
+    "Natural",
+    "Golden hour",
+    "Blue hour",
+    "Dramatic",
+    "Soft",
+    "Neon",
+    "Candlelight"
+  ],
+  moods: [
+    "Peaceful",
+    "Energetic",
+    "Mysterious",
+    "Romantic",
+    "Tense",
+    "Joyful",
+    "Melancholic"
+  ],
+  languages: [
+    "English",
+    "Spanish",
+    "French",
+    "German",
+    "Italian",
+    "Russian",
+    "Japanese",
+    "Chinese"
+  ]
+};
+var STORAGE_KEYS = {
+  PROMPT_HISTORY: "veo3-prompt-history",
+  CUSTOM_CHARACTER_LIMIT: "veo3-custom-character-limit",
+  INCLUDE_AUDIO: "veo3-include-audio",
+  MOODBOARD_ENABLED: "veo3-moodboard-enabled"
+};
+var DEFAULT_VALUES = {
+  CHARACTER_LIMIT: 4e3,
+  LANGUAGE: "English",
+  INCLUDE_AUDIO: true,
+  MOODBOARD_ENABLED: true,
+  HISTORY_LIMIT: 10
+};
+function Veo3PromptGenerator({
+  enhancePromptFunction,
+  MoodboardUploader: MoodboardUploader2,
+  showInfoBanner = true,
+  className = ""
+}) {
+  const [promptData, setPromptData] = useState({
+    scene: "",
+    style: "",
+    camera: "",
+    characters: [{ id: "default", name: "", description: "", speech: "" }],
+    action: "",
+    lighting: "",
+    mood: "",
+    language: "English"
+  });
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [enhancedPrompt, setEnhancedPrompt] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhanceError, setEnhanceError] = useState("");
+  const [customCharacterLimit, setCustomCharacterLimit] = useState(
+    DEFAULT_VALUES.CHARACTER_LIMIT
+  );
+  const [selectedModel] = useState("gpt-4.1");
+  const [promptHistory, setPromptHistory] = useState([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [enhancementInfo, setEnhancementInfo] = useState(null);
+  const [activeTab, setActiveTab] = useState("builder");
+  const [selectedFocusTypes, setSelectedFocusTypes] = useState(["safe"]);
+  const [includeAudio, setIncludeAudio] = useState(
+    DEFAULT_VALUES.INCLUDE_AUDIO
+  );
+  const [moodboardEnabled, setMoodboardEnabled] = useState(
+    DEFAULT_VALUES.MOODBOARD_ENABLED
+  );
+  const [moodboardImages, setMoodboardImages] = useState([]);
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("veo3-prompt-history");
+    if (savedHistory) {
+      try {
+        const parsed = JSON.parse(savedHistory);
+        const historyWithDates = parsed.map((item) => ({
+          ...item,
+          timestamp: new Date(item.timestamp)
+        }));
+        setPromptHistory(historyWithDates);
+      } catch (error) {
+        console.error("Failed to load prompt history:", error);
+      }
+    }
+  }, []);
+  useEffect(() => {
+    if (promptHistory.length > 0) {
+      localStorage.setItem(
+        "veo3-prompt-history",
+        JSON.stringify(promptHistory)
+      );
+    }
+  }, [promptHistory]);
+  useEffect(() => {
+    const hasValidCharacter = promptData.characters.some(
+      (char) => char.name || char.description
+    );
+    if (promptData.scene || hasValidCharacter) {
+      const prompt = generatePrompt(promptData);
+      setGeneratedPrompt(prompt);
+    }
+  }, [promptData]);
+  useEffect(() => {
+    const defaultLanguage = getLocaleLanguage();
+    setPromptData((prev) => ({ ...prev, language: defaultLanguage }));
+  }, []);
+  const addCharacter = () => {
+    setPromptData((prev) => ({
+      ...prev,
+      characters: [
+        ...prev.characters,
+        { id: Date.now().toString(), name: "", description: "", speech: "" }
+      ]
+    }));
+  };
+  const updateCharacter = (id, field, value) => {
+    setPromptData((prev) => ({
+      ...prev,
+      characters: prev.characters.map(
+        (char) => char.id === id ? { ...char, [field]: value } : char
+      )
+    }));
+  };
+  const removeCharacter = (id) => {
+    setPromptData((prev) => ({
+      ...prev,
+      characters: prev.characters.filter((char) => char.id !== id)
+    }));
+  };
+  const clearAll = () => {
+    const emptyData = {
+      scene: "",
+      style: "",
+      camera: "",
+      characters: [],
+      action: "",
+      lighting: "",
+      mood: "",
+      language: "English"
+    };
+    setPromptData(emptyData);
+    setGeneratedPrompt("");
+    setEnhancedPrompt("");
+    setEnhanceError("");
+  };
+  const saveToHistory = (basicPrompt, enhancedPrompt2, length, model, promptData2) => {
+    const newHistoryItem = {
+      id: Date.now().toString(),
+      timestamp: /* @__PURE__ */ new Date(),
+      basicPrompt,
+      enhancedPrompt: enhancedPrompt2,
+      length,
+      model,
+      promptData: promptData2
+    };
+    setPromptHistory((prev) => {
+      const updated = [newHistoryItem, ...prev];
+      return updated.slice(0, 10);
+    });
+  };
+  const clearHistory = () => {
+    setPromptHistory([]);
+    localStorage.removeItem("veo3-prompt-history");
+  };
+  const randomizePrompt = () => {
+    const randomData = createRandomPromptData();
+    setPromptData(randomData);
+  };
+  const copyToClipboard2 = async (text) => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2e3);
+    }
+  };
+  const loadFromHistory = (historyItem) => {
+    setPromptData(historyItem.promptData);
+    setGeneratedPrompt(historyItem.basicPrompt);
+    setEnhancedPrompt(historyItem.enhancedPrompt);
+    if (historyItem.length) {
+      const match = historyItem.length.match(/(\d+)/);
+      if (match) {
+        const charLimit = parseInt(match[1]);
+        if (charLimit >= 200 && charLimit <= 1e4) {
+          setCustomCharacterLimit(charLimit);
+        }
+      }
+    }
+  };
+  const toggleFocusType = (focusType) => {
+    setSelectedFocusTypes((prev) => {
+      if (prev.includes(focusType)) {
+        return prev.filter((type) => type !== focusType);
+      } else {
+        return [...prev, focusType];
+      }
+    });
+  };
+  const enhancePrompt2 = async (focusType) => {
+    if (!enhancePromptFunction) {
+      console.warn("No enhance function provided");
+      return;
+    }
+    let promptToEnhance = "";
+    if (activeTab === "enhance" && enhancedPrompt.trim()) {
+      promptToEnhance = enhancedPrompt.trim();
+    } else if (generatedPrompt.trim()) {
+      promptToEnhance = generatedPrompt.trim();
+    } else {
+      return;
+    }
+    setIsEnhancing(true);
+    setEnhanceError("");
+    try {
+      const data = await enhancePromptFunction({
+        prompt: promptToEnhance,
+        customLimit: customCharacterLimit,
+        model: selectedModel,
+        focusType,
+        includeAudio,
+        promptData,
+        ...moodboardEnabled && moodboardImages.length > 0 ? {
+          moodboard: {
+            enabled: true,
+            images: moodboardImages.map((img) => ({
+              id: img.id,
+              url: img.url,
+              base64: img.base64,
+              tags: img.tags,
+              description: img.description,
+              weight: img.weight
+            }))
+          }
+        } : {}
+      });
+      if (data.enhancedPrompt) {
+        setEnhancedPrompt(data.enhancedPrompt);
+        setEnhancementInfo({
+          model: data.model || selectedModel,
+          modelName: data.model || selectedModel,
+          length: `${data.characterLimit || customCharacterLimit} chars`,
+          actualCharacters: data.characterCount || data.enhancedPrompt.length,
+          targetCharacters: data.targetCharacters || customCharacterLimit
+        });
+        const basicPromptForHistory = activeTab === "enhance" && enhancedPrompt.trim() ? promptToEnhance : generatedPrompt;
+        saveToHistory(
+          basicPromptForHistory,
+          data.enhancedPrompt,
+          `${data.characterLimit || customCharacterLimit} chars`,
+          data.model || selectedModel,
+          promptData
+        );
+      } else {
+        throw new Error("No enhanced prompt received");
+      }
+    } catch (error) {
+      console.error("Enhancement error:", error);
+      setEnhanceError(
+        error instanceof Error ? error.message : "Failed to enhance prompt"
+      );
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+  const enhanceWithSelectedFocus = async () => {
+    if (selectedFocusTypes.length === 0) {
+      await enhancePrompt2();
+    } else {
+      await enhancePrompt2(selectedFocusTypes.join(","));
+    }
+  };
+  return /* @__PURE__ */ jsxs("div", { className: `w-full max-w-6xl mx-auto ${className}`, children: [
+    showInfoBanner && /* @__PURE__ */ jsx("div", { className: "mb-6 p-4 bg-gradient-to-r from-green-50/10 to-blue-50/10 dark:from-green-950/20 dark:to-blue-950/20 border border-green-200/20 dark:border-green-600/20 rounded-lg", children: /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-3", children: [
+      /* @__PURE__ */ jsx("div", { className: "flex-shrink-0 w-8 h-8 bg-green-100/20 dark:bg-green-900/30 rounded-full flex items-center justify-center", children: /* @__PURE__ */ jsx(BookOpen, { className: "w-4 h-4 text-green-600 dark:text-green-400" }) }),
+      /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+        /* @__PURE__ */ jsx("h3", { className: "font-semibold text-green-900 dark:text-green-100 mb-1", children: "Master VEO3 Video Generation" }),
+        /* @__PURE__ */ jsx("p", { className: "text-sm text-green-700 dark:text-green-300 mb-2", children: "Learn professional prompting techniques and best practices for Google's most advanced AI video model." })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs(
+      Tabs,
+      {
+        value: activeTab,
+        onValueChange: setActiveTab,
+        className: "space-y-6",
+        children: [
+          /* @__PURE__ */ jsxs(TabsList, { className: "grid w-full grid-cols-3", children: [
+            /* @__PURE__ */ jsx(TabsTrigger, { value: "builder", children: "Prompt Builder" }),
+            /* @__PURE__ */ jsx(TabsTrigger, { value: "enhance", children: "AI Enhancement" }),
+            /* @__PURE__ */ jsxs(TabsTrigger, { value: "history", children: [
+              "History (",
+              promptHistory.length,
+              "/10)"
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(TabsContent, { value: "builder", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6", children: [
+            /* @__PURE__ */ jsx(
+              PromptBuilder,
+              {
+                promptData,
+                setPromptData,
+                addCharacter,
+                updateCharacter,
+                removeCharacter,
+                presetOptions: PRESET_OPTIONS,
+                moodboardEnabled,
+                setMoodboardEnabled,
+                moodboardImages,
+                setMoodboardImages,
+                MoodboardUploader: MoodboardUploader2 || void 0
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              PromptPreview,
+              {
+                generatedPrompt,
+                setGeneratedPrompt,
+                randomizePrompt,
+                clearAll,
+                copyToClipboard: copyToClipboard2,
+                copied,
+                setActiveTab,
+                isEnhancing,
+                enhancePrompt: enhancePrompt2
+              }
+            )
+          ] }) }),
+          /* @__PURE__ */ jsx(TabsContent, { value: "enhance", children: /* @__PURE__ */ jsx(
+            AIEnhancement,
+            {
+              enhancedPrompt,
+              setEnhancedPrompt,
+              enhanceWithSelectedFocus,
+              isEnhancing,
+              enhanceError,
+              enhancementInfo,
+              selectedFocusTypes,
+              toggleFocusType,
+              includeAudio,
+              setIncludeAudio,
+              customCharacterLimit,
+              setCustomCharacterLimit,
+              showSettings,
+              setShowSettings,
+              copied,
+              copyToClipboard: copyToClipboard2
+            }
+          ) }),
+          /* @__PURE__ */ jsx(TabsContent, { value: "history", children: /* @__PURE__ */ jsx(
+            PromptHistory,
+            {
+              promptHistory,
+              loadFromHistory,
+              clearHistory,
+              setActiveTab
+            }
+          ) })
+        ]
+      }
+    )
+  ] });
+}
+
+// src/veo3-tools/types/index.ts
+var PromptDataType = {};
+var MoodboardImageType = {};
+var CharacterType = {};
+var EnhancementInfoType = {};
+var PresetOptionsType = {};
+var HistoryItemType = {};
+
+export { AIEnhancement, BalanceService, CharacterType, DEFAULT_IMAGE_CONFIG, DEFAULT_VALUES, DEFAULT_VIDEO_CONFIG, EnhancementInfoType, HistoryItemType, ImageGenerationUtils, ImageToImageStrategy, InpaintingStrategy, MoodboardImageType, MoodboardUploader, PRESET_OPTIONS, PresetOptionsType, PromptBuilder, PromptDataType, PromptEnhancementTool, PromptHistory, PromptPreview, STORAGE_KEYS, TOOLS_CONFIG, TextToImageStrategy, TextToVideoStrategy, ToolIcon, ToolsGrid, ToolsPage, Veo3PromptGenerator, VideoGenerationUtils, VideoToVideoStrategy, balanceService, configureImageGeneration, configureScriptGeneration, configureVideoGeneration, copyToClipboard, createCharacter, createDocument, createEmptyPromptData, createRandomPromptData, enhancePrompt, enhancePromptSchema, findBestVideoModel, generatePrompt, getLocaleLanguage, getToolByHref, getToolById, getToolDisplayName, getToolNavigation, getToolsByCategory, imageToImageStrategy, inpaintingStrategy, listVideoModels, promptEnhancementTool, requestSuggestions, textToImageStrategy, textToVideoStrategy, updateDocument, useImageGenerator, usePromptEnhancer, useVideoGenerator, videoToVideoStrategy };
+//# sourceMappingURL=index.mjs.map
+//# sourceMappingURL=index.mjs.map

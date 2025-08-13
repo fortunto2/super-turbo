@@ -1,10 +1,14 @@
 "use client";
 
 import {
-  MoodboardImage,
-  PromptData,
   Veo3PromptGenerator,
-} from "@turbo-super/veo3-tools";
+  PromptDataType,
+  MoodboardImageType,
+} from "@turbo-super/features";
+
+// Define types from exported values
+type PromptData = typeof PromptDataType;
+type MoodboardImage = typeof MoodboardImageType;
 import { CreditBalance } from "@/components/ui/credit-balance";
 
 export function SimpleVeo3Generator() {
@@ -39,6 +43,7 @@ export function SimpleVeo3Generator() {
 
       <Veo3PromptGenerator
         enhancePromptFunction={enhancePromptFunction}
+        MoodboardUploader={undefined}
         showInfoBanner={true}
       />
     </div>

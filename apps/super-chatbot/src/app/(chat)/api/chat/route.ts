@@ -335,39 +335,65 @@ export async function POST(request: Request) {
               },
             });
 
-            // В этом случае, если создание чата критично, можно вернуть ошибку клиенту
+            // Возвращаем ошибку клиенту с детальным описанием
             return new Response(
-              "Failed to create chat. Please try again later.",
+              JSON.stringify({
+                error: "Failed to create chat due to user creation issues",
+                details: "Please try refreshing the page or contact support",
+                chatId: id,
+                timestamp: new Date().toISOString(),
+              }),
               {
                 status: 500,
+                headers: {
+                  "Content-Type": "application/json",
+                },
               }
             );
           }
         } else {
-          // Логируем другие типы ошибок
-          Sentry.captureException(error, {
-            tags: { error_type: "chat_creation", entity: "chat" },
+          // Другие ошибки при создании чата
+          Sentry.captureException(error as Error, {
+            tags: { error_type: "chat_creation_failed", entity: "chat" },
             extra: {
               chatId: id,
               userId: session.user.id,
+              errorMessage: (error as Error).message,
             },
           });
 
-          // Для других ошибок также можно вернуть ошибку клиенту
           return new Response(
-            "Failed to create chat. Please try again later.",
+            JSON.stringify({
+              error: "Failed to create chat",
+              details: (error as Error).message,
+              chatId: id,
+              timestamp: new Date().toISOString(),
+            }),
             {
               status: 500,
+              headers: {
+                "Content-Type": "application/json",
+              },
             }
           );
         }
       }
 
-      // Если чат все еще не удалось сохранить, возвращаем ошибку
       if (!savedChat) {
-        return new Response("Failed to create chat. Please try again later.", {
-          status: 500,
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Failed to create chat",
+            details: "Chat creation was unsuccessful",
+            chatId: id,
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            status: 500,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
       }
     } else {
       if (chat.userId !== session.user.id) {
@@ -540,6 +566,15 @@ export async function POST(request: Request) {
           }),
         };
 
+        // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
+
+        console.log("🔍 Message structure for configureImageGeneration:", {
+          hasMessage: !!message,
+          messageKeys: message ? Object.keys(message) : [],
+          experimentalAttachments: (message as any)?.experimental_attachments,
+          attachments: (message as any)?.attachments,
+        });
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
@@ -566,6 +601,31 @@ export async function POST(request: Request) {
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
               session,
+              defaultSourceImageUrl: (() => {
+                try {
+                  const atts = (message as any)?.experimental_attachments || [];
+                  console.log("🔍 Looking for image attachments in message:", {
+                    hasMessage: !!message,
+                    hasAttachments: !!atts,
+                    attachmentsCount: atts?.length || 0,
+                    attachments: atts,
+                  });
+                  const img = atts.find(
+                    (a: any) =>
+                      typeof a?.url === "string" &&
+                      /^https?:\/\//.test(a.url) &&
+                      String(a?.contentType || "").startsWith("image/")
+                  );
+                  console.log("🔍 Found image attachment:", img);
+                  return img?.url;
+                } catch (error) {
+                  console.error(
+                    "🔍 Error extracting defaultSourceImageUrl:",
+                    error
+                  );
+                  return undefined;
+                }
+              })(),
             }),
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
@@ -579,6 +639,7 @@ export async function POST(request: Request) {
             findBestVideoModel,
             enhancePrompt,
           },
+          // Note: explicit toolChoice removed due to type constraints; tool remains available
           onFinish: async ({ response }) => {
             if (session.user?.id) {
               try {
@@ -678,6 +739,27 @@ export async function GET(request: Request) {
       return new Response("id is required", { status: 400 });
     }
 
+    // Валидация UUID формата
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        chatId
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid chat ID format",
+          details: "Chat ID must be a valid UUID",
+          chatId: chatId,
+        }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
     const session = await auth();
 
     if (!session?.user) {
@@ -689,15 +771,40 @@ export async function GET(request: Request) {
     try {
       chat = await getChatById({ id: chatId });
     } catch (error) {
-      return formatErrorResponse(error, "GET chat/getChatById");
+      console.error("Error getting chat by ID:", error);
+      return formatErrorResponse(error as Error, "GET chat/getChatById");
     }
 
     if (!chat) {
-      return new Response("Not found", { status: 404 });
+      return new Response(
+        JSON.stringify({
+          error: "Chat not found",
+          details: "The requested chat does not exist",
+          chatId: chatId,
+        }),
+        {
+          status: 404,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
     if (chat.visibility === "private" && chat.userId !== session.user.id) {
-      return new Response("Forbidden", { status: 403 });
+      return new Response(
+        JSON.stringify({
+          error: "Access denied",
+          details: "You don't have permission to access this chat",
+          chatId: chatId,
+        }),
+        {
+          status: 403,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
     const streamIds = await getStreamIdsByChatId({ chatId });
