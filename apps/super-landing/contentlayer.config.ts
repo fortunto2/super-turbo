@@ -182,4 +182,7 @@ export default makeSource({
       ],
     ],
   },
+  // Windows compatibility
+  onUnknownDocuments: "skip-warn",
+  onMissingOrIncompatibleData: "skip-warn",
 });
