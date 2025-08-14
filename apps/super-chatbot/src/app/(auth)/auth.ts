@@ -144,48 +144,41 @@ export const {
       id: "guest",
       credentials: {},
       async authorize() {
-        // Получаем sessionId из cookie
-        const cookieStore = await cookies();
-        let sessionId =
-          cookieStore.get("superduperai_guest_session")?.value || null;
+        // Получаем постоянный ID браузера из заголовков (передается с клиента)
+        const headers = await import("next/headers");
+        const headersList = headers.headers();
+        let browserId = headersList.get("x-guest-browser-id") || null;
 
-        if (sessionId) {
-          try {
-            // Пытаемся найти существующего гостя по sessionId
-            const { getGuestUserBySessionId } = await import(
-              "@/lib/db/queries"
+        // Если browserId не передан, используем fallback
+        if (!browserId) {
+          browserId = `guest-browser-fallback-${Date.now()}`;
+        }
+
+        console.log(`Looking for guest user with browser ID: ${browserId}`);
+
+        try {
+          // Пытаемся найти существующего гостя по browserId
+          const { getGuestUserBySessionId } = await import(
+            "@/lib/db/queries"
+          );
+          const existingGuest = await getGuestUserBySessionId(browserId);
+          if (existingGuest) {
+            console.log(
+              `Found existing guest user with browser ID: ${browserId}`
             );
-            const existingGuest = await getGuestUserBySessionId(sessionId);
-            if (existingGuest) {
-              console.log(
-                `Found existing guest user with session ID: ${sessionId}`
-              );
-              return { ...existingGuest, type: "guest" };
-            }
-          } catch (error) {
-            console.warn("Failed to find guest user by session ID:", error);
+            return { ...existingGuest, type: "guest" };
           }
+        } catch (error) {
+          console.warn("Failed to find guest user by browser ID:", error);
         }
 
-        // Если sessionId не найден — сгенерируем и положим в cookie, чтобы не плодить гостей
+        // Если гость не найден — создаем нового с постоянным browserId
         console.log(
-          `Creating new guest user with session ID: ${sessionId || "none"}`
+          `Creating new guest user with browser ID: ${browserId}`
         );
-        if (!sessionId) {
-          sessionId = `guest-session-${Date.now()}-${Math.random()
-            .toString(36)
-            .slice(2, 10)}`;
-          // сохраняем cookie на 30 дней
-          (await cookies()).set("superduperai_guest_session", sessionId, {
-            httpOnly: true,
-            sameSite: "lax",
-            path: "/",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 30 * 24 * 60 * 60,
-          });
-        }
+        
         const { createGuestUser } = await import("@/lib/db/queries");
-        const [guestUser] = await createGuestUser(sessionId);
+        const [guestUser] = await createGuestUser(browserId);
         return { ...guestUser, type: "guest" };
       },
     }),

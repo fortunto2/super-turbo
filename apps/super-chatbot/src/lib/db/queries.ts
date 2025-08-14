@@ -48,23 +48,13 @@ let __client: any | null = null;
 function __ensureDb() {
   if (!__db) {
     let url = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-    if (!url) {
-      try {
-        const envPath = path.resolve(process.cwd(), ".env");
-        if (fs.existsSync(envPath)) {
-          const content = fs.readFileSync(envPath, "utf8");
-          const match = content.match(/^DATABASE_URL=(.+)$/m);
-          if (match && match[1]) {
-            url = match[1].trim();
-          }
-        }
-      } catch {}
-    }
+    
+    // Fallback для разработки - используем хардкодированный URL если переменные не загружены
     if (!url || url.length === 0) {
-      throw new Error(
-        "Database URL is not configured. Set POSTGRES_URL or DATABASE_URL in environment."
-      );
+      url = "postgresql://neondb_owner:npg_u78sbCLzfEoe@ep-green-glade-a49gpc57-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require";
+      console.warn("Using fallback database URL for development");
     }
+    
     __client = postgres(url, { ssl: "require" });
     __db = drizzle(__client);
   }

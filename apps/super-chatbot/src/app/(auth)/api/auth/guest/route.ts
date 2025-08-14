@@ -2,7 +2,6 @@ import { signIn } from "@/app/(auth)/auth";
 import { isDevelopmentEnvironment } from "@/lib/constants";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
-import { getOrCreateServerGuestSessionId } from "@/lib/session-utils-server";
 import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
