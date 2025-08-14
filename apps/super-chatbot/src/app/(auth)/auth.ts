@@ -144,23 +144,42 @@ export const {
       id: "guest",
       credentials: {},
       async authorize() {
-        // Получаем постоянный ID браузера из заголовков (передается с клиента)
-        const headers = await import("next/headers");
-        const headersList = headers.headers();
-        let browserId = headersList.get("x-guest-browser-id") || null;
+        // Получаем заголовки для генерации fingerprint
+        const { headers } = await import("next/headers");
+        const headersList = await headers();
 
-        // Если browserId не передан, используем fallback
-        if (!browserId) {
-          browserId = `guest-browser-fallback-${Date.now()}`;
+        // Генерируем fingerprint на основе самых стабильных заголовков браузера
+        const userAgent = headersList.get("user-agent") || "";
+        const secChUaPlatform = headersList.get("sec-ch-ua-platform") || "";
+
+        // Получаем IP адрес для стабильности
+        const forwardedFor = headersList.get("x-forwarded-for") || "";
+        const realIp = headersList.get("x-real-ip") || "";
+        const ip = forwardedFor.split(",")[0] || realIp || "unknown";
+
+        // Используем только IP адрес для максимальной стабильности
+        const fingerprint = ip;
+
+        // Простая хеш-функция
+        let hash = 0;
+        for (let i = 0; i < fingerprint.length; i++) {
+          const char = fingerprint.charCodeAt(i);
+          hash = (hash << 5) - hash + char;
+          hash = hash & hash; // Convert to 32-bit integer
         }
 
-        console.log(`Looking for guest user with browser ID: ${browserId}`);
+        const browserId = `guest-browser-${Math.abs(hash).toString(36)}`;
+
+        console.log(`Generated browser ID: ${browserId} from fingerprint:`, {
+          ip,
+          userAgent: userAgent.substring(0, 50) + "...",
+          fingerprint: fingerprint.substring(0, 100) + "...",
+          hash: Math.abs(hash),
+        });
 
         try {
           // Пытаемся найти существующего гостя по browserId
-          const { getGuestUserBySessionId } = await import(
-            "@/lib/db/queries"
-          );
+          const { getGuestUserBySessionId } = await import("@/lib/db/queries");
           const existingGuest = await getGuestUserBySessionId(browserId);
           if (existingGuest) {
             console.log(
@@ -173,10 +192,8 @@ export const {
         }
 
         // Если гость не найден — создаем нового с постоянным browserId
-        console.log(
-          `Creating new guest user with browser ID: ${browserId}`
-        );
-        
+        console.log(`Creating new guest user with browser ID: ${browserId}`);
+
         const { createGuestUser } = await import("@/lib/db/queries");
         const [guestUser] = await createGuestUser(browserId);
         return { ...guestUser, type: "guest" };

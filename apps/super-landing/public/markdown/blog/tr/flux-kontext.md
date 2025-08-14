@@ -16,24 +16,6 @@ seo:
   description: Kontext ile yıkıcı olmayan düzenlemeler
 ---
 
----
-title: Akı kontext
-description: Gelişmiş Düzenleme İş Akışı
-date: 2025-05-20
-slug: flux-kontext
-locale: tr
-modelName: "Flux Kontext"
-modelConfig:
-  width: 1024
-  height: 1024
-  aspectRatio: "1:1"
-  style: "flux_steampunk"
-  shotSize: "Medium Shot"
-seo:
-  title: Akı kontext düzenleme
-  description: Kontext ile yıkıcı olmayan düzenlemeler
----
-
 # Flux Kontext
 
 Flux Kontext, bağlam içi bir görüntü oluşturucu ve editördür. Referans sağlamak
