@@ -1,13 +1,13 @@
-import 'server-only';
+import "server-only";
 
-import { and, count, desc, eq, gte, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { user, document } from './schema';
+import { and, count, desc, eq, gte, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { user, document } from "./schema";
 
 // Create database connection
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
+const client = postgres(databaseUrl, { ssl: "require" });
 const db = drizzle(client);
 
 export async function getAdminOverviewStats() {
@@ -28,10 +28,10 @@ export async function getAdminOverviewStats() {
     const balanceStats = await db
       .select({
         total: sql<number>`COALESCE(SUM(${user.balance}), 0)`,
-        average: sql<number>`COALESCE(AVG(${user.balance}), 0)`
+        average: sql<number>`COALESCE(AVG(${user.balance}), 0)`,
       })
       .from(user);
-    
+
     const totalCredits = balanceStats[0]?.total || 0;
     const averageCredits = Math.round(balanceStats[0]?.average || 0);
 
@@ -43,20 +43,20 @@ export async function getAdminOverviewStats() {
     const imagesResult = await db
       .select({ count: count() })
       .from(document)
-      .where(eq(document.kind, 'image'));
+      .where(eq(document.kind, "image"));
     const imagesCount = imagesResult[0]?.count || 0;
 
     // Get videos count
     const videosResult = await db
       .select({ count: count() })
       .from(document)
-      .where(eq(document.kind, 'video'));
+      .where(eq(document.kind, "video"));
     const videosCount = videosResult[0]?.count || 0;
 
     // Get recent activity (documents created in last 24h as proxy for transactions)
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     const recentDocsResult = await db
       .select({ count: count() })
       .from(document)
@@ -69,16 +69,16 @@ export async function getAdminOverviewStats() {
         id: user.id,
         email: user.email,
         balance: user.balance,
-        createdAt: sql<string>`'2025-01-01'` // Placeholder since createdAt doesn't exist in schema
+        createdAt: sql<string>`'2025-01-01'`, // Placeholder since createdAt doesn't exist in schema
       })
       .from(user)
       .orderBy(desc(user.id))
       .limit(10);
 
     // Add user type detection
-    const recentUsers = recentUsersResult.map(u => ({
+    const recentUsers = recentUsersResult.map((u) => ({
       ...u,
-      type: u.email.includes('guest') ? 'guest' : 'regular'
+      type: u.email.includes("guest") ? "guest" : "regular",
     }));
 
     return {
@@ -91,10 +91,10 @@ export async function getAdminOverviewStats() {
       imagesCount,
       videosCount,
       recentTransactions,
-      recentUsers
+      recentUsers,
     };
   } catch (error) {
-    console.error('Error fetching admin overview stats:', error);
+    console.error("Error fetching admin overview stats:", error);
     // Return default stats on error
     return {
       totalUsers: 0,
@@ -106,18 +106,18 @@ export async function getAdminOverviewStats() {
       imagesCount: 0,
       videosCount: 0,
       recentTransactions: 0,
-      recentUsers: []
+      recentUsers: [],
     };
   }
 }
 
-export async function getAllUsers(page = 1, limit = 20, search = '') {
+export async function getAllUsers(page = 1, limit = 20, search = "") {
   try {
     const offset = (page - 1) * limit;
-    
+
     // Build search condition
-    const searchCondition = search 
-      ? sql`${user.email} ILIKE ${'%' + search + '%'}`
+    const searchCondition = search
+      ? sql`${user.email} ILIKE ${"%" + search + "%"}`
       : sql`1=1`;
 
     // Get users with pagination
@@ -138,14 +138,14 @@ export async function getAllUsers(page = 1, limit = 20, search = '') {
       .select({ count: count() })
       .from(user)
       .where(searchCondition);
-    
+
     const total = totalResult[0]?.count || 0;
     const totalPages = Math.ceil(total / limit);
 
     // Add user type detection
-    const usersWithType = users.map(u => ({
+    const usersWithType = users.map((u) => ({
       ...u,
-      type: u.email.includes('guest') ? 'guest' : 'regular'
+      type: u.email.includes("guest") ? "guest" : "regular",
     }));
 
     return {
@@ -156,11 +156,11 @@ export async function getAllUsers(page = 1, limit = 20, search = '') {
         total,
         totalPages,
         hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
+        hasPrev: page > 1,
+      },
     };
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Error fetching users:", error);
     throw error;
   }
 }
@@ -184,10 +184,10 @@ export async function getUserById(userId: string) {
     const userData = users[0];
     return {
       ...userData,
-      type: userData.email.includes('guest') ? 'guest' : 'regular'
+      type: userData.email.includes("guest") ? "guest" : "regular",
     };
   } catch (error) {
-    console.error('Error fetching user by ID:', error);
+    console.error("Error fetching user by ID:", error);
     throw error;
   }
 }
@@ -201,7 +201,7 @@ export async function updateUserBalance(userId: string, newBalance: number) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error updating user balance:', error);
+    console.error("Error updating user balance:", error);
     throw error;
   }
 }
@@ -212,7 +212,7 @@ export async function deleteUser(userId: string) {
     await db.delete(user).where(eq(user.id, userId));
     return { success: true };
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error("Error deleting user:", error);
     throw error;
   }
-} 
+}

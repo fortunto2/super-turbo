@@ -2,16 +2,13 @@ import { compare } from "bcrypt-ts";
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Auth0Provider from "next-auth/providers/auth0";
-import {
-  createGuestUser,
-  getUser,
-  getOrCreateOAuthUser,
-} from "@/lib/db/queries";
+
 import { authConfig } from "./auth.config";
 import { DUMMY_PASSWORD } from "@/lib/constants";
 import type { DefaultJWT } from "next-auth/jwt";
 import { nanoid } from "nanoid";
 import * as Sentry from "@sentry/nextjs";
+import { cookies } from "next/headers";
 
 export type UserType = "guest" | "regular";
 
@@ -48,6 +45,7 @@ async function syncAuth0User(userId: string, email: string | null) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (email) {
+        const { getOrCreateOAuthUser } = await import("@/lib/db/queries");
         const user = await getOrCreateOAuthUser(userId, email);
         return user;
       }
@@ -81,6 +79,19 @@ async function syncAuth0User(userId: string, email: string | null) {
   return null;
 }
 
+// Enable Auth0 provider only when all required env vars are present
+const auth0Enabled = Boolean(
+  process.env.AUTH_AUTH0_ID &&
+    process.env.AUTH_AUTH0_SECRET &&
+    process.env.AUTH_AUTH0_ISSUER
+);
+
+// Resolve NextAuth secret with safe dev fallback
+const resolvedAuthSecret =
+  process.env.AUTH_SECRET ||
+  process.env.NEXTAUTH_SECRET ||
+  (process.env.NODE_ENV !== "production" ? "dev-secret-change-me" : undefined);
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -93,15 +104,21 @@ export const {
   signOut: any;
 } = NextAuth({
   ...authConfig,
+  secret: resolvedAuthSecret,
   providers: [
-    Auth0Provider({
-      clientId: process.env.AUTH_AUTH0_ID as string,
-      clientSecret: process.env.AUTH_AUTH0_SECRET as string,
-      issuer: process.env.AUTH_AUTH0_ISSUER as string,
-    }),
+    ...(auth0Enabled
+      ? [
+          Auth0Provider({
+            clientId: process.env.AUTH_AUTH0_ID as string,
+            clientSecret: process.env.AUTH_AUTH0_SECRET as string,
+            issuer: process.env.AUTH_AUTH0_ISSUER as string,
+          }),
+        ]
+      : []),
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
+        const { getUser } = await import("@/lib/db/queries");
         const users = await getUser(email);
 
         if (users.length === 0) {
@@ -127,7 +144,48 @@ export const {
       id: "guest",
       credentials: {},
       async authorize() {
-        const [guestUser] = await createGuestUser();
+        // Получаем sessionId из cookie
+        const cookieStore = await cookies();
+        let sessionId =
+          cookieStore.get("superduperai_guest_session")?.value || null;
+
+        if (sessionId) {
+          try {
+            // Пытаемся найти существующего гостя по sessionId
+            const { getGuestUserBySessionId } = await import(
+              "@/lib/db/queries"
+            );
+            const existingGuest = await getGuestUserBySessionId(sessionId);
+            if (existingGuest) {
+              console.log(
+                `Found existing guest user with session ID: ${sessionId}`
+              );
+              return { ...existingGuest, type: "guest" };
+            }
+          } catch (error) {
+            console.warn("Failed to find guest user by session ID:", error);
+          }
+        }
+
+        // Если sessionId не найден — сгенерируем и положим в cookie, чтобы не плодить гостей
+        console.log(
+          `Creating new guest user with session ID: ${sessionId || "none"}`
+        );
+        if (!sessionId) {
+          sessionId = `guest-session-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 10)}`;
+          // сохраняем cookie на 30 дней
+          (await cookies()).set("superduperai_guest_session", sessionId, {
+            httpOnly: true,
+            sameSite: "lax",
+            path: "/",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 30 * 24 * 60 * 60,
+          });
+        }
+        const { createGuestUser } = await import("@/lib/db/queries");
+        const [guestUser] = await createGuestUser(sessionId);
         return { ...guestUser, type: "guest" };
       },
     }),
@@ -236,6 +294,8 @@ export const {
         try {
           if (token.email) {
             // Используем улучшенную версию с повторными попытками
+            const { getOrCreateOAuthUser } = await import("@/lib/db/queries");
+            // keep behavior through sync function wrapper
             await syncAuth0User(token.id, token.email);
           }
         } catch (error) {
@@ -269,6 +329,7 @@ export const {
         if (token.email && token.type === "regular") {
           try {
             // Проверяем, существует ли пользователь с этим email
+            const { getUser } = await import("@/lib/db/queries");
             const users = await getUser(token.email);
 
             if (users.length > 0) {
