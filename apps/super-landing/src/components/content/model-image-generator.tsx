@@ -41,7 +41,10 @@ export function ModelImageGenerator({
   };
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      data-testid="image-generator"
+    >
       {/* Информация о модели */}
       <div className="bg-gradient-to-br from-blue-950/40 to-purple-950/40 border border-blue-500/20 rounded-lg p-6 backdrop-blur-sm">
         <div className="flex items-start justify-between">
@@ -58,7 +61,7 @@ export function ModelImageGenerator({
                     .replace(/\s+/g, "_")
                     .replace(/\./g, "")}`
                 ) ||
-                `Создавайте изображения с помощью ${modelName}`}
+                `Create images with ${modelName}`}
             </p>
             <div className="flex flex-wrap gap-2">
               {modelConfig?.width && modelConfig?.height && (
@@ -106,6 +109,7 @@ export function ModelImageGenerator({
         <CardContent className="space-y-4">
           <Button
             onClick={handleGenerateClick}
+            data-testid="generate-image-button"
             className="w-full btn-accent bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
           >
             <Image className="w-4 h-4 mr-2" />

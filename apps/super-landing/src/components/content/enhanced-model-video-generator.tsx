@@ -64,7 +64,10 @@ export function EnhancedModelVideoGenerator({
   };
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      data-testid="enhanced-video-generator"
+    >
       {/* Информация о модели */}
       <div className="bg-gradient-to-br from-purple-950/40 to-green-950/40 border border-purple-500/20 rounded-lg p-6 backdrop-blur-sm">
         <div className="flex items-start justify-between">
@@ -132,6 +135,7 @@ export function EnhancedModelVideoGenerator({
           {/* Fallback кнопка для создания Stripe checkout */}
           <Button
             onClick={handleGenerateClick}
+            data-testid="generate-enhanced-video-button"
             className="w-full btn-accent bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
           >
             <CreditCard className="w-4 h-4 mr-2" />

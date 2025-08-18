@@ -42,7 +42,7 @@ export function ModelVideoGenerator({
     description:
       t(
         `model_descriptions.${modelName.toLowerCase().replace(/\s+/g, "_").replace(/\./g, "")}`
-      ) || `Генерация видео с моделью ${modelName}`,
+      ) || `Video generation with ${modelName}`,
   };
 
   const config = { ...defaultConfig, ...modelConfig };
@@ -55,7 +55,10 @@ export function ModelVideoGenerator({
   };
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      data-testid="video-generator"
+    >
       {/* Информация о модели */}
       <div className="bg-gradient-to-br from-green-950/40 to-blue-950/40 border border-green-500/20 rounded-lg p-6 backdrop-blur-sm">
         <div className="flex items-start justify-between">
@@ -113,6 +116,7 @@ export function ModelVideoGenerator({
         <CardContent className="space-y-4">
           <Button
             onClick={handleGenerateClick}
+            data-testid="generate-video-button"
             className="w-full btn-accent bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/25"
           >
             <Video className="w-4 h-4 mr-2" />
