@@ -494,47 +494,20 @@ export async function POST(request: NextRequest) {
         console.log("📊 Retrieved session data:", {
           promptLength: sessionData.prompt.length,
           generationType: sessionData.generationType,
-          hasImageFile: sessionData.hasImageFile,
           modelName: sessionData.modelName,
         });
 
         // Используем информацию о типе генерации из session data, если она доступна
         if (sessionData?.generationType && !generationType) {
-          generationType = sessionData.generationType;
+          generationType = sessionData.generationType as
+            | "text-to-video"
+            | "image-to-video";
           console.log(
             "🎯 Using generation type from session data:",
             generationType
           );
         }
-
-        // Если в session data указано, что есть изображение, но imageFile не передан
-        if (sessionData?.hasImageFile && !imageFile) {
-          console.log(
-            "⚠️ Session data indicates image file should be present, but none provided"
-          );
-          console.log("🖼️ Image info from session:", {
-            fileName: sessionData.imageFileName,
-            fileType: sessionData.imageFileType,
-            fileSize: sessionData.imageFileSize,
-          });
-
-          // Для image-to-video генерации нужен файл изображения
-          if (sessionData.generationType === "image-to-video") {
-            return NextResponse.json(
-              {
-                success: false,
-                error:
-                  "Image file is required for image-to-video generation. Please upload an image and try again.",
-              },
-              { status: 400 }
-            );
-          }
-        }
       }
-
-      // Здесь можно добавить проверку статуса оплаты через Stripe API
-      // Пока что просто логируем и продолжаем
-      console.log("✅ Payment session provided, proceeding with generation...");
     } else {
       console.log(
         "⚠️ No payment session ID provided, but continuing for demo purposes"
@@ -560,7 +533,6 @@ export async function POST(request: NextRequest) {
         generationType,
         hasImageFile: !!imageFile,
         sessionDataGenerationType: sessionData?.generationType,
-        sessionDataHasImageFile: sessionData?.hasImageFile,
       });
 
       if (generationType === "image-to-video" && imageFile) {

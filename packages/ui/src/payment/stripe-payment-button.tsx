@@ -21,8 +21,12 @@ interface StripePaymentButtonProps {
   className?: string;
   locale?: string;
   t?: (key: string, params?: Record<string, string | number>) => string;
-  // Новые поля для поддержки image-to-video
-  generationType?: "text-to-video" | "image-to-video";
+  // Новые поля для поддержки image-to-video и image-to-image
+  generationType?:
+    | "text-to-video"
+    | "image-to-video"
+    | "text-to-image"
+    | "image-to-image";
   imageFile?: File | null;
   modelName?: string;
 }
@@ -40,7 +44,7 @@ export function StripePaymentButton({
   className,
   locale = "en",
   t,
-  // Новые поля для поддержки image-to-video
+  // Новые поля для поддержки image-to-video и image-to-image
   generationType = "text-to-video",
   imageFile = null,
   modelName,
@@ -117,7 +121,29 @@ export function StripePaymentButton({
       const currentUrl =
         typeof window !== "undefined" ? window.location.href : "";
 
-      const requestBody = {
+      // Создаем FormData для передачи файла
+      const formData = new FormData();
+      formData.append("priceId", prices.single);
+      formData.append("quantity", "1");
+      if (prompt?.trim()) {
+        formData.append("prompt", prompt.trim());
+      }
+      if (toolSlug) {
+        formData.append("toolSlug", toolSlug);
+      }
+      if (toolTitle) {
+        formData.append("toolTitle", toolTitle);
+      }
+      formData.append("cancelUrl", currentUrl);
+      formData.append("generationType", generationType);
+      if (modelName) {
+        formData.append("modelName", modelName);
+      }
+      if (imageFile) {
+        formData.append("imageFile", imageFile);
+      }
+
+      console.log("💳 Sending checkout request with FormData:", {
         priceId: prices.single,
         quantity: 1,
         prompt: prompt?.trim(),
@@ -125,18 +151,19 @@ export function StripePaymentButton({
         toolTitle,
         cancelUrl: currentUrl,
         generationType,
-        // Вместо самого файла передаем информацию о нем
         modelName,
-      };
-
-      console.log("💳 Sending checkout request:", requestBody);
+        imageFile: imageFile
+          ? {
+              name: imageFile.name,
+              size: imageFile.size,
+              type: imageFile.type,
+            }
+          : null,
+      });
 
       const response = await fetch(checkoutEndpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+        body: formData,
       });
 
       if (!response.ok) {

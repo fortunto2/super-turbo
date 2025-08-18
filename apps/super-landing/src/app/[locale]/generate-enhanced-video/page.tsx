@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@turbo-super/ui";
 import { Textarea } from "@turbo-super/ui";
 import {
@@ -17,6 +17,11 @@ import { useTranslation } from "@/hooks/use-translation";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Locale } from "@/config/i18n-config";
+import {
+  getModelConfig,
+  supportsImageToVideo,
+  supportsTextToVideo,
+} from "@/lib/models-config";
 
 export default function GenerateEnhancedVideoPage() {
   const searchParams = useSearchParams();
@@ -24,36 +29,24 @@ export default function GenerateEnhancedVideoPage() {
   const { t } = useTranslation(locale);
   const [prompt, setPrompt] = useState("");
   const [showPayment, setShowPayment] = useState(false);
+  // Определяем начальный тип генерации на основе поддерживаемых возможностей
+  const getInitialGenerationType = () => {
+    if (supportsTextToVideoMode) return "text-to-video";
+    if (supportsImageToVideoMode) return "image-to-video";
+    return "text-to-video"; // fallback
+  };
+
   const [generationType, setGenerationType] = useState<
-    "text-to-video" | "image-to-video" | "text-to-image" | "image-to-image"
-  >("text-to-video");
+    "text-to-video" | "image-to-video"
+  >(getInitialGenerationType());
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStatus, setGenerationStatus] = useState("");
-  const [generationResult, setGenerationResult] = useState<{
-    videoUrl?: string;
-    thumbnailUrl?: string;
-    duration?: number;
-    width?: number;
-    height?: number;
-  } | null>(null);
-  const [_generationId, setGenerationId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modelName = searchParams.get("model") || "Unknown Model";
-  const sessionId = searchParams.get("session_id");
-
-  // Проверяем, есть ли session_id (оплата уже прошла)
-  const hasValidPayment = !!sessionId;
-
-  // Если есть session_id, показываем форму генерации
-  useEffect(() => {
-    if (sessionId) {
-      console.log("Payment completed, session ID:", sessionId);
-      setShowPayment(false); // Скрываем кнопку оплаты
-    }
-  }, [sessionId]);
+  const modelConfig = getModelConfig(modelName);
+  const supportsImageToVideoMode = supportsImageToVideo(modelName);
+  const supportsTextToVideoMode = supportsTextToVideo(modelName);
 
   const handleImageUpload = async (file: File) => {
     if (!file) return;
@@ -83,7 +76,7 @@ export default function GenerateEnhancedVideoPage() {
     }
   };
 
-  const handleGenerateClick = async () => {
+  const handleGenerateClick = () => {
     if (!prompt.trim()) {
       alert(t("video_generator.error") || "Please enter a video description");
       return;
@@ -97,122 +90,10 @@ export default function GenerateEnhancedVideoPage() {
       return;
     }
 
-    // Если оплата уже прошла (есть session_id), запускаем генерацию напрямую
-    if (hasValidPayment && sessionId) {
-      await startGeneration(sessionId);
-      return;
-    }
-
-    // Иначе показываем кнопку оплаты
     setShowPayment(true);
   };
 
-  const startGeneration = async (paymentSessionId: string) => {
-    setIsGenerating(true);
-    setGenerationStatus("Starting video generation...");
-
-    try {
-      // Создаем FormData если есть изображение
-      const requestBody = selectedImage
-        ? (() => {
-            const formData = new FormData();
-            formData.append("modelName", modelName);
-            formData.append("prompt", prompt.trim());
-            formData.append("paymentSessionId", paymentSessionId);
-            formData.append("generationType", generationType);
-            formData.append("imageFile", selectedImage);
-            console.log("🎬 Created FormData with image");
-            return formData;
-          })()
-        : JSON.stringify({
-            modelName,
-            prompt: prompt.trim(),
-            paymentSessionId: paymentSessionId,
-            generationType,
-          });
-
-      const response = await fetch("/api/generate-model-video", {
-        method: "POST",
-        headers: selectedImage
-          ? {} // FormData автоматически устанавливает Content-Type
-          : { "Content-Type": "application/json" },
-        body: requestBody,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to start generation");
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.taskId) {
-        setGenerationId(data.taskId); // Используем taskId (fileId из SuperDuperAI)
-        setGenerationStatus("Generation started! Monitoring progress...");
-
-        // Запускаем мониторинг статуса используя taskId
-        startStatusMonitoring(data.taskId);
-      } else {
-        setGenerationStatus("Failed to start generation. Please try again.");
-      }
-    } catch (error) {
-      console.error("Generation error:", error);
-      setGenerationStatus("Generation failed. Please try again.");
-      setIsGenerating(false);
-    }
-  };
-
-  const startStatusMonitoring = async (generationId: string) => {
-    setIsGenerating(true);
-    setGenerationStatus("Monitoring generation progress...");
-
-    try {
-      while (true) {
-        const response = await fetch(
-          `/api/get-generation-status/${generationId}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to get generation status");
-        }
-        const data = await response.json();
-
-        if (data.status === "completed") {
-          setGenerationStatus("Generation completed successfully!");
-          setGenerationResult(data.result);
-          setIsGenerating(false);
-          break;
-        } else if (data.status === "failed") {
-          setGenerationStatus(
-            `Generation failed: ${data.error || "Unknown error"}`
-          );
-          setIsGenerating(false);
-          break;
-        } else if (data.status === "error") {
-          setGenerationStatus(
-            `Generation error: ${data.error || "Unknown error"}`
-          );
-          setIsGenerating(false);
-          break;
-        } else {
-          // Показываем прогресс если есть
-          const progressText = data.progress ? ` (${data.progress}%)` : "";
-          const timeText = data.estimatedTime
-            ? ` - Est. ${data.estimatedTime}s remaining`
-            : "";
-          setGenerationStatus(
-            `${data.message || data.status}${progressText}${timeText}`
-          );
-          await new Promise((resolve) => setTimeout(resolve, 2000)); // Check every 2 seconds
-        }
-      }
-    } catch (error) {
-      console.error("Status monitoring error:", error);
-      setGenerationStatus("Failed to monitor generation progress.");
-      setIsGenerating(false);
-    }
-  };
-
   const handlePaymentSuccess = (sessionId: string) => {
-    // Здесь можно добавить логику для запуска генерации
     console.log("Payment successful, session ID:", sessionId);
     alert("Payment successful! Enhanced video generation will start soon.");
     setShowPayment(false);
@@ -266,86 +147,56 @@ export default function GenerateEnhancedVideoPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Generation Type Selection */}
+                {/* Generation Type Selection - только поддерживаемые типы */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-purple-300">
                     Generation Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant={
-                        generationType === "text-to-video"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setGenerationType("text-to-video")}
-                      className={
-                        generationType === "text-to-video"
-                          ? "bg-purple-600 hover:bg-purple-700"
-                          : "border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
-                      }
-                    >
-                      <Video className="w-4 h-4 mr-1" />
-                      Text-to-Video
-                    </Button>
-                    <Button
-                      variant={
-                        generationType === "image-to-video"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setGenerationType("image-to-video")}
-                      className={
-                        generationType === "image-to-video"
-                          ? "bg-orange-600 hover:bg-orange-700"
-                          : "border-orange-500/30 text-orange-300 hover:bg-orange-500/10"
-                      }
-                    >
-                      <ImageIcon className="w-4 h-4 mr-1" />
-                      Image-to-Video
-                    </Button>
-                    <Button
-                      variant={
-                        generationType === "text-to-image"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setGenerationType("text-to-image")}
-                      className={
-                        generationType === "text-to-image"
-                          ? "bg-blue-600 hover:bg-blue-700"
-                          : "border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
-                      }
-                    >
-                      <ImageIcon className="w-4 h-4 mr-1" />
-                      Text-to-Image
-                    </Button>
-                    <Button
-                      variant={
-                        generationType === "image-to-image"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setGenerationType("image-to-image")}
-                      className={
-                        generationType === "image-to-image"
-                          ? "bg-green-600 hover:bg-green-700"
-                          : "border-green-500/30 text-green-300 hover:bg-green-500/10"
-                      }
-                    >
-                      <ImageIcon className="w-4 h-4 mr-1" />
-                      Image-to-Image
-                    </Button>
+                    {supportsTextToVideoMode && (
+                      <Button
+                        variant={
+                          generationType === "text-to-video"
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setGenerationType("text-to-video")}
+                        className={
+                          generationType === "text-to-video"
+                            ? "bg-purple-600 hover:bg-purple-700"
+                            : "border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                        }
+                      >
+                        <Video className="w-4 h-4 mr-1" />
+                        Text-to-Video
+                      </Button>
+                    )}
+                    {supportsImageToVideoMode && (
+                      <Button
+                        variant={
+                          generationType === "image-to-video"
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setGenerationType("image-to-video")}
+                        className={
+                          generationType === "image-to-video"
+                            ? "bg-orange-600 hover:bg-orange-700"
+                            : "border-orange-500/30 text-orange-300 hover:bg-orange-500/10"
+                        }
+                      >
+                        <ImageIcon className="w-4 h-4 mr-1" />
+                        Image-to-Video
+                      </Button>
+                    )}
+                    {/* Убираем text-to-image и image-to-image, так как это страница для видео */}
                   </div>
                 </div>
 
-                {/* Image Upload for Image-based generation */}
-                {(generationType === "image-to-video" ||
-                  generationType === "image-to-image") && (
+                {/* Image Upload - только для image-to-video */}
+                {generationType === "image-to-video" && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-orange-300">
                       Upload Image
@@ -405,17 +256,13 @@ export default function GenerateEnhancedVideoPage() {
                   <label className="text-sm font-medium text-purple-300">
                     {generationType === "image-to-video"
                       ? "Describe how to animate the image"
-                      : generationType === "image-to-image"
-                        ? "Describe how to transform the image"
-                        : "Video description"}
+                      : "Video description"}
                   </label>
                   <Textarea
                     placeholder={
                       generationType === "image-to-video"
                         ? "For example: slowly sway, smoothly rotate, add cloud movement..."
-                        : generationType === "image-to-image"
-                          ? "For example: make it more vibrant, add sunset colors, transform to watercolor style..."
-                          : "For example: Beautiful sunset over ocean with waves, bird's eye view, cinematic quality..."
+                        : "For example: Beautiful sunset over ocean with waves, bird's eye view, cinematic quality..."
                     }
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
@@ -428,28 +275,14 @@ export default function GenerateEnhancedVideoPage() {
                   onClick={handleGenerateClick}
                   disabled={
                     !prompt.trim() ||
-                    ((generationType === "image-to-video" ||
-                      generationType === "image-to-image") &&
-                      !selectedImage) ||
-                    showPayment ||
-                    isGenerating
+                    (generationType === "image-to-video" && !selectedImage) ||
+                    showPayment
                   }
                   className="w-full btn-accent bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Video className="w-4 h-4 mr-2" />
-                  {isGenerating
-                    ? "Generating..."
-                    : hasValidPayment
-                      ? "Generate Video"
-                      : "Generate for $1.00"}
+                  Generate for $1.00
                 </Button>
-
-                {/* Показываем статус генерации */}
-                {generationStatus && (
-                  <div className="text-center p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-                    <p className="text-blue-300 text-sm">{generationStatus}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
@@ -471,7 +304,8 @@ export default function GenerateEnhancedVideoPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Advanced AI video generation model with enhanced features
+                    {modelConfig?.description ||
+                      "Advanced AI video generation model with enhanced features"}
                   </p>
                 </div>
               </CardContent>
@@ -480,7 +314,7 @@ export default function GenerateEnhancedVideoPage() {
 
           {/* Right Column - Payment */}
           <div className="space-y-6">
-            {showPayment && !hasValidPayment && (
+            {showPayment && (
               <DirectPaymentButton
                 modelName={modelName}
                 modelType="video"
@@ -489,65 +323,48 @@ export default function GenerateEnhancedVideoPage() {
                 onPaymentSuccess={handlePaymentSuccess}
                 onPaymentError={handlePaymentError}
                 locale={locale}
+                generationType={generationType}
+                imageFile={selectedImage}
               />
             )}
 
-            {/* Generation Status */}
-            {generationStatus && (
-              <div className="bg-gray-800 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  Generation Status
-                </h3>
-                <p className="text-gray-300">{generationStatus}</p>
-                {generationResult && (
-                  <div className="mt-4 p-3 bg-green-900 rounded">
-                    <h4 className="font-medium text-green-200">
-                      Video Generated Successfully!
-                    </h4>
-                    <div className="mt-2 space-y-2 text-sm text-green-100">
-                      {generationResult.videoUrl && (
-                        <div>
-                          <strong>Video:</strong>
-                          <a
-                            href={generationResult.videoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-2 text-blue-300 hover:underline"
-                          >
-                            Download Video
-                          </a>
-                        </div>
-                      )}
-                      {generationResult.thumbnailUrl && (
-                        <div>
-                          <strong>Thumbnail:</strong>
-                          <a
-                            href={generationResult.thumbnailUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-2 text-blue-300 hover:underline"
-                          >
-                            View Thumbnail
-                          </a>
-                        </div>
-                      )}
-                      {generationResult.duration && (
-                        <div>
-                          <strong>Duration:</strong> {generationResult.duration}
-                          s
-                        </div>
-                      )}
-                      {generationResult.width && generationResult.height && (
-                        <div>
-                          <strong>Resolution:</strong> {generationResult.width}x
-                          {generationResult.height}
-                        </div>
-                      )}
-                    </div>
+            {/* Payment Info */}
+            <Card className="card-enhanced border-blue-500/20 bg-gradient-to-br from-blue-950/30 via-purple-950/30 to-green-950/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-bold text-blue-300 flex items-center gap-2">
+                  <Video className="w-5 h-5" />
+                  What You Get
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-blue-300">
+                      High-quality AI-generated video
+                    </span>
                   </div>
-                )}
-              </div>
-            )}
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-blue-300">
+                      Full commercial usage rights
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-blue-300">
+                      Instant download after generation
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-blue-300">
+                      No subscription required
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

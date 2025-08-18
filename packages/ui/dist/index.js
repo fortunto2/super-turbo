@@ -512,7 +512,7 @@ function StripePaymentButton({
   className,
   locale = "en",
   t,
-  // Новые поля для поддержки image-to-video
+  // Новые поля для поддержки image-to-video и image-to-image
   generationType = "text-to-video",
   imageFile = null,
   modelName
@@ -552,10 +552,6 @@ function StripePaymentButton({
     return translation;
   };
   const handlePayment = async () => {
-    if (variant === "video" && !(prompt == null ? void 0 : prompt.trim())) {
-      import_sonner.toast.error(getTranslation("stripe_payment.generate_prompt_first"));
-      return;
-    }
     if (!prices) {
       import_sonner.toast.error(getTranslation("stripe_payment.prices_not_loaded"));
       return;
@@ -564,7 +560,27 @@ function StripePaymentButton({
     onPaymentClick == null ? void 0 : onPaymentClick();
     try {
       const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-      const requestBody = {
+      const formData = new FormData();
+      formData.append("priceId", prices.single);
+      formData.append("quantity", "1");
+      if (prompt == null ? void 0 : prompt.trim()) {
+        formData.append("prompt", prompt.trim());
+      }
+      if (toolSlug) {
+        formData.append("toolSlug", toolSlug);
+      }
+      if (toolTitle) {
+        formData.append("toolTitle", toolTitle);
+      }
+      formData.append("cancelUrl", currentUrl);
+      formData.append("generationType", generationType);
+      if (modelName) {
+        formData.append("modelName", modelName);
+      }
+      if (imageFile) {
+        formData.append("imageFile", imageFile);
+      }
+      console.log("\u{1F4B3} Sending checkout request with FormData:", {
         priceId: prices.single,
         quantity: 1,
         prompt: prompt == null ? void 0 : prompt.trim(),
@@ -572,16 +588,16 @@ function StripePaymentButton({
         toolTitle,
         cancelUrl: currentUrl,
         generationType,
-        // Вместо самого файла передаем информацию о нем
-        modelName
-      };
-      console.log("\u{1F4B3} Sending checkout request:", requestBody);
+        modelName,
+        imageFile: imageFile ? {
+          name: imageFile.name,
+          size: imageFile.size,
+          type: imageFile.type
+        } : null
+      });
       const response = await fetch(checkoutEndpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
+        body: formData
       });
       if (!response.ok) {
         throw new Error("Failed to create checkout session");
@@ -595,9 +611,6 @@ function StripePaymentButton({
       setIsCreatingCheckout(false);
     }
   };
-  if (variant === "video" && !(prompt == null ? void 0 : prompt.trim())) {
-    return null;
-  }
   if (loading) {
     return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
       Card,

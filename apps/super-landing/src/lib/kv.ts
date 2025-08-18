@@ -286,13 +286,22 @@ export interface SessionData {
   redirectToGeneration?: boolean;
   modelName?: string;
   modelType?: "image" | "video";
-  // Новые поля для поддержки image-to-video
-  generationType?: "text-to-video" | "image-to-video";
-  hasImageFile?: boolean;
-  // Дополнительная информация об изображении
-  imageFileName?: string;
-  imageFileType?: string;
-  imageFileSize?: number;
+  // Новые поля для поддержки image-to-video и image-to-image
+  generationType?:
+    | "text-to-video"
+    | "image-to-video"
+    | "text-to-image"
+    | "image-to-image";
+  // Поля для настройки размеров изображения
+  width?: number;
+  height?: number;
+  imageFile?: {
+    name: string;
+    size: number;
+    type: string;
+    lastModified: number;
+    content: string; // base64 encoded file content
+  };
 }
 
 export async function storeSessionData(

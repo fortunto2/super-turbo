@@ -14,7 +14,7 @@ function ensureUserIdCookie(request: NextRequest, response?: NextResponse) {
   // Generate a UUID compatible with middleware runtime
   const newUid =
     globalThis.crypto && "randomUUID" in globalThis.crypto
-      ? (globalThis.crypto as any).randomUUID()
+      ? (globalThis.crypto as Crypto).randomUUID()
       : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}-${Math.random()
           .toString(16)
           .slice(2, 10)}`;

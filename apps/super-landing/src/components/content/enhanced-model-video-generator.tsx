@@ -12,6 +12,7 @@ import { Badge } from "@turbo-super/ui";
 import { Video, Zap, Image as ImageIcon, CreditCard } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
+import { getModelConfig, supportsImageToVideo } from "@/lib/models-config";
 
 interface EnhancedModelVideoGeneratorProps {
   modelName: string;
@@ -30,24 +31,37 @@ interface EnhancedModelVideoGeneratorProps {
 export function EnhancedModelVideoGenerator({
   modelName,
   modelConfig,
-  locale = "tr",
+  locale = "en",
 }: EnhancedModelVideoGeneratorProps) {
   const { t } = useTranslation(locale);
 
+  // Получаем конфигурацию модели из нашей базы данных
+  const modelConfigFromDB = getModelConfig(modelName);
+  const supportsImageToVideoMode = supportsImageToVideo(modelName);
+
   const defaultConfig = {
-    maxDuration: 8,
-    aspectRatio: "16:9",
-    width: 1280,
-    height: 720,
-    frameRate: 30,
-    supportsImageToVideo: false,
+    maxDuration: modelConfigFromDB?.maxDuration || 8,
+    aspectRatio: modelConfigFromDB?.aspectRatio || "16:9",
+    width: modelConfigFromDB?.width || 1280,
+    height: modelConfigFromDB?.height || 720,
+    frameRate: modelConfigFromDB?.frameRate || 30,
+    supportsImageToVideo: supportsImageToVideoMode,
     description:
+      modelConfigFromDB?.description ||
       t(
         `model_descriptions.${modelName.toLowerCase().replace(/\s+/g, "_").replace(/\./g, "")}`
-      ) || `Генерация видео с моделью ${modelName}`,
+      ) ||
+      `Video generation with ${modelName}`,
   };
 
   const config = { ...defaultConfig, ...modelConfig };
+
+  const handleGenerateClick = () => {
+    // Перенаправляем на страницу генерации
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const generationUrl = `${baseUrl}/${locale}/generate-video?model=${encodeURIComponent(modelName)}`;
+    window.location.href = generationUrl;
+  };
 
   return (
     <div className="space-y-6">
@@ -117,46 +131,7 @@ export function EnhancedModelVideoGenerator({
         <CardContent className="space-y-4">
           {/* Fallback кнопка для создания Stripe checkout */}
           <Button
-            onClick={async () => {
-              try {
-                console.log("Creating checkout session...");
-
-                const response = await fetch("/api/create-checkout", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    prompt: "",
-                    variant: "video",
-                    toolSlug: "veo2-video-generator",
-                    toolTitle: `${modelName} Video Generator`,
-                    price: 1.0,
-                    quantity: 1,
-                    generationType: "text-to-video",
-                    hasImageFile: false,
-                    modelName: modelName,
-                  }),
-                });
-
-                if (!response.ok) {
-                  throw new Error("Failed to create checkout session");
-                }
-
-                const data = await response.json();
-                console.log("Checkout session created:", data);
-
-                // Перенаправляем на Stripe checkout
-                if (data.url) {
-                  window.location.href = data.url;
-                } else {
-                  alert("Failed to get checkout URL");
-                }
-              } catch (error) {
-                console.error("Error creating checkout:", error);
-                alert("Error creating checkout session. Please try again.");
-              }
-            }}
+            onClick={handleGenerateClick}
             className="w-full btn-accent bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
           >
             <CreditCard className="w-4 h-4 mr-2" />

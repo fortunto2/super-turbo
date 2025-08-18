@@ -9,6 +9,9 @@ interface ImageUploadProps {
   onImageRemove: () => void;
   selectedImage: File | null;
   className?: string;
+  required?: boolean;
+  title?: string;
+  description?: string;
 }
 
 export function ImageUpload({
@@ -16,6 +19,9 @@ export function ImageUpload({
   onImageRemove,
   selectedImage,
   className = "",
+  required = false,
+  title = "Upload Reference Image",
+  description = "Optional",
 }: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,7 +65,8 @@ export function ImageUpload({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="text-sm font-medium text-muted-foreground">
-        Upload Reference Image (Optional)
+        {title} {!required && `(${description})`}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </div>
 
       {!selectedImage ? (

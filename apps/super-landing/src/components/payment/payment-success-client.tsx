@@ -56,6 +56,8 @@ export default function PaymentSuccessClient({
     try {
       console.log("🔍 Checking webhook status for session:", sessionId);
       const response = await fetch(`/api/webhook-status/${sessionId}`);
+      console.log("📡 API response status:", response.status);
+
       if (response.ok) {
         const data = await response.json();
         console.log("📊 Webhook status received:", data);
@@ -87,7 +89,13 @@ export default function PaymentSuccessClient({
 
   // Poll webhook status every 2 seconds
   useEffect(() => {
-    const interval = setInterval(checkWebhookStatus, 2000);
+    console.log(`🔄 Starting webhook status polling for session: ${sessionId}`);
+
+    const interval = setInterval(() => {
+      console.log(`⏰ Polling webhook status for session: ${sessionId}`);
+      checkWebhookStatus();
+    }, 2000);
+
     const countdownInterval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -105,9 +113,13 @@ export default function PaymentSuccessClient({
     }, 1000);
 
     // Initial check
+    console.log(`🚀 Initial webhook status check for session: ${sessionId}`);
     checkWebhookStatus();
 
     return () => {
+      console.log(
+        `🛑 Stopping webhook status polling for session: ${sessionId}`
+      );
       clearInterval(interval);
       clearInterval(countdownInterval);
     };

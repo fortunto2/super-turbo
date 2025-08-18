@@ -28,8 +28,8 @@ function getNested(obj: unknown, path: string | string[]) {
 export function useTranslation(locale: Locale) {
   const dict = dictionaries[locale] || dictionaries.en;
   const generatorDict =
-    (generators as Record<string, any>)[locale] ||
-    (generators as Record<string, any>).en;
+    (generators as Record<string, unknown>)[locale] ||
+    (generators as Record<string, unknown>).en;
 
   function t<T = string>(key: string, fallback?: T): T {
     // Сначала ищем в основных словарях

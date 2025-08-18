@@ -3,15 +3,11 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 import { getSessionData, updateSessionData } from "@/lib/kv";
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY || "sk_test_your_stripe_secret_key",
-  {
-    apiVersion: "2025-06-30.basil",
-  }
-);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-06-30.basil",
+});
 
-const endpointSecret =
-  process.env.STRIPE_WEBHOOK_SECRET || "whsec_your_webhook_secret";
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 // SuperDuperAI configuration
 const configureSuperduperAI = () => {
@@ -30,17 +26,125 @@ const getSuperduperAIConfig = () => ({
 
 const API_ENDPOINTS = {
   GENERATE_VIDEO: "/api/v1/file/generate-video",
+  GENERATE_IMAGE: "/api/v1/file/generate-image",
+};
+
+// Helper functions for prompt enhancement
+function enhanceVideoPrompt(prompt: string, style: string): string {
+  // If prompt is too short or generic, enhance it
+  if (prompt.length < 10 || prompt.toLowerCase().includes("animate")) {
+    const styleEnhancements: Record<string, string> = {
+      cinematic:
+        "cinematic, professional lighting, high quality, smooth camera movement",
+      realistic: "realistic, detailed, natural lighting, high resolution",
+      artistic: "artistic, creative, vibrant colors, dynamic composition",
+      dramatic: "dramatic, intense lighting, emotional, powerful",
+      peaceful: "peaceful, calm, soft lighting, gentle movement",
+      action: "action-packed, dynamic, fast-paced, exciting",
+      fantasy: "fantastical, magical, otherworldly, dreamlike",
+    };
+
+    const enhancement = styleEnhancements[style] || styleEnhancements.cinematic;
+    return `${prompt}, ${enhancement}`;
+  }
+
+  return prompt;
+}
+
+function getNegativePrompt(style: string): string {
+  const negativePrompts: Record<string, string> = {
+    cinematic: "blurry, low quality, distorted, poor lighting, amateur",
+    realistic: "cartoon, anime, unrealistic, artificial, fake",
+    artistic: "boring, plain, dull, uncreative, static",
+    dramatic: "calm, peaceful, boring, uneventful, static",
+    peaceful: "chaotic, violent, disturbing, aggressive, loud",
+    action: "slow, static, boring, uneventful, calm",
+    fantasy: "realistic, mundane, ordinary, everyday, realistic",
+  };
+
+  return negativePrompts[style] || negativePrompts.cinematic;
+}
+
+const uploadImage = async (imageFile: {
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+  content: string; // base64 encoded file content
+}) => {
+  const config = getSuperduperAIConfig();
+
+  // Convert base64 back to Buffer
+  const base64Data = imageFile.content;
+  const buffer = Buffer.from(base64Data, "base64");
+
+  // Create a File object for FormData (more compatible with upload APIs)
+  const file = new File([buffer], imageFile.name, {
+    type: imageFile.type,
+    lastModified: imageFile.lastModified,
+  });
+
+  const uploadFormData = new FormData();
+  uploadFormData.append("payload", file);
+  uploadFormData.append("type", "image");
+
+  console.log("📤 Uploading image to SuperDuperAI:", {
+    url: `${config.url}/api/v1/file/upload`,
+    fileName: imageFile.name,
+    fileSize: imageFile.size,
+    fileType: imageFile.type,
+    fileObjectSize: file.size,
+    formDataEntries: Array.from(uploadFormData.entries()).map(
+      ([key, value]) => ({
+        key,
+        type: typeof value,
+        size: value instanceof File ? value.size : "N/A",
+      })
+    ),
+  });
+
+  const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "User-Agent": "SuperDuperAI-Landing/1.0",
+    },
+    body: uploadFormData,
+  });
+
+  console.log("📡 Upload response status:", uploadResponse.status);
+  console.log(
+    "📡 Upload response headers:",
+    Object.fromEntries(uploadResponse.headers.entries())
+  );
+
+  if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    console.error("❌ Upload error response:", errorText);
+    throw new Error(
+      `Failed to upload image: ${uploadResponse.status} - ${errorText}`
+    );
+  }
+
+  const uploadResult = await uploadResponse.json();
+  const referenceImageId = uploadResult.id;
+
+  return referenceImageId;
 };
 
 // Generate single video using SuperDuperAI API
 async function generateVideoWithSuperDuperAI(
   prompt: string,
+  modelName: string,
   duration: number = 8,
   resolution: string = "1280x720",
-  style: string = "cinematic"
+  style: string = "cinematic",
+  generationType: "text-to-video" | "image-to-video" = "text-to-video",
+  imageId?: string
 ): Promise<string> {
   console.log("🎬 Starting SuperDuperAI video generation:", {
     prompt,
+    modelName,
     duration,
     resolution,
     style,
@@ -52,6 +156,190 @@ async function generateVideoWithSuperDuperAI(
 
   const [width, height] = resolution.split("x").map(Number);
 
+  // Get appropriate duration for the model
+  const getModelDuration = (model: string, requestedDuration: number) => {
+    const modelLower = model.toLowerCase();
+    if (modelLower === "sora") {
+      // Sora only accepts 5, 10, 15, or 20 seconds
+      const validDurations = [5, 10, 15, 20];
+      // Find the closest valid duration
+      const closest = validDurations.reduce((prev, curr) =>
+        Math.abs(curr - requestedDuration) < Math.abs(prev - requestedDuration)
+          ? curr
+          : prev
+      );
+      console.log(
+        `🎬 Sora model: adjusting duration from ${requestedDuration} to ${closest} seconds`
+      );
+      return closest;
+    }
+    return requestedDuration;
+  };
+
+  const getModelConfig = async (
+    model: string,
+    generationType: "text-to-video" | "image-to-video"
+  ) => {
+    console.log("🔍 Model name:", model, "Generation type:", generationType);
+
+    // Import models config
+    const { MODELS_CONFIG } = await import("@/lib/models-config");
+
+    // Find model in config
+    const modelConfig = MODELS_CONFIG[model] || MODELS_CONFIG["Veo3"]; // fallback to Veo3
+
+    if (
+      generationType === "image-to-video" &&
+      modelConfig.imageToVideoConfigName
+    ) {
+      console.log(
+        "🎨 Using image-to-video config:",
+        modelConfig.imageToVideoConfigName
+      );
+      return modelConfig.imageToVideoConfigName;
+    } else {
+      console.log(
+        "📝 Using text-to-video config:",
+        modelConfig.generationConfigName
+      );
+      return modelConfig.generationConfigName || "google-cloud/veo3-text2video";
+    }
+  };
+
+  // Enhance prompt for better video generation results
+  const enhancedPrompt = enhanceVideoPrompt(prompt, style);
+
+  const payload = {
+    config: {
+      prompt: enhancedPrompt,
+      negative_prompt: getNegativePrompt(style),
+      width,
+      height,
+      aspect_ratio: width > height ? "16:9" : height > width ? "9:16" : "1:1",
+      duration: getModelDuration(modelName, duration),
+      seed: Math.floor(Math.random() * 1000000),
+      generation_config_name: await getModelConfig(modelName, generationType),
+      frame_rate: 30,
+      batch_size: 1,
+      references: imageId
+        ? [
+            {
+              type: "source",
+              reference_id: imageId,
+            },
+          ]
+        : [],
+    },
+  };
+
+  console.log("📤 Sending request to SuperDuperAI:", payload);
+  console.log("🔧 Enhanced prompt:", enhancedPrompt);
+  console.log("🚫 Negative prompt:", getNegativePrompt(style));
+
+  const response = await fetch(`${config.url}${API_ENDPOINTS.GENERATE_VIDEO}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.token}`,
+      "User-Agent": "SuperDuperAI-Landing/1.0",
+    },
+    body: JSON.stringify(payload),
+    // Add timeout to prevent webhook from hanging
+    signal: AbortSignal.timeout(15000), // 15 seconds timeout
+  });
+
+  console.log(`📡 SuperDuperAI API Response Status: ${response.status}`);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("❌ SuperDuperAI API Error:", errorText);
+    console.error(
+      "🔧 Request payload that failed:",
+      JSON.stringify(payload, null, 2)
+    );
+    throw new Error(
+      `SuperDuperAI API failed: ${response.status} - ${errorText}`
+    );
+  }
+
+  const result = await response.json();
+  console.log("✅ SuperDuperAI response:", result);
+
+  // Additional logging for debugging Google Cloud issues
+  if (result.tasks && Array.isArray(result.tasks)) {
+    console.log(
+      "📋 Tasks in response:",
+      result.tasks.map(
+        (task: { type?: string; status?: string; id?: string }) => ({
+          type: task.type,
+          status: task.status,
+          id: task.id,
+        })
+      )
+    );
+  }
+
+  // Extract file ID from response
+  const fileId = result.id;
+  if (!fileId) {
+    throw new Error("No file ID returned from SuperDuperAI API");
+  }
+
+  console.log(`🚀 Video generation task created successfully!`);
+  console.log(`📁 FileId: ${fileId}`);
+  console.log(`⏱️ Client can now poll /api/file/${fileId} for status updates`);
+  return fileId;
+}
+
+// Generate single image using SuperDuperAI API
+async function generateImageWithSuperDuperAI(
+  prompt: string,
+  modelName: string,
+  width: number = 1024,
+  height: number = 1024,
+  style: string = "realistic"
+): Promise<string> {
+  console.log("🎨 Starting SuperDuperAI image generation:", {
+    prompt,
+    modelName,
+    width,
+    height,
+    style,
+  });
+
+  // Configure SuperDuperAI client
+  configureSuperduperAI();
+  const config = getSuperduperAIConfig();
+
+  const getModelConfig = (model: string, type: "video" | "image" = "video") => {
+    console.log("🔍 Model name:", model, "Type:", type);
+
+    switch (model.toLowerCase()) {
+      case "gpt-image-1":
+      case "gpt image 1":
+        return "azure-openai/gpt-image-1";
+      case "google imagen 4":
+      case "google-imagen-4":
+        return "google-cloud/imagen4";
+      case "google imagen 3":
+      case "google-imagen-3":
+        return "google-cloud/imagen3";
+      case "flux kontext":
+      case "flux":
+        return "comfyui/flux";
+      case "flux pro":
+      case "flux-pro":
+        return "fal-ai/flux-pro/v1.1-ultra";
+      case "imagen4 ultra":
+      case "imagen4-ultra":
+        return "google-cloud/imagen4-ultra";
+
+      // Default based on type
+      default:
+        return "azure-openai/gpt-image-1"; // Default image model
+    }
+  };
+
   const payload = {
     config: {
       prompt,
@@ -59,18 +347,18 @@ async function generateVideoWithSuperDuperAI(
       width,
       height,
       aspect_ratio: width > height ? "16:9" : height > width ? "9:16" : "1:1",
-      duration,
       seed: Math.floor(Math.random() * 1000000),
-      generation_config_name: "google-cloud/veo3-text2video", // Use VEO3 Text-to-Video model
-      frame_rate: 30,
+      generation_config_name: getModelConfig(modelName, "image"),
       batch_size: 1,
       references: [],
+      // Убираем параметры, которые не нужны для изображений
+      // frame_rate и duration только для видео
     },
   };
 
   console.log("📤 Sending request to SuperDuperAI:", payload);
 
-  const response = await fetch(`${config.url}${API_ENDPOINTS.GENERATE_VIDEO}`, {
+  const response = await fetch(`${config.url}${API_ENDPOINTS.GENERATE_IMAGE}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -95,13 +383,19 @@ async function generateVideoWithSuperDuperAI(
   const result = await response.json();
   console.log("✅ SuperDuperAI response:", result);
 
-  // Extract file ID from response
-  const fileId = result.id;
-  if (!fileId) {
+  // Extract file ID from response - API returns an array for image generation
+  let fileId: string;
+  if (Array.isArray(result) && result.length > 0) {
+    // For image generation, API returns an array of file objects
+    fileId = result[0].id;
+  } else if (result.id) {
+    // For video generation, API returns a single object
+    fileId = result.id;
+  } else {
     throw new Error("No file ID returned from SuperDuperAI API");
   }
 
-  console.log(`🚀 Video generation task created successfully!`);
+  console.log(`🚀 Image generation task created successfully!`);
   console.log(`📁 FileId: ${fileId}`);
   console.log(`⏱️ Client can now poll /api/file/${fileId} for status updates`);
   return fileId;
@@ -194,6 +488,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Get session data from Redis (no more dependency on Stripe metadata)
   const sessionData = await getSessionData(sessionId);
 
+  console.log("🔍 Session data:", sessionData);
+
   if (!sessionData) {
     console.error("❌ No session data found in Redis for:", sessionId);
     console.error("This means checkout creation failed to store data properly");
@@ -205,34 +501,99 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     videoCount: sessionData.videoCount,
     tool: sessionData.toolSlug,
     cancelUrl: sessionData.cancelUrl,
+    modelName: sessionData.modelName,
+    generationType: sessionData.generationType,
+    imageFile: sessionData.imageFile
+      ? {
+          name: sessionData.imageFile.name,
+          size: sessionData.imageFile.size,
+          type: sessionData.imageFile.type,
+          contentLength: sessionData.imageFile.content.length,
+        }
+      : null,
   });
 
-  // Update status to processing (starting video generation)
+  // Update status to processing (starting generation)
   await updateSessionData(sessionId, { status: "processing" });
 
   try {
-    // Launch video generation through SuperDuperAI API
-    const fileId = await generateVideoWithSuperDuperAI(
-      sessionData.prompt,
-      sessionData.duration || 8,
-      sessionData.resolution || "1280x720",
-      sessionData.style || "cinematic"
-    );
+    let fileId: string;
+
+    // Determine generation type based on tool slug or generation type
+    const isImageGeneration =
+      sessionData.toolSlug?.includes("image") ||
+      sessionData.generationType === "text-to-image" ||
+      sessionData.generationType === "image-to-image";
+
+    if (isImageGeneration) {
+      // Launch image generation through SuperDuperAI API
+      console.log("🎨 Starting image generation for session:", sessionId);
+
+      fileId = await generateImageWithSuperDuperAI(
+        sessionData.prompt,
+        sessionData.modelName || "veo3", // Use modelName from session data
+        sessionData.width || 1024,
+        sessionData.height || 1024,
+        sessionData.style || "realistic"
+      );
+
+      console.log("🎨 Image generation started successfully:", fileId);
+    } else {
+      // Launch video generation through SuperDuperAI API
+      console.log("🎬 Starting video generation for session:", sessionId);
+
+      let imageId: string | undefined;
+
+      // Check if we have an image file for image-to-video generation
+      if (
+        sessionData.generationType === "image-to-video" &&
+        sessionData.imageFile &&
+        sessionData.imageFile.content
+      ) {
+        try {
+          console.log("🎨 Uploading image for image-to-video generation...");
+          imageId = await uploadImage(sessionData.imageFile);
+          console.log("🎨 Image uploaded successfully:", imageId);
+        } catch (error) {
+          console.error("❌ Failed to upload image:", error);
+          throw new Error("Failed to upload source image for video generation");
+        }
+      } else if (
+        sessionData.generationType === "image-to-video" &&
+        (!sessionData.imageFile || !sessionData.imageFile.content)
+      ) {
+        console.log(
+          "🔄 Image-to-video requested but no image provided, switching to text-to-video"
+        );
+        // Автоматически переключаемся на text-to-video если изображение не предоставлено
+        sessionData.generationType = "text-to-video";
+      }
+
+      fileId = await generateVideoWithSuperDuperAI(
+        sessionData.prompt,
+        sessionData.modelName || "veo3", // Use modelName from session data
+        sessionData.duration || 8,
+        sessionData.resolution || "1280x720",
+        sessionData.style || "cinematic",
+        sessionData.generationType as "text-to-video" | "image-to-video",
+        imageId
+      );
+
+      console.log("🎬 Video generation started successfully:", fileId);
+    }
 
     // Save fileId in session
     await updateSessionData(sessionId, {
       status: "processing",
       fileId,
     });
-
-    console.log("🎬 Video generation started successfully:", fileId);
   } catch (error) {
-    console.error("❌ Failed to start video generation:", error);
+    console.error("❌ Failed to start generation:", error);
 
     // Update status to error
     await updateSessionData(sessionId, {
       status: "error",
-      error: error instanceof Error ? error.message : "Video generation failed",
+      error: error instanceof Error ? error.message : "Generation failed",
     });
   }
 
@@ -316,4 +677,75 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
   if (customer_email) {
     console.log("📧 TODO: Send payment failure email to", customer_email);
   }
+}
+
+// Function to retry video generation with improved prompt
+async function _retryVideoGenerationWithImprovedPrompt(
+  sessionId: string,
+  originalPrompt: string,
+  modelName: string,
+  duration: number,
+  resolution: string,
+  style: string,
+  generationType: "text-to-video" | "image-to-video" = "text-to-video",
+  imageId?: string
+): Promise<string> {
+  console.log(
+    "🔄 Retrying video generation with improved prompt for session:",
+    sessionId
+  );
+
+  // Create a more detailed prompt based on the original
+  const improvedPrompt = createImprovedPrompt(originalPrompt, style);
+
+  console.log("🔧 Original prompt:", originalPrompt);
+  console.log("🔧 Improved prompt:", improvedPrompt);
+
+  // Try with improved prompt
+  return await generateVideoWithSuperDuperAI(
+    improvedPrompt,
+    modelName,
+    duration,
+    resolution,
+    style,
+    generationType,
+    imageId
+  );
+}
+
+// Function to create improved prompt for retry
+function createImprovedPrompt(originalPrompt: string, style: string): string {
+  // If prompt is too short, add more context
+  if (originalPrompt.length < 20) {
+    const styleContexts: Record<string, string> = {
+      cinematic:
+        "A cinematic scene with professional lighting and smooth camera movement",
+      realistic:
+        "A realistic scene with natural lighting and detailed textures",
+      artistic:
+        "An artistic scene with creative composition and vibrant colors",
+      dramatic: "A dramatic scene with intense lighting and emotional impact",
+      peaceful: "A peaceful scene with calm atmosphere and gentle movement",
+      action: "An action-packed scene with dynamic movement and excitement",
+      fantasy:
+        "A fantastical scene with magical elements and otherworldly atmosphere",
+    };
+
+    const context = styleContexts[style] || styleContexts.cinematic;
+    return `${context} featuring ${originalPrompt}`;
+  }
+
+  // If prompt is already detailed, just enhance it slightly
+  const enhancements: Record<string, string> = {
+    cinematic: "cinematic quality, professional lighting",
+    realistic: "realistic details, natural lighting",
+    artistic: "artistic composition, creative style",
+    dramatic: "dramatic lighting, emotional impact",
+    peaceful: "peaceful atmosphere, calm mood",
+    action: "dynamic movement, exciting action",
+    fantasy: "magical atmosphere, fantastical elements",
+  };
+
+  const enhancement = enhancements[style] || enhancements.cinematic;
+  return `${originalPrompt}, ${enhancement}`;
 }

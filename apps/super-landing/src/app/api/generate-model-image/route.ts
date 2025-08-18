@@ -167,30 +167,9 @@ async function generateImageWithModel(
 
   for (let i = 0; i < imageCount; i++) {
     try {
-      const isOpenAIModel = String(finalConfig.generation_config_name).includes(
-        "gpt-image-1"
-      );
-
-      const baseConfig = {
-        prompt,
-        negative_prompt: "",
-        width: finalConfig.width,
-        height: finalConfig.height,
-        aspect_ratio: finalConfig.aspectRatio,
-        seed:
-          Math.floor(Math.random() * 1000000000000) +
-          i +
-          Date.now() +
-          Math.floor(Math.random() * 1000),
-        generation_config_name: finalConfig.generation_config_name,
-        entity_ids: [] as string[],
-        references: [] as string[],
-      } as const;
-
       let payload: {
         type: string;
         template_name: string | null;
-        style_name?: string;
         config: {
           prompt: string;
           negative_prompt: string;
@@ -200,7 +179,7 @@ async function generateImageWithModel(
           seed: number;
           generation_config_name: string;
           entity_ids: string[];
-          references: string[];
+          references: Array<{ type: string; reference_id: string }>;
           shot_size?: string;
           qualityType?: string;
           style_name?: string;
@@ -234,49 +213,59 @@ async function generateImageWithModel(
         console.log("✅ Image uploaded successfully, ID:", referenceImageId);
 
         // Создаем payload для image-to-image
-        payload = isOpenAIModel
-          ? {
-              type: "media",
-              template_name: null,
-              config: {
-                ...baseConfig,
-                references: [referenceImageId],
-              },
-            }
-          : {
-              type: "media",
-              template_name: null,
-              style_name: finalConfig.style,
-              config: {
-                ...baseConfig,
-                shot_size: finalConfig.shotSize,
-                style_name: finalConfig.style,
-                qualityType: "hd",
-                references: [referenceImageId],
-              },
-            };
+        payload = {
+          type: "media",
+          template_name: null,
+          config: {
+            prompt,
+            negative_prompt: "",
+            width: finalConfig.width,
+            height: finalConfig.height,
+            aspect_ratio: finalConfig.aspectRatio,
+            seed:
+              Math.floor(Math.random() * 1000000000000) +
+              i +
+              Date.now() +
+              Math.floor(Math.random() * 1000),
+            generation_config_name: finalConfig.generation_config_name,
+            entity_ids: [],
+            references: referenceImageId
+              ? [
+                  {
+                    type: "source",
+                    reference_id: referenceImageId,
+                  },
+                ]
+              : [],
+            ...(finalConfig.shotSize && { shot_size: finalConfig.shotSize }),
+            ...(finalConfig.style && { style_name: finalConfig.style }),
+            ...(finalConfig.style && { qualityType: "hd" }),
+          },
+        };
       } else {
         // Для text-to-image используем стандартный payload
-        payload = isOpenAIModel
-          ? {
-              type: "media",
-              template_name: null,
-              config: {
-                ...baseConfig,
-                // Не включаем shot_size/style_name/qualityType для OpenAI
-              },
-            }
-          : {
-              type: "media",
-              template_name: null,
-              style_name: finalConfig.style,
-              config: {
-                ...baseConfig,
-                shot_size: finalConfig.shotSize,
-                style_name: finalConfig.style,
-                qualityType: "hd",
-              },
-            };
+        payload = {
+          type: "media",
+          template_name: null,
+          config: {
+            prompt,
+            negative_prompt: "",
+            width: finalConfig.width,
+            height: finalConfig.height,
+            aspect_ratio: finalConfig.aspectRatio,
+            seed:
+              Math.floor(Math.random() * 1000000000000) +
+              i +
+              Date.now() +
+              Math.floor(Math.random() * 1000),
+            generation_config_name: finalConfig.generation_config_name,
+            entity_ids: [],
+            references: [],
+            ...(finalConfig.shotSize && { shot_size: finalConfig.shotSize }),
+            ...(finalConfig.style && { style_name: finalConfig.style }),
+            ...(finalConfig.style && { qualityType: "hd" }),
+          },
+        };
       }
 
       console.log("📤 Sending request to SuperDuperAI:", payload);
@@ -424,6 +413,15 @@ async function checkFileStatus(
       }
       if (latestTask.status === "completed") {
         // Если задача завершена, но URL еще нет, файл может быть в процессе обработки
+        return { status: "processing" };
+      }
+    }
+
+    // Для изображений без задач или с пустыми тасками
+    // Проверяем тип файла и другие признаки
+    if (fileData.type === "image") {
+      // Если это изображение и нет URL, но есть ID, значит оно еще обрабатывается
+      if (fileData.id && !fileData.url) {
         return { status: "processing" };
       }
     }

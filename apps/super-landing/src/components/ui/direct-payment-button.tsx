@@ -18,7 +18,11 @@ interface DirectPaymentButtonProps {
   className?: string;
   locale?: Locale;
   // Новые поля для поддержки image-to-video
-  generationType?: "text-to-video" | "image-to-video";
+  generationType?:
+    | "text-to-video"
+    | "image-to-video"
+    | "text-to-image"
+    | "image-to-image";
   imageFile?: File | null;
 }
 
