@@ -1,17 +1,21 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import {
   Veo3PromptGenerator,
   PromptDataType,
   MoodboardImageType,
 } from "@turbo-super/features";
+import { getValidLocale } from "@/lib/get-valid-locale";
 
 // Define types from exported values
 type PromptData = typeof PromptDataType;
 type MoodboardImage = typeof MoodboardImageType;
 
 export function SimpleVeo3Generator() {
-  const enhancePromptFunction = async (params: {
+  const params = useParams();
+  const locale = getValidLocale(params.locale);
+  const enhancePromptFunction = async (enhanceParams: {
     prompt: string;
     customLimit: number;
     model: string;
@@ -27,7 +31,7 @@ export function SimpleVeo3Generator() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        ...params,
+        ...enhanceParams,
       }),
     });
     return response.json();
@@ -54,6 +58,7 @@ export function SimpleVeo3Generator() {
         enhancePromptFunction={enhancePromptFunction}
         MoodboardUploader={undefined}
         showInfoBanner={true}
+        locale={locale}
       />
     </div>
   );

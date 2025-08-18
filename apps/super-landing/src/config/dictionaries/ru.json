@@ -184,5 +184,96 @@
     "or": "или",
     "apply_email": "Подать заявку по email"
   },
-  "privacy_policy": "Политика конфиденциальности"
+  "privacy_policy": "Политика конфиденциальности",
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "Освойте генерацию видео VEO3",
+      "description": "Изучите профессиональные техники промптинга и лучшие практики для самой продвинутой AI-модели видео от Google."
+    },
+    "tabs": {
+      "builder": "Конструктор промптов",
+      "enhance": "AI-улучшение",
+      "history": "История"
+    },
+    "promptBuilder": {
+      "scene": "Сцена",
+      "scenePlaceholder": "Опишите обстановку, окружение или место действия...",
+      "style": "Стиль",
+      "stylePlaceholder": "Художественный, фотореалистичный, кинематографичный и т.д...",
+      "camera": "Камера",
+      "cameraPlaceholder": "Движение камеры, угол, тип кадра...",
+      "characters": "Персонажи",
+      "addCharacter": "Добавить персонажа",
+      "characterName": "Имя",
+      "characterDescription": "Описание",
+      "characterSpeech": "Речь/Диалог",
+      "removeCharacter": "Удалить",
+      "action": "Действие",
+      "actionPlaceholder": "Что происходит в сцене...",
+      "lighting": "Освещение",
+      "lightingPlaceholder": "Естественное, драматичное, мягкое и т.д...",
+      "mood": "Настроение",
+      "moodPlaceholder": "Эмоциональная атмосфера, тон...",
+      "language": "Язык",
+      "moodboard": "Мудборд",
+      "moodboardEnabled": "Включить мудборд",
+      "moodboardDescription": "Загрузите референсные изображения для направления генерации"
+    },
+    "promptPreview": {
+      "title": "Сгенерированный промпт",
+      "copyButton": "Копировать",
+      "copied": "Скопировано!",
+      "randomizeButton": "Случайно",
+      "clearButton": "Очистить всё",
+      "enhanceButton": "Улучшить с помощью AI"
+    },
+    "aiEnhancement": {
+      "title": "AI-улучшение",
+      "description": "Улучшите ваш промпт с помощью продвинутых AI-техник",
+      "focusTypes": {
+        "character": "Фокус на персонажах",
+        "action": "Фокус на действии",
+        "cinematic": "Кинематографический фокус",
+        "safe": "Безопасный контент"
+      },
+      "settings": {
+        "title": "Настройки улучшения",
+        "characterLimit": "Лимит символов",
+        "includeAudio": "Включить описание аудио",
+        "model": "AI-модель"
+      },
+      "enhanceButton": "Улучшить промпт",
+      "enhancing": "Улучшение...",
+      "enhanceError": "Ошибка улучшения",
+      "enhancementInfo": {
+        "model": "Модель",
+        "length": "Длина",
+        "actualCharacters": "Фактическое количество символов",
+        "targetCharacters": "Целевое количество символов"
+      }
+    },
+    "promptHistory": {
+      "title": "История промптов",
+      "empty": "История промптов пока пуста",
+      "loadButton": "Загрузить",
+      "clearButton": "Очистить историю",
+      "columns": {
+        "timestamp": "Дата",
+        "basicPrompt": "Базовый промпт",
+        "enhancedPrompt": "Улучшенный промпт",
+        "length": "Длина",
+        "model": "Модель"
+      }
+    },
+    "common": {
+      "loading": "Загрузка...",
+      "error": "Ошибка",
+      "success": "Успешно",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "delete": "Удалить",
+      "edit": "Редактировать",
+      "close": "Закрыть"
+    }
+  }
 }

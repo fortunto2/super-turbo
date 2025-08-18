@@ -1,0 +1,115 @@
+{
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "Master VEO3 Video Generation",
+      "description": "Learn professional prompting techniques and best practices for Google's most advanced AI video model."
+    },
+    "tabs": {
+      "builder": "Prompt Builder",
+      "enhance": "AI Enhancement",
+      "history": "History"
+    },
+    "promptBuilder": {
+      "scene": "Scene",
+      "scenePlaceholder": "Describe the setting, environment, or location...",
+      "style": "Style",
+      "stylePlaceholder": "Artistic, photorealistic, cinematic, etc...",
+      "camera": "Camera",
+      "cameraPlaceholder": "Camera movement, angle, shot type...",
+      "characters": "Characters",
+      "addCharacter": "Add Character",
+      "characterName": "Name",
+      "characterNamePlaceholder": "Character name (e.g., Sarah, Vendor)",
+      "characterDescription": "Description",
+      "characterDescriptionPlaceholder": "Describe the character (e.g., A young woman with wavy brown hair)",
+      "characterSpeech": "Speech/Dialogue",
+      "characterSpeechPlaceholder": "What they say (e.g., Hello there! or Привет!)",
+      "characterNumber": "Character",
+      "hasVoice": "Has Voice",
+      "voiceHighlight": "This dialogue will be highlighted in the enhanced prompt",
+      "removeCharacter": "Remove",
+      "action": "Action",
+      "actionPlaceholder": "What's happening in the scene...",
+      "lighting": "Lighting",
+      "lightingPlaceholder": "Natural, dramatic, soft, etc...",
+      "mood": "Mood",
+      "moodPlaceholder": "Emotional atmosphere, tone...",
+      "language": "Language",
+      "languagePlaceholder": "Enter language (e.g., English, Russian, Spanish...)",
+      "quickSelect": "Quick select:",
+      "moodboard": "Moodboard",
+      "moodboardEnabled": "Enable moodboard",
+      "moodboardDescription": "Upload reference images to guide generation",
+      "noCharacters": "No characters added yet. Click \"Add Character\" to start.",
+      "moodboardTitle": "Enable Moodboard References",
+      "moodboardImages": "0/3 images",
+      "visualReferences": "Visual References",
+      "uploadImages": "📁 Click to Upload Images",
+      "uploadDescription": "Select up to 3 images to use as visual references",
+      "supportedFormats": "Supported formats: JPG, PNG, GIF, WebP",
+      "moodboardTips": "🎨 Moodboard Tips",
+      "tip1": "Upload reference images to influence your VEO3 generation",
+      "tip2": "Add descriptions to highlight specific elements you want emphasized",
+      "tip3": "Adjust influence weight to control how much each image affects the result"
+    },
+    "promptPreview": {
+      "title": "Generated Prompt",
+      "copyButton": "Copy",
+      "copied": "Copied!",
+      "randomizeButton": "Randomize",
+      "clearButton": "Clear All",
+      "enhanceButton": "Continue to AI Enhancement →",
+      "placeholder": "Your generated prompt will appear here, or type your own prompt...",
+      "preview": "Preview"
+    },
+    "aiEnhancement": {
+      "title": "AI Enhancement",
+      "description": "Enhance your prompt with advanced AI techniques",
+      "focusTypes": {
+        "character": "Character Focus",
+        "action": "Action Focus", 
+        "cinematic": "Cinematic Focus",
+        "safe": "Safe Content"
+      },
+      "settings": {
+        "title": "Enhancement Settings",
+        "characterLimit": "Character Limit",
+        "includeAudio": "Include Audio Description",
+        "model": "AI Model"
+      },
+      "enhanceButton": "Enhance Prompt",
+      "enhancing": "Enhancing...",
+      "enhanceError": "Enhancement failed",
+             "enhancementInfo": {
+         "model": "Model",
+         "length": "Length",
+         "actualCharacters": "Actual Characters",
+         "targetCharacters": "Target Characters"
+       },
+       "focus": "focus"
+    },
+    "promptHistory": {
+      "title": "Prompt History",
+      "empty": "No prompts in history yet",
+      "loadButton": "Load",
+      "clearButton": "Clear History",
+      "columns": {
+        "timestamp": "Date",
+        "basicPrompt": "Basic Prompt",
+        "enhancedPrompt": "Enhanced Prompt",
+        "length": "Length",
+        "model": "Model"
+      }
+    },
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close"
+    }
+  }
+}

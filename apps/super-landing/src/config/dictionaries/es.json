@@ -94,7 +94,7 @@
       },
       {
         "title": "Refinar y finalizar",
-        "description": "Ajuste el estilo, exporte su video y compártelo con el mundo"
+        "description": "Ajuste el estilo, exporte su video y compártalo con el mundo"
       }
     ]
   },
@@ -184,5 +184,96 @@
     "or": "o",
     "apply_email": "Aplicar por correo electrónico"
   },
-  "privacy_policy": "Política de privacidad"
+  "privacy_policy": "Política de privacidad",
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "Domina la Generación de Video VEO3",
+      "description": "Aprende técnicas profesionales de prompting y mejores prácticas para el modelo de video AI más avanzado de Google."
+    },
+    "tabs": {
+      "builder": "Constructor de Prompts",
+      "enhance": "Mejora con AI",
+      "history": "Historial"
+    },
+    "promptBuilder": {
+      "scene": "Escena",
+      "scenePlaceholder": "Describe el entorno, ambiente o ubicación...",
+      "style": "Estilo",
+      "stylePlaceholder": "Artístico, fotorrealista, cinematográfico, etc...",
+      "camera": "Cámara",
+      "cameraPlaceholder": "Movimiento de cámara, ángulo, tipo de toma...",
+      "characters": "Personajes",
+      "addCharacter": "Agregar Personaje",
+      "characterName": "Nombre",
+      "characterDescription": "Descripción",
+      "characterSpeech": "Habla/Diálogo",
+      "removeCharacter": "Eliminar",
+      "action": "Acción",
+      "actionPlaceholder": "¿Qué está pasando en la escena...",
+      "lighting": "Iluminación",
+      "lightingPlaceholder": "Natural, dramática, suave, etc...",
+      "mood": "Estado de Ánimo",
+      "moodPlaceholder": "Atmósfera emocional, tono...",
+      "language": "Idioma",
+      "moodboard": "Moodboard",
+      "moodboardEnabled": "Habilitar moodboard",
+      "moodboardDescription": "Sube imágenes de referencia para guiar la generación"
+    },
+    "promptPreview": {
+      "title": "Prompt Generado",
+      "copyButton": "Copiar",
+      "copied": "¡Copiado!",
+      "randomizeButton": "Aleatorizar",
+      "clearButton": "Limpiar Todo",
+      "enhanceButton": "Mejorar con AI"
+    },
+    "aiEnhancement": {
+      "title": "Mejora con AI",
+      "description": "Mejora tu prompt con técnicas avanzadas de AI",
+      "focusTypes": {
+        "character": "Enfoque en Personajes",
+        "action": "Enfoque en Acción",
+        "cinematic": "Enfoque Cinematográfico",
+        "safe": "Contenido Seguro"
+      },
+      "settings": {
+        "title": "Configuración de Mejora",
+        "characterLimit": "Límite de Caracteres",
+        "includeAudio": "Incluir Descripción de Audio",
+        "model": "Modelo AI"
+      },
+      "enhanceButton": "Mejorar Prompt",
+      "enhancing": "Mejorando...",
+      "enhanceError": "La mejora falló",
+      "enhancementInfo": {
+        "model": "Modelo",
+        "length": "Longitud",
+        "actualCharacters": "Caracteres Reales",
+        "targetCharacters": "Caracteres Objetivo"
+      }
+    },
+    "promptHistory": {
+      "title": "Historial de Prompts",
+      "empty": "Aún no hay prompts en el historial",
+      "loadButton": "Cargar",
+      "clearButton": "Limpiar Historial",
+      "columns": {
+        "timestamp": "Fecha",
+        "basicPrompt": "Prompt Básico",
+        "enhancedPrompt": "Prompt Mejorado",
+        "length": "Longitud",
+        "model": "Modelo"
+      }
+    },
+    "common": {
+      "loading": "Cargando...",
+      "error": "Error",
+      "success": "Éxito",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Cerrar"
+    }
+  }
 }

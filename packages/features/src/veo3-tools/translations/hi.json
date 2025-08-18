@@ -1,0 +1,93 @@
+{
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "VEO3 वीडियो जनरेशन में महारत हासिल करें",
+      "description": "Google के सबसे उन्नत AI वीडियो मॉडल के लिए पेशेवर प्रॉम्प्टिंग तकनीकों और सर्वोत्तम प्रथाओं को सीखें।"
+    },
+    "tabs": {
+      "builder": "प्रॉम्प्ट बिल्डर",
+      "enhance": "AI एन्हांसमेंट",
+      "history": "इतिहास"
+    },
+    "promptBuilder": {
+      "scene": "दृश्य",
+      "scenePlaceholder": "सेटिंग, वातावरण या स्थान का वर्णन करें...",
+      "style": "शैली",
+      "stylePlaceholder": "कलात्मक, फोटोरियलिस्टिक, सिनेमैटिक, आदि...",
+      "camera": "कैमरा",
+      "cameraPlaceholder": "कैमरा आंदोलन, कोण, शॉट प्रकार...",
+      "characters": "पात्र",
+      "addCharacter": "पात्र जोड़ें",
+      "characterName": "नाम",
+      "characterDescription": "विवरण",
+      "characterSpeech": "भाषण/संवाद",
+      "removeCharacter": "हटाएं",
+      "action": "कार्रवाई",
+      "actionPlaceholder": "दृश्य में क्या हो रहा है...",
+      "lighting": "प्रकाश व्यवस्था",
+      "lightingPlaceholder": "प्राकृतिक, नाटकीय, नरम, आदि...",
+      "mood": "मूड",
+      "moodPlaceholder": "भावनात्मक वातावरण, स्वर...",
+      "language": "भाषा",
+      "moodboard": "मूडबोर्ड",
+      "moodboardEnabled": "मूडबोर्ड सक्षम करें",
+      "moodboardDescription": "जनरेशन को निर्देशित करने के लिए संदर्भ छवियां अपलोड करें"
+    },
+    "promptPreview": {
+      "title": "उत्पन्न प्रॉम्प्ट",
+      "copyButton": "कॉपी करें",
+      "copied": "कॉपी किया गया!",
+      "randomizeButton": "रैंडमाइज़",
+      "clearButton": "सब कुछ साफ़ करें",
+      "enhanceButton": "AI के साथ बढ़ाएं"
+    },
+    "aiEnhancement": {
+      "title": "AI एन्हांसमेंट",
+      "description": "उन्नत AI तकनीकों के साथ अपने प्रॉम्प्ट को बढ़ाएं",
+      "focusTypes": {
+        "character": "पात्र फोकस",
+        "action": "कार्रवाई फोकस",
+        "cinematic": "सिनेमैटिक फोकस",
+        "safe": "सुरक्षित सामग्री"
+      },
+      "settings": {
+        "title": "एन्हांसमेंट सेटिंग्स",
+        "characterLimit": "अक्षर सीमा",
+        "includeAudio": "ऑडियो विवरण शामिल करें",
+        "model": "AI मॉडल"
+      },
+      "enhanceButton": "प्रॉम्प्ट बढ़ाएं",
+      "enhancing": "बढ़ा रहा है...",
+      "enhanceError": "एन्हांसमेंट विफल",
+      "enhancementInfo": {
+        "model": "मॉडल",
+        "length": "लंबाई",
+        "actualCharacters": "वास्तविक अक्षर",
+        "targetCharacters": "लक्ष्य अक्षर"
+      }
+    },
+    "promptHistory": {
+      "title": "प्रॉम्प्ट इतिहास",
+      "empty": "अभी तक इतिहास में कोई प्रॉम्प्ट नहीं",
+      "loadButton": "लोड करें",
+      "clearButton": "इतिहास साफ़ करें",
+      "columns": {
+        "timestamp": "दिनांक",
+        "basicPrompt": "बुनियादी प्रॉम्प्ट",
+        "enhancedPrompt": "बढ़ाया गया प्रॉम्प्ट",
+        "length": "लंबाई",
+        "model": "मॉडल"
+      }
+    },
+    "common": {
+      "loading": "लोड हो रहा है...",
+      "error": "त्रुटि",
+      "success": "सफलता",
+      "cancel": "रद्द करें",
+      "save": "सहेजें",
+      "delete": "हटाएं",
+      "edit": "संपादित करें",
+      "close": "बंद करें"
+    }
+  }
+}

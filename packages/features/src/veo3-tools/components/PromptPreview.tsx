@@ -8,6 +8,8 @@ import {
   Badge,
 } from "@turbo-super/ui";
 import { Copy, Shuffle, Sparkles, Trash2 } from "lucide-react";
+import { useTranslation } from "../hooks/use-translation";
+import { Locale } from "../translations";
 
 interface PromptPreviewProps {
   generatedPrompt: string;
@@ -19,6 +21,7 @@ interface PromptPreviewProps {
   setActiveTab: (tab: string) => void;
   isEnhancing: boolean;
   enhancePrompt: () => void;
+  locale?: Locale;
 }
 
 export function PromptPreview({
@@ -31,18 +34,20 @@ export function PromptPreview({
   setActiveTab,
   isEnhancing,
   enhancePrompt,
+  locale = "en",
 }: PromptPreviewProps) {
+  const { t } = useTranslation(locale);
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Copy className="w-5 h-5" />
-          Generated Prompt
+          {t("veo3PromptGenerator.promptPreview.title")}
           <Badge
             variant="secondary"
             className="ml-auto text-xs"
           >
-            Preview
+            {t("veo3PromptGenerator.promptPreview.preview")}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -55,7 +60,7 @@ export function PromptPreview({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setGeneratedPrompt(e.target.value)
               }
-              placeholder="Your generated prompt will appear here, or type your own prompt..."
+              placeholder={t("veo3PromptGenerator.promptPreview.placeholder")}
               className="min-h-[400px] font-mono text-sm resize-none pr-20 bg-background border-border text-foreground"
             />
             <div className="absolute top-2 right-2 flex gap-1">
@@ -91,7 +96,7 @@ export function PromptPreview({
                 className="flex-1"
               >
                 <Shuffle className="size-4 mr-2" />
-                Randomize All
+                {t("veo3PromptGenerator.promptPreview.randomizeButton")}
               </Button>
               <Button
                 onClick={clearAll}
@@ -99,7 +104,7 @@ export function PromptPreview({
                 className="flex-1"
               >
                 <Trash2 className="size-4 mr-2" />
-                Clear All
+                {t("veo3PromptGenerator.promptPreview.clearButton")}
               </Button>
             </div>
             {/* Navigate to AI Enhancement - Large and Prominent */}
@@ -117,7 +122,7 @@ export function PromptPreview({
               className="w-full h-16 text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200"
             >
               <Sparkles className="size-6 mr-3" />
-              Continue to AI Enhancement →
+              {t("veo3PromptGenerator.promptPreview.enhanceButton")}
             </Button>
           </div>
         </div>

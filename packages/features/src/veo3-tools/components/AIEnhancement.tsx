@@ -17,6 +17,8 @@ import {
   Copy,
   CreditCard,
 } from "lucide-react";
+import { useTranslation } from "../hooks/use-translation";
+import { Locale } from "../translations";
 
 interface AIEnhancementProps {
   enhancedPrompt: string;
@@ -38,6 +40,7 @@ interface AIEnhancementProps {
   setShowSettings: (val: boolean) => void;
   copied: boolean;
   copyToClipboard: (text: string) => void;
+  locale?: Locale;
 }
 
 export function AIEnhancement({
@@ -58,13 +61,15 @@ export function AIEnhancement({
   setShowSettings,
   copied,
   copyToClipboard,
+  locale = "en",
 }: AIEnhancementProps) {
+  const { t } = useTranslation(locale);
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-purple-600" />
-          AI Enhanced Prompt
+          {t("veo3PromptGenerator.aiEnhancement.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -79,17 +84,17 @@ export function AIEnhancement({
             {isEnhancing ? (
               <>
                 <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                Enhancing with AI...
+                {t("veo3PromptGenerator.aiEnhancement.enhancing")}
               </>
             ) : (
               <>
                 <Sparkles className="w-6 h-6 mr-3" />
                 {enhancedPrompt.trim()
-                  ? "Re-enhance with AI"
-                  : "Enhance with AI"}
+                  ? t("veo3PromptGenerator.aiEnhancement.enhanceButton")
+                  : t("veo3PromptGenerator.aiEnhancement.enhanceButton")}
                 {selectedFocusTypes.length > 0 && (
                   <span className="ml-2 text-sm opacity-90">
-                    ({selectedFocusTypes.length} focus
+                    ({selectedFocusTypes.length} {t("veo3PromptGenerator.aiEnhancement.focus")}
                     {selectedFocusTypes.length !== 1 ? "es" : ""})
                   </span>
                 )}
@@ -106,7 +111,7 @@ export function AIEnhancement({
               onClick={() => toggleFocusType("character")}
               className="text-xs"
             >
-              👤 Focus Character
+              👤 {t("veo3PromptGenerator.aiEnhancement.focusTypes.character")}
             </Button>
             <Button
               variant={
@@ -116,7 +121,7 @@ export function AIEnhancement({
               onClick={() => toggleFocusType("action")}
               className="text-xs"
             >
-              🎬 Focus Action
+              🎬 {t("veo3PromptGenerator.aiEnhancement.focusTypes.action")}
             </Button>
             <Button
               variant={
@@ -126,7 +131,7 @@ export function AIEnhancement({
               onClick={() => toggleFocusType("cinematic")}
               className="text-xs"
             >
-              🎥 More Cinematic
+              🎥 {t("veo3PromptGenerator.aiEnhancement.focusTypes.cinematic")}
             </Button>
             <Button
               variant={includeAudio ? "default" : "outline"}
@@ -138,7 +143,7 @@ export function AIEnhancement({
                   : "bg-blue-50 border-blue-200 hover:bg-blue-100"
               }`}
             >
-              🔊 Audio & Voice
+                             🔊 {t("veo3PromptGenerator.aiEnhancement.settings.includeAudio")}
             </Button>
             <Button
               variant={
@@ -152,7 +157,7 @@ export function AIEnhancement({
                   : "bg-green-50 border-green-200 hover:bg-green-100"
               }`}
             >
-              🛡️ Safe Content
+              🛡️ {t("veo3PromptGenerator.aiEnhancement.focusTypes.safe")}
             </Button>
           </div>
           {/* Collapsible Settings */}
@@ -164,7 +169,7 @@ export function AIEnhancement({
             >
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
-                <span className="text-sm">Enhancement Settings</span>
+                <span className="text-sm">{t("veo3PromptGenerator.aiEnhancement.settings.title")}</span>
                 <Badge
                   variant="outline"
                   className="text-xs"
@@ -183,9 +188,9 @@ export function AIEnhancement({
                 {/* Character Limit Slider */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      Character Limit
-                    </span>
+                                         <span className="text-xs text-muted-foreground">
+                       {t("veo3PromptGenerator.aiEnhancement.settings.characterLimit")}
+                     </span>
                     <Badge
                       variant="outline"
                       className="text-xs"
@@ -225,9 +230,9 @@ export function AIEnhancement({
                 </div>
                 {/* Model Info */}
                 <div className="space-y-2">
-                  <span className="text-xs text-muted-foreground">
-                    AI Model
-                  </span>
+                                     <span className="text-xs text-muted-foreground">
+                     {t("veo3PromptGenerator.aiEnhancement.settings.model")}
+                   </span>
                   <div className="p-2 bg-muted rounded text-xs">
                     <div className="font-medium">GPT-4.1</div>
                     <div className="text-muted-foreground">
@@ -316,17 +321,17 @@ export function AIEnhancement({
             {isEnhancing ? (
               <>
                 <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                Enhancing with AI...
+                {t("veo3PromptGenerator.aiEnhancement.enhancing")}
               </>
             ) : (
               <>
                 <Sparkles className="w-6 h-6 mr-3" />
                 {enhancedPrompt.trim()
-                  ? "Re-enhance with AI"
-                  : "Enhance with AI"}
+                  ? t("veo3PromptGenerator.aiEnhancement.enhanceButton")
+                  : t("veo3PromptGenerator.aiEnhancement.enhanceButton")}
                 {selectedFocusTypes.length > 0 && (
                   <span className="ml-2 text-sm opacity-90">
-                    ({selectedFocusTypes.length} focus
+                    ({selectedFocusTypes.length} {t("veo3PromptGenerator.aiEnhancement.focus")}
                     {selectedFocusTypes.length !== 1 ? "es" : ""})
                   </span>
                 )}

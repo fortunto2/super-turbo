@@ -8,12 +8,15 @@ import {
 } from "@turbo-super/ui";
 import { Copy, Trash2 } from "lucide-react";
 import { HistoryItem } from "../types";
+import { useTranslation } from "../hooks/use-translation";
+import { Locale } from "../translations";
 
 interface PromptHistoryProps {
   promptHistory: HistoryItem[];
   loadFromHistory: (item: HistoryItem) => void;
   clearHistory: () => void;
   setActiveTab: (tab: string) => void;
+  locale?: Locale;
 }
 
 export function PromptHistory({
@@ -21,7 +24,9 @@ export function PromptHistory({
   loadFromHistory,
   clearHistory,
   setActiveTab,
+  locale = "en",
 }: PromptHistoryProps) {
+  const { t } = useTranslation(locale);
   return (
     <Card className="w-full">
       {promptHistory.length > 0 ? (
@@ -30,7 +35,7 @@ export function PromptHistory({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Copy className="w-5 h-5" />
-                Recent Prompts History
+                {t("veo3PromptGenerator.promptHistory.title")}
                 <Badge
                   variant="outline"
                   className="ml-2"
@@ -92,7 +97,7 @@ export function PromptHistory({
                     size="sm"
                     className="w-full"
                   >
-                    Load This Version
+                    {t("veo3PromptGenerator.promptHistory.loadButton")}
                   </Button>
                 </div>
               ))}
@@ -102,15 +107,15 @@ export function PromptHistory({
       ) : (
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Copy className="w-12 h-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No History Yet</h3>
-          <p className="text-muted-foreground text-center mb-4">
-            Generate and enhance prompts to see them here
-          </p>
+                     <h3 className="text-lg font-semibold mb-2">{t("veo3PromptGenerator.promptHistory.empty")}</h3>
+                     <p className="text-muted-foreground text-center mb-4">
+             {t("veo3PromptGenerator.promptHistory.empty")}
+           </p>
           <Button
             variant="outline"
             onClick={() => setActiveTab("builder")}
           >
-            Start Building
+                         {t("veo3PromptGenerator.promptHistory.loadButton")}
           </Button>
         </CardContent>
       )}
