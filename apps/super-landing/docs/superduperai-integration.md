@@ -28,6 +28,7 @@ SUPERDUPERAI_URL=https://dev-editor.superduperai.co
 ### `/api/generate-veo3`
 
 **POST** - Start video generation
+
 ```json
 {
   "generationId": "veo3_1234567890_abc123",
@@ -40,11 +41,13 @@ SUPERDUPERAI_URL=https://dev-editor.superduperai.co
 ```
 
 **GET** - Check generation status
+
 ```
 GET /api/generate-veo3?generationId=veo3_1234567890_abc123
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -83,20 +86,20 @@ const payload = {
     aspect_ratio: "16:9",
     duration: 5,
     seed: Math.floor(Math.random() * 1000000),
-    generation_config_name: "google-cloud/veo3",
+    generation_config_name: "google-cloud/veo3-text2video",
     frame_rate: 30,
     batch_size: 1,
-    references: []
-  }
+    references: [],
+  },
 };
 
 const response = await fetch(`${config.url}/api/v1/file/generate-video`, {
-  method: 'POST',
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${config.token}`,
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${config.token}`,
   },
-  body: JSON.stringify(payload)
+  body: JSON.stringify(payload),
 });
 ```
 
@@ -105,8 +108,8 @@ const response = await fetch(`${config.url}/api/v1/file/generate-video`, {
 ```typescript
 const response = await fetch(`${config.url}/api/v1/file/${fileId}`, {
   headers: {
-    'Authorization': `Bearer ${config.token}`
-  }
+    Authorization: `Bearer ${config.token}`,
+  },
 });
 ```
 
@@ -115,6 +118,7 @@ const response = await fetch(`${config.url}/api/v1/file/${fileId}`, {
 ### `SimpleVEO3Generator`
 
 Main component for video generation interface:
+
 - Prompt input
 - Payment buttons
 - Generation status tracking
@@ -123,6 +127,7 @@ Main component for video generation interface:
 ### `VEO3PaymentButtons`
 
 Stripe payment integration:
+
 - Single video ($1)
 - Triple pack ($2)
 - Checkout session creation
@@ -135,11 +140,11 @@ Stripe payment integration:
 In development mode, a test button is available to generate videos without payment:
 
 ```tsx
-{process.env.NODE_ENV === 'development' && (
-  <Button onClick={handleGenerate}>
-    Test Generate Video
-  </Button>
-)}
+{
+  process.env.NODE_ENV === "development" && (
+    <Button onClick={handleGenerate}>Test Generate Video</Button>
+  );
+}
 ```
 
 ### Status Polling
@@ -149,16 +154,18 @@ The system polls generation status every 5 seconds:
 ```typescript
 const pollGenerationStatus = async (generationId: string) => {
   const poll = async () => {
-    const response = await fetch(`/api/generate-veo3?generationId=${generationId}`);
+    const response = await fetch(
+      `/api/generate-veo3?generationId=${generationId}`
+    );
     const status = await response.json();
-    
-    if (status.status === 'completed') {
+
+    if (status.status === "completed") {
       // Handle completion
-    } else if (status.status === 'processing') {
+    } else if (status.status === "processing") {
       setTimeout(poll, 5000); // Continue polling
     }
   };
-  
+
   poll();
 };
 ```
@@ -185,6 +192,7 @@ Generation data is stored in `.veo3-generations/` directory:
 ```
 
 Each file contains:
+
 - Generation metadata
 - Status and progress
 - Video file IDs and URLs
@@ -209,8 +217,9 @@ Each file contains:
 ### Debug Mode
 
 Enable debug logging by setting:
+
 ```env
 NODE_ENV=development
 ```
 
-This will show detailed API request/response logs in the console. 
+This will show detailed API request/response logs in the console.

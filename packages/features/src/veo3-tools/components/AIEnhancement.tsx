@@ -6,6 +6,7 @@ import {
   Button,
   Textarea,
   Badge,
+  StripePaymentButton,
 } from "@turbo-super/ui";
 import {
   Sparkles,
@@ -14,11 +15,13 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  CreditCard,
 } from "lucide-react";
 
 interface AIEnhancementProps {
   enhancedPrompt: string;
   setEnhancedPrompt: (prompt: string) => void;
+  generatedPrompt: string;
   enhanceWithSelectedFocus: () => void;
   isEnhancing: boolean;
   enhanceError: string;
@@ -40,6 +43,7 @@ interface AIEnhancementProps {
 export function AIEnhancement({
   enhancedPrompt,
   setEnhancedPrompt,
+  generatedPrompt,
   enhanceWithSelectedFocus,
   isEnhancing,
   enhanceError,
@@ -329,6 +333,34 @@ export function AIEnhancement({
               </>
             )}
           </Button>
+
+          {/* Payment Button - Only show when we have an enhanced prompt */}
+          {generatedPrompt.trim() && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-600/30 rounded-lg">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                  Ready to Generate Your Video?
+                </h3>
+                <p className="text-sm text-purple-700 dark:text-purple-300">
+                  Your enhanced prompt is ready! Generate a professional VEO3
+                  video for just $1.00
+                </p>
+              </div>
+              <StripePaymentButton
+                variant="video"
+                toolSlug="veo3-prompt-generator"
+                toolTitle="VEO3 Video Generator"
+                price={1.0}
+                apiEndpoint="/api/stripe-prices"
+                checkoutEndpoint="/api/create-checkout"
+                className="border-0 shadow-none"
+                prompt={generatedPrompt}
+                // toolSlug="veo3-prompt-generator"
+                // toolTitle="VEO3 Video Generator"
+                // onPaymentClick={() => console.log("VEO3 payment started")}
+              />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -403,6 +403,7 @@ export function Veo3PromptGenerator({
           <AIEnhancement
             enhancedPrompt={enhancedPrompt}
             setEnhancedPrompt={setEnhancedPrompt}
+            generatedPrompt={generatedPrompt}
             enhanceWithSelectedFocus={enhanceWithSelectedFocus}
             isEnhancing={isEnhancing}
             enhanceError={enhanceError}

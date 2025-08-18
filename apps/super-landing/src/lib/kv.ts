@@ -282,6 +282,17 @@ export interface SessionData {
   status: "pending" | "processing" | "completed" | "error";
   fileId?: string;
   error?: string;
+  // Новые поля для перенаправления на страницу генерации
+  redirectToGeneration?: boolean;
+  modelName?: string;
+  modelType?: "image" | "video";
+  // Новые поля для поддержки image-to-video
+  generationType?: "text-to-video" | "image-to-video";
+  hasImageFile?: boolean;
+  // Дополнительная информация об изображении
+  imageFileName?: string;
+  imageFileType?: string;
+  imageFileSize?: number;
 }
 
 export async function storeSessionData(

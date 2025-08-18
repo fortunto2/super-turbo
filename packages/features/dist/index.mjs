@@ -1,7 +1,7 @@
 import { superDuperAIClient } from '@turbo-super/api';
 import { z } from 'zod';
 import Link from 'next/link';
-import { cn, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Label, Badge, Textarea, Tabs, TabsList, TabsTrigger, TabsContent } from '@turbo-super/ui';
+import { cn, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Label, Badge, Textarea, StripePaymentButton, Tabs, TabsList, TabsTrigger, TabsContent } from '@turbo-super/ui';
 import { ImagesIcon, LanguagesIcon, PlayIcon, ZapIcon, SparklesIcon, Wand2Icon, VideoIcon, ImageIcon, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown, BookOpen } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -466,84 +466,6 @@ var VideoGenerationUtils = class {
     return pixelsPerFrame * totalFrames;
   }
 };
-var BalanceService = class {
-  constructor() {
-    this.client = superDuperAIClient;
-  }
-  async getUserBalance(userId) {
-    try {
-      const response = await this.client.request({
-        method: "GET",
-        url: `/user/${userId}/balance`
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to get user balance: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async addCredits(userId, amount, type) {
-    try {
-      const response = await this.client.request({
-        method: "POST",
-        url: `/user/${userId}/credits`,
-        data: {
-          amount,
-          type,
-          description: `${type === "purchase" ? "Credit purchase" : "Bonus credits"}`
-        }
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to add credits: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async useCredits(userId, usage) {
-    try {
-      const response = await this.client.request({
-        method: "POST",
-        url: `/user/${userId}/credits/use`,
-        data: usage
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to use credits: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async getTransactionHistory(userId, limit = 50, offset = 0) {
-    try {
-      const response = await this.client.request({
-        method: "GET",
-        url: `/user/${userId}/transactions`,
-        params: { limit, offset }
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to get transaction history: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async getBalanceConfig() {
-    try {
-      const response = await this.client.request({
-        method: "GET",
-        url: "/config/balance"
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to get balance config: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-};
-var balanceService = new BalanceService();
 var _PromptEnhancer = class _PromptEnhancer {
   constructor() {
     this.client = superDuperAIClient;
@@ -3338,6 +3260,7 @@ function PromptPreview({
 function AIEnhancement({
   enhancedPrompt,
   setEnhancedPrompt,
+  generatedPrompt,
   enhanceWithSelectedFocus,
   isEnhancing,
   enhanceError,
@@ -3593,7 +3516,26 @@ function AIEnhancement({
             ] })
           ] })
         }
-      )
+      ),
+      generatedPrompt.trim() && /* @__PURE__ */ jsxs("div", { className: "mt-6 p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-600/30 rounded-lg", children: [
+        /* @__PURE__ */ jsxs("div", { className: "text-center mb-4", children: [
+          /* @__PURE__ */ jsx("h3", { className: "text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2", children: "Ready to Generate Your Video?" }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm text-purple-700 dark:text-purple-300", children: "Your enhanced prompt is ready! Generate a professional VEO3 video for just $1.00" })
+        ] }),
+        /* @__PURE__ */ jsx(
+          StripePaymentButton,
+          {
+            variant: "video",
+            toolSlug: "veo3-prompt-generator",
+            toolTitle: "VEO3 Video Generator",
+            price: 1,
+            apiEndpoint: "/api/stripe-prices",
+            checkoutEndpoint: "/api/create-checkout",
+            className: "border-0 shadow-none",
+            prompt: generatedPrompt
+          }
+        )
+      ] })
     ] }) })
   ] });
 }
@@ -4175,6 +4117,7 @@ function Veo3PromptGenerator({
             {
               enhancedPrompt,
               setEnhancedPrompt,
+              generatedPrompt,
               enhanceWithSelectedFocus,
               isEnhancing,
               enhanceError,
@@ -4214,6 +4157,6 @@ var EnhancementInfoType = {};
 var PresetOptionsType = {};
 var HistoryItemType = {};
 
-export { AIEnhancement, BalanceService, CharacterType, DEFAULT_IMAGE_CONFIG, DEFAULT_VALUES, DEFAULT_VIDEO_CONFIG, EnhancementInfoType, HistoryItemType, ImageGenerationUtils, ImageToImageStrategy, InpaintingStrategy, MoodboardImageType, MoodboardUploader, PRESET_OPTIONS, PresetOptionsType, PromptBuilder, PromptDataType, PromptEnhancementTool, PromptHistory, PromptPreview, STORAGE_KEYS, TOOLS_CONFIG, TextToImageStrategy, TextToVideoStrategy, ToolIcon, ToolsGrid, ToolsPage, Veo3PromptGenerator, VideoGenerationUtils, VideoToVideoStrategy, balanceService, configureImageGeneration, configureScriptGeneration, configureVideoGeneration, copyToClipboard, createCharacter, createDocument, createEmptyPromptData, createRandomPromptData, enhancePrompt, enhancePromptSchema, findBestVideoModel, generatePrompt, getLocaleLanguage, getToolByHref, getToolById, getToolDisplayName, getToolNavigation, getToolsByCategory, imageToImageStrategy, inpaintingStrategy, listVideoModels, promptEnhancementTool, requestSuggestions, textToImageStrategy, textToVideoStrategy, updateDocument, useImageGenerator, usePromptEnhancer, useVideoGenerator, videoToVideoStrategy };
+export { AIEnhancement, CharacterType, DEFAULT_IMAGE_CONFIG, DEFAULT_VALUES, DEFAULT_VIDEO_CONFIG, EnhancementInfoType, HistoryItemType, ImageGenerationUtils, ImageToImageStrategy, InpaintingStrategy, MoodboardImageType, MoodboardUploader, PRESET_OPTIONS, PresetOptionsType, PromptBuilder, PromptDataType, PromptEnhancementTool, PromptHistory, PromptPreview, STORAGE_KEYS, TOOLS_CONFIG, TextToImageStrategy, TextToVideoStrategy, ToolIcon, ToolsGrid, ToolsPage, Veo3PromptGenerator, VideoGenerationUtils, VideoToVideoStrategy, configureImageGeneration, configureScriptGeneration, configureVideoGeneration, copyToClipboard, createCharacter, createDocument, createEmptyPromptData, createRandomPromptData, enhancePrompt, enhancePromptSchema, findBestVideoModel, generatePrompt, getLocaleLanguage, getToolByHref, getToolById, getToolDisplayName, getToolNavigation, getToolsByCategory, imageToImageStrategy, inpaintingStrategy, listVideoModels, promptEnhancementTool, requestSuggestions, textToImageStrategy, textToVideoStrategy, updateDocument, useImageGenerator, usePromptEnhancer, useVideoGenerator, videoToVideoStrategy };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

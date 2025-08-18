@@ -21,6 +21,10 @@ interface StripePaymentButtonProps {
   className?: string;
   locale?: string;
   t?: (key: string, params?: Record<string, string | number>) => string;
+  // Новые поля для поддержки image-to-video
+  generationType?: "text-to-video" | "image-to-video";
+  imageFile?: File | null;
+  modelName?: string;
 }
 
 export function StripePaymentButton({
@@ -36,6 +40,10 @@ export function StripePaymentButton({
   className,
   locale = "en",
   t,
+  // Новые поля для поддержки image-to-video
+  generationType = "text-to-video",
+  imageFile = null,
+  modelName,
 }: StripePaymentButtonProps) {
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
   const { prices, mode, loading, error } = useStripePrices(apiEndpoint);
@@ -90,10 +98,11 @@ export function StripePaymentButton({
   };
 
   const handlePayment = async () => {
-    if (variant === "video" && !prompt?.trim()) {
-      toast.error(getTranslation("stripe_payment.generate_prompt_first"));
-      return;
-    }
+    // if (variant === "video" && !prompt?.trim()) {
+    //   toast.error(getTranslation("stripe_payment.generate_prompt_first"));
+    //   console.log("🔴 No prompt provided");
+    //   return;
+    // }
 
     if (!prices) {
       toast.error(getTranslation("stripe_payment.prices_not_loaded"));
@@ -108,20 +117,26 @@ export function StripePaymentButton({
       const currentUrl =
         typeof window !== "undefined" ? window.location.href : "";
 
+      const requestBody = {
+        priceId: prices.single,
+        quantity: 1,
+        prompt: prompt?.trim(),
+        toolSlug,
+        toolTitle,
+        cancelUrl: currentUrl,
+        generationType,
+        // Вместо самого файла передаем информацию о нем
+        modelName,
+      };
+
+      console.log("💳 Sending checkout request:", requestBody);
+
       const response = await fetch(checkoutEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          priceId: prices.single,
-          quantity: 1,
-          prompt: prompt?.trim(),
-          toolSlug: toolSlug,
-          toolTitle: toolTitle,
-          creditAmount: variant === "credits" ? creditAmount : undefined,
-          cancelUrl: currentUrl,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -139,10 +154,6 @@ export function StripePaymentButton({
       setIsCreatingCheckout(false);
     }
   };
-
-  if (variant === "video" && !prompt?.trim()) {
-    return null;
-  }
 
   if (loading) {
     return (

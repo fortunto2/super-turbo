@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 import { getSessionData, updateSessionData } from "@/lib/kv";
-import { addDemoBalance } from "@/lib/utils/tools-balance";
 
 const stripe = new Stripe(
   process.env.STRIPE_SECRET_KEY || "sk_test_your_stripe_secret_key",
@@ -33,8 +32,8 @@ const API_ENDPOINTS = {
   GENERATE_VIDEO: "/api/v1/file/generate-video",
 };
 
-// Generate single video using SuperDuperAI API (currently unused)
-async function _generateVideoWithSuperDuperAI(
+// Generate single video using SuperDuperAI API
+async function generateVideoWithSuperDuperAI(
   prompt: string,
   duration: number = 8,
   resolution: string = "1280x720",
@@ -62,7 +61,7 @@ async function _generateVideoWithSuperDuperAI(
       aspect_ratio: width > height ? "16:9" : height > width ? "9:16" : "1:1",
       duration,
       seed: Math.floor(Math.random() * 1000000),
-      generation_config_name: "google-cloud/veo3", // Use VEO3 model
+      generation_config_name: "google-cloud/veo3-text2video", // Use VEO3 Text-to-Video model
       frame_rate: 30,
       batch_size: 1,
       references: [],
@@ -208,31 +207,34 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     cancelUrl: sessionData.cancelUrl,
   });
 
-  // Add credits to user balance
-  const userId = sessionData.userId || "demo-user-fallback"; // Use userId from session data
+  // Update status to processing (starting video generation)
+  await updateSessionData(sessionId, { status: "processing" });
 
-  console.log(`💰 Webhook handler - userId: ${userId}`);
+  try {
+    // Launch video generation through SuperDuperAI API
+    const fileId = await generateVideoWithSuperDuperAI(
+      sessionData.prompt,
+      sessionData.duration || 8,
+      sessionData.resolution || "1280x720",
+      sessionData.style || "cinematic"
+    );
 
-  // Fixed 100 credits per successful payment
-  const creditsToAdd = 100;
+    // Save fileId in session
+    await updateSessionData(sessionId, {
+      status: "processing",
+      fileId,
+    });
 
-  if (creditsToAdd > 0) {
-    try {
-      const newBalance = addDemoBalance(userId, creditsToAdd);
-      console.log(
-        `💰 Added ${creditsToAdd} credits to user ${userId}. New balance: ${newBalance} credits`
-      );
-    } catch (error) {
-      console.error("❌ Error adding credits:", error);
-    }
+    console.log("🎬 Video generation started successfully:", fileId);
+  } catch (error) {
+    console.error("❌ Failed to start video generation:", error);
+
+    // Update status to error
+    await updateSessionData(sessionId, {
+      status: "error",
+      error: error instanceof Error ? error.message : "Video generation failed",
+    });
   }
-
-  // Update status to completed (payment successful, no automatic generation)
-  await updateSessionData(sessionId, { status: "completed" });
-
-  console.log(
-    "✅ Payment completed successfully. User can manually start generation when ready."
-  );
 
   // TODO: Send email notification
   const email = session.customer_details?.email;
@@ -275,28 +277,11 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       return;
     }
 
-    // Add credits to user balance
-    const userId = sessionData.userId || "demo-user-fallback"; // Use userId from session data
-
-    // Fixed 100 credits per successful payment
-    const creditsToAdd = 100;
-
-    if (creditsToAdd > 0) {
-      try {
-        const newBalance = await addDemoBalance(userId, creditsToAdd);
-        console.log(
-          `💰 Added ${creditsToAdd} credits to user ${userId}. New balance: ${newBalance} credits`
-        );
-      } catch (error) {
-        console.error("❌ Error adding credits:", error);
-      }
-    }
-
-    // Update status to completed (payment successful, no automatic generation)
+    // Update status to completed (payment successful, ready for generation)
     await updateSessionData(sessionId, { status: "completed" });
 
     console.log(
-      "✅ Payment completed successfully. User can manually start generation when ready."
+      "✅ Payment completed successfully. Generation can now proceed with paymentSessionId."
     );
 
     // TODO: Send email notification

@@ -472,84 +472,6 @@ var VideoGenerationUtils = class {
     return pixelsPerFrame * totalFrames;
   }
 };
-var BalanceService = class {
-  constructor() {
-    this.client = api.superDuperAIClient;
-  }
-  async getUserBalance(userId) {
-    try {
-      const response = await this.client.request({
-        method: "GET",
-        url: `/user/${userId}/balance`
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to get user balance: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async addCredits(userId, amount, type) {
-    try {
-      const response = await this.client.request({
-        method: "POST",
-        url: `/user/${userId}/credits`,
-        data: {
-          amount,
-          type,
-          description: `${type === "purchase" ? "Credit purchase" : "Bonus credits"}`
-        }
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to add credits: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async useCredits(userId, usage) {
-    try {
-      const response = await this.client.request({
-        method: "POST",
-        url: `/user/${userId}/credits/use`,
-        data: usage
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to use credits: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async getTransactionHistory(userId, limit = 50, offset = 0) {
-    try {
-      const response = await this.client.request({
-        method: "GET",
-        url: `/user/${userId}/transactions`,
-        params: { limit, offset }
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to get transaction history: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-  async getBalanceConfig() {
-    try {
-      const response = await this.client.request({
-        method: "GET",
-        url: "/config/balance"
-      });
-      return response;
-    } catch (error) {
-      throw new Error(
-        `Failed to get balance config: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
-};
-var balanceService = new BalanceService();
 var _PromptEnhancer = class _PromptEnhancer {
   constructor() {
     this.client = api.superDuperAIClient;
@@ -3344,6 +3266,7 @@ function PromptPreview({
 function AIEnhancement({
   enhancedPrompt,
   setEnhancedPrompt,
+  generatedPrompt,
   enhanceWithSelectedFocus,
   isEnhancing,
   enhanceError,
@@ -3599,7 +3522,26 @@ function AIEnhancement({
             ] })
           ] })
         }
-      )
+      ),
+      generatedPrompt.trim() && /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "mt-6 p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-600/30 rounded-lg", children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center mb-4", children: [
+          /* @__PURE__ */ jsxRuntime.jsx("h3", { className: "text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2", children: "Ready to Generate Your Video?" }),
+          /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-purple-700 dark:text-purple-300", children: "Your enhanced prompt is ready! Generate a professional VEO3 video for just $1.00" })
+        ] }),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          ui.StripePaymentButton,
+          {
+            variant: "video",
+            toolSlug: "veo3-prompt-generator",
+            toolTitle: "VEO3 Video Generator",
+            price: 1,
+            apiEndpoint: "/api/stripe-prices",
+            checkoutEndpoint: "/api/create-checkout",
+            className: "border-0 shadow-none",
+            prompt: generatedPrompt
+          }
+        )
+      ] })
     ] }) })
   ] });
 }
@@ -4181,6 +4123,7 @@ function Veo3PromptGenerator({
             {
               enhancedPrompt,
               setEnhancedPrompt,
+              generatedPrompt,
               enhanceWithSelectedFocus,
               isEnhancing,
               enhanceError,
@@ -4221,7 +4164,6 @@ var PresetOptionsType = {};
 var HistoryItemType = {};
 
 exports.AIEnhancement = AIEnhancement;
-exports.BalanceService = BalanceService;
 exports.CharacterType = CharacterType;
 exports.DEFAULT_IMAGE_CONFIG = DEFAULT_IMAGE_CONFIG;
 exports.DEFAULT_VALUES = DEFAULT_VALUES;
@@ -4250,7 +4192,6 @@ exports.ToolsPage = ToolsPage;
 exports.Veo3PromptGenerator = Veo3PromptGenerator;
 exports.VideoGenerationUtils = VideoGenerationUtils;
 exports.VideoToVideoStrategy = VideoToVideoStrategy;
-exports.balanceService = balanceService;
 exports.configureImageGeneration = configureImageGeneration;
 exports.configureScriptGeneration = configureScriptGeneration;
 exports.configureVideoGeneration = configureVideoGeneration;

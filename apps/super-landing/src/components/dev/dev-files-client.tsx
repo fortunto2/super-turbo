@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
-import { Input } from '@turbo-super/ui';
-import { 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Button,
+} from "@turbo-super/ui";
+import {
   Search,
   Eye,
   RefreshCw,
@@ -14,11 +19,11 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Loader2
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Navbar } from '@/components/landing/navbar';
-import { Footer } from '@/components/landing/footer';
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { Navbar } from "@/components/landing/navbar";
+import { Footer } from "@/components/landing/footer";
 
 interface DevFilesClientProps {
   locale: string;
@@ -42,40 +47,45 @@ interface FileData {
 export default function DevFilesClient({ locale }: DevFilesClientProps) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchSessionId, setSearchSessionId] = useState('');
+  const [searchSessionId, setSearchSessionId] = useState("");
   const [isDevMode, setIsDevMode] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     // Check if we're in development mode
-    const isDev = process.env.NODE_ENV === 'development' || 
-                  (typeof window !== 'undefined' && window.location.hostname.includes('git-stripe')) ||
-                  (typeof window !== 'undefined' && window.location.hostname.includes('localhost'));
+    const isDev =
+      process.env.NODE_ENV === "development" ||
+      (typeof window !== "undefined" &&
+        window.location.hostname.includes("git-stripe")) ||
+      (typeof window !== "undefined" &&
+        window.location.hostname.includes("localhost"));
     setIsDevMode(isDev);
   }, []);
 
   const searchSession = async () => {
     if (!searchSessionId.trim()) {
-      toast.error('Please enter a session ID');
+      toast.error("Please enter a session ID");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/dev/files?sessionId=${searchSessionId.trim()}`);
-      
+      const response = await fetch(
+        `/api/dev/files?sessionId=${searchSessionId.trim()}`
+      );
+
       if (response.ok) {
         const data = await response.json();
         setFiles([data]);
-        toast.success('Session found!');
+        toast.success("Session found!");
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Session not found');
+        toast.error(error.error || "Session not found");
         setFiles([]);
       }
     } catch (error) {
-      console.error('Error searching session:', error);
-      toast.error('Failed to search session');
+      console.error("Error searching session:", error);
+      toast.error("Failed to search session");
     } finally {
       setLoading(false);
     }
@@ -83,11 +93,11 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'processing':
+      case "processing":
         return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
-      case 'error':
+      case "error":
         return <XCircle className="w-4 h-4 text-red-500" />;
       default:
         return <Clock className="w-4 h-4 text-gray-500" />;
@@ -96,24 +106,24 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'text-green-600';
-      case 'processing':
-        return 'text-blue-600';
-      case 'error':
-        return 'text-red-600';
+      case "completed":
+        return "text-green-600";
+      case "processing":
+        return "text-blue-600";
+      case "error":
+        return "text-red-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
   const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(timestamp).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -127,7 +137,8 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
               <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-2">Development Mode Only</h1>
               <p className="text-muted-foreground">
-                This page is only available in development mode or test environments.
+                This page is only available in development mode or test
+                environments.
               </p>
             </div>
           </div>
@@ -164,10 +175,10 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                     placeholder="Enter session ID (cs_test_xxx or cs_live_xxx)"
                     value={searchSessionId}
                     onChange={(e) => setSearchSessionId(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && searchSession()}
+                    onKeyPress={(e) => e.key === "Enter" && searchSession()}
                     className="flex-1 font-mono"
                   />
-                  <Button 
+                  <Button
                     onClick={searchSession}
                     disabled={loading || !searchSessionId.trim()}
                     className="gap-2"
@@ -192,9 +203,12 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="w-5 h-5" />
-                          <span className="font-mono text-sm">{file.sessionId}</span>
+                          <span className="font-mono text-sm">
+                            {file.sessionId}
+                          </span>
                         </div>
-                        {file.webhookData && getStatusIcon(file.webhookData.status)}
+                        {file.webhookData &&
+                          getStatusIcon(file.webhookData.status)}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -202,25 +216,35 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                       {file.webhookData && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">Status</label>
-                            <div className={`flex items-center gap-2 mt-1 ${getStatusColor(file.webhookData.status)}`}>
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Status
+                            </label>
+                            <div
+                              className={`flex items-center gap-2 mt-1 ${getStatusColor(file.webhookData.status)}`}
+                            >
                               {getStatusIcon(file.webhookData.status)}
-                              <span className="font-medium capitalize">{file.webhookData.status}</span>
+                              <span className="font-medium capitalize">
+                                {file.webhookData.status}
+                              </span>
                             </div>
                           </div>
-                          
+
                           {file.webhookData.fileId && (
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">File ID</label>
+                              <label className="text-xs font-medium text-muted-foreground">
+                                File ID
+                              </label>
                               <div className="font-mono text-sm mt-1 break-all">
                                 {file.webhookData.fileId}
                               </div>
                             </div>
                           )}
-                          
+
                           {file.webhookData.toolTitle && (
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">Tool</label>
+                              <label className="text-xs font-medium text-muted-foreground">
+                                Tool
+                              </label>
                               <div className="text-sm mt-1">
                                 {file.webhookData.toolTitle}
                                 {file.webhookData.toolSlug && (
@@ -231,10 +255,12 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                               </div>
                             </div>
                           )}
-                          
+
                           {file.webhookData.timestamp && (
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">Created</label>
+                              <label className="text-xs font-medium text-muted-foreground">
+                                Created
+                              </label>
                               <div className="text-sm mt-1">
                                 {formatDate(file.webhookData.timestamp)}
                               </div>
@@ -251,7 +277,7 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                           </label>
                           <div className="text-sm mt-1 p-2 bg-muted rounded border">
                             {file.prompt.preview}
-                            {file.prompt.length > 100 && '...'}
+                            {file.prompt.length > 100 && "..."}
                           </div>
                         </div>
                       )}
@@ -261,18 +287,24 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/${locale}/session/${file.sessionId}`)}
+                          onClick={() =>
+                            router.push(`/${locale}/session/${file.sessionId}`)
+                          }
                           className="gap-2"
                         >
                           <Eye className="w-4 h-4" />
                           View Session
                         </Button>
-                        
+
                         {file.webhookData?.fileId && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => router.push(`/${locale}/file/${file.webhookData!.fileId}`)}
+                            onClick={() =>
+                              router.push(
+                                `/${locale}/file/${file.webhookData!.fileId}`
+                              )
+                            }
                             className="gap-2"
                           >
                             <FileText className="w-4 h-4" />
@@ -291,8 +323,14 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
               <h3 className="font-medium mb-3">How to use:</h3>
               <div className="text-sm text-muted-foreground space-y-2">
                 <p>• Enter a session ID to search for specific files</p>
-                <p>• Session IDs start with &quot;cs_test_&quot; or &quot;cs_live_&quot;</p>
-                <p>• You can find session IDs in your browser history or payment success URLs</p>
+                <p>
+                  • Session IDs start with &quot;cs_test_&quot; or
+                  &quot;cs_live_&quot;
+                </p>
+                <p>
+                  • You can find session IDs in your browser history or payment
+                  success URLs
+                </p>
                 <p>• This tool only works in development mode</p>
               </div>
             </div>
@@ -302,4 +340,4 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
       <Footer locale={locale} />
     </div>
   );
-} 
+}

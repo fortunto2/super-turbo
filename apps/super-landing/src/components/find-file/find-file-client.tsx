@@ -1,56 +1,59 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
-import { Input } from '@turbo-super/ui';
-import { 
-  Search,
-  HelpCircle,
-  ArrowRight
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Navbar } from '@/components/landing/navbar';
-import { Footer } from '@/components/landing/footer';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Input,
+} from "@turbo-super/ui";
+import { Search, HelpCircle, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+import { Navbar } from "@/components/landing/navbar";
+import { Footer } from "@/components/landing/footer";
 
 interface FindFileClientProps {
   locale: string;
 }
 
 export default function FindFileClient({ locale }: FindFileClientProps) {
-  const [sessionId, setSessionId] = useState('');
+  const [sessionId, setSessionId] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
   const handleSearch = async () => {
     const trimmedId = sessionId.trim();
-    
+
     if (!trimmedId) {
-      toast.error('Please enter a session ID');
+      toast.error("Please enter a session ID");
       return;
     }
 
-    if (!trimmedId.startsWith('cs_') && !trimmedId.startsWith('cs_live_')) {
-      toast.error('Invalid session ID format. Should start with "cs_" or "cs_live_"');
+    if (!trimmedId.startsWith("cs_") && !trimmedId.startsWith("cs_live_")) {
+      toast.error(
+        'Invalid session ID format. Should start with "cs_" or "cs_live_"'
+      );
       return;
     }
 
     setIsSearching(true);
-    
+
     try {
       // Redirect to session lookup page
       router.push(`/${locale}/session/${trimmedId}`);
     } catch (error) {
-      console.error('Search error:', error);
-      toast.error('Failed to search. Please try again.');
+      console.error("Search error:", error);
+      toast.error("Failed to search. Please try again.");
     } finally {
       setIsSearching(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
@@ -89,7 +92,7 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
                       onKeyPress={handleKeyPress}
                       className="flex-1 font-mono"
                     />
-                    <Button 
+                    <Button
                       onClick={handleSearch}
                       disabled={isSearching || !sessionId.trim()}
                       className="gap-2"
@@ -110,12 +113,17 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
                   <div className="flex items-start gap-3">
                     <HelpCircle className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-muted-foreground">
-                      <p className="font-medium mb-2">Where to find your Session ID:</p>
+                      <p className="font-medium mb-2">
+                        Where to find your Session ID:
+                      </p>
                       <ul className="space-y-1">
                         <li>• On your payment success page</li>
                         <li>• In your email receipt from Stripe</li>
                         <li>• In your browser history (payment-success URL)</li>
-                        <li>• Starts with &quot;cs_live_&quot; or &quot;cs_test_&quot;</li>
+                        <li>
+                          • Starts with &quot;cs_live_&quot; or
+                          &quot;cs_test_&quot;
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -125,8 +133,10 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
                   <p className="text-sm text-muted-foreground mb-4">
                     Don&apos;t have a session ID?
                   </p>
-                  <Button 
-                    onClick={() => router.push(`/${locale}/tool/veo3-prompt-generator`)}
+                  <Button
+                    onClick={() =>
+                      router.push(`/${locale}/tool/veo3-prompt-generator`)
+                    }
                     variant="outline"
                     className="gap-2"
                   >
@@ -142,12 +152,20 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
               <h3 className="font-medium mb-3">Example Session IDs:</h3>
               <div className="space-y-2 text-sm font-mono">
                 <div className="flex items-center justify-between bg-background p-2 rounded">
-                  <code className="text-green-600">cs_live_a1meQFqPnBfzLGKwVIlUUkEXdr4qTOqxdURfwoKO2BngSsyxh0upKxlos3</code>
-                  <span className="text-xs text-muted-foreground ml-2">Live</span>
+                  <code className="text-green-600">
+                    cs_live_a1meQFqPnBfzLGKwVIlUUkEXdr4qTOqxdURfwoKO2BngSsyxh0upKxlos3
+                  </code>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    Live
+                  </span>
                 </div>
                 <div className="flex items-center justify-between bg-background p-2 rounded">
-                  <code className="text-blue-600">cs_test_a1dPqg8hcnZVFgTWuGo0USQGRHOQ4z8vXbf9RlZU6VuAa0M8loKd7ZHjtp</code>
-                  <span className="text-xs text-muted-foreground ml-2">Test</span>
+                  <code className="text-blue-600">
+                    cs_test_a1dPqg8hcnZVFgTWuGo0USQGRHOQ4z8vXbf9RlZU6VuAa0M8loKd7ZHjtp
+                  </code>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    Test
+                  </span>
                 </div>
               </div>
             </div>
@@ -157,4 +175,4 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
       <Footer locale={locale} />
     </div>
   );
-} 
+}

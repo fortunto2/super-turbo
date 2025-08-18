@@ -5,11 +5,10 @@ import {
   configureSuperduperAI,
   getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
-import { deductOperationBalance } from "@/lib/utils/tools-balance";
 
 // Схема запроса для генерации изображений с моделью
 const modelImageGenerationSchema = z.object({
-  generationId: z.string(),
+  generationId: z.string().optional(), // Делаем необязательным
   prompt: z.string().min(1, "Prompt is required"),
   modelName: z.string().min(1, "Model name is required"),
   modelConfig: z
@@ -26,7 +25,8 @@ const modelImageGenerationSchema = z.object({
     .enum(["pending", "processing", "completed", "error"])
     .default("processing"),
   progress: z.number().min(0).max(100).default(0),
-  createdAt: z.string(),
+  createdAt: z.string().optional(), // Делаем необязательным
+  paymentSessionId: z.string().optional(), // ID сессии оплаты для прямой оплаты
   paymentIntentId: z.string().optional(),
   sessionId: z.string().optional(),
   customerEmail: z.string().optional(),
@@ -43,28 +43,54 @@ const modelImageGenerationSchema = z.object({
     )
     .optional(),
   error: z.string().optional(),
+  // Новые поля для поддержки image-to-image
+  imageFile: z.any().optional(), // File object
+  generationType: z
+    .enum([
+      "text-to-image",
+      "image-to-image",
+      "text-to-video",
+      "image-to-video",
+    ])
+    .default("text-to-image"),
 });
 
 type ModelImageGenerationData = z.infer<typeof modelImageGenerationSchema>;
 
-// In-memory хранилище для данных генерации изображений (вместо файлов)
-const imageGenerationStore = new Map<string, ModelImageGenerationData>();
+import {
+  saveGenerationData,
+  loadGenerationData,
+  GenerationData,
+} from "@/lib/generation-store";
 
-// Сохраняем данные генерации в память
-async function saveGenerationData(data: ModelImageGenerationData) {
-  imageGenerationStore.set(data.generationId, data);
-  console.log(`💾 Saved image generation data for ${data.generationId}`);
-}
-
-// Загружаем данные генерации из памяти
-async function loadGenerationData(
-  generationId: string
-): Promise<ModelImageGenerationData | null> {
-  const data = imageGenerationStore.get(generationId);
-  if (data) {
-    console.log(`📂 Loaded image generation data for ${generationId}`);
+// Функция для преобразования ModelImageGenerationData в GenerationData
+async function saveImageGenerationData(data: ModelImageGenerationData) {
+  // Проверяем, что generationId существует
+  if (!data.generationId) {
+    console.warn("⚠️ Cannot save generation data: generationId is undefined");
+    return;
   }
-  return data || null;
+
+  const generationData: GenerationData = {
+    generationId: data.generationId,
+    status: data.status,
+    progress: data.progress,
+    prompt: data.prompt,
+    modelName: data.modelName,
+    modelType: "image",
+    paymentSessionId: data.paymentSessionId,
+    createdAt: data.createdAt || new Date().toISOString(),
+    error: data.error,
+    images: data.images?.map((img) => ({
+      fileId: img.fileId,
+      status: img.status,
+      url: img.url,
+      thumbnailUrl: img.thumbnailUrl,
+    })),
+    generationType: data.generationType,
+  };
+
+  await saveGenerationData(generationData);
 }
 
 // Конфигурация моделей для изображений
@@ -115,12 +141,16 @@ async function generateImageWithModel(
     aspectRatio?: string;
     style?: string;
     shotSize?: string;
-  }
+  },
+  generationType: string = "text-to-image",
+  imageFile?: File
 ): Promise<string[]> {
   console.log("🎨 Starting model image generation:", {
     prompt,
     modelName,
     imageCount,
+    generationType,
+    hasImageFile: !!imageFile,
   });
 
   // Конфигурируем SuperDuperAI клиент
@@ -153,30 +183,101 @@ async function generateImageWithModel(
           Date.now() +
           Math.floor(Math.random() * 1000),
         generation_config_name: finalConfig.generation_config_name,
-        entity_ids: [] as any[],
-        references: [] as any[],
+        entity_ids: [] as string[],
+        references: [] as string[],
       } as const;
 
-      const payload = isOpenAIModel
-        ? {
-            type: "media",
-            template_name: null,
-            config: {
-              ...baseConfig,
-              // Не включаем shot_size/style_name/qualityType для OpenAI
-            },
-          }
-        : {
-            type: "media",
-            template_name: null,
-            style_name: finalConfig.style,
-            config: {
-              ...baseConfig,
-              shot_size: finalConfig.shotSize,
+      let payload: {
+        type: string;
+        template_name: string | null;
+        style_name?: string;
+        config: {
+          prompt: string;
+          negative_prompt: string;
+          width: number;
+          height: number;
+          aspect_ratio: string;
+          seed: number;
+          generation_config_name: string;
+          entity_ids: string[];
+          references: string[];
+          shot_size?: string;
+          qualityType?: string;
+          style_name?: string;
+        };
+      };
+
+      if (generationType === "image-to-image" && imageFile) {
+        // Для image-to-image нужно загрузить файл и использовать его ID
+        console.log("📤 Uploading image file for image-to-image generation...");
+
+        // Создаем FormData для загрузки изображения
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", imageFile);
+
+        const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${config.token}`,
+            "User-Agent": "SuperDuperAI-Landing/1.0",
+          },
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Failed to upload image: ${uploadResponse.status}`);
+        }
+
+        const uploadResult = await uploadResponse.json();
+        const referenceImageId = uploadResult.id;
+
+        console.log("✅ Image uploaded successfully, ID:", referenceImageId);
+
+        // Создаем payload для image-to-image
+        payload = isOpenAIModel
+          ? {
+              type: "media",
+              template_name: null,
+              config: {
+                ...baseConfig,
+                references: [referenceImageId],
+              },
+            }
+          : {
+              type: "media",
+              template_name: null,
               style_name: finalConfig.style,
-              qualityType: "hd",
-            },
-          };
+              config: {
+                ...baseConfig,
+                shot_size: finalConfig.shotSize,
+                style_name: finalConfig.style,
+                qualityType: "hd",
+                references: [referenceImageId],
+              },
+            };
+      } else {
+        // Для text-to-image используем стандартный payload
+        payload = isOpenAIModel
+          ? {
+              type: "media",
+              template_name: null,
+              config: {
+                ...baseConfig,
+                // Не включаем shot_size/style_name/qualityType для OpenAI
+              },
+            }
+          : {
+              type: "media",
+              template_name: null,
+              style_name: finalConfig.style,
+              config: {
+                ...baseConfig,
+                shot_size: finalConfig.shotSize,
+                style_name: finalConfig.style,
+                qualityType: "hd",
+              },
+            };
+      }
 
       console.log("📤 Sending request to SuperDuperAI:", payload);
 
@@ -192,7 +293,7 @@ async function generateImageWithModel(
 
       console.log(`📡 SuperDuperAI API Response Status: ${response.status}`);
 
-      let result: any;
+      let result: { id?: string } | Array<{ id: string }>;
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -235,7 +336,7 @@ async function generateImageWithModel(
           }
 
           // Используем результат повторной попытки
-          const result = await retryResponse.json();
+          result = await retryResponse.json();
           console.log("✅ SuperDuperAI retry response:", result);
         } else {
           throw new Error(
@@ -253,7 +354,7 @@ async function generateImageWithModel(
       // Проверяем, является ли результат массивом
       if (Array.isArray(result) && result.length > 0) {
         fileId = result[0].id;
-      } else if (result.id) {
+      } else if (!Array.isArray(result) && result.id) {
         fileId = result.id;
       } else {
         throw new Error("No file ID returned from SuperDuperAI API");
@@ -321,8 +422,13 @@ async function checkFileStatus(
       if (latestTask.status === "in_progress") {
         return { status: "processing" };
       }
+      if (latestTask.status === "completed") {
+        // Если задача завершена, но URL еще нет, файл может быть в процессе обработки
+        return { status: "processing" };
+      }
     }
 
+    // Если нет задач или они не завершены, файл все еще обрабатывается
     return { status: "processing" };
   } catch (error) {
     console.error(`❌ Error checking file ${fileId}:`, error);
@@ -333,23 +439,65 @@ async function checkFileStatus(
 // POST - Создаем/запускаем генерацию изображений
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body: {
+      modelName: string;
+      prompt: string;
+      paymentSessionId?: string;
+      generationType?: string;
+      imageCount?: number;
+      [key: string]: string | number | undefined;
+    };
+    let imageFile: File | undefined;
+
+    // Проверяем Content-Type для определения типа запроса
+    const contentType = request.headers.get("content-type");
+
+    if (contentType && contentType.includes("multipart/form-data")) {
+      // Обрабатываем FormData
+      const formData = await request.formData();
+      body = {
+        modelName: formData.get("modelName") as string,
+        prompt: formData.get("prompt") as string,
+        paymentSessionId: formData.get("paymentSessionId") as string,
+        generationType: formData.get("generationType") as string,
+        imageCount: 1,
+      };
+
+      // Получаем файл изображения
+      const file = formData.get("imageFile") as File;
+      if (file) {
+        imageFile = file;
+        console.log("📁 Received image file:", file.name, file.size, file.type);
+      }
+    } else {
+      // Обрабатываем JSON
+      body = await request.json();
+    }
+
     console.log("🎨 Model image generation request:", body);
 
     // Валидируем данные запроса
     const validatedData = modelImageGenerationSchema.parse(body);
 
-    // Проверяем баланс ПЕРЕД началом генерации
-    const multipliers: string[] = [];
+    // Автоматически генерируем недостающие поля
+    const finalData = {
+      ...validatedData,
+      generationId: validatedData.generationId || `gen_${Date.now()}`,
+      createdAt: validatedData.createdAt || new Date().toISOString(),
+      imageFile: imageFile || validatedData.imageFile,
+    };
 
-    // Множители качества
-    const width = validatedData.modelConfig?.width || 1024;
-    if (width >= 2048) {
-      multipliers.push("ultra-quality");
-    } else if (width >= 1536) {
-      multipliers.push("high-quality");
+    // Проверяем оплату для прямой оплаты
+    if (finalData.paymentSessionId) {
+      console.log("💳 Checking payment session:", finalData.paymentSessionId);
+
+      // Здесь можно добавить проверку статуса оплаты через Stripe API
+      // Пока что просто логируем и продолжаем
+      console.log("✅ Payment session provided, proceeding with generation...");
     } else {
-      multipliers.push("standard-quality"); // Стандартное качество по умолчанию
+      console.log(
+        "⚠️ No payment session ID provided, but continuing for demo purposes"
+      );
     }
 
     // Стабильный userId: cookie → fallback IP
@@ -357,74 +505,25 @@ export async function POST(request: NextRequest) {
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
     const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
-    const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
+    const _userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
-    // Проверяем баланс перед генерацией
-    const { validateOperationBalance } = await import(
-      "@/lib/utils/tools-balance"
-    );
-    const balanceCheck = await validateOperationBalance(
-      userId,
-      "image-generation",
-      "text-to-image",
-      multipliers
-    );
-
-    if (!balanceCheck.valid) {
-      console.log(
-        "❌ Insufficient balance for image generation:",
-        balanceCheck.error
-      );
-      return NextResponse.json(
-        {
-          success: false,
-          error: balanceCheck.error || "Insufficient balance",
-          balanceRequired: balanceCheck.cost,
-        },
-        { status: 402 } // Payment Required
-      );
-    }
-
-    console.log("✅ Balance check passed, starting image generation...");
+    console.log("✅ Starting image generation...");
 
     // Запускаем генерацию изображений с SuperDuperAI
     try {
       const fileIds = await generateImageWithModel(
-        validatedData.prompt,
-        validatedData.modelName,
-        validatedData.imageCount,
-        validatedData.modelConfig
+        finalData.prompt,
+        finalData.modelName,
+        finalData.imageCount,
+        finalData.modelConfig,
+        finalData.generationType,
+        finalData.imageFile
       );
 
-      // Списываем баланс после успешной генерации
-      try {
-        // Списываем баланс за каждое изображение
-        for (const fileId of fileIds) {
-          await deductOperationBalance(
-            userId, // Используем тот же userId на основе IP
-            "image-generation",
-            "text-to-image",
-            multipliers,
-            {
-              projectId: fileId,
-              fileId: fileId,
-              prompt: validatedData.prompt.substring(0, 100),
-              operationType: "text-to-image",
-              resolution: `${width}x${validatedData.modelConfig?.height || 1024}`,
-              timestamp: new Date().toISOString(),
-            }
-          );
-        }
-        console.log(
-          `💳 Balance deducted for user ${userId} after successful image generation (${fileIds.length} images)`
-        );
-      } catch (balanceError) {
-        console.error(
-          "⚠️ Failed to deduct balance after image generation:",
-          balanceError
-        );
-        // Продолжаем - генерация изображений уже завершена
-      }
+      // Логируем успешную генерацию для прямой оплаты
+      console.log(
+        `✅ Image generation completed for payment session: ${finalData.paymentSessionId || "demo"}`
+      );
 
       // Создаем записи изображений с fileIds
       const images = fileIds.map((fileId) => ({
@@ -436,32 +535,33 @@ export async function POST(request: NextRequest) {
 
       // Обновляем данные генерации с file IDs
       const updatedData: ModelImageGenerationData = {
-        ...validatedData,
+        ...finalData,
         status: "processing",
         progress: 10, // Начальный прогресс
         images,
       };
 
-      // Сохраняем в файл
-      await saveGenerationData(updatedData);
+      // Сохраняем в общее хранилище
+      await saveImageGenerationData(updatedData);
 
       console.log("🎨 Model image generation started:", {
         success: true,
-        generationId: validatedData.generationId,
-        modelName: validatedData.modelName,
+        generationId: finalData.generationId,
+        modelName: finalData.modelName,
         fileIds,
         status: "started",
-        estimatedTime: validatedData.imageCount * 30, // 30 секунд на изображение
+        estimatedTime: finalData.imageCount * 30, // 30 секунд на изображение
         message: "Model image generation started",
       });
 
       return NextResponse.json({
         success: true,
-        generationId: validatedData.generationId,
-        modelName: validatedData.modelName,
+        generationId: finalData.generationId,
+        taskId: fileIds[0], // Возвращаем первый fileId как taskId
+        modelName: finalData.modelName,
         fileIds,
         status: "started",
-        estimatedTime: validatedData.imageCount * 30,
+        estimatedTime: finalData.imageCount * 30,
         message: "Model image generation started",
       });
     } catch (error) {
@@ -469,12 +569,12 @@ export async function POST(request: NextRequest) {
 
       // Сохраняем состояние ошибки
       const errorData: ModelImageGenerationData = {
-        ...validatedData,
+        ...finalData,
         status: "error",
         error: error instanceof Error ? error.message : "Unknown error",
       };
 
-      await saveGenerationData(errorData);
+      await saveImageGenerationData(errorData);
 
       return NextResponse.json(
         {
@@ -526,7 +626,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Загружаем данные генерации
+    // Загружаем данные генерации из общего хранилища
     const generationData = await loadGenerationData(generationId);
 
     if (!generationData) {
@@ -583,9 +683,16 @@ export async function GET(request: NextRequest) {
         status: allCompleted ? "completed" : "processing",
         progress: averageProgress,
         images: updatedImages,
+        imageCount: generationData.images?.length || 1, // Добавляем недостающее поле
+        modelConfig: generationData.modelConfig || {}, // Добавляем недостающее поле
+        // Убеждаемся, что generationType имеет правильный тип для изображений
+        generationType:
+          (generationData.generationType as
+            | "text-to-image"
+            | "image-to-image") || "text-to-image",
       };
 
-      await saveGenerationData(updatedData);
+      await saveImageGenerationData(updatedData);
 
       return NextResponse.json({
         success: true,

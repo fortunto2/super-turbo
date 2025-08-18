@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { storeSessionData, type SessionData } from "@/lib/kv";
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY || "sk_test_your_stripe_secret_key",
-  {
-    apiVersion: "2025-06-30.basil",
-  }
-);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-06-30.basil",
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,14 +15,11 @@ export async function POST(request: NextRequest) {
       toolSlug,
       toolTitle,
       cancelUrl,
+      // Новые поля для поддержки image-to-video
+      generationType = "text-to-video",
+      successUrl,
+      modelName,
     } = await request.json();
-
-    if (!priceId) {
-      return NextResponse.json(
-        { error: "Price ID is required" },
-        { status: 400 }
-      );
-    }
 
     // Get the app URL with proper fallback
     const getAppUrl = () => {
@@ -46,13 +40,6 @@ export async function POST(request: NextRequest) {
     const appUrl = getAppUrl();
     console.log("🔗 Using app URL:", appUrl);
 
-    // Generate stable user ID based on cookie; fallback to IP
-    const cookieUid = request.cookies.get("superduperai_uid")?.value;
-    const forwarded = request.headers.get("x-forwarded-for");
-    const realIp = request.headers.get("x-real-ip");
-    const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
-    const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
-
     // Store everything in Redis, keep Stripe metadata minimal
     const sessionData: SessionData = {
       prompt: prompt || "",
@@ -63,16 +50,13 @@ export async function POST(request: NextRequest) {
       toolSlug: toolSlug || "veo3-prompt-generator",
       toolTitle: toolTitle || "Free VEO3 Viral Prompt Generator",
       cancelUrl: cancelUrl || "",
-      userId: userId, // Add userId to session data
       createdAt: new Date().toISOString(),
       status: "pending" as const,
+      // Добавляем информацию для перенаправления на страницу генерации
+      modelName,
+      // Новые поля для поддержки image-to-video
+      generationType: generationType,
     };
-
-    console.log(
-      "💾 Storing session data in Redis:",
-      sessionData.prompt.length,
-      "chars"
-    );
 
     // Minimal Stripe metadata - only essential info
     const metadata = {
@@ -80,6 +64,7 @@ export async function POST(request: NextRequest) {
       tool: "veo3-generator",
     };
 
+    // Определяем правильный URL для перенаправления
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -90,7 +75,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${appUrl}/en/payment-success/{CHECKOUT_SESSION_ID}`,
+      success_url:
+        successUrl || `${appUrl}/en/payment-success/{CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${appUrl}/en/tool/veo3-prompt-generator`,
       metadata,
     });
