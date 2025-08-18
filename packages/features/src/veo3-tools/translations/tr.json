@@ -1,0 +1,93 @@
+{
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "VEO3 Video Üretiminde Uzmanlaşın",
+      "description": "Google'ın en gelişmiş AI video modeli için profesyonel prompt tekniklerini ve en iyi uygulamaları öğrenin."
+    },
+    "tabs": {
+      "builder": "Prompt Oluşturucu",
+      "enhance": "AI Geliştirme",
+      "history": "Geçmiş"
+    },
+    "promptBuilder": {
+      "scene": "Sahne",
+      "scenePlaceholder": "Ortamı, çevreyi veya konumu açıklayın...",
+      "style": "Stil",
+      "stylePlaceholder": "Sanatsal, foto-gerçekçi, sinematik, vb...",
+      "camera": "Kamera",
+      "cameraPlaceholder": "Kamera hareketi, açı, çekim türü...",
+      "characters": "Karakterler",
+      "addCharacter": "Karakter Ekle",
+      "characterName": "İsim",
+      "characterDescription": "Açıklama",
+      "characterSpeech": "Konuşma/Diyalog",
+      "removeCharacter": "Kaldır",
+      "action": "Aksiyon",
+      "actionPlaceholder": "Sahnede ne oluyor...",
+      "lighting": "Aydınlatma",
+      "lightingPlaceholder": "Doğal, dramatik, yumuşak, vb...",
+      "mood": "Ruh Hali",
+      "moodPlaceholder": "Duygusal atmosfer, ton...",
+      "language": "Dil",
+      "moodboard": "Moodboard",
+      "moodboardEnabled": "Moodboard'u etkinleştir",
+      "moodboardDescription": "Üretimi yönlendirmek için referans görseller yükleyin"
+    },
+    "promptPreview": {
+      "title": "Oluşturulan Prompt",
+      "copyButton": "Kopyala",
+      "copied": "Kopyalandı!",
+      "randomizeButton": "Rastgele",
+      "clearButton": "Tümünü Temizle",
+      "enhanceButton": "AI ile Geliştir"
+    },
+    "aiEnhancement": {
+      "title": "AI Geliştirme",
+      "description": "Prompt'unuzu gelişmiş AI teknikleriyle geliştirin",
+      "focusTypes": {
+        "character": "Karakter Odaklı",
+        "action": "Aksiyon Odaklı",
+        "cinematic": "Sinematik Odak",
+        "safe": "Güvenli İçerik"
+      },
+      "settings": {
+        "title": "Geliştirme Ayarları",
+        "characterLimit": "Karakter Limiti",
+        "includeAudio": "Ses Açıklamasını Dahil Et",
+        "model": "AI Modeli"
+      },
+      "enhanceButton": "Prompt'u Geliştir",
+      "enhancing": "Geliştiriliyor...",
+      "enhanceError": "Geliştirme başarısız",
+      "enhancementInfo": {
+        "model": "Model",
+        "length": "Uzunluk",
+        "actualCharacters": "Gerçek Karakterler",
+        "targetCharacters": "Hedef Karakterler"
+      }
+    },
+    "promptHistory": {
+      "title": "Prompt Geçmişi",
+      "empty": "Henüz prompt geçmişi yok",
+      "loadButton": "Yükle",
+      "clearButton": "Geçmişi Temizle",
+      "columns": {
+        "timestamp": "Tarih",
+        "basicPrompt": "Temel Prompt",
+        "enhancedPrompt": "Geliştirilmiş Prompt",
+        "length": "Uzunluk",
+        "model": "Model"
+      }
+    },
+    "common": {
+      "loading": "Yükleniyor...",
+      "error": "Hata",
+      "success": "Başarılı",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "delete": "Sil",
+      "edit": "Düzenle",
+      "close": "Kapat"
+    }
+  }
+}

@@ -184,5 +184,96 @@
     "or": "or",
     "apply_email": "Apply via Email"
   },
-  "privacy_policy": "Privacy policy"
+  "privacy_policy": "Privacy policy",
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "Master VEO3 Video Generation",
+      "description": "Learn professional prompting techniques and best practices for Google's most advanced AI video model."
+    },
+    "tabs": {
+      "builder": "Prompt Builder",
+      "enhance": "AI Enhancement",
+      "history": "History"
+    },
+    "promptBuilder": {
+      "scene": "Scene",
+      "scenePlaceholder": "Describe the setting, environment, or location...",
+      "style": "Style",
+      "stylePlaceholder": "Artistic, photorealistic, cinematic, etc...",
+      "camera": "Camera",
+      "cameraPlaceholder": "Camera movement, angle, shot type...",
+      "characters": "Characters",
+      "addCharacter": "Add Character",
+      "characterName": "Name",
+      "characterDescription": "Description",
+      "characterSpeech": "Speech/Dialogue",
+      "removeCharacter": "Remove",
+      "action": "Action",
+      "actionPlaceholder": "What's happening in the scene...",
+      "lighting": "Lighting",
+      "lightingPlaceholder": "Natural, dramatic, soft, etc...",
+      "mood": "Mood",
+      "moodPlaceholder": "Emotional atmosphere, tone...",
+      "language": "Language",
+      "moodboard": "Moodboard",
+      "moodboardEnabled": "Enable moodboard",
+      "moodboardDescription": "Upload reference images to guide generation"
+    },
+    "promptPreview": {
+      "title": "Generated Prompt",
+      "copyButton": "Copy",
+      "copied": "Copied!",
+      "randomizeButton": "Randomize",
+      "clearButton": "Clear All",
+      "enhanceButton": "Enhance with AI"
+    },
+    "aiEnhancement": {
+      "title": "AI Enhancement",
+      "description": "Enhance your prompt with advanced AI techniques",
+      "focusTypes": {
+        "character": "Character Focus",
+        "action": "Action Focus",
+        "cinematic": "Cinematic Focus",
+        "safe": "Safe Content"
+      },
+      "settings": {
+        "title": "Enhancement Settings",
+        "characterLimit": "Character Limit",
+        "includeAudio": "Include Audio Description",
+        "model": "AI Model"
+      },
+      "enhanceButton": "Enhance Prompt",
+      "enhancing": "Enhancing...",
+      "enhanceError": "Enhancement failed",
+      "enhancementInfo": {
+        "model": "Model",
+        "length": "Length",
+        "actualCharacters": "Actual Characters",
+        "targetCharacters": "Target Characters"
+      }
+    },
+    "promptHistory": {
+      "title": "Prompt History",
+      "empty": "No prompts in history yet",
+      "loadButton": "Load",
+      "clearButton": "Clear History",
+      "columns": {
+        "timestamp": "Date",
+        "basicPrompt": "Basic Prompt",
+        "enhancedPrompt": "Enhanced Prompt",
+        "length": "Length",
+        "model": "Model"
+      }
+    },
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close"
+    }
+  }
 }

@@ -11,6 +11,8 @@ import {
 import { Trash2 } from "lucide-react";
 import { Character, PromptData, PresetOptions, MoodboardImage } from "../types";
 import { MoodboardUploader as DefaultMoodboardUploader } from "./MoodboardUploader";
+import { useTranslation } from "../hooks/use-translation";
+import { Locale } from "../translations";
 
 interface PromptBuilderProps {
   promptData: PromptData;
@@ -27,6 +29,7 @@ interface PromptBuilderProps {
     images: MoodboardImage[];
     setImages: (images: MoodboardImage[]) => void;
   }>;
+  locale?: Locale;
 }
 
 export function PromptBuilder({
@@ -41,11 +44,13 @@ export function PromptBuilder({
   moodboardImages = [],
   setMoodboardImages,
   MoodboardUploader,
+  locale = "en",
 }: PromptBuilderProps) {
+  const { t } = useTranslation(locale);
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>VEO3 Prompt Builder</CardTitle>
+        <CardTitle>{t("veo3PromptGenerator.tabs.builder")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Scene Description */}
@@ -54,11 +59,13 @@ export function PromptBuilder({
             htmlFor="scene"
             className="flex items-center gap-2 text-blue-300 font-medium"
           >
-            🎬 Scene Description
+            🎬 {t("veo3PromptGenerator.promptBuilder.scene")}
           </Label>
           <Textarea
             id="scene"
-            placeholder="Describe the main scene (e.g., A cozy coffee shop in the morning)"
+            placeholder={t(
+              "veo3PromptGenerator.promptBuilder.scenePlaceholder"
+            )}
             value={promptData.scene}
             onChange={(e) =>
               setPromptData({ ...promptData, scene: e.target.value })
@@ -70,7 +77,8 @@ export function PromptBuilder({
         <div className="space-y-4 p-4 border-l-4 border-green-500 bg-green-950/20 rounded-lg">
           <div className="flex items-center justify-between">
             <Label className="flex items-center gap-2 text-green-300 font-medium">
-              👥 Characters ({promptData.characters.length})
+              👥 {t("veo3PromptGenerator.promptBuilder.characters")} (
+              {promptData.characters.length})
             </Label>
             <Button
               type="button"
@@ -79,12 +87,12 @@ export function PromptBuilder({
               onClick={addCharacter}
               className="text-xs border-green-600 text-green-300 hover:bg-green-950/30"
             >
-              + Add Character
+              + {t("veo3PromptGenerator.promptBuilder.addCharacter")}
             </Button>
           </div>
           {promptData.characters.length === 0 && (
             <div className="text-sm text-muted-foreground p-4 border border-dashed rounded-lg text-center">
-              No characters added yet. Click &quot;Add Character&quot; to start.
+              {t("veo3PromptGenerator.promptBuilder.noCharacters")}
             </div>
           )}
           {promptData.characters.map((character, index) => (
@@ -94,7 +102,8 @@ export function PromptBuilder({
             >
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">
-                  Character {index + 1}
+                  {t("veo3PromptGenerator.promptBuilder.characterNumber")}{" "}
+                  {index + 1}
                 </Label>
                 {promptData.characters.length > 1 && (
                   <Button
@@ -114,12 +123,14 @@ export function PromptBuilder({
                     htmlFor={`char-name-${character.id}`}
                     className="text-xs"
                   >
-                    Name
+                    {t("veo3PromptGenerator.promptBuilder.characterName")}
                   </Label>
                   <input
                     id={`char-name-${character.id}`}
                     type="text"
-                    placeholder="Character name (e.g., Sarah, Vendor)"
+                    placeholder={t(
+                      "veo3PromptGenerator.promptBuilder.characterNamePlaceholder"
+                    )}
                     value={character.name}
                     onChange={(e) =>
                       updateCharacter(character.id, "name", e.target.value)
@@ -132,11 +143,15 @@ export function PromptBuilder({
                     htmlFor={`char-desc-${character.id}`}
                     className="text-xs"
                   >
-                    Description
+                    {t(
+                      "veo3PromptGenerator.promptBuilder.characterDescription"
+                    )}
                   </Label>
                   <Textarea
                     id={`char-desc-${character.id}`}
-                    placeholder="Describe the character (e.g., A young woman with wavy brown hair)"
+                    placeholder={t(
+                      "veo3PromptGenerator.promptBuilder.characterDescriptionPlaceholder"
+                    )}
                     value={character.description}
                     onChange={(e) =>
                       updateCharacter(
@@ -154,20 +169,22 @@ export function PromptBuilder({
                       htmlFor={`char-speech-${character.id}`}
                       className="text-xs"
                     >
-                      Speech/Dialogue
+                      {t("veo3PromptGenerator.promptBuilder.characterSpeech")}
                     </Label>
                     {character.speech && (
                       <Badge
                         variant="secondary"
                         className="text-xs px-2 py-0.5"
                       >
-                        🎙️ Has Voice
+                        🎙️ {t("veo3PromptGenerator.promptBuilder.hasVoice")}
                       </Badge>
                     )}
                   </div>
                   <Textarea
                     id={`char-speech-${character.id}`}
-                    placeholder="What they say (e.g., Hello there! or Привет!)"
+                    placeholder={t(
+                      "veo3PromptGenerator.promptBuilder.characterSpeechPlaceholder"
+                    )}
                     value={character.speech}
                     onChange={(e) =>
                       updateCharacter(character.id, "speech", e.target.value)
@@ -178,7 +195,7 @@ export function PromptBuilder({
                     <div className="mt-1 text-xs text-blue-300 flex items-center gap-1">
                       <span>🔊</span>
                       <span>
-                        This dialogue will be highlighted in the enhanced prompt
+                        {t("veo3PromptGenerator.promptBuilder.voiceHighlight")}
                       </span>
                     </div>
                   )}
@@ -193,11 +210,13 @@ export function PromptBuilder({
             htmlFor="action"
             className="flex items-center gap-2 text-orange-300 font-medium"
           >
-            🎭 Action/Activity
+            🎭 {t("veo3PromptGenerator.promptBuilder.action")}
           </Label>
           <Textarea
             id="action"
-            placeholder="What are they doing? (e.g., slowly sipping coffee while turning pages)"
+            placeholder={t(
+              "veo3PromptGenerator.promptBuilder.actionPlaceholder"
+            )}
             value={promptData.action}
             onChange={(e) =>
               setPromptData({ ...promptData, action: e.target.value })
@@ -211,13 +230,15 @@ export function PromptBuilder({
             htmlFor="language"
             className="flex items-center gap-2 text-yellow-300 font-medium"
           >
-            🗣️ Speech Language
+            🗣️ {t("veo3PromptGenerator.promptBuilder.language")}
           </Label>
           <div className="space-y-2">
             <input
               id="language"
               type="text"
-              placeholder="Enter language (e.g., English, Russian, Spanish...)"
+              placeholder={t(
+                "veo3PromptGenerator.promptBuilder.languagePlaceholder"
+              )}
               value={promptData.language}
               onChange={(e) =>
                 setPromptData({ ...promptData, language: e.target.value })
@@ -225,7 +246,9 @@ export function PromptBuilder({
               className="w-full px-3 py-2 border border-yellow-600 bg-yellow-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
             />
             <div className="flex flex-wrap gap-2">
-              <Label className="text-xs text-yellow-300">Quick select:</Label>
+              <Label className="text-xs text-yellow-300">
+                {t("veo3PromptGenerator.promptBuilder.quickSelect")}
+              </Label>
               {presetOptions.languages.map((language: string) => (
                 <Badge
                   key={language}
@@ -247,13 +270,15 @@ export function PromptBuilder({
             htmlFor="style"
             className="flex items-center gap-2 text-purple-300 font-medium"
           >
-            🎨 Visual Style
+            🎨 {t("veo3PromptGenerator.promptBuilder.style")}
           </Label>
           <div className="space-y-2">
             <input
               id="style"
               type="text"
-              placeholder="Enter visual style (e.g., Cinematic, Documentary, Anime...)"
+              placeholder={t(
+                "veo3PromptGenerator.promptBuilder.stylePlaceholder"
+              )}
               value={promptData.style}
               onChange={(e) =>
                 setPromptData({ ...promptData, style: e.target.value })
@@ -261,7 +286,9 @@ export function PromptBuilder({
               className="w-full px-3 py-2 border border-purple-600 bg-purple-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
             />
             <div className="flex flex-wrap gap-2">
-              <Label className="text-xs text-purple-300">Quick select:</Label>
+              <Label className="text-xs text-purple-300">
+                {t("veo3PromptGenerator.promptBuilder.quickSelect")}
+              </Label>
               {presetOptions.styles.map((style: string) => (
                 <Badge
                   key={style}
@@ -281,13 +308,15 @@ export function PromptBuilder({
             htmlFor="camera"
             className="flex items-center gap-2 text-indigo-300 font-medium"
           >
-            📹 Camera Angle
+            📹 {t("veo3PromptGenerator.promptBuilder.camera")}
           </Label>
           <div className="space-y-2">
             <input
               id="camera"
               type="text"
-              placeholder="Enter camera angle (e.g., Close-up, Wide shot, Drone view...)"
+              placeholder={t(
+                "veo3PromptGenerator.promptBuilder.cameraPlaceholder"
+              )}
               value={promptData.camera}
               onChange={(e) =>
                 setPromptData({ ...promptData, camera: e.target.value })
@@ -295,7 +324,9 @@ export function PromptBuilder({
               className="w-full px-3 py-2 border border-indigo-600 bg-indigo-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
             />
             <div className="flex flex-wrap gap-2">
-              <Label className="text-xs text-indigo-300">Quick select:</Label>
+              <Label className="text-xs text-indigo-300">
+                {t("veo3PromptGenerator.promptBuilder.quickSelect")}
+              </Label>
               {presetOptions.cameras.map((camera: string) => (
                 <Badge
                   key={camera}
@@ -315,13 +346,15 @@ export function PromptBuilder({
             htmlFor="lighting"
             className="flex items-center gap-2 text-pink-300 font-medium"
           >
-            💡 Lighting
+            💡 {t("veo3PromptGenerator.promptBuilder.lighting")}
           </Label>
           <div className="space-y-2">
             <input
               id="lighting"
               type="text"
-              placeholder="Enter lighting type (e.g., Natural, Golden hour, Dramatic...)"
+              placeholder={t(
+                "veo3PromptGenerator.promptBuilder.lightingPlaceholder"
+              )}
               value={promptData.lighting}
               onChange={(e) =>
                 setPromptData({ ...promptData, lighting: e.target.value })
@@ -329,7 +362,9 @@ export function PromptBuilder({
               className="w-full px-3 py-2 border border-pink-600 bg-pink-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
             />
             <div className="flex flex-wrap gap-2">
-              <Label className="text-xs text-pink-300">Quick select:</Label>
+              <Label className="text-xs text-pink-300">
+                {t("veo3PromptGenerator.promptBuilder.quickSelect")}
+              </Label>
               {presetOptions.lighting.map((light: string) => (
                 <Badge
                   key={light}
@@ -353,13 +388,15 @@ export function PromptBuilder({
             htmlFor="mood"
             className="flex items-center gap-2 text-rose-300 font-medium"
           >
-            🌟 Mood
+            🌟 {t("veo3PromptGenerator.promptBuilder.mood")}
           </Label>
           <div className="space-y-2">
             <input
               id="mood"
               type="text"
-              placeholder="Enter mood (e.g., Peaceful, Energetic, Mysterious...)"
+              placeholder={t(
+                "veo3PromptGenerator.promptBuilder.moodPlaceholder"
+              )}
               value={promptData.mood}
               onChange={(e) =>
                 setPromptData({ ...promptData, mood: e.target.value })
@@ -367,7 +404,9 @@ export function PromptBuilder({
               className="w-full px-3 py-2 border border-rose-600 bg-rose-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent"
             />
             <div className="flex flex-wrap gap-2">
-              <Label className="text-xs text-rose-300">Quick select:</Label>
+              <Label className="text-xs text-rose-300">
+                {t("veo3PromptGenerator.promptBuilder.quickSelect")}
+              </Label>
               {presetOptions.moods.map((mood: string) => (
                 <Badge
                   key={mood}
@@ -384,22 +423,22 @@ export function PromptBuilder({
         {/* MoodboardUploader */}
         {moodboardEnabled !== undefined &&
           setMoodboardEnabled &&
-          setMoodboardImages && (
-            MoodboardUploader ? (
-              <MoodboardUploader
-                images={moodboardImages}
-                setImages={setMoodboardImages}
-              />
-            ) : (
-              <DefaultMoodboardUploader
-                enabled={moodboardEnabled}
-                onEnabledChange={setMoodboardEnabled}
-                onImagesChange={setMoodboardImages}
-                maxImages={3}
-                value={moodboardImages}
-              />
-            )
-          )}
+          setMoodboardImages &&
+          (MoodboardUploader ? (
+            <MoodboardUploader
+              images={moodboardImages}
+              setImages={setMoodboardImages}
+            />
+          ) : (
+            <DefaultMoodboardUploader
+              enabled={moodboardEnabled}
+              onEnabledChange={setMoodboardEnabled}
+              onImagesChange={setMoodboardImages}
+              maxImages={3}
+              value={moodboardImages}
+              locale={locale}
+            />
+          ))}
       </CardContent>
     </Card>
   );

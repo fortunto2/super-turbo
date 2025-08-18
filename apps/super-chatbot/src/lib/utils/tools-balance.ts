@@ -13,8 +13,8 @@ import {
 } from "@turbo-super/api";
 
 // Create database connection
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
+const client = postgres(databaseUrl, { ssl: "require" });
 const db = drizzle(client);
 
 // Balance interfaces are now imported from @turbo-super/superduperai-api
@@ -54,7 +54,11 @@ export async function checkOperationBalance(
     const currentBalance = await getUserToolsBalance(userId);
     return checkOperationBalanceShared(
       currentBalance,
-      toolCategory as "image-generation" | "video-generation" | "script-generation" | "prompt-enhancement",
+      toolCategory as
+        | "image-generation"
+        | "video-generation"
+        | "script-generation"
+        | "prompt-enhancement",
       operationType,
       multipliers
     );
@@ -76,11 +80,7 @@ export async function deductOperationBalance(
 ): Promise<any> {
   try {
     const currentBalance = await getUserToolsBalance(userId);
-    const amount = getOperationCost(
-      toolCategory,
-      operationType,
-      multipliers
-    );
+    const amount = getOperationCost(toolCategory, operationType, multipliers);
 
     if (currentBalance < amount) {
       throw new Error(
@@ -310,13 +310,19 @@ export async function createOperationTransaction(
   try {
     const currentBalance = await getUserToolsBalance(userId);
     const amount = getOperationCost(
-      toolCategory as "image-generation" | "video-generation" | "script-generation" | "prompt-enhancement",
+      toolCategory as
+        | "image-generation"
+        | "video-generation"
+        | "script-generation"
+        | "prompt-enhancement",
       operationType,
       multipliers
     );
 
     if (currentBalance < amount) {
-      throw new Error(`Insufficient balance. Required: ${amount}, Available: ${currentBalance}`);
+      throw new Error(
+        `Insufficient balance. Required: ${amount}, Available: ${currentBalance}`
+      );
     }
 
     const newBalance = currentBalance - amount;

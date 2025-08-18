@@ -1,4 +1,5 @@
 import { PromptData, Character } from "../types";
+import { Locale } from "../translations";
 
 export const generatePrompt = (data: PromptData): string => {
   const parts: string[] = [];
@@ -126,10 +127,24 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   }
 };
 
-export const getLocaleLanguage = (): string => {
+export const getLocaleLanguage = (locale?: Locale): string => {
   if (typeof window === "undefined") return "English";
 
-  const locale = window.location.pathname.split("/")[1];
+  // Если передан locale как параметр, используем его
+  if (locale) {
+    const localeToLanguage: Record<Locale, string> = {
+      en: "English",
+      ru: "Russian",
+      es: "Spanish",
+      hi: "Hindi",
+      tr: "Turkish",
+    };
+
+    return localeToLanguage[locale] || "English";
+  }
+
+  // Иначе получаем из URL (для обратной совместимости)
+  const urlLocale = window.location.pathname.split("/")[1];
   const localeToLanguage: Record<string, string> = {
     en: "English",
     ru: "Russian",
@@ -138,5 +153,5 @@ export const getLocaleLanguage = (): string => {
     tr: "Turkish",
   };
 
-  return localeToLanguage[locale] || "English";
+  return localeToLanguage[urlLocale] || "English";
 };

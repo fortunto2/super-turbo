@@ -22,6 +22,8 @@ import {
   getLocaleLanguage,
 } from "../utils";
 import { PRESET_OPTIONS, DEFAULT_VALUES } from "../constants";
+import { useTranslation } from "../hooks/use-translation";
+import { Locale } from "../translations";
 
 interface Veo3PromptGeneratorProps {
   enhancePromptFunction?: (params: {
@@ -49,6 +51,7 @@ interface Veo3PromptGeneratorProps {
   }>;
   showInfoBanner?: boolean;
   className?: string;
+  locale?: Locale;
 }
 
 export function Veo3PromptGenerator({
@@ -56,7 +59,10 @@ export function Veo3PromptGenerator({
   MoodboardUploader,
   showInfoBanner = true,
   className = "",
+  locale = "en" as Locale,
 }: Veo3PromptGeneratorProps) {
+  const { t } = useTranslation(locale);
+
   const [promptData, setPromptData] = useState<PromptData>({
     scene: "",
     style: "",
@@ -132,9 +138,9 @@ export function Veo3PromptGenerator({
 
   // Set language based on locale
   useEffect(() => {
-    const defaultLanguage = getLocaleLanguage();
+    const defaultLanguage = getLocaleLanguage(locale);
     setPromptData((prev) => ({ ...prev, language: defaultLanguage }));
-  }, []);
+  }, [locale]);
 
   const addCharacter = () => {
     setPromptData((prev) => ({
@@ -320,7 +326,9 @@ export function Veo3PromptGenerator({
     } catch (error) {
       console.error("Enhancement error:", error);
       setEnhanceError(
-        error instanceof Error ? error.message : "Failed to enhance prompt"
+        error instanceof Error
+          ? error.message
+          : t("veo3PromptGenerator.aiEnhancement.enhanceError")
       );
     } finally {
       setIsEnhancing(false);
@@ -346,11 +354,10 @@ export function Veo3PromptGenerator({
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
-                Master VEO3 Video Generation
+                {t("veo3PromptGenerator.infoBanner.title")}
               </h3>
               <p className="text-sm text-green-700 dark:text-green-300 mb-2">
-                Learn professional prompting techniques and best practices for
-                Google&apos;s most advanced AI video model.
+                {t("veo3PromptGenerator.infoBanner.description")}
               </p>
             </div>
           </div>
@@ -363,10 +370,14 @@ export function Veo3PromptGenerator({
         className="space-y-6"
       >
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="builder">Prompt Builder</TabsTrigger>
-          <TabsTrigger value="enhance">AI Enhancement</TabsTrigger>
+          <TabsTrigger value="builder">
+            {t("veo3PromptGenerator.tabs.builder")}
+          </TabsTrigger>
+          <TabsTrigger value="enhance">
+            {t("veo3PromptGenerator.tabs.enhance")}
+          </TabsTrigger>
           <TabsTrigger value="history">
-            History ({promptHistory.length}/10)
+            {t("veo3PromptGenerator.tabs.history")} ({promptHistory.length}/10)
           </TabsTrigger>
         </TabsList>
 
@@ -384,6 +395,7 @@ export function Veo3PromptGenerator({
               moodboardImages={moodboardImages}
               setMoodboardImages={setMoodboardImages}
               MoodboardUploader={MoodboardUploader || undefined}
+              locale={locale}
             />
             <PromptPreview
               generatedPrompt={generatedPrompt}
@@ -395,6 +407,7 @@ export function Veo3PromptGenerator({
               setActiveTab={setActiveTab}
               isEnhancing={isEnhancing}
               enhancePrompt={enhancePrompt}
+              locale={locale}
             />
           </div>
         </TabsContent>
@@ -403,6 +416,7 @@ export function Veo3PromptGenerator({
           <AIEnhancement
             enhancedPrompt={enhancedPrompt}
             setEnhancedPrompt={setEnhancedPrompt}
+            generatedPrompt={generatedPrompt}
             enhanceWithSelectedFocus={enhanceWithSelectedFocus}
             isEnhancing={isEnhancing}
             enhanceError={enhanceError}
@@ -417,6 +431,7 @@ export function Veo3PromptGenerator({
             setShowSettings={setShowSettings}
             copied={copied}
             copyToClipboard={copyToClipboard}
+            locale={locale}
           />
         </TabsContent>
 
@@ -426,6 +441,7 @@ export function Veo3PromptGenerator({
             loadFromHistory={loadFromHistory}
             clearHistory={clearHistory}
             setActiveTab={setActiveTab}
+            locale={locale}
           />
         </TabsContent>
       </Tabs>

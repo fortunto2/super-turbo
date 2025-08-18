@@ -7,9 +7,7 @@ import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
 import { Blog } from ".contentlayer/generated";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
-import { ModelVideoGenerator } from "@/components/content/model-video-generator";
-import { EnhancedModelVideoGenerator } from "@/components/content/enhanced-model-video-generator";
-import { ModelImageGenerator } from "@/components/content/model-image-generator";
+import { BlogModelGenerator } from "@/components/content/blog-model-generator";
 
 export async function generateMetadata({
   params,
@@ -109,38 +107,14 @@ function BlogPageContent({
       {/* Генератор для моделей */}
       {post.modelName && (
         <div className="mt-12 pt-8 border-t">
-          {/* Определяем тип модели по названию */}
-          {post.modelName === "Veo2" ? (
-            <EnhancedModelVideoGenerator
-              modelName={post.modelName}
-              modelConfig={{
-                ...post.modelConfig,
-                supportsImageToVideo: true,
-                description: post.seo?.description || post.description,
-              }}
-              locale={locale as Locale}
-            />
-          ) : post.modelName.includes("Veo") ||
-            post.modelName === "Sora" ||
-            post.modelName === "Kling 2.1" ? (
-            <ModelVideoGenerator
-              modelName={post.modelName}
-              modelConfig={{
-                ...post.modelConfig,
-                description: post.seo?.description || post.description,
-              }}
-              locale={locale as Locale}
-            />
-          ) : (
-            <ModelImageGenerator
-              modelName={post.modelName}
-              modelConfig={{
-                ...post.modelConfig,
-                description: post.seo?.description || post.description,
-              }}
-              locale={locale as Locale}
-            />
-          )}
+          <BlogModelGenerator
+            modelName={post.modelName}
+            modelConfig={{
+              ...post.modelConfig,
+              description: post.seo?.description || post.description,
+            }}
+            locale={locale as Locale}
+          />
         </div>
       )}
     </PageWrapper>

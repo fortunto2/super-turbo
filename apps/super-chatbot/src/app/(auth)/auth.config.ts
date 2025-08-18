@@ -12,4 +12,24 @@ export const authConfig = {
   callbacks: {},
   // Добавляем конфигурацию для правильной работы в продакшене
   trustHost: true,
+  // Добавляем секрет NextAuth - используем AUTH_AUTH0_SECRET если NEXTAUTH_SECRET не установлен
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_AUTH0_SECRET,
+  // Настройки для сохранения сессий
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 дней
+  },
+  // Настройки для cookie
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60, // 30 дней
+      },
+    },
+  },
 } satisfies NextAuthConfig;

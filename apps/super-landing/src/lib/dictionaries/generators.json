@@ -37,7 +37,10 @@
       "animation_placeholder": "Örneğin: yavaşça sallan, yumuşakça döndür, bulut hareketi ekle...",
       "upload_image_required": "Lütfen görüntü-video üretimi için bir görüntü yükleyin",
       "insufficient_balance": "Yetersiz kredi. Gerekli: {required} kredi. Lütfen bakiyenizi yenileyin.",
-      "insufficient_balance_fallback": "Video üretimi için yeterli kredi yok. Lütfen bakiyenizi yenileyin."
+      "insufficient_balance_fallback": "Video üretimi için yeterli kredi yok. Lütfen bakiyenizi yenileyin.",
+      "generate_for": "{price} için oluştur",
+      "payment_error": "Ödeme başarısız. Lütfen tekrar deneyin.",
+      "payment_description": "Bu model ile video oluşturmak için $1.00 ödeyin"
     },
     "image_generator": {
       "title": "Görüntü üretimi",
@@ -77,7 +80,10 @@
       "created_images": "Oluşturulan görüntüler:",
       "generated_image": "Oluşturulan görüntü",
       "insufficient_balance": "Yetersiz kredi. Gerekli: {required} kredi. Lütfen bakiyenizi yenileyin.",
-      "insufficient_balance_fallback": "Görüntü üretimi için yeterli kredi yok. Lütfen bakiyenizi yenileyin."
+      "insufficient_balance_fallback": "Görüntü üretimi için yeterli kredi yok. Lütfen bakiyenizi yenileyin.",
+      "generate_for": "{price} için oluştur",
+      "payment_error": "Ödeme başarısız. Lütfen tekrar deneyin.",
+      "payment_description": "Bu model ile görüntü oluşturmak için $1.00 ödeyin"
     },
     "credit_balance": {
       "title": "Kredi bakiyesi",
@@ -95,6 +101,17 @@
       "prompt_enhancement": "Prompt iyileştirme: 1-2 kredi",
       "loading": "Bakiye yükleniyor...",
       "error": "Bakiye yükleme hatası"
+    },
+    "direct_payment": {
+      "generate_image": "{model} ile görüntü oluştur",
+      "generate_video": "{model} ile video oluştur",
+      "image_description": "AI ile etkileyici görüntüler oluşturun",
+      "video_description": "AI ile harika videolar oluşturun",
+      "your_prompt": "Sizin prompt'unuz",
+      "image_generation": "Görüntü oluşturma",
+      "video_generation": "Video oluşturma",
+      "one_time_payment": "Tek seferlik ödeme",
+      "processing_payment": "Ödeme işleniyor..."
     },
     "model_descriptions": {
       "veo2": "Veo2 - statik görüntüleri dinamik HD videolara dönüştürme, orijinal stili koruyarak",
@@ -163,7 +180,10 @@
       "animation_placeholder": "Например: медленно покачивать, плавно вращать, добавить движение облаков...",
       "upload_image_required": "Пожалуйста, загрузите изображение для image-to-video генерации",
       "insufficient_balance": "Недостаточно кредитов. Требуется: {required} кредитов. Пожалуйста, пополните баланс.",
-      "insufficient_balance_fallback": "Недостаточно кредитов для генерации видео. Пожалуйста, пополните баланс."
+      "insufficient_balance_fallback": "Недостаточно кредитов для генерации видео. Пожалуйста, пополните баланс.",
+      "generate_for": "Создать за {price}",
+      "payment_error": "Ошибка оплаты. Пожалуйста, попробуйте снова.",
+      "payment_description": "Заплатите $1.00 для создания видео с этой моделью"
     },
     "image_generator": {
       "title": "Генерация изображений",
@@ -203,7 +223,10 @@
       "created_images": "Созданные изображения:",
       "generated_image": "Сгенерированное изображение",
       "insufficient_balance": "Недостаточно кредитов. Требуется: {required} кредитов. Пожалуйста, пополните баланс.",
-      "insufficient_balance_fallback": "Недостаточно кредитов для генерации изображений. Пожалуйста, пополните баланс."
+      "insufficient_balance_fallback": "Недостаточно кредитов для генерации изображений. Пожалуйста, пополните баланс.",
+      "generate_for": "Создать за {price}",
+      "payment_error": "Ошибка оплаты. Пожалуйста, попробуйте снова.",
+      "payment_description": "Заплатите $1.00 для создания изображений с этой моделью"
     },
     "credit_balance": {
       "title": "Баланс кредитов",
@@ -221,6 +244,17 @@
       "prompt_enhancement": "Улучшение промптов: 1-2 кредита",
       "loading": "Загрузка баланса...",
       "error": "Ошибка загрузки баланса"
+    },
+    "direct_payment": {
+      "generate_image": "Создать изображение с {model}",
+      "generate_video": "Создать видео с {model}",
+      "image_description": "Создавайте потрясающие изображения с помощью AI",
+      "video_description": "Создавайте удивительные видео с помощью AI",
+      "your_prompt": "Ваш промпт",
+      "image_generation": "Генерация изображения",
+      "video_generation": "Генерация видео",
+      "one_time_payment": "Единоразовая оплата",
+      "processing_payment": "Обработка оплаты..."
     },
     "model_descriptions": {
       "veo2": "Veo2 - преобразование статичных изображений в динамичные HD видео с сохранением оригинального стиля",
@@ -289,7 +323,10 @@
       "animation_placeholder": "For example: slowly sway, smoothly rotate, add cloud movement...",
       "upload_image_required": "Please upload an image for image-to-video generation",
       "insufficient_balance": "Insufficient credits. Required: {required} credits. Please top up your balance.",
-      "insufficient_balance_fallback": "Insufficient credits for video generation. Please top up your balance."
+      "insufficient_balance_fallback": "Insufficient credits for video generation. Please top up your balance.",
+      "generate_for": "Generate for {price}",
+      "payment_error": "Payment failed. Please try again.",
+      "payment_description": "Pay $1.00 to generate videos with this model"
     },
     "image_generator": {
       "title": "Image Generation",
@@ -329,7 +366,10 @@
       "created_images": "Created images:",
       "generated_image": "Generated image",
       "insufficient_balance": "Insufficient credits. Required: {required} credits. Please top up your balance.",
-      "insufficient_balance_fallback": "Insufficient credits for image generation. Please top up your balance."
+      "insufficient_balance_fallback": "Insufficient credits for image generation. Please top up your balance.",
+      "generate_for": "Generate for {price}",
+      "payment_error": "Payment failed. Please try again.",
+      "payment_description": "Pay $1.00 to generate images with this model"
     },
     "credit_balance": {
       "title": "Credit Balance",
@@ -347,6 +387,17 @@
       "prompt_enhancement": "Prompt enhancement: 1-2 credits",
       "loading": "Loading balance...",
       "error": "Error loading balance"
+    },
+    "direct_payment": {
+      "generate_image": "Generate Image with {model}",
+      "generate_video": "Generate Video with {model}",
+      "image_description": "Create stunning images with AI",
+      "video_description": "Create amazing videos with AI",
+      "your_prompt": "Your prompt",
+      "image_generation": "Image Generation",
+      "video_generation": "Video Generation",
+      "one_time_payment": "One-time payment",
+      "processing_payment": "Processing payment..."
     },
     "model_descriptions": {
       "veo2": "Veo2 - transforming static images into dynamic HD videos while preserving original style",

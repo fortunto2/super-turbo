@@ -48,5 +48,6 @@ yarn-error.log*
 # Generation storage directories
 .model-video-generations/
 .model-image-generations/
+.generation-data/
 
 dist/

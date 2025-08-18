@@ -8,6 +8,8 @@ import {
   CardTitle,
 } from "@turbo-super/ui";
 import { MoodboardImage } from "../types";
+import { useTranslation } from "../hooks/use-translation";
+import { Locale } from "../translations";
 
 interface MoodboardUploaderProps {
   enabled: boolean;
@@ -15,6 +17,7 @@ interface MoodboardUploaderProps {
   onImagesChange: (images: MoodboardImage[]) => void;
   maxImages?: number;
   value?: MoodboardImage[];
+  locale?: Locale;
 }
 
 export function MoodboardUploader({
@@ -23,7 +26,9 @@ export function MoodboardUploader({
   onImagesChange,
   maxImages = 3,
   value = [],
+  locale = "en",
 }: MoodboardUploaderProps) {
+  const { t } = useTranslation(locale);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +85,7 @@ export function MoodboardUploader({
             htmlFor="moodboard-toggle"
             className="text-sm font-medium"
           >
-            Enable Moodboard References
+            {t("veo3PromptGenerator.promptBuilder.moodboardTitle")}
           </Label>
         </div>
         {enabled && (
@@ -88,7 +93,10 @@ export function MoodboardUploader({
             variant="outline"
             className="text-xs"
           >
-            {value.length}/{maxImages} images
+            {t("veo3PromptGenerator.promptBuilder.moodboardImages").replace(
+              "0/3",
+              `${value.length}/${maxImages}`
+            )}
           </Badge>
         )}
       </div>
@@ -98,7 +106,9 @@ export function MoodboardUploader({
           {/* Image Uploader */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Visual References</CardTitle>
+              <CardTitle className="text-lg">
+                {t("veo3PromptGenerator.promptBuilder.visualReferences")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <input
@@ -114,13 +124,15 @@ export function MoodboardUploader({
                 onClick={handleDropZoneClick}
               >
                 <div className="text-gray-500 dark:text-gray-400 mb-2">
-                  📁 Click to Upload Images
+                  📁 {t("veo3PromptGenerator.promptBuilder.uploadImages")}
                 </div>
                 <p className="text-sm text-gray-400 dark:text-gray-500">
-                  Select up to {maxImages} images to use as visual references
+                  {t(
+                    "veo3PromptGenerator.promptBuilder.uploadDescription"
+                  ).replace("3", maxImages.toString())}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  Supported formats: JPG, PNG, GIF, WebP
+                  {t("veo3PromptGenerator.promptBuilder.supportedFormats")}
                 </p>
               </div>
             </CardContent>
@@ -193,28 +205,22 @@ export function MoodboardUploader({
             <CardContent className="pt-6">
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                  🎨 Moodboard Tips
+                  🎨 {t("veo3PromptGenerator.promptBuilder.moodboardTips")}
                 </h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 dark:text-blue-400">•</span>
-                    <span>
-                      Upload reference images to influence your VEO3 generation
-                    </span>
+                    <span>{t("veo3PromptGenerator.promptBuilder.tip1")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 dark:text-blue-400">•</span>
-                    <span>
-                      Add descriptions to highlight specific elements you want
-                      emphasized
-                    </span>
+                    <span>{t("veo3PromptGenerator.promptBuilder.tip2")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 dark:text-blue-400">•</span>
-                    <span>
-                      Adjust influence weight to control how much each image
-                      affects the result
-                    </span>
+                                         <span>
+                       {t("veo3PromptGenerator.promptBuilder.tip3")}
+                     </span>
                   </li>
                 </ul>
               </div>
