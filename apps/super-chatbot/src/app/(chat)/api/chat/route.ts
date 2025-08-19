@@ -43,7 +43,7 @@ import {
   listVideoModels,
   findBestVideoModel,
 } from "@/lib/ai/tools/list-video-models";
-import { enhancePrompt } from "@/lib/ai/tools/enhance-prompt";
+import { enhancePromptUnified } from "@/lib/ai/tools/enhance-prompt-unified";
 import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
 import { isProductionEnvironment } from "@/lib/constants";
@@ -589,7 +589,7 @@ export async function POST(request: Request) {
                   "configureScriptGeneration",
                   "listVideoModels",
                   "findBestVideoModel",
-                  "enhancePrompt",
+                  "enhancePromptUnified",
                   "createDocument",
                   "updateDocument",
                   "requestSuggestions",
@@ -637,7 +637,7 @@ export async function POST(request: Request) {
             }),
             listVideoModels,
             findBestVideoModel,
-            enhancePrompt,
+            enhancePromptUnified,
           },
           // Note: explicit toolChoice removed due to type constraints; tool remains available
           onFinish: async ({ response }) => {

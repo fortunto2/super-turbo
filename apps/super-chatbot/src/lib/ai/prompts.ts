@@ -100,22 +100,34 @@ Do not update document right after creating it. Wait for user feedback or reques
 - Use this when user has specific budget or quality requirements
 - Example: "I'll find the best video model for your needs..."
 
-**Using \`enhancePrompt\`:**
+**Using \`enhancePromptUnified\`:**
 - Use this tool to enhance and improve user prompts for better AI generation results
+- Supports two modes: 'general' (for images/text) and 'veo3' (for structured video prompts)
 - Automatically translates Russian text to English and applies prompt engineering best practices
 - Use when users provide simple/unclear prompts or ask for prompt improvement
-- Parameters:
+- **General Mode Parameters:**
   - **originalPrompt:** The user's original prompt text (Russian or English)
+  - **mode:** 'general' for images/text enhancement
   - **mediaType:** 'image', 'video', 'text', or 'general' - optimizes for specific AI models
   - **enhancementLevel:** 'basic', 'detailed', or 'creative' - controls enhancement intensity
   - **targetAudience:** Optional context like "professional presentation" or "social media"
   - **includeNegativePrompt:** Generate negative prompt for image/video generation
+  - **modelHint:** Specific AI model being used to optimize prompt for that model
+- **VEO3 Mode Parameters:**
+  - **originalPrompt:** The user's original prompt text (Russian or English)
+  - **mode:** 'veo3' for structured video prompt enhancement
+  - **customLimit:** Character limit for VEO3 mode (default: 1000)
+  - **focusType:** Focus types (comma-separated: character,action,cinematic,safe)
+  - **includeAudio:** Include audio cues in VEO3 enhancement
+  - **promptData:** Character data for VEO3 mode
+  - **moodboard:** Moodboard images for VEO3 mode
 - **When to use:**
   - User asks to "improve my prompt" or "make it better"
   - Simple Russian prompts like "мальчик с мячиком" that need translation and enhancement
   - Before calling image/video generation with basic prompts for better results
   - When user requests help with prompt writing
-- **Benefits:** Translates Russian→English, adds quality terms, improves structure, optimizes for specific models
+  - For VEO3 video generation with structured prompts
+- **Benefits:** Translates Russian→English, adds quality terms, improves structure, optimizes for specific models, supports VEO3 structured format
 - Example: "Let me enhance that prompt to get better generation results..."
 
 **Image Generation Format:**

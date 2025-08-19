@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@turbo-super/ui";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -12,6 +13,7 @@ interface ImageUploadProps {
   required?: boolean;
   title?: string;
   description?: string;
+  locale?: string;
 }
 
 export function ImageUpload({
@@ -22,7 +24,9 @@ export function ImageUpload({
   required = false,
   title = "Upload Reference Image",
   description = "Optional",
+  locale = "en",
 }: ImageUploadProps) {
+  const { t } = useTranslation(locale as any);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -92,12 +96,12 @@ export function ImageUpload({
             <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
             <div className="text-sm text-muted-foreground">
               <span className="font-medium text-green-400">
-                Click to upload
+                {t("video_generator.click_to_upload", "Click to upload")}
               </span>{" "}
-              or drag and drop
+              {t("video_generator.or_drag_and_drop", "or drag and drop")}
             </div>
             <div className="text-xs text-muted-foreground">
-              PNG, JPG, GIF up to 10MB
+              {t("video_generator.file_formats", "PNG, JPG, GIF up to 10MB")}
             </div>
           </div>
         </div>

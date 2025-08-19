@@ -1317,6 +1317,7 @@ function AIEnhancement({
   customCharacterLimit,
   setCustomCharacterLimit,
   showSettings,
+  showPaymentButton = true,
   setShowSettings,
   copied,
   copyToClipboard: copyToClipboard2,
@@ -1450,7 +1451,9 @@ function AIEnhancement({
         showSettings && /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "px-3 pb-3 space-y-3 border-t", children: [
           /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "space-y-3", children: [
             /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-muted-foreground", children: t("veo3PromptGenerator.aiEnhancement.settings.characterLimit") }),
+              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-muted-foreground", children: t(
+                "veo3PromptGenerator.aiEnhancement.settings.characterLimit"
+              ) }),
               /* @__PURE__ */ jsxRuntime.jsxs(
                 ui.Badge,
                 {
@@ -1581,7 +1584,7 @@ function AIEnhancement({
           ] })
         }
       ),
-      generatedPrompt.trim() && /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "mt-6 p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-600/30 rounded-lg", children: [
+      showPaymentButton && generatedPrompt.trim() && /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "mt-6 p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-600/30 rounded-lg", children: [
         /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center mb-4", children: [
           /* @__PURE__ */ jsxRuntime.jsx("h3", { className: "text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2", children: "Ready to Generate Your Video?" }),
           /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-purple-700 dark:text-purple-300", children: "Your enhanced prompt is ready! Generate a professional VEO3 video for just $1.00" })
@@ -1874,7 +1877,8 @@ function Veo3PromptGenerator({
   MoodboardUploader: MoodboardUploader2,
   showInfoBanner = true,
   className = "",
-  locale = "en"
+  locale = "en",
+  showPaymentButton = true
 }) {
   const { t } = useTranslation(locale);
   const [promptData, setPromptData] = react.useState({
@@ -2188,7 +2192,8 @@ function Veo3PromptGenerator({
               setShowSettings,
               copied,
               copyToClipboard: copyToClipboard2,
-              locale
+              locale,
+              showPaymentButton
             }
           ) }),
           /* @__PURE__ */ jsxRuntime.jsx(ui.TabsContent, { value: "history", children: /* @__PURE__ */ jsxRuntime.jsx(

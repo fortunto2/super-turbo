@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'AI Prompt Enhancer | SuperDuperAI',
-  description: 'Transform simple prompts into detailed, professional descriptions for better AI generation results. Automatically translates text and optimizes for different AI models.',
-  keywords: ['AI', 'prompt enhancement', 'prompt engineering', 'translation', 'image generation', 'video generation'],
+  title: "AI Prompt Enhancer - Tool",
+  description:
+    "Transform your prompts with AI enhancement. Supports both general enhancement and VEO3 structured video prompts.",
 };
 
 export default function PromptEnhancerLayout({
@@ -12,10 +12,6 @@ export default function PromptEnhancerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col p-4 md:p-6">
-      <div className="mx-auto w-full max-w-6xl">
-        {children}
-      </div>
-    </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">{children}</div>
   );
-} 
+}

@@ -139,7 +139,10 @@ export function EnhancedModelVideoGenerator({
             className="w-full btn-accent bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
           >
             <CreditCard className="w-4 h-4 mr-2" />
-            Pay $1.00 to Generate Video
+            {t(
+              "video_generator.pay_to_generate_video",
+              "Pay $1.00 to Generate Video"
+            )}
           </Button>
 
           {/* StripePaymentButton - закомментирован для отладки */}

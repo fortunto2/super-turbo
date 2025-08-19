@@ -52,6 +52,7 @@ interface Veo3PromptGeneratorProps {
   showInfoBanner?: boolean;
   className?: string;
   locale?: Locale;
+  showPaymentButton?: boolean;
 }
 
 export function Veo3PromptGenerator({
@@ -60,6 +61,7 @@ export function Veo3PromptGenerator({
   showInfoBanner = true,
   className = "",
   locale = "en" as Locale,
+  showPaymentButton = true,
 }: Veo3PromptGeneratorProps) {
   const { t } = useTranslation(locale);
 
@@ -432,6 +434,7 @@ export function Veo3PromptGenerator({
             copied={copied}
             copyToClipboard={copyToClipboard}
             locale={locale}
+            showPaymentButton={showPaymentButton}
           />
         </TabsContent>
 
