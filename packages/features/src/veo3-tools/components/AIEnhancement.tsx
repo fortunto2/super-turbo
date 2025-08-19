@@ -37,6 +37,7 @@ interface AIEnhancementProps {
   customCharacterLimit: number;
   setCustomCharacterLimit: (val: number) => void;
   showSettings: boolean;
+  showPaymentButton?: boolean;
   setShowSettings: (val: boolean) => void;
   copied: boolean;
   copyToClipboard: (text: string) => void;
@@ -58,6 +59,7 @@ export function AIEnhancement({
   customCharacterLimit,
   setCustomCharacterLimit,
   showSettings,
+  showPaymentButton = true,
   setShowSettings,
   copied,
   copyToClipboard,
@@ -94,7 +96,8 @@ export function AIEnhancement({
                   : t("veo3PromptGenerator.aiEnhancement.enhanceButton")}
                 {selectedFocusTypes.length > 0 && (
                   <span className="ml-2 text-sm opacity-90">
-                    ({selectedFocusTypes.length} {t("veo3PromptGenerator.aiEnhancement.focus")}
+                    ({selectedFocusTypes.length}{" "}
+                    {t("veo3PromptGenerator.aiEnhancement.focus")}
                     {selectedFocusTypes.length !== 1 ? "es" : ""})
                   </span>
                 )}
@@ -143,7 +146,7 @@ export function AIEnhancement({
                   : "bg-blue-50 border-blue-200 hover:bg-blue-100"
               }`}
             >
-                             🔊 {t("veo3PromptGenerator.aiEnhancement.settings.includeAudio")}
+              🔊 {t("veo3PromptGenerator.aiEnhancement.settings.includeAudio")}
             </Button>
             <Button
               variant={
@@ -169,7 +172,9 @@ export function AIEnhancement({
             >
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
-                <span className="text-sm">{t("veo3PromptGenerator.aiEnhancement.settings.title")}</span>
+                <span className="text-sm">
+                  {t("veo3PromptGenerator.aiEnhancement.settings.title")}
+                </span>
                 <Badge
                   variant="outline"
                   className="text-xs"
@@ -188,9 +193,11 @@ export function AIEnhancement({
                 {/* Character Limit Slider */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                                         <span className="text-xs text-muted-foreground">
-                       {t("veo3PromptGenerator.aiEnhancement.settings.characterLimit")}
-                     </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t(
+                        "veo3PromptGenerator.aiEnhancement.settings.characterLimit"
+                      )}
+                    </span>
                     <Badge
                       variant="outline"
                       className="text-xs"
@@ -230,9 +237,9 @@ export function AIEnhancement({
                 </div>
                 {/* Model Info */}
                 <div className="space-y-2">
-                                     <span className="text-xs text-muted-foreground">
-                     {t("veo3PromptGenerator.aiEnhancement.settings.model")}
-                   </span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("veo3PromptGenerator.aiEnhancement.settings.model")}
+                  </span>
                   <div className="p-2 bg-muted rounded text-xs">
                     <div className="font-medium">GPT-4.1</div>
                     <div className="text-muted-foreground">
@@ -331,7 +338,8 @@ export function AIEnhancement({
                   : t("veo3PromptGenerator.aiEnhancement.enhanceButton")}
                 {selectedFocusTypes.length > 0 && (
                   <span className="ml-2 text-sm opacity-90">
-                    ({selectedFocusTypes.length} {t("veo3PromptGenerator.aiEnhancement.focus")}
+                    ({selectedFocusTypes.length}{" "}
+                    {t("veo3PromptGenerator.aiEnhancement.focus")}
                     {selectedFocusTypes.length !== 1 ? "es" : ""})
                   </span>
                 )}
@@ -340,7 +348,7 @@ export function AIEnhancement({
           </Button>
 
           {/* Payment Button - Only show when we have an enhanced prompt */}
-          {generatedPrompt.trim() && (
+          {showPaymentButton && generatedPrompt.trim() && (
             <div className="mt-6 p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-600/30 rounded-lg">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2">
