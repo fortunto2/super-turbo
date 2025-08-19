@@ -11,7 +11,8 @@ export interface ToolConfig {
     | "zap"
     | "play"
     | "languages"
-    | "gallery";
+    | "gallery"
+    | "file-text";
   href: string;
   category: "generation" | "enhancement" | "utility" | "gallery";
   features: {
@@ -115,6 +116,24 @@ export const TOOLS_CONFIG: ToolConfig[] = [
     hoverColor: "indigo-600",
     bgColor: "indigo-100",
     hoverBgColor: "indigo-200",
+  },
+  {
+    id: "story-editor",
+    name: "Story Editor",
+    description:
+      "Professional story writing and editing tool powered by SuperDuperAI. Create, edit, and refine your stories with advanced AI assistance.",
+    shortDescription: "AI Story Editor",
+    iconName: "file-text",
+    href: "/tools/story-editor",
+    category: "utility",
+    features: [
+      { iconName: "sparkles", label: "AI Writing Assistant" },
+      { iconName: "zap", label: "Professional Editing" },
+    ],
+    primaryColor: "emerald-600",
+    hoverColor: "emerald-600",
+    bgColor: "emerald-100",
+    hoverBgColor: "emerald-200",
   },
 ];
 
