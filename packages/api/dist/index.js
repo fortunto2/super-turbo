@@ -313,8 +313,17 @@ var ImageToImageStrategy = class {
   async generatePayload(params, config) {
     const modelName = params.model?.name || "fal-ai/flux-dev";
     const isGPTImage = String(modelName).includes("gpt-image-1");
-    const imageId = params.sourceImageId;
-    const sourceUrl = params.sourceImageUrl;
+    let imageId;
+    let imageUrl;
+    if (config) {
+      console.log("\u{1F4E4} Starting image upload...");
+      const uploadResult = await this.handleImageUpload(params, config);
+      console.log("\u{1F4E4} Image upload result:", uploadResult);
+      imageId = uploadResult.imageId;
+      imageUrl = uploadResult.imageUrl;
+    } else {
+      console.log("\u26A0\uFE0F No config provided, skipping image upload");
+    }
     if (isGPTImage) {
       return {
         config: {
@@ -328,7 +337,7 @@ var ImageToImageStrategy = class {
             {
               type: "source",
               reference_id: imageId,
-              ...sourceUrl ? { reference_url: sourceUrl } : {}
+              reference_url: imageUrl
             }
           ] : [],
           entity_ids: []
@@ -352,7 +361,7 @@ var ImageToImageStrategy = class {
           {
             type: "source",
             reference_id: imageId,
-            ...sourceUrl ? { reference_url: sourceUrl } : {}
+            reference_url: imageUrl
           }
         ] : [],
         entity_ids: []
@@ -362,7 +371,6 @@ var ImageToImageStrategy = class {
     console.log("\u{1F50D} ImageToImageStrategy: generated payload:", {
       modelName,
       imageId,
-      sourceUrl,
       resolution: params.resolution,
       payload
     });

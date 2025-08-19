@@ -255,8 +255,8 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         generationType,
       });
 
-      // If image-to-image, upload source image first to obtain sourceImageId
-      let sourceImageId: string | undefined = undefined;
+      // If image-to-image, create File object from URL instead of uploading
+      let sourceFile: File | undefined = undefined;
       if (
         generationType === "image-to-image" &&
         effectiveSourceImageUrl &&
@@ -267,25 +267,19 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           if (!resp.ok)
             throw new Error(`Failed to fetch source image: ${resp.status}`);
           const blob = await resp.blob();
-          const fd = new FormData();
-          fd.append("payload", blob, "source-image.png");
-          fd.append("type", "image");
-          const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${config.token}`,
-              "User-Agent": "SuperDuperAI-Chatbot/1.0",
-            },
-            body: fd,
+          const filename =
+            effectiveSourceImageUrl.split("/").pop() || "source-image.jpg";
+          sourceFile = new File([blob], filename, { type: blob.type });
+          console.log("🔍 Image artifact: created File object from URL:", {
+            filename,
+            size: sourceFile.size,
+            type: sourceFile.type,
           });
-          if (!uploadResp.ok) {
-            const t = await uploadResp.text();
-            throw new Error(`Upload failed: ${uploadResp.status} ${t}`);
-          }
-          const up = await uploadResp.json();
-          sourceImageId = up?.id;
         } catch (e) {
-          console.error("🎨 ❌ Failed to upload source image for img2img:", e);
+          console.error(
+            "🎨 ❌ Failed to create File from source image URL:",
+            e
+          );
         }
       }
 
@@ -339,8 +333,8 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           console.error("🔍 Image artifact: error remapping model:", error);
         }
       }
-      // For image-to-image: require uploaded sourceImageId and send minimal payload (no style/resolution/shotSize)
-      if (generationType === "image-to-image" && !sourceImageId) {
+      // For image-to-image: require sourceFile and send minimal payload (no style/resolution/shotSize)
+      if (generationType === "image-to-image" && !sourceFile) {
         draftContent = JSON.stringify({
           status: "failed",
           error:
@@ -358,7 +352,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         batchSize,
       };
       if (generationType === "image-to-image") {
-        generationParams.sourceImageId = sourceImageId;
+        generationParams.file = sourceFile;
         if (
           effectiveSourceImageUrl &&
           /^https?:\/\//.test(effectiveSourceImageUrl)
@@ -558,8 +552,8 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         ? "image-to-image"
         : "text-to-image";
 
-      // If img2img with source URL, upload first
-      let sourceImageId: string | undefined = undefined;
+      // If img2img with source URL, create File object instead of uploading
+      let sourceFile: File | undefined = undefined;
       if (
         generationType === "image-to-image" &&
         effectiveSourceImageUrl &&
@@ -570,25 +564,22 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           if (!resp.ok)
             throw new Error(`Failed to fetch source image: ${resp.status}`);
           const blob = await resp.blob();
-          const fd = new FormData();
-          fd.append("payload", blob, "source-image.png");
-          fd.append("type", "image");
-          const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${config.token}`,
-              "User-Agent": "SuperDuperAI-Chatbot/1.0",
-            },
-            body: fd,
-          });
-          if (!uploadResp.ok) {
-            const t = await uploadResp.text();
-            throw new Error(`Upload failed: ${uploadResp.status} ${t}`);
-          }
-          const up = await uploadResp.json();
-          sourceImageId = up?.id;
+          const filename =
+            effectiveSourceImageUrl.split("/").pop() || "source-image.jpg";
+          sourceFile = new File([blob], filename, { type: blob.type });
+          console.log(
+            "🔍 Image artifact update: created File object from URL:",
+            {
+              filename,
+              size: sourceFile.size,
+              type: sourceFile.type,
+            }
+          );
         } catch (e) {
-          console.error("🎨 ❌ Failed to upload source image for img2img:", e);
+          console.error(
+            "🎨 ❌ Failed to create File from source image URL:",
+            e
+          );
         }
       }
 
@@ -607,7 +598,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           }
         } catch (_) {}
       }
-      if (generationType === "image-to-image" && !sourceImageId) {
+      if (generationType === "image-to-image" && !sourceFile) {
         draftContent = JSON.stringify({
           status: "failed",
           error:
@@ -625,7 +616,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         batchSize,
       };
       if (generationType === "image-to-image") {
-        updateParams.sourceImageId = sourceImageId;
+        updateParams.file = sourceFile;
         if (
           effectiveSourceImageUrl &&
           /^https?:\/\//.test(effectiveSourceImageUrl)

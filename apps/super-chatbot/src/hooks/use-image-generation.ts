@@ -1,12 +1,13 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import {
-  generateImage,
-  type ImageGenerationResult,
-} from "@/lib/ai/api/generate-image";
+
 import type { MediaOption, MediaResolution } from "@/lib/types/media-settings";
 import type { ImageModel } from "@/lib/config/superduperai";
 import { useImageSSE } from "./use-image-sse";
 import { useImageEventHandler } from "./use-image-event-handler";
+import {
+  generateImageWithStrategy,
+  getSuperduperAIConfig,
+} from "@turbo-super/api";
 
 export enum TaskStatusEnum {
   IN_PROGRESS = "in_progress",
@@ -283,14 +284,18 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
 
         console.log("🚀 Starting image generation for chat:", chatId);
 
-        // Start image generation
-        const result: ImageGenerationResult = await generateImage(
-          prompt,
-          model,
-          resolution,
-          style,
-          shotSize,
-          chatId
+        let config = getSuperduperAIConfig();
+
+        const result = await generateImageWithStrategy(
+          "text-to-image",
+          {
+            prompt,
+            model: model,
+            resolution: resolution,
+            style: style,
+            shotSize: shotSize,
+          },
+          config
         );
 
         if (!result.success) {
