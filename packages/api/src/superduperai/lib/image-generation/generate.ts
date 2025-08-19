@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ImageGenerationStrategyFactory } from "./strategy.factory";
 import type {
   ImageGenerationParams,

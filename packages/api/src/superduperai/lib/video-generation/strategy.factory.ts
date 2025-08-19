@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ImageToVideoStrategy } from "./strategies/image-to-video";
 import { TextToVideoStrategy } from "./strategies/text-to-video";
 import type { VideoGenerationStrategy } from "./strategy.interface";

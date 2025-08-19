@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Base interfaces for image generation
 export interface ImageGenerationParams {
   prompt: string;

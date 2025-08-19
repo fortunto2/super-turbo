@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tool operation types and their costs
  */

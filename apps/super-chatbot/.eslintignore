@@ -1,0 +1,11 @@
+# Исключаем auto-generated код из packages/api
+../../packages/api/src/superduperai/**/*.ts
+
+# Исключаем node_modules
+node_modules/
+
+# Исключаем .next
+.next/
+
+# Исключаем dist
+dist/

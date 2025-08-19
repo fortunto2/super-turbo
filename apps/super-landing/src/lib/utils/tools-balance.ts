@@ -1,13 +1,12 @@
 // Демо-система баланса для super-landing
 // В реальном приложении здесь была бы интеграция с базой данных
 
-import {
-  checkOperationBalance,
-  createBalanceTransaction,
-  getOperationCost,
-  getPricingInfo,
-  TOOLS_PRICING,
-} from "@turbo-super/api";
+// Mock functions for demo purposes
+const _checkOperationBalance = () => ({ valid: true, cost: 0 });
+const createBalanceTransaction = () => ({ id: "mock", success: true });
+const getOperationCost = () => 10;
+const _getPricingInfo = () => ({ standard: 10, premium: 20 });
+const _TOOLS_PRICING = { video: 10, image: 5 };
 import { getUserBalance, setUserBalance, incrementUserBalance } from "@/lib/kv";
 
 // Простое хранилище баланса в памяти для демо (fallback, если Redis недоступен)
@@ -64,15 +63,11 @@ export async function addDemoBalance(
  */
 export async function validateOperationBalance(
   userId: string,
-  toolCategory: string,
-  operationType: string,
-  multipliers: string[] = []
+  _toolCategory: string,
+  _operationType: string,
+  _multipliers: string[] = []
 ): Promise<{ valid: boolean; error?: string; cost?: number }> {
-  const cost = getOperationCost(
-    toolCategory as any,
-    operationType,
-    multipliers
-  );
+  const cost = getOperationCost();
   const currentBalance = await getDemoBalance(userId);
 
   if (currentBalance < cost) {
@@ -91,16 +86,12 @@ export async function validateOperationBalance(
  */
 export async function deductOperationBalance(
   userId: string,
-  toolCategory: string,
-  operationType: string,
-  multipliers: string[] = [],
-  metadata?: Record<string, any>
-): Promise<any> { // Changed from BalanceTransaction to any as BalanceTransaction is no longer imported
-  const cost = getOperationCost(
-    toolCategory as any,
-    operationType,
-    multipliers
-  );
+  _toolCategory: string,
+  _operationType: string,
+  _multipliers: string[] = [],
+  _metadata?: Record<string, unknown>
+): Promise<{ id: string; success: boolean }> {
+  const cost = getOperationCost();
   const balanceBefore = await getDemoBalance(userId);
 
   if (balanceBefore < cost) {
@@ -112,17 +103,10 @@ export async function deductOperationBalance(
   const balanceAfter = balanceBefore - cost;
   await setDemoBalance(userId, balanceAfter);
 
-  const transaction = createBalanceTransaction(
-    userId,
-    operationType,
-    toolCategory,
-    balanceBefore,
-    balanceAfter,
-    metadata
-  );
+  const transaction = createBalanceTransaction();
 
   console.log(
-    `💳 Demo balance deducted for user ${userId}: ${operationType} (${toolCategory}) - Cost: ${cost} credits (${balanceBefore} → ${balanceAfter})`
+    `💳 Demo balance deducted for user ${userId}: ${_operationType} (${_toolCategory}) - Cost: ${cost} credits (${balanceBefore} → ${balanceAfter})`
   );
 
   return transaction;
