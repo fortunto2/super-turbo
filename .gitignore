@@ -50,4 +50,15 @@ yarn-error.log*
 .model-image-generations/
 .generation-data/
 
+# Build output directories - exclude all dist folders in turbo repo
 dist/
+**/dist/
+**/dist/**/*
+packages/*/dist/
+apps/*/dist/
+
+# Additional build outputs that might exist
+lib/
+es/
+cjs/
+umd/
