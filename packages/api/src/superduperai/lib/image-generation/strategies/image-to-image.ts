@@ -100,7 +100,12 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
 
     let imageId: string | undefined;
     let imageUrl: string | undefined;
-    if (config) {
+    if (params.sourceImageId) {
+      imageId = params.sourceImageId;
+      imageUrl = params.sourceImageUrl;
+      console.log("🔍 ImageToImageStrategy: using sourceImageId:", imageId);
+      console.log("🔍 ImageToImageStrategy: using sourceImageUrl:", imageUrl);
+    } else if (config) {
       console.log("📤 Starting image upload...");
       const uploadResult = await this.handleImageUpload(params, config);
       console.log("📤 Image upload result:", uploadResult);
