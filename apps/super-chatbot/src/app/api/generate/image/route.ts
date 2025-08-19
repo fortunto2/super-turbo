@@ -87,65 +87,6 @@ export async function POST(request: NextRequest) {
     console.log("SESSION USER", session);
     let config = getSuperduperAIConfigWithUserToken(session);
 
-    // If using user token, ensure user exists in SuperDuperAI
-    if (config.isUserToken && session?.user?.email) {
-      console.log(
-        `🔍 Checking if user ${session.user.email} exists in SuperDuperAI...`
-      );
-      try {
-        // Use system token to check if user exists (more reliable)
-        const systemConfig = getSuperduperAIConfig();
-        const testUrl = `${config.url}/api/v1/user/profile`;
-        console.log(`🔍 Testing SuperDuperAI endpoint: ${testUrl}`);
-
-        const testResponse = await fetch(testUrl, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${systemConfig.token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        console.log(
-          `🔍 SuperDuperAI user check response: ${testResponse.status} ${testResponse.statusText}`
-        );
-
-        if (!testResponse.ok) {
-          console.log(
-            `⚠️ User ${session.user.email} not found in SuperDuperAI (${testResponse.status}), falling back to system token`
-          );
-          // Fall back to system token
-          config = { ...config, token: systemConfig.token, isUserToken: false };
-          OpenAPI.BASE = systemConfig.url;
-          OpenAPI.TOKEN = systemConfig.token;
-          console.log("🔄 Switched to system token for SuperDuperAI");
-        } else {
-          console.log(
-            `✅ User ${session.user.email} exists in SuperDuperAI, using user token`
-          );
-          // User exists, but we'll still use system token for now since user token seems to be invalid
-          config = { ...config, token: systemConfig.token, isUserToken: false };
-          OpenAPI.BASE = systemConfig.url;
-          OpenAPI.TOKEN = systemConfig.token;
-          console.log(
-            "🔄 Using system token for SuperDuperAI (user token validation pending)"
-          );
-        }
-      } catch (error) {
-        console.log(`❌ Error checking user existence in SuperDuperAI:`, error);
-        console.log(`🔄 Falling back to system token due to error`);
-        // Fall back to system token on error
-        const systemConfig = getSuperduperAIConfig();
-        config = { ...config, token: systemConfig.token, isUserToken: false };
-        OpenAPI.BASE = systemConfig.url;
-        OpenAPI.TOKEN = systemConfig.token;
-      }
-    } else {
-      OpenAPI.BASE = config.url;
-      OpenAPI.TOKEN = config.token;
-    }
-
-    // Helper: normalize shot size to API enum (Medium Shot, Long Shot, ...)
     const normalizeShotSize = (val: any) => {
       const raw = typeof val === "string" ? val : val?.id || val?.label || "";
       if (!raw) return undefined;
@@ -166,92 +107,13 @@ export async function POST(request: NextRequest) {
         body.shotSize = { id: pretty };
       }
     }
+    // Ensure non-empty prompt to avoid backend stalling
+    body.prompt = ensureNonEmptyPrompt(body.prompt, "Enhance this image");
 
-    // If multipart with file: upload image first to obtain sourceImageId
-    if (body.generationType === "image-to-image" && body.file instanceof File) {
-      try {
-        const fd = new FormData();
-        fd.append("payload", body.file);
-        fd.append("type", "image");
+    // Create image generation config using OpenAPI types
 
-        const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${config.token}`,
-            "User-Agent": "SuperDuperAI-Chatbot/1.0",
-          },
-          body: fd,
-        });
+    let result;
 
-        if (!uploadResp.ok) {
-          const txt = await uploadResp.text();
-          throw new Error(`Upload failed: ${uploadResp.status} ${txt}`);
-        }
-        const up = await uploadResp.json();
-        console.log("🖼️ Upload success, imageId:", up?.id);
-        if (up?.id) {
-          body.sourceImageId = up.id as string;
-        }
-      } catch (e) {
-        console.error("❌ Image upload failed before generation:", e);
-        return NextResponse.json(
-          { success: false, error: "Image upload failed" },
-          { status: 400 }
-        );
-      } finally {
-        // prevent duplicate uploads by strategy
-        delete body.file;
-      }
-    }
-
-    // If JSON with sourceImageUrl (no file), upload it to obtain sourceImageId as well
-    if (
-      (!body.generationType || body.generationType === "image-to-image") &&
-      !body.sourceImageId &&
-      body.sourceImageUrl &&
-      typeof body.sourceImageUrl === "string"
-    ) {
-      try {
-        const url = body.sourceImageUrl as string;
-        const resp = await fetch(url);
-        if (!resp.ok) {
-          const txt = await resp.text().catch(() => "");
-          throw new Error(`Fetch source failed: ${resp.status} ${txt}`);
-        }
-        const blob = await resp.blob();
-        const fd = new FormData();
-        fd.append("payload", blob, "source-image.png");
-        fd.append("type", "image");
-        const uploadResp = await fetch(`${config.url}/api/v1/file/upload`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${config.token}`,
-            "User-Agent": "SuperDuperAI-Chatbot/1.0",
-          },
-          body: fd,
-        });
-        if (!uploadResp.ok) {
-          const txt = await uploadResp.text();
-          throw new Error(`Upload failed: ${uploadResp.status} ${txt}`);
-        }
-        const up = await uploadResp.json();
-        if (up?.id) {
-          body.sourceImageId = up.id as string;
-          // keep original http(s) url so SDK can include reference_url in payload
-          if (/^https?:\/\//.test(String(body.sourceImageUrl))) {
-            body.sourceImageUrl = String(url);
-          }
-        }
-      } catch (e) {
-        console.error("❌ Image URL upload failed before generation:", e);
-        return NextResponse.json(
-          { success: false, error: "Image URL upload failed" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Normalize model for image-to-image: select proper image_to_image generation config (via cached models)
     if (body.generationType === "image-to-image") {
       try {
         const { getAvailableImageModels } = await import(
@@ -277,40 +139,38 @@ export async function POST(request: NextRequest) {
           );
           body.model = { name: mapped };
         }
+        const strategyParams: ImageGenerationParams = {
+          ...body,
+        };
+        result = await generateImageWithStrategy(
+          "image-to-image",
+          strategyParams,
+          config
+        );
       } catch (e) {
         console.warn("⚠️ Failed to remap model for image_to_image (cache):", e);
       }
+    } else {
+      const strategyParams: ImageGenerationParams = {
+        ...body,
+      };
+      // Use OpenAPI client to generate image
+      result = await generateImageWithStrategy(
+        "text-to-image",
+        strategyParams,
+        config
+      );
     }
-
-    // Ensure non-empty prompt to avoid backend stalling
-    body.prompt = ensureNonEmptyPrompt(body.prompt, "Enhance this image");
-
-    // Ensure correct generation type if we have a sourceImageId
-    if (body.sourceImageId && generationType !== "image-to-image") {
-      body.generationType = "image-to-image";
-    }
-
-    // Create image generation config using OpenAPI types
-    const strategyParams: ImageGenerationParams = {
-      ...body,
-    };
-
-    // Use OpenAPI client to generate image
-    const result = await generateImageWithStrategy(
-      generationType,
-      strategyParams,
-      config
-    );
 
     console.log("✅ Image generation result:", result);
 
     // Check if generation was successful
-    if (!result.success) {
+    if (!result?.success) {
       console.log("❌ Image generation failed");
       return NextResponse.json(
         {
           success: false,
-          error: result.error || "Image generation failed",
+          error: result?.error || "Image generation failed",
         },
         { status: 500 }
       );

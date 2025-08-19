@@ -98,8 +98,17 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     const modelName = params.model?.name || "fal-ai/flux-dev";
     const isGPTImage = String(modelName).includes("gpt-image-1");
 
-    const imageId: string | undefined = (params as any).sourceImageId;
-    const sourceUrl: string | undefined = (params as any).sourceImageUrl;
+    let imageId: string | undefined;
+    let imageUrl: string | undefined;
+    if (config) {
+      console.log("📤 Starting image upload...");
+      const uploadResult = await this.handleImageUpload(params, config);
+      console.log("📤 Image upload result:", uploadResult);
+      imageId = uploadResult.imageId;
+      imageUrl = uploadResult.imageUrl;
+    } else {
+      console.log("⚠️ No config provided, skipping image upload");
+    }
 
     // Если передан файл, сначала загружаем его и используем reference_id
     // Примечание: загрузку выполним в generate() уровне выше, где доступен config.
@@ -117,7 +126,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
                 {
                   type: "source",
                   reference_id: imageId,
-                  ...(sourceUrl ? { reference_url: sourceUrl } : {}),
+                  reference_url: imageUrl,
                 },
               ]
             : [],
@@ -145,7 +154,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
               {
                 type: "source",
                 reference_id: imageId,
-                ...(sourceUrl ? { reference_url: sourceUrl } : {}),
+                reference_url: imageUrl,
               },
             ]
           : [],
@@ -157,7 +166,6 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     console.log("🔍 ImageToImageStrategy: generated payload:", {
       modelName,
       imageId,
-      sourceUrl,
       resolution: params.resolution,
       payload,
     });
