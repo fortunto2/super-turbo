@@ -20,16 +20,6 @@ import type { VideoGenerationFormData } from "../components/video-generator-form
 import type { GenerationStatus } from "../components/video-generation-progress";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
 
-// AICODE-CHANGE: Add type for SSE events
-interface VideoSseEvent {
-  type: "render_progress" | "file" | "error";
-  progress?: number;
-  data?: { message?: string };
-  object?: { url?: string };
-  error?: string;
-}
-
-// Legacy interfaces - MUST remain exactly the same for compatibility
 export interface GeneratedVideo {
   id: string;
   url: string;
@@ -70,21 +60,6 @@ export interface UseVideoGeneratorReturn {
   // Utils
   downloadVideo: (video: GeneratedVideo) => Promise<void>;
   copyVideoUrl: (video: GeneratedVideo) => Promise<void>;
-}
-
-/**
- * Convert File to Base64 data URL (browser environment)
- */
-function fileToBase64DataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result); // This includes the data:image/...;base64, prefix
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
 export function useVideoGenerator(): UseVideoGeneratorReturn {

@@ -1,10 +1,12 @@
 import { createDocumentHandler } from "@/lib/artifacts/server";
 import { generateVideoWithStrategy } from "@turbo-super/api";
-import { getSuperduperAIConfig } from "@/lib/config/superduperai";
+import {
+  getSuperduperAIConfig,
+  getAvailableVideoModels,
+} from "@/lib/config/superduperai";
 import { getStyles } from "@/lib/ai/api/get-styles";
 import type { MediaOption } from "@/lib/types/media-settings";
 import type { VideoModel } from "@/lib/config/superduperai";
-import { getAvailableVideoModels } from "@/lib/config/superduperai";
 import {
   SHOT_SIZES,
   VIDEO_FRAME_RATES,
@@ -13,14 +15,7 @@ import {
   getModelCompatibleResolutions,
 } from "@/lib/config/video-constants";
 import { GenerationSourceEnum, GenerationTypeEnum } from "@/lib/api";
-import {
-  validateOperationBalance,
-  deductOperationBalance,
-} from "@/lib/utils/tools-balance";
-import {
-  handleBalanceError,
-  createBalanceError,
-} from "@/lib/utils/balance-error-handler";
+import { deductOperationBalance } from "@/lib/utils/tools-balance";
 
 function convertToVideoModel(sdModel: VideoModel): VideoModel {
   return sdModel;
