@@ -12,4 +12,10 @@ export default defineConfig({
   noExternal: ["@turbo-super/core"], // Включаем core в бандл
   // Игнорируем ошибки TypeScript
   onSuccess: "echo 'Build completed (ignoring TypeScript errors)'",
+  // Явно указываем расширения для ESM
+  outExtension({ format }) {
+    return {
+      js: format === "esm" ? ".mjs" : ".js",
+    };
+  },
 });
