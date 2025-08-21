@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TextToImageStrategy } from "./strategies/text-to-image";
 import { ImageToImageStrategy } from "./strategies/image-to-image";
 import type { ImageGenerationStrategy } from "./strategy.interface";

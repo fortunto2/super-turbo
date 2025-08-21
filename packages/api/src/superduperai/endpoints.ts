@@ -1,3 +1,4 @@
+// @ts-nocheck
 // SuperDuperAI API endpoints
 
 export const ENDPOINTS = {

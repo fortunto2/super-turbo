@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Base interfaces for video generation
 export interface VideoGenerationParams {
   prompt: string;

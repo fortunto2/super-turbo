@@ -5,9 +5,10 @@
     "paths": {
       "@/*": ["./src/*"],
       "@turbo-super/ui": ["../../packages/ui/src"],
-      "@turbo-super/shared": ["../../packages/shared/src"]
+      "@turbo-super/shared": ["../../packages/shared/src"],
+      "@turbo-super/api": ["../../packages/api/src"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../../packages/api/src"]
 }

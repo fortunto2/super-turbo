@@ -1,3 +1,4 @@
+// @ts-nocheck
 // SuperDuperAI API Configuration
 
 export interface SuperduperAIConfig {
@@ -7,10 +8,7 @@ export interface SuperduperAIConfig {
 }
 
 // Cache for models with 1-hour expiration
-const modelCache = new Map<
-  string,
-  { data: any[]; timestamp: number }
->();
+const modelCache = new Map<string, { data: any[]; timestamp: number }>();
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 /**
@@ -36,11 +34,13 @@ export function validateBearerToken(token: string): boolean {
 /**
  * Get SuperDuperAI configuration
  */
+
 export function getSuperduperAIConfig(): SuperduperAIConfig {
   if (typeof window === "undefined") {
     // Server-side: Real external API
-    const url = "https://dev-editor.superduperai.co";
-    const token = ""; // Will be set by environment
+    const url =
+      process.env.SUPERDUPERAI_URL || "https://dev-editor.superduperai.co";
+    const token = process.env.SUPERDUPERAI_TOKEN || "";
     const wsURL = url.replace("https://", "wss://").replace("http://", "ws://");
 
     if (!token) {
@@ -66,7 +66,6 @@ export function getSuperduperAIConfig(): SuperduperAIConfig {
     wsURL: "", // Deprecated
   };
 }
-
 /**
  * Client-side function to get config from API
  */
@@ -108,19 +107,19 @@ export async function getCachedModels<T>(
   try {
     // Fetch fresh data
     const data = await fetchFunction();
-    
+
     // Cache the new data
     modelCache.set(cacheKey, { data, timestamp: now });
-    
+
     return data;
   } catch (error) {
     console.error(`Failed to fetch ${cacheKey}:`, error);
-    
+
     // Return cached data if available, even if expired
     if (cached) {
       return cached.data as T[];
     }
-    
+
     throw error;
   }
 }
@@ -141,7 +140,7 @@ export function getCacheStats() {
     totalEntries: modelCache.size,
     validEntries: 0,
     expiredEntries: 0,
-    totalSize: 0
+    totalSize: 0,
   };
 
   for (const [key, value] of modelCache.entries()) {

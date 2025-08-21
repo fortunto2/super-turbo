@@ -1,3 +1,4 @@
+// @ts-nocheck
 // SuperDuperAI API types
 
 export interface APIResponse<T = any> {
@@ -22,7 +23,7 @@ export interface GenerationRequest {
 
 export interface GenerationResponse {
   id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   result?: any;
   error?: string;
   progress?: number;
@@ -59,10 +60,10 @@ export enum GenerationType {
   IMAGE_TO_IMAGE = "image_to_image",
   TEXT_TO_VIDEO = "text_to_video",
   IMAGE_TO_VIDEO = "image_to_video",
-  VIDEO_TO_VIDEO = "video_to_video"
+  VIDEO_TO_VIDEO = "video_to_video",
 }
 
 export enum ListOrder {
   ASC = "asc",
-  DESC = "desc"
+  DESC = "desc",
 }

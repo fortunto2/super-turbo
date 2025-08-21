@@ -17,6 +17,10 @@
     "./ai-tools": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./video-player": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
@@ -25,19 +29,32 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@turbo-super/core": "workspace:*",
+    "@remotion/cli": "4.0.229",
+    "@remotion/player": "4.0.229",
+    "@remotion/renderer": "4.0.229",
+    "@remotion/transitions": "4.0.229",
     "@turbo-super/api": "workspace:*",
+    "@turbo-super/core": "workspace:*",
     "@turbo-super/ui": "workspace:*",
+    "fabric": "^6.4.2",
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
+    "lucide-react": "^0.400.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "remotion": "4.0.229",
+    "@superduperai/fabric-guideline-plugin": "^0.0.11",
+    "super-timeline": "https://github.com/PranovAdilet/super-timeline-vite2.git#811149d",
     "zod": "^3.22.4",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "lucide-react": "^0.400.0"
+    "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.20",
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^18.0.0 || ^19.0.0",
+    "@types/react-dom": "^18.0.0 || ^19.0.0",
     "tsup": "^8.0.1",
-    "typescript": "^5.3.3",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0"
+    "typescript": "^5.3.3"
   },
   "peerDependencies": {
     "next": "^15.0.0"

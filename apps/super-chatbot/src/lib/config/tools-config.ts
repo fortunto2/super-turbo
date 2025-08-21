@@ -11,7 +11,8 @@ export interface ToolConfig {
     | "zap"
     | "play"
     | "languages"
-    | "gallery";
+    | "gallery"
+    | "file-text";
   href: string;
   category: "generation" | "enhancement" | "utility" | "gallery";
   features: {
@@ -115,6 +116,24 @@ export const TOOLS_CONFIG: ToolConfig[] = [
     hoverColor: "indigo-600",
     bgColor: "indigo-100",
     hoverBgColor: "indigo-200",
+  },
+  {
+    id: "story-editor",
+    name: "Story Editor",
+    description:
+      "Generate professional videos using SuperDuperAI project video API. Create videos with advanced AI models and real-time progress tracking.",
+    shortDescription: "AI Video Generator",
+    iconName: "file-text",
+    href: "/tools/story-editor",
+    category: "generation",
+    features: [
+      { iconName: "play", label: "Project Video API" },
+      { iconName: "zap", label: "Real-time Progress" },
+    ],
+    primaryColor: "emerald-600",
+    hoverColor: "emerald-600",
+    bgColor: "emerald-100",
+    hoverBgColor: "emerald-200",
   },
 ];
 
