@@ -1,7 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { RemotionPlayer } from "@turbo-super/features";
+import {
+  RemotionPlayer,
+  sceneToMediaFormatting,
+  useMediaPrefetch,
+} from "@turbo-super/features";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
@@ -18,6 +22,12 @@ export default function VideoPage() {
 
   const music = useMemo(() => project?.music ?? null, [project?.music]);
 
+  const scenesMedia = useMemo(() => sceneToMediaFormatting(scenes), [scenes]);
+
+  const files = useMemo(() => [...scenesMedia], [scenesMedia]);
+
+  const { loaded: isLoaded } = useMediaPrefetch({ files });
+
   const aspectRatio = useMemo(() => {
     if (!project) return;
     const videoProject = project as IProjectVideoRead;
@@ -27,7 +37,7 @@ export default function VideoPage() {
   }, [project?.config?.aspect_ratio]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (retryCount = 0) => {
       try {
         setIsLoading(true);
         setError(null);
@@ -53,6 +63,19 @@ export default function VideoPage() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+
+        // Retry logic для временных ошибок
+        if (
+          retryCount < 2 &&
+          error instanceof Error &&
+          (error.message.includes("Invalid URL") ||
+            error.message.includes("Network"))
+        ) {
+          console.log(`Retrying... attempt ${retryCount + 1}`);
+          setTimeout(() => fetchData(retryCount + 1), 1000 * (retryCount + 1));
+          return;
+        }
+
         setError("Ошибка загрузки данных");
       } finally {
         setIsLoading(false);
@@ -147,7 +170,7 @@ export default function VideoPage() {
             <RemotionPlayer
               scenes={scenes}
               music={music}
-              isLoading={false}
+              isLoading={!isLoaded}
               aspectRatio={aspectRatio}
             />
           ) : (

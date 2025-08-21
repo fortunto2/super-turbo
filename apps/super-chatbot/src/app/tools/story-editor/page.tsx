@@ -484,7 +484,7 @@ export default function StoryEditorPage() {
                     ) : projectStatus === "processing" ? (
                       <Loader2 className="size-4 animate-spin text-emerald-600" />
                     ) : (
-                      <Loader2 className="size-4 text-yellow-600" />
+                      <Loader2 className="size-4 animate-spin text-yellow-600" />
                     )}
                     <span className="capitalize">
                       {projectStatus === "completed" && "Видео готово!"}

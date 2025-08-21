@@ -5,8 +5,8 @@ var ui = require('@turbo-super/ui');
 var lucideReact = require('lucide-react');
 var jsxRuntime = require('react/jsx-runtime');
 var api = require('@turbo-super/api');
-var player = require('@remotion/player');
 var remotion = require('remotion');
+var player = require('@remotion/player');
 var fabric = require('fabric');
 var fabricGuidelinePlugin = require('@superduperai/fabric-guideline-plugin');
 var superTimeline = require('super-timeline');
@@ -2321,6 +2321,94 @@ function useProject(projectId) {
     error
   };
 }
+var useMediaPrefetch = ({ files, cleanable = false }) => {
+  const [loaded, setLoaded] = react.useState(false);
+  const [progress, setProgress] = react.useState({ totalBytes: 0, loadedBytes: 0 });
+  react.useEffect(() => {
+    if (!files || files.length === 0) return;
+    let isCancelled = false;
+    let totalBytes = 0;
+    let loadedBytes = 0;
+    const cleanupResources = () => {
+      files.forEach((file) => {
+        const { free } = remotion.prefetch(file.url);
+        free();
+      });
+      setLoaded(false);
+    };
+    const prefetchPromises = files.map((file) => {
+      const contentType = mediaTypeMap[file.type] || "application/octet-stream";
+      const { free, waitUntilDone } = remotion.prefetch(file.url, {
+        contentType,
+        onProgress: (bytes) => {
+          if (bytes.totalBytes) totalBytes = bytes.totalBytes;
+          if (bytes.loadedBytes > progress.loadedBytes) {
+            loadedBytes = bytes.loadedBytes;
+            setProgress({ loadedBytes, totalBytes });
+          }
+        }
+      });
+      return waitUntilDone().then(() => {
+        if (isCancelled) free();
+        return file.url;
+      }).catch((error) => {
+        console.error(`Failed to preload file: ${file.url}`, error);
+      });
+    });
+    Promise.all(prefetchPromises).then(() => {
+      if (!isCancelled) setLoaded(true);
+    }).catch((error) => {
+      console.error("Failed to preload media files", error);
+    });
+    return () => {
+      isCancelled = true;
+      if (cleanable) cleanupResources();
+    };
+  }, [files, cleanable]);
+  const progressValue = react.useMemo(
+    () => progress.totalBytes ? Math.floor(progress.loadedBytes / progress.totalBytes * 100) : 0,
+    [progress]
+  );
+  return {
+    loaded,
+    progress: progressValue
+  };
+};
+var mediaTypeMap = {
+  [api.FileTypeEnum.IMAGE]: "image/webp",
+  [api.FileTypeEnum.VIDEO]: "video/mp4",
+  [api.FileTypeEnum.VOICEOVER]: "audio/mpeg",
+  [api.FileTypeEnum.SOUND_EFFECT]: "audio/mpeg",
+  [api.FileTypeEnum.AUDIO]: "audio/mpeg",
+  [api.FileTypeEnum.MUSIC]: "audio/mpeg",
+  [api.FileTypeEnum.TEXT]: "text/plain",
+  [api.FileTypeEnum.OTHER]: "application/octet-stream"
+};
+var sceneToMediaFormatting = (scenes) => {
+  if (!scenes) return [];
+  const media = [];
+  for (const scene of scenes) {
+    if (scene.file?.url) {
+      media.push({
+        url: scene.file.url,
+        type: scene.file.type
+      });
+    }
+    if (scene.voiceover?.url) {
+      media.push({
+        url: scene.voiceover.url,
+        type: scene.voiceover.type
+      });
+    }
+    if (scene.sound_effect?.url) {
+      media.push({
+        url: scene.sound_effect.url,
+        type: scene.sound_effect.type
+      });
+    }
+  }
+  return media;
+};
 
 // src/video-player/utils/video-utils.ts
 function calculateTotalDuration(scenes) {
@@ -2891,7 +2979,7 @@ var projectQueryKeys = {
   timeline: (id) => ["projects", id, "timeline"],
   video: (id) => ["projects", id, "video"]
 };
-var mediaTypeMap = {
+var mediaTypeMap2 = {
   [api.FileTypeEnum.IMAGE]: "image",
   [api.FileTypeEnum.VIDEO]: "video",
   [api.FileTypeEnum.VOICEOVER]: "audio",
@@ -3092,7 +3180,7 @@ var createTrack = (trackId, type, items) => {
   return {
     id: trackId,
     accepts: ["text", "audio", "helper", "video", "image"],
-    type: mediaTypeMap[type],
+    type: mediaTypeMap2[type],
     items,
     magnetic: false,
     static: false
@@ -3245,12 +3333,14 @@ exports.hi = hi_default;
 exports.isProjectReadyForVideo = isProjectReadyForVideo;
 exports.isSceneReady = isSceneReady;
 exports.locales = locales;
-exports.mediaTypeMap = mediaTypeMap;
+exports.mediaTypeMap = mediaTypeMap2;
 exports.projectQueryKeys = projectQueryKeys;
 exports.ru = ru_default;
+exports.sceneToMediaFormatting = sceneToMediaFormatting;
 exports.tr = tr_default;
 exports.useDataUpdate = useDataUpdate;
 exports.useGenerateTimeline = useGenerateTimeline;
+exports.useMediaPrefetch = useMediaPrefetch;
 exports.useProject = useProject;
 exports.useProjectTimeline2Video = useProjectTimeline2Video;
 exports.useTranslation = useTranslation;

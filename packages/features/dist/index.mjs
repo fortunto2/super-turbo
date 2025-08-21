@@ -3,8 +3,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, Card, CardHeader, CardTitle, 
 import { BookOpen, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
 import { FileTypeEnum, DataService, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
+import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio, prefetch } from 'remotion';
 import { Player } from '@remotion/player';
-import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio } from 'remotion';
 import { Canvas, Textbox } from 'fabric';
 import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guideline-plugin';
 import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, Composition, TimelineComponent } from 'super-timeline';
@@ -2319,6 +2319,94 @@ function useProject(projectId) {
     error
   };
 }
+var useMediaPrefetch = ({ files, cleanable = false }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [progress, setProgress] = useState({ totalBytes: 0, loadedBytes: 0 });
+  useEffect(() => {
+    if (!files || files.length === 0) return;
+    let isCancelled = false;
+    let totalBytes = 0;
+    let loadedBytes = 0;
+    const cleanupResources = () => {
+      files.forEach((file) => {
+        const { free } = prefetch(file.url);
+        free();
+      });
+      setLoaded(false);
+    };
+    const prefetchPromises = files.map((file) => {
+      const contentType = mediaTypeMap[file.type] || "application/octet-stream";
+      const { free, waitUntilDone } = prefetch(file.url, {
+        contentType,
+        onProgress: (bytes) => {
+          if (bytes.totalBytes) totalBytes = bytes.totalBytes;
+          if (bytes.loadedBytes > progress.loadedBytes) {
+            loadedBytes = bytes.loadedBytes;
+            setProgress({ loadedBytes, totalBytes });
+          }
+        }
+      });
+      return waitUntilDone().then(() => {
+        if (isCancelled) free();
+        return file.url;
+      }).catch((error) => {
+        console.error(`Failed to preload file: ${file.url}`, error);
+      });
+    });
+    Promise.all(prefetchPromises).then(() => {
+      if (!isCancelled) setLoaded(true);
+    }).catch((error) => {
+      console.error("Failed to preload media files", error);
+    });
+    return () => {
+      isCancelled = true;
+      if (cleanable) cleanupResources();
+    };
+  }, [files, cleanable]);
+  const progressValue = useMemo(
+    () => progress.totalBytes ? Math.floor(progress.loadedBytes / progress.totalBytes * 100) : 0,
+    [progress]
+  );
+  return {
+    loaded,
+    progress: progressValue
+  };
+};
+var mediaTypeMap = {
+  [FileTypeEnum.IMAGE]: "image/webp",
+  [FileTypeEnum.VIDEO]: "video/mp4",
+  [FileTypeEnum.VOICEOVER]: "audio/mpeg",
+  [FileTypeEnum.SOUND_EFFECT]: "audio/mpeg",
+  [FileTypeEnum.AUDIO]: "audio/mpeg",
+  [FileTypeEnum.MUSIC]: "audio/mpeg",
+  [FileTypeEnum.TEXT]: "text/plain",
+  [FileTypeEnum.OTHER]: "application/octet-stream"
+};
+var sceneToMediaFormatting = (scenes) => {
+  if (!scenes) return [];
+  const media = [];
+  for (const scene of scenes) {
+    if (scene.file?.url) {
+      media.push({
+        url: scene.file.url,
+        type: scene.file.type
+      });
+    }
+    if (scene.voiceover?.url) {
+      media.push({
+        url: scene.voiceover.url,
+        type: scene.voiceover.type
+      });
+    }
+    if (scene.sound_effect?.url) {
+      media.push({
+        url: scene.sound_effect.url,
+        type: scene.sound_effect.type
+      });
+    }
+  }
+  return media;
+};
 
 // src/video-player/utils/video-utils.ts
 function calculateTotalDuration(scenes) {
@@ -2889,7 +2977,7 @@ var projectQueryKeys = {
   timeline: (id) => ["projects", id, "timeline"],
   video: (id) => ["projects", id, "video"]
 };
-var mediaTypeMap = {
+var mediaTypeMap2 = {
   [FileTypeEnum.IMAGE]: "image",
   [FileTypeEnum.VIDEO]: "video",
   [FileTypeEnum.VOICEOVER]: "audio",
@@ -3090,7 +3178,7 @@ var createTrack = (trackId, type, items) => {
   return {
     id: trackId,
     accepts: ["text", "audio", "helper", "video", "image"],
-    type: mediaTypeMap[type],
+    type: mediaTypeMap2[type],
     items,
     magnetic: false,
     static: false
@@ -3215,6 +3303,6 @@ var ProjectTimeline = ({
   ] });
 };
 
-export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap, projectQueryKeys, ru_default as ru, tr_default as tr, useDataUpdate, useGenerateTimeline, useProject, useProjectTimeline2Video, useTranslation, useVideoScenes };
+export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useDataUpdate, useGenerateTimeline, useMediaPrefetch, useProject, useProjectTimeline2Video, useTranslation, useVideoScenes };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

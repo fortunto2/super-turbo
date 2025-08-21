@@ -3,6 +3,8 @@ import {
   SceneService,
   ListOrderEnum,
   SelectRelatedEnum,
+  getSuperduperAIConfig,
+  OpenAPI,
 } from "@turbo-super/api";
 
 export async function GET(request: NextRequest) {
@@ -17,6 +19,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Настраиваем OpenAPI конфигурацию перед использованием SceneService
+    const config = await getSuperduperAIConfig();
+    console.log("SuperDuperAI config:", {
+      hasToken: !!config.token,
+      hasUrl: !!config.url,
+      url: config.url,
+    });
+
+    if (config.token) {
+      OpenAPI.TOKEN = config.token;
+    }
+    if (config.url) {
+      OpenAPI.BASE = config.url;
+    }
+
+    console.log("OpenAPI configuration:", {
+      BASE: OpenAPI.BASE,
+      hasToken: !!OpenAPI.TOKEN,
+    });
+
+    // Проверяем, что конфигурация корректна
+    if (!OpenAPI.BASE || OpenAPI.BASE === "") {
+      throw new Error("OpenAPI base URL is not configured");
+    }
+
     // Используем SceneService для получения сцен
     const response = await SceneService.sceneGetList({
       projectId,
@@ -25,7 +52,7 @@ export async function GET(request: NextRequest) {
       selectRelated: SelectRelatedEnum.FULL,
       limit: 50,
     });
-    console.log(response);
+    console.log("SceneService response:", response);
 
     // Извлекаем сцены из ответа
     const scenes = response.items || [];
@@ -36,6 +63,12 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching scenes:", error);
+
+    // Проверяем, является ли ошибка связанной с URL
+    if (error instanceof Error && error.message.includes("Invalid URL")) {
+      console.error("OpenAPI configuration error - invalid base URL");
+      console.error("Current OpenAPI.BASE:", OpenAPI.BASE);
+    }
 
     // В случае ошибки возвращаем заглушку для демонстрации
     return NextResponse.json({
