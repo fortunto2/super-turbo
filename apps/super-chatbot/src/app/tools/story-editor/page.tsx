@@ -123,9 +123,13 @@ export default function StoryEditorPage() {
           setTotalTasks(result.totalTasks || 0);
           setErrorTasks(result.errorTasks || []);
 
-          // Если проект завершен, обновляем UI
+          // Если проект завершен, обновляем UI и перенаправляем на просмотр видео
           if (result.status === "completed") {
             setSuccess("Видео успешно сгенерировано!");
+            // Перенаправляем на страницу просмотра видео через 2 секунды
+            setTimeout(() => {
+              window.location.href = `/tools/story-editor/${projectId}`;
+            }, 2000);
           } else if (result.status === "failed") {
             setError("Генерация видео не удалась");
           }
@@ -496,9 +500,24 @@ export default function StoryEditorPage() {
                     Статус обновляется автоматически каждые 5 секунд
                   </p>
 
-                  {/* Regenerate button for failed projects */}
-                  {projectStatus === "failed" && (
-                    <div className="mt-4">
+                  {/* Action buttons */}
+                  <div className="mt-4 space-y-3">
+                    {/* View video button for completed projects */}
+                    {projectStatus === "completed" && (
+                      <Button
+                        onClick={() =>
+                          (window.location.href = `/video/${projectId}`)
+                        }
+                        className="w-full"
+                        variant="default"
+                      >
+                        <Play className="mr-2 h-4 w-4" />
+                        Смотреть видео
+                      </Button>
+                    )}
+
+                    {/* Regenerate button for failed projects */}
+                    {projectStatus === "failed" && (
                       <Button
                         onClick={handleRegenerate}
                         disabled={isGenerating}
@@ -514,8 +533,8 @@ export default function StoryEditorPage() {
                           "Перегенерировать проект"
                         )}
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {/* Task details */}
                   {projectTasks.length > 0 && (

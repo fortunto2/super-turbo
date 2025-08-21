@@ -1,7 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { memo, Fragment, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Button, Badge, StripePaymentButton } from '@turbo-super/ui';
 import { BookOpen, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
-import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
+import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
+import { FileTypeEnum, DataService, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
+import { Player } from '@remotion/player';
+import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio } from 'remotion';
+import { Canvas, Textbox } from 'fabric';
+import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guideline-plugin';
+import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, Composition, TimelineComponent } from 'super-timeline';
+import { fade } from '@remotion/transitions/fade';
+import { TransitionSeries, linearTiming } from '@remotion/transitions';
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -1328,10 +1336,10 @@ function AIEnhancement({
           disabled: isEnhancing,
           size: "lg",
           className: "w-full h-16 text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200",
-          children: isEnhancing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          children: isEnhancing ? /* @__PURE__ */ jsxs(Fragment$1, { children: [
             /* @__PURE__ */ jsx(Loader2, { className: "w-6 h-6 mr-3 animate-spin" }),
             t("veo3PromptGenerator.aiEnhancement.enhancing")
-          ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+          ] }) : /* @__PURE__ */ jsxs(Fragment$1, { children: [
             /* @__PURE__ */ jsx(Sparkles, { className: "w-6 h-6 mr-3" }),
             enhancedPrompt.trim() ? t("veo3PromptGenerator.aiEnhancement.enhanceButton") : t("veo3PromptGenerator.aiEnhancement.enhanceButton"),
             selectedFocusTypes.length > 0 && /* @__PURE__ */ jsxs("span", { className: "ml-2 text-sm opacity-90", children: [
@@ -1558,10 +1566,10 @@ function AIEnhancement({
           disabled: isEnhancing,
           size: "lg",
           className: "w-full h-16 text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200",
-          children: isEnhancing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          children: isEnhancing ? /* @__PURE__ */ jsxs(Fragment$1, { children: [
             /* @__PURE__ */ jsx(Loader2, { className: "w-6 h-6 mr-3 animate-spin" }),
             t("veo3PromptGenerator.aiEnhancement.enhancing")
-          ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+          ] }) : /* @__PURE__ */ jsxs(Fragment$1, { children: [
             /* @__PURE__ */ jsx(Sparkles, { className: "w-6 h-6 mr-3" }),
             enhancedPrompt.trim() ? t("veo3PromptGenerator.aiEnhancement.enhanceButton") : t("veo3PromptGenerator.aiEnhancement.enhanceButton"),
             selectedFocusTypes.length > 0 && /* @__PURE__ */ jsxs("span", { className: "ml-2 text-sm opacity-90", children: [
@@ -1605,7 +1613,7 @@ function PromptHistory({
   locale = "en"
 }) {
   const { t } = useTranslation(locale);
-  return /* @__PURE__ */ jsx(Card, { className: "w-full", children: promptHistory.length > 0 ? /* @__PURE__ */ jsxs(Fragment, { children: [
+  return /* @__PURE__ */ jsx(Card, { className: "w-full", children: promptHistory.length > 0 ? /* @__PURE__ */ jsxs(Fragment$1, { children: [
     /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
       /* @__PURE__ */ jsxs(CardTitle, { className: "flex items-center gap-2", children: [
         /* @__PURE__ */ jsx(Copy, { className: "w-5 h-5" }),
@@ -2210,7 +2218,1003 @@ var CharacterType = {};
 var EnhancementInfoType = {};
 var PresetOptionsType = {};
 var HistoryItemType = {};
+function useVideoScenes(projectId) {
+  const [scenes, setScenes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [projectStatus, setProjectStatus] = useState("unknown");
+  const [projectProgress, setProjectProgress] = useState(0);
+  useEffect(() => {
+    if (!projectId) return;
+    const fetchProjectData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const statusResponse = await fetch(
+          `/api/story-editor/status?projectId=${projectId}`
+        );
+        const statusResult = await statusResponse.json();
+        if (statusResult.success) {
+          setProjectStatus(statusResult.status);
+          setProjectProgress(statusResult.progress || 0);
+          if (statusResult.status === "completed" && statusResult.project?.scenes) {
+            setScenes(statusResult.project.scenes);
+          } else if (statusResult.status === "completed") {
+            const scenesResponse = await fetch(
+              `/api/story-editor/scenes?projectId=${projectId}`
+            );
+            const scenesResult = await scenesResponse.json();
+            if (scenesResult.success && scenesResult.scenes) {
+              const fullScenes = scenesResult.scenes.filter(
+                (scene) => scene.visual_description || scene.action_description
+              );
+              setScenes(fullScenes);
+            } else {
+              setError("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0441\u0446\u0435\u043D\u044B");
+            }
+          }
+        } else {
+          setError("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441 \u043F\u0440\u043E\u0435\u043A\u0442\u0430");
+        }
+      } catch (err) {
+        setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0434\u0430\u043D\u043D\u044B\u0445 \u043F\u0440\u043E\u0435\u043A\u0442\u0430");
+        console.error("Error fetching project data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProjectData();
+    if (projectStatus !== "completed") {
+      const interval = setInterval(fetchProjectData, 5e3);
+      return () => clearInterval(interval);
+    }
+  }, [projectId, projectStatus]);
+  return {
+    scenes,
+    isLoading,
+    error,
+    projectStatus,
+    projectProgress
+  };
+}
+function useProject(projectId) {
+  const [project, setProject] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    if (!projectId) {
+      setError("Project ID is required");
+      setIsLoading(false);
+      return;
+    }
+    const fetchProject = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const config = await getClientSuperduperAIConfig();
+        if (config.token) {
+          OpenAPI.TOKEN = config.token;
+        }
+        if (config.url) {
+          OpenAPI.BASE = config.url;
+        }
+        const projectData = await ProjectService.projectGetById({
+          id: projectId
+        });
+        setProject(projectData);
+      } catch (err) {
+        console.error("Error fetching project:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch project"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProject();
+  }, [projectId]);
+  return {
+    project,
+    isLoading,
+    error
+  };
+}
 
-export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, PromptDataType, Veo3PromptGenerator, defaultLocale, en_default as en, es_default as es, hi_default as hi, locales, ru_default as ru, tr_default as tr, useTranslation };
+// src/video-player/utils/video-utils.ts
+function calculateTotalDuration(scenes) {
+  const total = scenes.reduce((acc, scene) => acc + (scene.duration || 5), 0);
+  return Math.round(total);
+}
+function createVideoTimeline(scenes, fps = 30) {
+  return scenes.map((scene, index) => {
+    const sceneDuration = scene.duration || 5;
+    const startTime = scenes.slice(0, index).reduce((acc, s) => acc + (s.duration || 5), 0);
+    return {
+      scene,
+      startTime: startTime * fps,
+      endTime: (startTime + sceneDuration) * fps,
+      duration: sceneDuration * fps
+    };
+  });
+}
+function getVideoConfig(aspectRatio) {
+  const configs = {
+    "16:9": { width: 1920, height: 1080 },
+    "9:16": { width: 1080, height: 1920 },
+    "1:1": { width: 1080, height: 1080 },
+    "4:3": { width: 1440, height: 1080 }
+  };
+  const dimensions = configs[aspectRatio];
+  return {
+    ...dimensions,
+    fps: 30,
+    duration: 0,
+    // Будет вычислено позже
+    aspectRatio
+  };
+}
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+function isSceneReady(scene) {
+  return !!(scene.visual_description || scene.action_description || scene.dialogue || scene.file);
+}
+function getScenePreview(scene) {
+  if (scene.file?.url) {
+    return scene.file.url;
+  }
+  return null;
+}
+function calculatePlaybackProgress(currentTime, totalDuration) {
+  if (totalDuration === 0) return 0;
+  return Math.min(100, currentTime / totalDuration * 100);
+}
+
+// src/video-player/remotion/utils.ts
+var FPS = 30;
+var transitionDuration = 10;
+var minSceneDurationInFrames = 30;
+var calculateDuration = (scenes) => {
+  let totalDuration = 0;
+  for (const scene of scenes ?? []) {
+    const durationInFrames = scene.duration * FPS;
+    totalDuration += durationInFrames;
+  }
+  return Math.ceil(totalDuration);
+};
+var SceneComponent = ({ type, url, playbackRate = 1 }) => {
+  if (!url) return null;
+  return type === "video" ? /* @__PURE__ */ jsx(
+    OffthreadVideo,
+    {
+      src: url,
+      className: "size-full object-cover",
+      playbackRate
+    }
+  ) : /* @__PURE__ */ jsx(
+    Img,
+    {
+      src: url,
+      className: "size-full object-cover"
+    }
+  );
+};
+var Scene = memo(SceneComponent);
+var FabricCanvas = ({
+  className,
+  onReady,
+  readonly,
+  initialObjects,
+  width: initialWidth,
+  height: initialHeight
+}) => {
+  const [canvas, setCanvas] = useState(null);
+  const alignGuidelines = useRef(null);
+  const centeringGuidelines = useRef(null);
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const loadObjects = async (canvas2) => {
+    if (!initialObjects) return;
+    const objectsFonts = [];
+    canvas2.remove(...canvas2.getObjects());
+    const canvasWidth = canvas2.getWidth();
+    const canvasHeight = canvas2.getHeight();
+    const canvasSquare = canvasWidth * canvasHeight;
+    const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
+    initialObjects.forEach((object) => {
+      if (object.fontFamily && !objectsFonts.includes(object.fontFamily)) {
+        objectsFonts.push(object.fontFamily);
+      }
+    });
+    const fontsData = objectsFonts.map((objectFont) => {
+      const obj = initialObjects.find((obj2) => obj2.fontFamily === objectFont);
+      if (obj) {
+        return { name: objectFont, url: obj.fontUrl };
+      }
+      const defaultFont = FONTS.find(
+        (font) => font.family === objectFont || font.postScriptName === objectFont
+      );
+      return {
+        name: defaultFont?.fullName ?? objectFont,
+        url: defaultFont?.url ?? ""
+      };
+    });
+    await loadFonts(fontsData);
+    await Promise.all(
+      fontsData.filter((f) => f.name).map((f) => document.fonts.load(`1em "${f.name}"`))
+    );
+    await document.fonts.ready;
+    const canvasObjects = initialObjects.map((object) => {
+      const { text, type, left, top, width, height, fontSize, ...objectData } = object;
+      const relativeData = {
+        left: left * canvasWidth,
+        top: top * canvasHeight,
+        width: width * canvasWidth,
+        height: height * canvasHeight,
+        fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
+      };
+      if (type === "Textbox") {
+        const textbox = new Textbox(text, {
+          ...objectData,
+          ...relativeData,
+          fontFamily: object.fontFamily
+        });
+        textbox.setControlsVisibility({ mt: false, mb: false });
+        return textbox;
+      }
+      throw new Error(`Unsupported object type: ${object.type}`);
+    });
+    canvas2.add(...canvasObjects);
+    canvas2.requestRenderAll();
+  };
+  const setCurrentDimensions = (canvas2) => {
+    const oldWidth = canvas2.getWidth();
+    const oldHeight = canvas2.getHeight();
+    canvas2.setDimensions({
+      width: containerRef.current?.clientWidth ?? 0,
+      height: containerRef.current?.clientHeight ?? 0
+    });
+    const scaleX = canvas2.getWidth() / oldWidth;
+    const scaleY = canvas2.getHeight() / oldHeight;
+    canvas2.getObjects().forEach((object) => {
+      object.set({
+        width: object.width * scaleX,
+        height: object.height * scaleY,
+        left: object.left * scaleX,
+        top: object.top * scaleY,
+        fontSize: object.fontSize ? object.fontSize * scaleX : void 0
+      });
+    });
+    canvas2.renderAll();
+  };
+  useEffect(() => {
+    if (!canvas || !initialObjects || canvas.getActiveObject()) return;
+    void loadObjects(canvas);
+  }, [initialObjects, canvas]);
+  useEffect(() => {
+    if (!canvas) return;
+    setGuidelines(canvas);
+    if (onReady) {
+      onReady(canvas);
+    }
+  }, [canvas]);
+  const setGuidelines = (canvas2) => {
+    alignGuidelines.current = new AlignGuidelines({
+      canvas: canvas2,
+      aligningOptions: {
+        lineColor: "#32D10A",
+        lineMargin: 8
+      }
+    });
+    alignGuidelines.current.init();
+    centeringGuidelines.current = new CenteringGuidelines({
+      canvas: canvas2,
+      color: "#32D10A",
+      verticalOffset: 8,
+      horizontalOffset: 8
+    });
+    centeringGuidelines.current.init();
+  };
+  useEffect(() => {
+    const width = containerRef.current?.clientWidth ?? initialWidth ?? 0;
+    const height = containerRef.current?.clientHeight ?? initialHeight ?? 0;
+    const fabricCanvas = new Canvas(canvasRef.current ?? void 0, {
+      width,
+      height
+    });
+    const observeTarget = containerRef.current;
+    if (!observeTarget) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (!containerRef.current) return;
+      const width2 = containerRef.current.clientWidth;
+      const height2 = containerRef.current.clientHeight;
+      if (width2 !== 0 && height2 !== 0) {
+        setCurrentDimensions(fabricCanvas);
+        setCanvas(fabricCanvas);
+      }
+    });
+    resizeObserver.observe(observeTarget);
+    return () => {
+      resizeObserver.unobserve(observeTarget);
+      resizeObserver.disconnect();
+      void fabricCanvas.dispose();
+    };
+  }, []);
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: containerRef,
+      className,
+      style: {
+        pointerEvents: readonly ? "none" : void 0,
+        width: initialWidth ? `${initialWidth}px` : void 0,
+        height: initialHeight ? `${initialHeight}px` : void 0
+      },
+      children: /* @__PURE__ */ jsx("canvas", { ref: canvasRef })
+    }
+  );
+};
+var ScenesComponent = ({ scenes }) => {
+  const { width, height } = useVideoConfig();
+  return /* @__PURE__ */ jsxs(AbsoluteFill, { style: { backgroundColor: "black" }, children: [
+    /* @__PURE__ */ jsx(TransitionSeries, { children: scenes?.map((scene, index) => {
+      const durationInFrames = scene.duration * FPS;
+      return /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(
+          TransitionSeries.Sequence,
+          {
+            durationInFrames,
+            premountFor: 120,
+            children: /* @__PURE__ */ jsx(
+              Scene,
+              {
+                type: scene.file?.type ?? "image",
+                url: scene.file?.url
+              }
+            )
+          },
+          index
+        ),
+        /* @__PURE__ */ jsx(
+          TransitionSeries.Transition,
+          {
+            presentation: fade(),
+            timing: linearTiming({ durationInFrames: transitionDuration })
+          },
+          index
+        )
+      ] });
+    }) }),
+    /* @__PURE__ */ jsx(TransitionSeries, { children: scenes?.map((scene, index) => {
+      const sceneDurationInFrames = scene.duration * FPS;
+      const durationWithTransition = sceneDurationInFrames > 30 ? sceneDurationInFrames - transitionDuration : sceneDurationInFrames;
+      return /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(
+          TransitionSeries.Sequence,
+          {
+            durationInFrames: durationWithTransition,
+            children: /* @__PURE__ */ jsx(
+              FabricCanvas,
+              {
+                initialObjects: scene.objects,
+                className: "absolute left-0 top-0 size-full",
+                width,
+                height,
+                readonly: true
+              },
+              index
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(TransitionSeries.Sequence, { durationInFrames: transitionDuration, children: /* @__PURE__ */ jsx(Fragment$1, {}) }),
+        /* @__PURE__ */ jsx(
+          TransitionSeries.Transition,
+          {
+            presentation: fade(),
+            timing: linearTiming({
+              durationInFrames: transitionDuration,
+              easing: Easing.in(Easing.ease)
+            })
+          }
+        )
+      ] });
+    }) })
+  ] });
+};
+var Scenes = memo(ScenesComponent);
+var AudioPlayer = ({ src, volume = 0.4 }) => {
+  return /* @__PURE__ */ jsx(
+    Audio,
+    {
+      src,
+      volume
+    }
+  );
+};
+var Volumes = ({ scenes, musicUrl }) => {
+  return /* @__PURE__ */ jsxs(Fragment$1, { children: [
+    /* @__PURE__ */ jsx(Series, { children: scenes?.map((scene, index) => {
+      const sceneDurationInFrames = scene.duration * FPS;
+      const durationWithTransition = sceneDurationInFrames > minSceneDurationInFrames ? sceneDurationInFrames - transitionDuration : sceneDurationInFrames;
+      return /* @__PURE__ */ jsxs(
+        Series.Sequence,
+        {
+          durationInFrames: durationWithTransition,
+          premountFor: 10,
+          children: [
+            scene.sound_effect?.url && /* @__PURE__ */ jsx(
+              Audio,
+              {
+                src: scene.sound_effect.url,
+                volume: 0.3
+              }
+            ),
+            scene.voiceover?.url && scene.file?.video_generation?.generation_config_name !== "comfyui/lip-sync" && /* @__PURE__ */ jsx(
+              Audio,
+              {
+                src: scene.voiceover.url,
+                volume: 1
+              }
+            )
+          ]
+        },
+        index
+      );
+    }) }),
+    musicUrl && /* @__PURE__ */ jsx(
+      AudioPlayer,
+      {
+        src: musicUrl,
+        volume: 0.4
+      }
+    )
+  ] });
+};
+var VolumesComponent = memo(Volumes);
+var VideoComponent = ({ scenes, musicUrl }) => {
+  return /* @__PURE__ */ jsxs(AbsoluteFill, { style: { backgroundColor: "black", position: "relative" }, children: [
+    /* @__PURE__ */ jsx(Scenes, { scenes }),
+    /* @__PURE__ */ jsx(
+      VolumesComponent,
+      {
+        musicUrl,
+        scenes
+      }
+    )
+  ] });
+};
+var VideoPlayer = ({
+  scenes,
+  music,
+  aspectRatio = 16 / 9,
+  isLoading
+}) => {
+  const containerRef = useRef(null);
+  const playerRef = useRef(null);
+  const [metadata, setMetadata] = useState(null);
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const resizeObserver = new ResizeObserver(() => {
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      let compositionWidth;
+      let compositionHeight;
+      if (containerWidth / aspectRatio <= containerHeight) {
+        compositionWidth = containerWidth;
+        compositionHeight = containerWidth / aspectRatio;
+      } else {
+        compositionHeight = containerHeight;
+        compositionWidth = containerHeight * aspectRatio;
+      }
+      if (!compositionWidth || !compositionHeight) return;
+      const totalDuration = calculateDuration(scenes || []);
+      setMetadata({
+        durationInFrames: totalDuration,
+        fps: FPS,
+        compositionWidth: Math.round(compositionWidth - 5),
+        compositionHeight: Math.round(compositionHeight - 5)
+      });
+    });
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [aspectRatio, scenes]);
+  const inputProps = {
+    scenes,
+    musicUrl: music?.file?.url
+  };
+  const renderPlayPauseButton = useCallback(() => {
+    if (isLoading) {
+      return /* @__PURE__ */ jsx(
+        "div",
+        {
+          onClick: (e) => {
+            e.stopPropagation();
+          },
+          title: "Loading",
+          children: /* @__PURE__ */ jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" })
+        }
+      );
+    }
+    return null;
+  }, [isLoading]);
+  return /* @__PURE__ */ jsx("div", { className: "grow p-3 pt-6 w-full h-full", children: /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: containerRef,
+      className: "flex-1 flex justify-center items-center relative w-full h-full",
+      children: metadata && /* @__PURE__ */ jsx(
+        Player,
+        {
+          ref: playerRef,
+          ...metadata,
+          component: () => VideoComponent(inputProps),
+          renderPlayPauseButton,
+          clickToPlay: !isLoading,
+          numberOfSharedAudioTags: 10,
+          controls: true,
+          moveToBeginningWhenEnded: false
+        }
+      )
+    }
+  ) });
+};
+var RemotionPlayer = memo(VideoPlayer);
+var useProjectTimeline2Video = (options) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const mutate = async (data) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await ProjectService.projectTimeline2Video(data);
+      if (options?.onSuccess) {
+        options.onSuccess(result);
+      }
+      return result;
+    } catch (err) {
+      const error2 = err instanceof Error ? err : new Error("Unknown error");
+      setError(error2);
+      if (options?.onError) {
+        options.onError(error2);
+      }
+      throw error2;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return {
+    mutate,
+    isLoading,
+    error
+  };
+};
+var useGenerateTimeline = (mutationKey, options) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const mutate = async (data) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await ProjectService.projectRegenerateTimeline(data);
+      console.log("result", result);
+      if (options?.onSuccess) {
+        options.onSuccess(result);
+      }
+      return result;
+    } catch (err) {
+      const error2 = err instanceof Error ? err : new Error("Unknown error");
+      setError(error2);
+      if (options?.onError) {
+        options.onError(error2);
+      }
+      throw error2;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return {
+    mutate,
+    isLoading,
+    error
+  };
+};
+var useDataUpdate = (updateKeys = true, options) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const mutate = async (payload) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await DataService.dataUpdate({
+        id: payload.id,
+        requestBody: payload
+      });
+      if (options?.onSuccess) {
+        options.onSuccess(result);
+      }
+      return result;
+    } catch (err) {
+      const error2 = err instanceof Error ? err : new Error("Unknown error");
+      setError(error2);
+      if (options?.onError) {
+        options.onError(error2);
+      }
+      throw error2;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return {
+    mutate,
+    isLoading,
+    error
+  };
+};
+
+// src/project-timeline/utils/project-utils.ts
+function convertSceneToTimeline(scene) {
+  return {
+    id: scene.id,
+    project_id: scene.id,
+    // Временно используем scene.id, нужно будет исправить
+    order: scene.order,
+    visual_description: scene.visual_description,
+    action_description: scene.action_description,
+    dialogue: scene.dialogue,
+    duration: scene.duration,
+    file: scene.file ? {
+      id: scene.file.id,
+      url: scene.file.url || "",
+      type: scene.file.type || "image"
+    } : void 0
+  };
+}
+function convertScenesToTimeline(scenes) {
+  return scenes.sort((a, b) => a.order - b.order).map(convertSceneToTimeline);
+}
+function isProjectReadyForVideo(project) {
+  return project.status === "completed" && project.scenes && project.scenes.length > 0;
+}
+function getTimelineDuration(timeline) {
+  return timeline.reduce((acc, item) => acc + (item.duration || 5), 0);
+}
+var projectQueryKeys = {
+  all: ["projects"],
+  byId: (id) => ["projects", id],
+  timeline: (id) => ["projects", id, "timeline"],
+  video: (id) => ["projects", id, "video"]
+};
+var mediaTypeMap = {
+  [FileTypeEnum.IMAGE]: "image",
+  [FileTypeEnum.VIDEO]: "video",
+  [FileTypeEnum.VOICEOVER]: "audio",
+  [FileTypeEnum.SOUND_EFFECT]: "audio",
+  [FileTypeEnum.AUDIO]: "audio",
+  [FileTypeEnum.MUSIC]: "audio",
+  [FileTypeEnum.TEXT]: "text",
+  [FileTypeEnum.OTHER]: "text"
+};
+var createMusicTrackItem = ({ duration, file, from }) => {
+  const fileDurationMs = file.duration ? file.duration * 1e3 : duration;
+  const trimTo = Math.min(fileDurationMs, duration);
+  const displayTo = from + trimTo;
+  return {
+    id: file.id,
+    name: "",
+    type: "audio",
+    display: {
+      from,
+      to: displayTo
+    },
+    trim: {
+      from: 0,
+      to: trimTo
+    },
+    isMain: false,
+    details: {
+      src: file.url,
+      duration: fileDurationMs,
+      volume: 100,
+      text: file.type
+    }
+  };
+};
+var createImageTrackItem = ({ duration, file, from }) => {
+  return {
+    id: file.id,
+    type: "image",
+    name: "",
+    display: {
+      from,
+      to: from + duration
+    },
+    metadata: {},
+    isMain: false,
+    details: {
+      src: file.url,
+      // width: 1280,
+      // height: 1920,
+      opacity: 100,
+      // transform: "scale(0.84375)",
+      border: "none",
+      borderRadius: "0",
+      boxShadow: "none",
+      top: "0px"
+      // left: "-100px",
+    }
+  };
+};
+var createVideoTrackItem = ({ duration, file, from }) => {
+  const fileDurationMs = file.duration ? file.duration * 1e3 : duration;
+  return {
+    id: file.id,
+    type: "video",
+    preview: file.thumbnail_url,
+    display: {
+      from,
+      to: from + duration
+    },
+    trim: {
+      from: 0,
+      to: fileDurationMs
+    },
+    isMain: false,
+    details: {
+      width: 1280,
+      height: 720,
+      duration: fileDurationMs,
+      src: file.url,
+      volume: 100,
+      top: "600px",
+      left: "-100px",
+      text: "Scene"
+    }
+  };
+};
+var createTextTrackItem = ({ duration, from, id }) => {
+  return {
+    id,
+    name: "",
+    type: "text",
+    display: { from, to: from + duration },
+    metadata: {},
+    isMain: false
+  };
+};
+var trackItemTrackMap = {
+  [FileTypeEnum.IMAGE]: createImageTrackItem,
+  [FileTypeEnum.VIDEO]: createVideoTrackItem,
+  [FileTypeEnum.VOICEOVER]: createMusicTrackItem,
+  [FileTypeEnum.SOUND_EFFECT]: createMusicTrackItem,
+  [FileTypeEnum.AUDIO]: createMusicTrackItem,
+  [FileTypeEnum.MUSIC]: createMusicTrackItem,
+  [FileTypeEnum.TEXT]: createTextTrackItem,
+  [FileTypeEnum.OTHER]: createTextTrackItem
+};
+var createMusicDetails = ({ file }) => {
+  return {
+    type: "audio",
+    details: {
+      src: file.url,
+      duration: file.duration ? file.duration * 1e3 : null,
+      volume: 100,
+      text: file.audio_generation?.prompt ?? file.type
+    }
+  };
+};
+var createImageDetails = ({ file }) => {
+  return {
+    type: "image",
+    details: {
+      src: file.url,
+      // width: 1280,
+      // height: 1920,
+      opacity: 100,
+      // transform: "scale(0.84375)",
+      border: "none",
+      borderRadius: "0",
+      boxShadow: "none",
+      top: "0px"
+      // left: "-100px",
+    }
+  };
+};
+var createVideoDetails = ({ file }) => {
+  return {
+    type: "video",
+    details: {
+      width: 1280,
+      height: 720,
+      src: file.url,
+      volume: 100,
+      top: "600px",
+      left: "-100px",
+      text: file.video_generation?.prompt?.length ? file.video_generation.prompt : "Video",
+      duration: file.duration ? file.duration * 1e3 : void 0
+    }
+  };
+};
+var createTextDetails = ({
+  text,
+  textDetails,
+  size
+}) => {
+  const canvasWidth = Number(size?.width ?? 1920);
+  const canvasHeight = Number(size?.height ?? 1080);
+  const canvasSquare = canvasWidth * canvasHeight;
+  const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 115;
+  const fontSize = textDetails.fontSize ? Math.round(canvasSqrt / textDetails.fontSize * 100) / 100 : void 0;
+  return {
+    type: "text",
+    details: {
+      ...textDetails,
+      fontFamily: "Roboto-Bold",
+      fontSize,
+      text,
+      opacity: 100,
+      textAlign: textDetails.textAlign ?? "right",
+      wordWrap: "break-word",
+      wordBreak: "normal",
+      WebkitTextStrokeColor: "#ffffff",
+      WebkitTextStrokeWidth: "0px",
+      top: `${textDetails.top * canvasHeight - textDetails?.height * canvasHeight / 2}px`,
+      left: `${textDetails.left * canvasWidth - textDetails?.width * canvasWidth / 2}px`,
+      width: textDetails.width * canvasWidth,
+      height: textDetails.height * canvasHeight,
+      fontUrl: "https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlvAx05IsDqlA.ttf"
+    }
+  };
+};
+var trackItemDetailsMap = {
+  [FileTypeEnum.IMAGE]: createImageDetails,
+  [FileTypeEnum.VIDEO]: createVideoDetails,
+  [FileTypeEnum.VOICEOVER]: createMusicDetails,
+  [FileTypeEnum.SOUND_EFFECT]: createMusicDetails,
+  [FileTypeEnum.AUDIO]: createMusicDetails,
+  [FileTypeEnum.MUSIC]: createMusicDetails,
+  [FileTypeEnum.TEXT]: createTextDetails,
+  [FileTypeEnum.OTHER]: createTextDetails
+};
+var createTrackItemMap = (type) => {
+  return trackItemTrackMap[type];
+};
+var createTrackDetailsMap = (type) => {
+  return trackItemDetailsMap[type];
+};
+var createTrack = (trackId, type, items) => {
+  return {
+    id: trackId,
+    accepts: ["text", "audio", "helper", "video", "image"],
+    type: mediaTypeMap[type],
+    items,
+    magnetic: false,
+    static: false
+  };
+};
+var stateManager = new StateManager();
+var ProjectTimeline = ({
+  projectId,
+  timeline,
+  project
+}) => {
+  const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
+  const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
+  const { size, playerRef, duration, fps } = useStore();
+  const store = useStore();
+  const [data, setData] = useState([]);
+  const stableData = useMemo(() => {
+    return data;
+  }, [data]);
+  console.log(store);
+  useEffect(() => {
+    if (!stableData) return;
+    eventBus.dispatch(SCENE_LOAD, {
+      payload: stableData
+    });
+  }, [stableData]);
+  useEffect(() => {
+    if (!timeline) return;
+    const timer = setTimeout(() => {
+      const timelineData = timeline.value;
+      setData(timelineData);
+    }, 1e3);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [timeline]);
+  useTimelineEvents();
+  useTimelineHotkeys();
+  useItemsHotkeys();
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  useEffect(() => {
+    if (isClient) {
+      const timer = setTimeout(() => {
+        console.log("\u23F0 Setting isComponentsLoaded to true");
+        setIsComponentsLoaded(true);
+      }, 1e3);
+      return () => clearTimeout(timer);
+    }
+  }, [isClient]);
+  useEffect(() => {
+    if (!project || timeline) return;
+    handleGenerateTimeline();
+  }, [timeline, project]);
+  const handleGenerateTimeline = () => {
+    generateTimeline({ id: projectId });
+  };
+  if (!isComponentsLoaded || !isClient) {
+    return /* @__PURE__ */ jsx("div", { className: "flex size-full items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
+      /* @__PURE__ */ jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
+    ] }) });
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col", children: [
+    /* @__PURE__ */ jsx("style", { children: `
+        @keyframes pulse {
+          0% { opacity: 1; }
+          50% { opacity: 0.5; }
+          100% { opacity: 1; }
+        }
+        
+        /* \u0421\u0442\u0438\u043B\u0438 \u0434\u043B\u044F Remotion AbsoluteFill */
+        .remotion-player-container {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .remotion-player-container .remotion-player {
+          position: relative;
+          z-index: 1;
+        }
+      ` }),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        style: {
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          flex: 1,
+          overflow: "hidden"
+        },
+        children: stableData && stableData.id ? /* @__PURE__ */ jsxs(Fragment$1, { children: [
+          /* @__PURE__ */ jsx("div", { className: "bg-scene py-3 w-full h-full flex justify-center flex-1", children: /* @__PURE__ */ jsx("div", { className: "max-w-3xl flex-1  w-full h-full flex relative", children: /* @__PURE__ */ jsx(
+            Player,
+            {
+              ref: playerRef,
+              component: Composition,
+              durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
+              compositionWidth: size.width,
+              compositionHeight: size.height,
+              style: {
+                width: "100%",
+                height: "400px"
+              },
+              fps,
+              controls: true,
+              loop: true,
+              numberOfSharedAudioTags: 10
+            }
+          ) }) }),
+          /* @__PURE__ */ jsx("div", { className: " w-full", children: /* @__PURE__ */ jsx(TimelineComponent, { stateManager }) })
+        ] }) : /* @__PURE__ */ jsx(Fragment$1, { children: /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
+          /* @__PURE__ */ jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u0434\u0430\u043D\u043D\u044B\u0445..." : "\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u043B\u0435\u0435\u0440\u0430..." })
+        ] }) }) })
+      }
+    )
+  ] });
+};
+
+export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap, projectQueryKeys, ru_default as ru, tr_default as tr, useDataUpdate, useGenerateTimeline, useProject, useProjectTimeline2Video, useTranslation, useVideoScenes };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map
