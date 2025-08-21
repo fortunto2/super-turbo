@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 interface GenerationConfig {
   id: string;
@@ -58,6 +59,7 @@ interface ProjectVideoCreate {
 }
 
 export default function StoryEditorPage() {
+  const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [generationConfig, setGenerationConfig] = useState("");
@@ -65,18 +67,11 @@ export default function StoryEditorPage() {
   const [quality, setQuality] = useState("sd");
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [projectId, setProjectId] = useState<string | null>(null);
   const [generationConfigs, setGenerationConfigs] = useState<
     GenerationConfig[]
   >([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [projectStatus, setProjectStatus] = useState<string>("unknown");
-  const [projectProgress, setProjectProgress] = useState<number>(0);
-  const [projectTasks, setProjectTasks] = useState<any[]>([]);
-  const [completedTasks, setCompletedTasks] = useState<number>(0);
-  const [totalTasks, setTotalTasks] = useState<number>(0);
-  const [errorTasks, setErrorTasks] = useState<any[]>([]);
 
   // Загрузка конфигураций генерации
   useEffect(() => {
@@ -104,104 +99,6 @@ export default function StoryEditorPage() {
     loadGenerationConfigs();
   }, []);
 
-  // Отслеживание статуса проекта
-  useEffect(() => {
-    if (!projectId) return;
-
-    const checkStatus = async () => {
-      try {
-        const response = await fetch(
-          `/api/story-editor/status?projectId=${projectId}`
-        );
-        const result = await response.json();
-
-        if (result.success) {
-          setProjectStatus(result.status);
-          setProjectProgress(result.progress || 0);
-          setProjectTasks(result.project?.tasks || []);
-          setCompletedTasks(result.completedTasks || 0);
-          setTotalTasks(result.totalTasks || 0);
-          setErrorTasks(result.errorTasks || []);
-
-          // Если проект завершен, обновляем UI и перенаправляем на просмотр видео
-          if (result.status === "completed") {
-            setSuccess("Видео успешно сгенерировано!");
-            // Перенаправляем на страницу просмотра видео через 2 секунды
-            setTimeout(() => {
-              window.location.href = `/tools/story-editor/${projectId}`;
-            }, 2000);
-          } else if (result.status === "failed") {
-            setError("Генерация видео не удалась");
-          }
-        }
-      } catch (err) {
-        console.error("Error checking project status:", err);
-      }
-    };
-
-    // Проверяем статус каждые 5 секунд
-    const interval = setInterval(checkStatus, 5000);
-    checkStatus(); // Первая проверка сразу
-
-    return () => clearInterval(interval);
-  }, [projectId]);
-
-  const handleRegenerate = async () => {
-    if (!projectId) return;
-
-    try {
-      setIsGenerating(true);
-      setError(null);
-
-      // Здесь можно добавить логику для перегенерации конкретных задач
-      // Пока что просто перезапускаем весь проект
-      const response = await fetch("/api/story-editor/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          template_name: "story",
-          config: {
-            prompt: prompt.trim(),
-            aspect_ratio: aspectRatio,
-            image_generation_config_name: generationConfig,
-            auto_mode: true,
-            seed: Math.floor(Math.random() * 1000000), // Новый seed
-            quality: quality,
-            entity_ids: [],
-            dynamic: 1,
-            voiceover_volume: 0.5,
-            music_volume: 0.5,
-            sound_effect_volume: 0.5,
-            watermark: false,
-            subtitles: false,
-            voiceover: false,
-          },
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setProjectId(result.projectId);
-        setSuccess("Перегенерация запущена! ID проекта: " + result.projectId);
-        setProjectStatus("pending");
-        setProjectProgress(0);
-        setProjectTasks([]);
-        setCompletedTasks(0);
-        setTotalTasks(0);
-        setErrorTasks([]);
-      } else {
-        throw new Error(result.error || "Ошибка перегенерации");
-      }
-    } catch (err: any) {
-      setError(err.message || "Ошибка перегенерации");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       setError("Введите промпт для генерации");
@@ -219,7 +116,7 @@ export default function StoryEditorPage() {
       setSuccess(null);
 
       const payload: ProjectVideoCreate = {
-        template_name: "story", // Можно сделать настраиваемым
+        template_name: "story",
         config: {
           prompt: prompt.trim(),
           aspect_ratio: aspectRatio,
@@ -251,8 +148,12 @@ export default function StoryEditorPage() {
       const result = await response.json();
 
       if (result.success) {
-        setProjectId(result.projectId);
         setSuccess(`Видео генерируется! ID проекта: ${result.projectId}`);
+
+        // Перенаправляем на страницу отслеживания через 2 секунды
+        setTimeout(() => {
+          router.push(`/project/video/${result.projectId}/generate`);
+        }, 2000);
       } else {
         throw new Error(result.error || "Ошибка генерации видео");
       }
@@ -286,8 +187,7 @@ export default function StoryEditorPage() {
               Story Editor
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Генерация профессиональных видео с использованием SuperDuperAI
-              Project Video API
+              Создайте видео, используя AI модели SuperDuperAI Project Video API
             </p>
           </div>
 
@@ -299,7 +199,7 @@ export default function StoryEditorPage() {
                 <span>Генерация видео</span>
               </CardTitle>
               <CardDescription>
-                Создайте видео, используя AI модели SuperDuperAI
+                Заполните форму и нажмите &quot;Сгенерировать видео&quot;
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -414,6 +314,9 @@ export default function StoryEditorPage() {
                 <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-3 rounded-md">
                   <CheckCircle className="size-5" />
                   <span>{success}</span>
+                  <div className="text-sm text-green-500">
+                    Перенаправление на страницу отслеживания...
+                  </div>
                 </div>
               )}
 
@@ -438,164 +341,6 @@ export default function StoryEditorPage() {
               </Button>
             </CardContent>
           </Card>
-
-          {/* Project status */}
-          {projectId && (
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle className="text-emerald-600">
-                  Статус проекта
-                </CardTitle>
-                <CardDescription>
-                  Отслеживание прогресса генерации видео
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>ID проекта:</span>
-                    <code className="bg-muted px-2 py-1 rounded text-sm">
-                      {projectId}
-                    </code>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Прогресс:</span>
-                      <span>
-                        {completedTasks}/{totalTasks} шагов
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${projectProgress}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status display */}
-                  <div className="flex items-center space-x-2">
-                    {projectStatus === "completed" ? (
-                      <CheckCircle className="size-4 text-green-600" />
-                    ) : projectStatus === "failed" ? (
-                      <AlertCircle className="size-4 text-red-600" />
-                    ) : projectStatus === "processing" ? (
-                      <Loader2 className="size-4 animate-spin text-emerald-600" />
-                    ) : (
-                      <Loader2 className="size-4 animate-spin text-yellow-600" />
-                    )}
-                    <span className="capitalize">
-                      {projectStatus === "completed" && "Видео готово!"}
-                      {projectStatus === "failed" && "Ошибка генерации"}
-                      {projectStatus === "processing" &&
-                        "Видео генерируется..."}
-                      {projectStatus === "pending" && "Ожидание начала..."}
-                      {projectStatus === "unknown" && "Проверка статуса..."}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">
-                    Статус обновляется автоматически каждые 5 секунд
-                  </p>
-
-                  {/* Action buttons */}
-                  <div className="mt-4 space-y-3">
-                    {/* View video button for completed projects */}
-                    {projectStatus === "completed" && (
-                      <Button
-                        onClick={() =>
-                          (window.location.href = `/video/${projectId}`)
-                        }
-                        className="w-full"
-                        variant="default"
-                      >
-                        <Play className="mr-2 h-4 w-4" />
-                        Смотреть видео
-                      </Button>
-                    )}
-
-                    {/* Regenerate button for failed projects */}
-                    {projectStatus === "failed" && (
-                      <Button
-                        onClick={handleRegenerate}
-                        disabled={isGenerating}
-                        className="w-full"
-                        variant="outline"
-                      >
-                        {isGenerating ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Перегенерация...
-                          </>
-                        ) : (
-                          "Перегенерировать проект"
-                        )}
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Task details */}
-                  {projectTasks.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                      <h4 className="font-medium text-sm">Детали задач:</h4>
-                      <div className="space-y-2">
-                        {projectTasks.map((task: any, index: number) => {
-                          // Определяем понятное название для типа задачи
-                          const getTaskTypeName = (type: string) => {
-                            switch (type) {
-                              case "txt2script_flow":
-                                return "Генерация сценария";
-                              case "script2entities_flow":
-                                return "Извлечение сущностей";
-                              case "script2storyboard_flow":
-                                return "Создание раскадровки";
-                              default:
-                                return (
-                                  type?.replace(/_/g, " ").toLowerCase() ||
-                                  `Задача ${index + 1}`
-                                );
-                            }
-                          };
-
-                          return (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <span className="capitalize">
-                                {getTaskTypeName(task.type)}
-                              </span>
-                              <div className="flex items-center space-x-2">
-                                {task.status === "completed" ? (
-                                  <CheckCircle className="size-3 text-green-600" />
-                                ) : task.status === "error" ? (
-                                  <AlertCircle className="size-3 text-red-600" />
-                                ) : task.status === "in_progress" ? (
-                                  <Loader2 className="size-3 animate-spin text-emerald-600" />
-                                ) : (
-                                  <div className="size-3 rounded-full bg-gray-300" />
-                                )}
-                                <span className="text-xs capitalize">
-                                  {task.status === "completed" && "Завершено"}
-                                  {task.status === "error" && "Ошибка"}
-                                  {task.status === "in_progress" &&
-                                    "В процессе"}
-                                  {task.status === "pending" && "Ожидание"}
-                                  {!task.status && "Неизвестно"}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Footer info */}
           <div className="text-center text-sm text-muted-foreground border-t pt-8 mt-12">

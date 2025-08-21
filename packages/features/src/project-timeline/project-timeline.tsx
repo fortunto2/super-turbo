@@ -25,6 +25,10 @@ import {
   Composition,
   Scene,
   TimelineComponent,
+  MenuList,
+  MenuItem,
+  ControlList,
+  ControlItem,
 } from "super-timeline";
 import { Player as RemotionPlayer } from "@remotion/player";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
@@ -215,6 +219,10 @@ export const ProjectTimeline: FC<Props> = ({
           overflow: "hidden",
         }}
       >
+        {/* <MenuList />
+        <MenuItem />
+        <ControlList />
+        <ControlItem /> */}
         {stableData && stableData.id ? (
           <>
             <div className="bg-scene py-3 w-full h-full flex justify-center flex-1">
