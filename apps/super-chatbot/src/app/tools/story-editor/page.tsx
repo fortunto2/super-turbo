@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface GenerationConfig {
   id: string;
@@ -84,7 +85,10 @@ export default function StoryEditorPage() {
         if (result.success) {
           setGenerationConfigs(result.configs);
           if (result.configs.length > 0) {
-            setGenerationConfig(result.configs[0].name);
+            const defaultConfig = result.configs.find(
+              (config: GenerationConfig) => config.name === "comfyui/flux"
+            );
+            setGenerationConfig(defaultConfig?.name || result.configs[0].name);
           }
         } else {
           setError("Ошибка загрузки конфигураций генерации");
@@ -177,6 +181,25 @@ export default function StoryEditorPage() {
     { value: "4k", label: "4K (Full HD)" },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="mt-10 text-center space-y-4 size-full items-center justify-center flex flex-col">
+        <div className="relative">
+          <div className="size-16 border-4 border-emerald-200 dark:border-emerald-800 rounded-full animate-spin"></div>
+          <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-emerald-500 dark:border-t-emerald-400 rounded-full animate-spin"></div>
+        </div>
+        <div className="space-y-2">
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+            Загрузка конфигураций генерации...
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Подготавливаем ваш Story Editor
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background w-full">
       <div className="container mx-auto px-4 py-8 w-full max-w-4xl">
@@ -189,6 +212,20 @@ export default function StoryEditorPage() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Создайте видео, используя AI модели SuperDuperAI Project Video API
             </p>
+
+            {/* Кнопка "Мои проекты" */}
+            <div className="pt-4">
+              <Link href="/project/video/projects">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                >
+                  <FileText className="h-5 w-5" />
+                  Мои проекты
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Generation form */}

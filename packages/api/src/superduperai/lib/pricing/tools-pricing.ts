@@ -102,6 +102,21 @@ export const TOOLS_PRICING = {
       baseCost: 2, // 2 credits per enhancement
     },
   },
+
+  // Story Editor
+  "story-editor": {
+    "project-video": {
+      id: "project-video",
+      name: "Story Editor Project Video",
+      description: "Create video project in story editor",
+      baseCost: 40, // 40 credits per project
+      costMultipliers: {
+        "standard-quality": 1.0, // Standard quality (default)
+        "hd-quality": 1.5, // +50% for HD quality
+        "4k-quality": 2.0, // +100% for 4K quality
+      },
+    },
+  },
 } as const;
 
 /**

@@ -137,6 +137,18 @@ export const document = pgTable(
   }
 );
 
+// Таблица для хранения проектов пользователей
+export const userProject = pgTable("UserProject", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id),
+  projectId: text("projectId").notNull(), // ID проекта из SuperDuperAI
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
+export type UserProject = InferSelectModel<typeof userProject>;
+
 export type Document = InferSelectModel<typeof document>;
 
 export const suggestion = pgTable(
