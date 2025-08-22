@@ -9,11 +9,11 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   external: [
-    "@turbo-super/core", 
+    "@turbo-super/core",
     "@turbo-super/api",
     "react",
     "react-dom",
     "lucide-react",
-    "@turbo-super/ui"
+    "@turbo-super/ui",
   ],
 });

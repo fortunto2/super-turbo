@@ -12,6 +12,8 @@ var fabricGuidelinePlugin = require('@superduperai/fabric-guideline-plugin');
 var superTimeline = require('super-timeline');
 var fade = require('@remotion/transitions/fade');
 var transitions = require('@remotion/transitions');
+require('super-timeline/style.css');
+require('lodash');
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -2920,6 +2922,11 @@ var useDataUpdate = (updateKeys = true, options) => {
     try {
       setIsLoading(true);
       setError(null);
+      const config = await api.getClientSuperduperAIConfig();
+      if (config) {
+        api.OpenAPI.TOKEN = config.token;
+        api.OpenAPI.BASE = config.url;
+      }
       const result = await api.DataService.dataUpdate({
         id: payload.id,
         requestBody: payload
@@ -3186,17 +3193,49 @@ var createTrack = (trackId, type, items) => {
     static: false
   };
 };
+var Player2 = () => {
+  const playerRef = react.useRef(null);
+  const { setPlayerRef, duration, fps, size } = superTimeline.useStore();
+  react.useEffect(() => {
+    setPlayerRef(playerRef);
+  }, []);
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "size-full flex", children: /* @__PURE__ */ jsxRuntime.jsx(
+    player.Player,
+    {
+      ref: playerRef,
+      component: superTimeline.Composition,
+      durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
+      compositionWidth: size.width,
+      compositionHeight: size.height,
+      style: { width: "100%", height: "400px" },
+      fps,
+      overflowVisible: true,
+      numberOfSharedAudioTags: 10
+    }
+  ) });
+};
+var Scene2 = () => {
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "bg-scene py-3 size-full flex justify-center flex-1", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "max-w-3xl flex-1 size-full flex relative", children: /* @__PURE__ */ jsxRuntime.jsx(Player2, {}) }) });
+};
 var stateManager = new superTimeline.StateManager();
 var ProjectTimeline = ({
   projectId,
   timeline,
-  project
+  project,
+  onBack
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = react.useState(false);
   const [isClient, setIsClient] = react.useState(false);
   const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
   const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
-  const { size, playerRef, duration, fps } = superTimeline.useStore();
+  const { mutate: updateTimeline } = useDataUpdate(false);
+  const {
+    playerRef,
+    trackItemDetailsMap: trackItemDetailsMap2,
+    tracks,
+    trackItemIds,
+    trackItemsMap
+  } = superTimeline.useStore();
   const store = superTimeline.useStore();
   const [data, setData] = react.useState([]);
   const stableData = react.useMemo(() => {
@@ -3242,31 +3281,41 @@ var ProjectTimeline = ({
     generateTimeline({ id: projectId });
   };
   if (!isComponentsLoaded || !isClient) {
-    return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex size-full items-center justify-center", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
+    return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex min-h-screen size-full items-center justify-center", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
       /* @__PURE__ */ jsxRuntime.jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
       /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative flex size-full flex-col", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("style", { children: `
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-        
-        /* \u0421\u0442\u0438\u043B\u0438 \u0434\u043B\u044F Remotion AbsoluteFill */
-        .remotion-player-container {
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .remotion-player-container .remotion-player {
-          position: relative;
-          z-index: 1;
-        }
-      ` }),
-    /* @__PURE__ */ jsxRuntime.jsx(
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+    /* @__PURE__ */ jsxRuntime.jsxs(
+      "div",
+      {
+        style: {
+          display: "grid",
+          gridTemplateColumns: "320px 1fr 320px"
+        },
+        className: "pointer-events-none absolute inset-x-0 top-0 z-[205] flex h-[72px] items-center px-2",
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "pointer-events-auto flex h-14 items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex h-12 items-center bg-background px-1.5", children: /* @__PURE__ */ jsxRuntime.jsxs(
+              ui.Button,
+              {
+                className: "flex gap-2 text-muted-foreground",
+                variant: "ghost",
+                onClick: onBack,
+                children: [
+                  /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ArrowLeft, {}),
+                  " Back"
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsxRuntime.jsx(superTimeline.HistoryButtons, {})
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx("div", {})
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntime.jsxs(
       "div",
       {
         style: {
@@ -3274,34 +3323,23 @@ var ProjectTimeline = ({
           height: "100%",
           position: "relative",
           flex: 1,
-          overflow: "hidden"
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column"
         },
-        children: stableData && stableData.id ? /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "bg-scene py-3 w-full h-full flex justify-center flex-1", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "max-w-3xl flex-1  w-full h-full flex relative", children: /* @__PURE__ */ jsxRuntime.jsx(
-            player.Player,
-            {
-              ref: playerRef,
-              component: superTimeline.Composition,
-              durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
-              compositionWidth: size.width,
-              compositionHeight: size.height,
-              style: {
-                width: "100%",
-                height: "400px"
-              },
-              fps,
-              controls: true,
-              loop: true,
-              numberOfSharedAudioTags: 10
-            }
-          ) }) }),
-          /* @__PURE__ */ jsxRuntime.jsx("div", { className: " w-full", children: /* @__PURE__ */ jsxRuntime.jsx(superTimeline.TimelineComponent, { stateManager }) })
-        ] }) : /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
-          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
-          /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u0434\u0430\u043D\u043D\u044B\u0445..." : "\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u043B\u0435\u0435\u0440\u0430..." })
-        ] }) }) })
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx(superTimeline.MenuList, {}),
+          /* @__PURE__ */ jsxRuntime.jsx(superTimeline.MenuItem, {}),
+          /* @__PURE__ */ jsxRuntime.jsx(superTimeline.ControlList, {}),
+          /* @__PURE__ */ jsxRuntime.jsx(superTimeline.ControlItem, {}),
+          stableData && stableData.id ? /* @__PURE__ */ jsxRuntime.jsx(Scene2, {}) : /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
+            /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u0434\u0430\u043D\u043D\u044B\u0445..." : "\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u043B\u0435\u0435\u0440\u0430..." })
+          ] }) }) })
+        ]
       }
-    )
+    ),
+    /* @__PURE__ */ jsxRuntime.jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsxRuntime.jsx(superTimeline.TimelineComponent, { stateManager }) })
   ] });
 };
 

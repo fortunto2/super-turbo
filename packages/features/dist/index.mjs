@@ -1,15 +1,17 @@
 import { memo, Fragment, useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Button, Badge, StripePaymentButton } from '@turbo-super/ui';
-import { BookOpen, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Badge, StripePaymentButton } from '@turbo-super/ui';
+import { BookOpen, ArrowLeft, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
-import { FileTypeEnum, DataService, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
+import { FileTypeEnum, getClientSuperduperAIConfig, OpenAPI, DataService, ProjectService } from '@turbo-super/api';
 import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio, prefetch } from 'remotion';
 import { Player } from '@remotion/player';
 import { Canvas, Textbox } from 'fabric';
 import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guideline-plugin';
-import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, Composition, TimelineComponent } from 'super-timeline';
+import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, HistoryButtons, MenuList, MenuItem, ControlList, ControlItem, TimelineComponent, Composition } from 'super-timeline';
 import { fade } from '@remotion/transitions/fade';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import 'super-timeline/style.css';
+import 'lodash';
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -2918,6 +2920,11 @@ var useDataUpdate = (updateKeys = true, options) => {
     try {
       setIsLoading(true);
       setError(null);
+      const config = await getClientSuperduperAIConfig();
+      if (config) {
+        OpenAPI.TOKEN = config.token;
+        OpenAPI.BASE = config.url;
+      }
       const result = await DataService.dataUpdate({
         id: payload.id,
         requestBody: payload
@@ -3184,17 +3191,49 @@ var createTrack = (trackId, type, items) => {
     static: false
   };
 };
+var Player2 = () => {
+  const playerRef = useRef(null);
+  const { setPlayerRef, duration, fps, size } = useStore();
+  useEffect(() => {
+    setPlayerRef(playerRef);
+  }, []);
+  return /* @__PURE__ */ jsx("div", { className: "size-full flex", children: /* @__PURE__ */ jsx(
+    Player,
+    {
+      ref: playerRef,
+      component: Composition,
+      durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
+      compositionWidth: size.width,
+      compositionHeight: size.height,
+      style: { width: "100%", height: "400px" },
+      fps,
+      overflowVisible: true,
+      numberOfSharedAudioTags: 10
+    }
+  ) });
+};
+var Scene2 = () => {
+  return /* @__PURE__ */ jsx("div", { className: "bg-scene py-3 size-full flex justify-center flex-1", children: /* @__PURE__ */ jsx("div", { className: "max-w-3xl flex-1 size-full flex relative", children: /* @__PURE__ */ jsx(Player2, {}) }) });
+};
 var stateManager = new StateManager();
 var ProjectTimeline = ({
   projectId,
   timeline,
-  project
+  project,
+  onBack
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
   const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
-  const { size, playerRef, duration, fps } = useStore();
+  const { mutate: updateTimeline } = useDataUpdate(false);
+  const {
+    playerRef,
+    trackItemDetailsMap: trackItemDetailsMap2,
+    tracks,
+    trackItemIds,
+    trackItemsMap
+  } = useStore();
   const store = useStore();
   const [data, setData] = useState([]);
   const stableData = useMemo(() => {
@@ -3240,31 +3279,41 @@ var ProjectTimeline = ({
     generateTimeline({ id: projectId });
   };
   if (!isComponentsLoaded || !isClient) {
-    return /* @__PURE__ */ jsx("div", { className: "flex size-full items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
+    return /* @__PURE__ */ jsx("div", { className: "flex min-h-screen size-full items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
       /* @__PURE__ */ jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
       /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col", children: [
-    /* @__PURE__ */ jsx("style", { children: `
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-        
-        /* \u0421\u0442\u0438\u043B\u0438 \u0434\u043B\u044F Remotion AbsoluteFill */
-        .remotion-player-container {
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .remotion-player-container .remotion-player {
-          position: relative;
-          z-index: 1;
-        }
-      ` }),
-    /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        style: {
+          display: "grid",
+          gridTemplateColumns: "320px 1fr 320px"
+        },
+        className: "pointer-events-none absolute inset-x-0 top-0 z-[205] flex h-[72px] items-center px-2",
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "pointer-events-auto flex h-14 items-center gap-2", children: [
+            /* @__PURE__ */ jsx("div", { className: "flex h-12 items-center bg-background px-1.5", children: /* @__PURE__ */ jsxs(
+              Button,
+              {
+                className: "flex gap-2 text-muted-foreground",
+                variant: "ghost",
+                onClick: onBack,
+                children: [
+                  /* @__PURE__ */ jsx(ArrowLeft, {}),
+                  " Back"
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsx(HistoryButtons, {})
+          ] }),
+          /* @__PURE__ */ jsx("div", {})
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxs(
       "div",
       {
         style: {
@@ -3272,34 +3321,23 @@ var ProjectTimeline = ({
           height: "100%",
           position: "relative",
           flex: 1,
-          overflow: "hidden"
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column"
         },
-        children: stableData && stableData.id ? /* @__PURE__ */ jsxs(Fragment$1, { children: [
-          /* @__PURE__ */ jsx("div", { className: "bg-scene py-3 w-full h-full flex justify-center flex-1", children: /* @__PURE__ */ jsx("div", { className: "max-w-3xl flex-1  w-full h-full flex relative", children: /* @__PURE__ */ jsx(
-            Player,
-            {
-              ref: playerRef,
-              component: Composition,
-              durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
-              compositionWidth: size.width,
-              compositionHeight: size.height,
-              style: {
-                width: "100%",
-                height: "400px"
-              },
-              fps,
-              controls: true,
-              loop: true,
-              numberOfSharedAudioTags: 10
-            }
-          ) }) }),
-          /* @__PURE__ */ jsx("div", { className: " w-full", children: /* @__PURE__ */ jsx(TimelineComponent, { stateManager }) })
-        ] }) : /* @__PURE__ */ jsx(Fragment$1, { children: /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
-          /* @__PURE__ */ jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
-          /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u0434\u0430\u043D\u043D\u044B\u0445..." : "\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u043B\u0435\u0435\u0440\u0430..." })
-        ] }) }) })
+        children: [
+          /* @__PURE__ */ jsx(MenuList, {}),
+          /* @__PURE__ */ jsx(MenuItem, {}),
+          /* @__PURE__ */ jsx(ControlList, {}),
+          /* @__PURE__ */ jsx(ControlItem, {}),
+          stableData && stableData.id ? /* @__PURE__ */ jsx(Scene2, {}) : /* @__PURE__ */ jsx(Fragment$1, { children: /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
+            /* @__PURE__ */ jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
+            /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u0434\u0430\u043D\u043D\u044B\u0445..." : "\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u043B\u0435\u0435\u0440\u0430..." })
+          ] }) }) })
+        ]
       }
-    )
+    ),
+    /* @__PURE__ */ jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsx(TimelineComponent, { stateManager }) })
   ] });
 };
 
