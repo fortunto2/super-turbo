@@ -1,0 +1,18 @@
+@import "@turbo-super/tailwind/css";
+
+/* Дополнительные стили для features */
+@layer components {
+  /* Специфичные для features стили */
+  .scene-card {
+    @apply bg-scene text-scene-foreground rounded-lg border shadow-sm;
+  }
+  
+  .card-gradient {
+    background-image: linear-gradient(to left, rgb(33, 33, 33) 70%, transparent);
+  }
+}
+
+/* Radix цвета для project-timeline */
+@import "@radix-ui/colors/black-alpha.css";
+@import "@radix-ui/colors/mauve.css";
+@import "@radix-ui/colors/violet.css";
