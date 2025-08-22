@@ -10,6 +10,9 @@ import {
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
+import { userProject } from "@/lib/db/schema";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
 interface ProjectVideoCreate {
   template_name: string;
@@ -161,20 +164,21 @@ export async function POST(request: NextRequest) {
 
     // Сохранение проекта в базу данных пользователя
     try {
-      const saveProjectResponse = await fetch(
-        `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/user-projects`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            projectId: projectId,
-          }),
-        }
-      );
+      // Создаем прямое подключение к базе данных
+      const databaseUrl =
+        process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
+      const client = postgres(databaseUrl, { ssl: "require" });
+      const db = drizzle(client);
 
-      if (saveProjectResponse.ok) {
+      const newProject = await db
+        .insert(userProject)
+        .values({
+          userId: userId,
+          projectId: projectId,
+        })
+        .returning();
+
+      if (newProject.length > 0) {
         console.log(
           `💾 Project ${projectId} saved to user database for user ${userId}`
         );

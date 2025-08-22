@@ -322,18 +322,24 @@ export default function PreviewPage() {
                 </div>
                 <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                   {scenes.map((scene, index) => (
-                    <div
+                    <Link
                       key={scene.id}
-                      className="flex  space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                      href={`/project/video/${projectId}/scene/${scene.id}`}
+                      className="block"
                     >
-                      <div className="size-6 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-xs font-medium text-purple-700 dark:text-purple-300 flex-shrink-0">
-                        {index + 1}
+                      <div className="flex space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
+                        <div className="size-6 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-xs font-medium text-purple-700 dark:text-purple-300 flex-shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/50">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed group-hover:text-gray-800 dark:group-hover:text-gray-200">
+                          {scene.visual_description ||
+                            "Описание сцены недоступно"}
+                        </span>
+                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ArrowRight className="size-4 text-purple-500" />
+                        </div>
                       </div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                        {scene.visual_description ||
-                          "Описание сцены недоступно"}
-                      </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

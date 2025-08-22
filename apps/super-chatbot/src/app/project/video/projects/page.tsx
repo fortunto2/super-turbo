@@ -10,7 +10,14 @@ import {
   CardTitle,
 } from "@turbo-super/ui";
 import { Button } from "@turbo-super/ui";
-import { Play, Clock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Play,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 
 interface UserProject {
@@ -41,7 +48,7 @@ export default function ProjectsPage() {
     const fetchProjects = async () => {
       try {
         const response = await fetch("/api/user-projects");
-        
+
         if (!response.ok) {
           // Если таблица не существует или другая ошибка БД
           if (response.status === 500) {
@@ -52,7 +59,7 @@ export default function ProjectsPage() {
           }
           throw new Error(`HTTP ${response.status}`);
         }
-        
+
         const result = await response.json();
 
         if (result.success) {
@@ -142,24 +149,68 @@ export default function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header with Back Button */}
+          <div className="mb-6">
+            <Link
+              href="/tools/story-editor"
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+            >
+              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <ArrowLeft className="size-4" />
+              </div>
+              <span className="font-medium">Вернуться к Story Editor</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <div className="text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
+                Загрузка проектов...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Ошибка загрузки
-          </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>
-            Попробовать снова
-          </Button>
+      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header with Back Button */}
+          <div className="mb-6">
+            <Link
+              href="/tools/story-editor"
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+            >
+              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <ArrowLeft className="size-4" />
+              </div>
+              <span className="font-medium">Вернуться к Story Editor</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <div className="text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
+              <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Ошибка загрузки
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+              <div className="space-y-3">
+                <Button onClick={() => window.location.reload()}>
+                  Попробовать снова
+                </Button>
+                <Link href="/tools/story-editor">
+                  <Button variant="outline">Вернуться к Story Editor</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -167,27 +218,44 @@ export default function ProjectsPage() {
 
   if (projects.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Play className="h-12 w-12 text-gray-400" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            У вас пока нет проектов
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Создайте свой первый проект в Story Editor и он появится здесь
-          </p>
-          <div className="space-y-3">
-            <Link href="/tools/story-editor">
-              <Button className="w-full">
-                <Play className="h-4 w-4 mr-2" />
-                Создать первый проект
-              </Button>
+      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header with Back Button */}
+          <div className="mb-6">
+            <Link
+              href="/tools/story-editor"
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+            >
+              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <ArrowLeft className="size-4" />
+              </div>
+              <span className="font-medium">Вернуться к Story Editor</span>
             </Link>
-            <p className="text-sm text-gray-500">
-              💡 Каждый проект стоит 40 кредитов
-            </p>
+          </div>
+
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <div className="text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
+              <div className="h-24 w-24 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Play className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                У вас пока нет проектов
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Создайте свой первый проект в Story Editor и он появится здесь
+              </p>
+              <div className="space-y-3">
+                <Link href="/tools/story-editor">
+                  <Button className="w-full">
+                    <Play className="h-4 w-4 mr-2" />
+                    Создать первый проект
+                  </Button>
+                </Link>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  💡 Каждый проект стоит 40 кредитов
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -195,90 +263,109 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Мои проекты</h1>
-          <p className="text-gray-600 mt-2">
-            Все ваши проекты Story Editor в одном месте
-          </p>
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className=" mx-auto px-4 py-8">
+        {/* Header with Back Button */}
+        <div className="mb-flex items-center flex justify-between mb-8 w-full">
+          <Link
+            href="/tools/story-editor"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+          >
+            <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <ArrowLeft className="size-4" />
+            </div>
+            <span className="font-medium">Вернуться к Story Editor</span>
+          </Link>
+          <Link href="/tools/story-editor">
+            <Button>Создать новый проект</Button>
+          </Link>
         </div>
-        <Link href="/tools/story-editor">
-          <Button>Создать новый проект</Button>
-        </Link>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => {
-          const details = projectDetails[project.projectId];
-          const status = details?.status || "pending";
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Мои проекты
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Все ваши проекты Story Editor в одном месте
+            </p>
+          </div>
+        </div>
 
-          return (
-            <Card
-              key={project.id}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg truncate">
-                    Проект {project.projectId.slice(-8)}
-                  </CardTitle>
-                  {getStatusIcon(status)}
-                </div>
-                <CardDescription>
-                  Создан{" "}
-                  {new Date(project.createdAt).toLocaleDateString("ru-RU")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => {
+            const details = projectDetails[project.projectId];
+            const status = details?.status || "pending";
+
+            return (
+              <Card
+                key={project.id}
+                className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-white/30 dark:border-slate-700/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
+                <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      Статус:
-                    </span>
-                    <span
-                      className={`text-sm font-medium ${getStatusColor(status)}`}
-                    >
-                      {getStatusText(status)}
-                    </span>
+                    <CardTitle className="text-lg truncate text-gray-800 dark:text-gray-200">
+                      Проект {project.projectId.slice(-8)}
+                    </CardTitle>
+                    {getStatusIcon(status)}
                   </div>
-
-                  {details && (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">
-                          Прогресс:
-                        </span>
-                        <span className="text-sm text-gray-600">
-                          {details.completedTasks}/{details.totalTasks} задач
-                        </span>
-                      </div>
-
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${details.progress}%` }}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <div className="pt-2">
-                    <Link href={`/project/video/${project.projectId}/generate`}>
-                      <Button
-                        className="w-full"
-                        variant="outline"
+                  <CardDescription className="text-gray-600 dark:text-gray-400">
+                    Создан{" "}
+                    {new Date(project.createdAt).toLocaleDateString("ru-RU")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Статус:
+                      </span>
+                      <span
+                        className={`text-sm font-medium ${getStatusColor(status)}`}
                       >
-                        <Play className="h-4 w-4 mr-2" />
-                        Открыть проект
-                      </Button>
-                    </Link>
+                        {getStatusText(status)}
+                      </span>
+                    </div>
+
+                    {details && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Прогресс:
+                          </span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {details.completedTasks}/{details.totalTasks} задач
+                          </span>
+                        </div>
+
+                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${details.progress}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <div className="pt-2">
+                      <Link
+                        href={`/project/video/${project.projectId}/generate`}
+                      >
+                        <Button
+                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 hover:scale-105 transition-all duration-300"
+                          variant="outline"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Открыть проект
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
