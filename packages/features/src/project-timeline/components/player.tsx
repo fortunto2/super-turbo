@@ -21,7 +21,7 @@ export const Player = () => {
         durationInFrames={Math.round((duration / 1000) * fps) || 5 * 30}
         compositionWidth={size.width}
         compositionHeight={size.height}
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100%", height: "400px" }}
         fps={fps}
         overflowVisible
         numberOfSharedAudioTags={10}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ProjectTimeline } from "@turbo-super/features";
 import { ArrowLeft, Clock, Play, Eye } from "lucide-react";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 
 export default function VideoPage() {
   const params = useParams();
+  const router = useRouter();
   const projectId = params.projectId as string;
 
   const [project, setProject] = useState<IProjectRead | null>(null);
@@ -105,6 +106,7 @@ export default function VideoPage() {
           projectId={projectId}
           timeline={timeline}
           project={project}
+          onBack={() => router.back()}
         />
       )}
     </>

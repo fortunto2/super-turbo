@@ -13,6 +13,7 @@ var superTimeline = require('super-timeline');
 var fade = require('@remotion/transitions/fade');
 var transitions = require('@remotion/transitions');
 require('super-timeline/style.css');
+require('lodash');
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -2921,6 +2922,11 @@ var useDataUpdate = (updateKeys = true, options) => {
     try {
       setIsLoading(true);
       setError(null);
+      const config = await api.getClientSuperduperAIConfig();
+      if (config) {
+        api.OpenAPI.TOKEN = config.token;
+        api.OpenAPI.BASE = config.url;
+      }
       const result = await api.DataService.dataUpdate({
         id: payload.id,
         requestBody: payload
@@ -3201,7 +3207,7 @@ var Player2 = () => {
       durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
       compositionWidth: size.width,
       compositionHeight: size.height,
-      style: { width: "100%", height: "100%" },
+      style: { width: "100%", height: "400px" },
       fps,
       overflowVisible: true,
       numberOfSharedAudioTags: 10
@@ -3215,13 +3221,21 @@ var stateManager = new superTimeline.StateManager();
 var ProjectTimeline = ({
   projectId,
   timeline,
-  project
+  project,
+  onBack
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = react.useState(false);
   const [isClient, setIsClient] = react.useState(false);
   const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
   const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
-  const { playerRef } = superTimeline.useStore();
+  const { mutate: updateTimeline } = useDataUpdate(false);
+  const {
+    playerRef,
+    trackItemDetailsMap: trackItemDetailsMap2,
+    tracks,
+    trackItemIds,
+    trackItemsMap
+  } = superTimeline.useStore();
   const store = superTimeline.useStore();
   const [data, setData] = react.useState([]);
   const stableData = react.useMemo(() => {
@@ -3288,6 +3302,7 @@ var ProjectTimeline = ({
               {
                 className: "flex gap-2 text-muted-foreground",
                 variant: "ghost",
+                onClick: onBack,
                 children: [
                   /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ArrowLeft, {}),
                   " Back"

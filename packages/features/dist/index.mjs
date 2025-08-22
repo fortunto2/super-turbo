@@ -2,7 +2,7 @@ import { memo, Fragment, useRef, useState, useEffect, useCallback, useMemo } fro
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Badge, StripePaymentButton } from '@turbo-super/ui';
 import { BookOpen, ArrowLeft, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
-import { FileTypeEnum, DataService, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
+import { FileTypeEnum, getClientSuperduperAIConfig, OpenAPI, DataService, ProjectService } from '@turbo-super/api';
 import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio, prefetch } from 'remotion';
 import { Player } from '@remotion/player';
 import { Canvas, Textbox } from 'fabric';
@@ -11,6 +11,7 @@ import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTime
 import { fade } from '@remotion/transitions/fade';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
 import 'super-timeline/style.css';
+import 'lodash';
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -2919,6 +2920,11 @@ var useDataUpdate = (updateKeys = true, options) => {
     try {
       setIsLoading(true);
       setError(null);
+      const config = await getClientSuperduperAIConfig();
+      if (config) {
+        OpenAPI.TOKEN = config.token;
+        OpenAPI.BASE = config.url;
+      }
       const result = await DataService.dataUpdate({
         id: payload.id,
         requestBody: payload
@@ -3199,7 +3205,7 @@ var Player2 = () => {
       durationInFrames: Math.round(duration / 1e3 * fps) || 5 * 30,
       compositionWidth: size.width,
       compositionHeight: size.height,
-      style: { width: "100%", height: "100%" },
+      style: { width: "100%", height: "400px" },
       fps,
       overflowVisible: true,
       numberOfSharedAudioTags: 10
@@ -3213,13 +3219,21 @@ var stateManager = new StateManager();
 var ProjectTimeline = ({
   projectId,
   timeline,
-  project
+  project,
+  onBack
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
   const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
-  const { playerRef } = useStore();
+  const { mutate: updateTimeline } = useDataUpdate(false);
+  const {
+    playerRef,
+    trackItemDetailsMap: trackItemDetailsMap2,
+    tracks,
+    trackItemIds,
+    trackItemsMap
+  } = useStore();
   const store = useStore();
   const [data, setData] = useState([]);
   const stableData = useMemo(() => {
@@ -3286,6 +3300,7 @@ var ProjectTimeline = ({
               {
                 className: "flex gap-2 text-muted-foreground",
                 variant: "ghost",
+                onClick: onBack,
                 children: [
                   /* @__PURE__ */ jsx(ArrowLeft, {}),
                   " Back"

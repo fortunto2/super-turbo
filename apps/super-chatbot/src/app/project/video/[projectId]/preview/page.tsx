@@ -14,6 +14,7 @@ import {
   Eye,
   Clock,
   CheckCircle,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
@@ -145,7 +146,7 @@ export default function PreviewPage() {
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <Link
             href="/tools/story-editor"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mb-6 transition-all duration-300  hover:scale-105 group"
@@ -154,6 +155,15 @@ export default function PreviewPage() {
               <ArrowLeft className="size-4" />
             </div>
             <span className="font-medium">Вернуться к Story Editor</span>
+          </Link>
+          <Link
+            href={`/project/video/${projectId}/timeline`}
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mb-6 transition-all duration-300  hover:scale-105 group"
+          >
+            <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <ArrowRight className="size-4" />
+            </div>
+            <span className="font-medium">Перейти к Timeline</span>
           </Link>
         </div>
 

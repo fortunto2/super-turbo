@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import type { ProjectTimelineMutationOptions } from "../types";
 import type { IDataUpdate } from "@turbo-super/api";
-import { DataService } from "@turbo-super/api";
+import {
+  DataService,
+  getClientSuperduperAIConfig,
+  getSuperduperAIConfig,
+  OpenAPI,
+} from "@turbo-super/api";
 
 export const useDataUpdate = (
   updateKeys = true,
@@ -14,6 +19,13 @@ export const useDataUpdate = (
     try {
       setIsLoading(true);
       setError(null);
+
+      const config = await getClientSuperduperAIConfig();
+
+      if (config) {
+        OpenAPI.TOKEN = config.token;
+        OpenAPI.BASE = config.url;
+      }
 
       const result = await DataService.dataUpdate({
         id: payload.id,
