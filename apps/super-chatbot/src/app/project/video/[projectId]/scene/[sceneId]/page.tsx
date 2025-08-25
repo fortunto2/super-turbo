@@ -39,7 +39,7 @@ export default function ScenePage() {
 
         if (!response.ok) {
           if (response.status === 404) {
-            setError("Сцена не найдена");
+            setError("Scene not found");
             return;
           }
           throw new Error(`HTTP ${response.status}`);
@@ -50,11 +50,11 @@ export default function ScenePage() {
         if (data.success && data.scene) {
           setScene(data.scene);
         } else {
-          setError(data.error || "Не удалось загрузить сцену");
+          setError(data.error || "Failed to load scene");
         }
       } catch (error) {
         console.error("Error fetching scene:", error);
-        setError("Ошибка загрузки сцены");
+        setError("Scene loading error");
       } finally {
         setIsLoading(false);
       }
@@ -73,14 +73,14 @@ export default function ScenePage() {
             <Eye className="size-8 text-red-600 dark:text-red-400" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-4">
-            ID сцены не найден
+            Scene ID not found
           </h1>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <ArrowLeft className="size-4 mr-2" />
-            Вернуться
+            Go Back
           </button>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ScenePage() {
             <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <ArrowLeft className="size-4" />
             </div>
-            <span className="font-medium">Вернуться</span>
+            <span className="font-medium">Go Back</span>
           </button>
 
           <Link
@@ -109,14 +109,14 @@ export default function ScenePage() {
             <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <ArrowRight className="size-4" />
             </div>
-            <span className="font-medium">Перейти к Timeline</span>
+            <span className="font-medium">Go to Timeline</span>
           </Link>
         </div>
 
         {/* Scene Content */}
         <div className="max-w-6xl mx-auto mb-8">
           <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-            {/* Фиксированная высота для всех состояний */}
+            {/* Fixed height for all states */}
             <div className="min-h-[600px] flex items-center justify-center">
               {isLoading ? (
                 <div className="text-center space-y-4 size-full items-center justify-center flex flex-col">
@@ -126,10 +126,10 @@ export default function ScenePage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-lg font-medium text-foreground">
-                      Загрузка сцены...
+                      Loading scene...
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Подготавливаем вашу сцену
+                      Preparing your scene
                     </p>
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export default function ScenePage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xl font-medium text-red-600 dark:text-red-400">
-                      Ошибка загрузки
+                      Loading Error
                     </p>
                     <p className="text-muted-foreground">{error}</p>
                   </div>
@@ -149,7 +149,7 @@ export default function ScenePage() {
                 <div className="size-full p-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-foreground">
-                      Сцена {scene.order + 1}
+                      Scene {scene.order + 1}
                     </h3>
                   </div>
 
@@ -158,7 +158,7 @@ export default function ScenePage() {
                     {scene.file?.url ? (
                       <Image
                         src={scene.file?.url}
-                        alt={`Сцена ${scene.id}`}
+                        alt={`Scene ${scene.id}`}
                         className="max-w-full max-h-full object-contain"
                         width={1000}
                         height={1000}
@@ -166,7 +166,7 @@ export default function ScenePage() {
                     ) : (
                       <div className="text-center text-muted-foreground">
                         <Eye className="size-16 mx-auto mb-4" />
-                        <p>Изображение сцены недоступно</p>
+                        <p>Scene image unavailable</p>
                       </div>
                     )}
                   </div>
@@ -176,7 +176,7 @@ export default function ScenePage() {
                     {/* Scene Info */}
                     <div className="bg-muted/50 rounded-xl p-6">
                       <h4 className="text-lg font-semibold text-foreground mb-4">
-                        Информация о сцене
+                        Scene Information
                       </h4>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
@@ -186,9 +186,7 @@ export default function ScenePage() {
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">
-                            Порядок:
-                          </span>
+                          <span className="text-muted-foreground">Order:</span>
                           <span className="px-3 py-1 bg-muted text-foreground rounded-full text-sm font-medium">
                             {scene.order + 1}
                           </span>
@@ -199,19 +197,19 @@ export default function ScenePage() {
                     {/* Scene Actions */}
                     <div className="bg-muted/50 rounded-xl p-6">
                       <h4 className="text-lg font-semibold text-foreground mb-4">
-                        Действия
+                        Actions
                       </h4>
                       <div className="space-y-3">
                         <button className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg">
                           <Download className="size-4" />
-                          <span>Скачать изображение</span>
+                          <span>Download Image</span>
                         </button>
                         <button
                           onClick={() => setIsShareDialogOpen(true)}
                           className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all duration-300 hover:scale-105 shadow-lg"
                         >
                           <Share2 className="size-4" />
-                          <span>Поделиться</span>
+                          <span>Share</span>
                         </button>
                       </div>
                     </div>
@@ -221,7 +219,7 @@ export default function ScenePage() {
                   {scene.visual_description && (
                     <div className="mt-6 bg-muted/50 rounded-xl p-6">
                       <h4 className="text-lg font-semibold text-foreground mb-4">
-                        Описание сцены
+                        Scene Description
                       </h4>
                       <p className="text-muted-foreground leading-relaxed">
                         {scene.visual_description}
@@ -236,10 +234,10 @@ export default function ScenePage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-xl font-medium text-muted-foreground">
-                      Сцена не найдена
+                      Scene not found
                     </p>
                     <p className="text-muted-foreground">
-                      Не удалось загрузить данные сцены
+                      Failed to load scene data
                     </p>
                   </div>
                 </div>

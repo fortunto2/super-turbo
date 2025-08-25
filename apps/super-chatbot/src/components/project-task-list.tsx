@@ -13,41 +13,41 @@ interface ProjectTaskListProps {
 }
 
 export const ProjectTaskList: React.FC<ProjectTaskListProps> = ({ tasks }) => {
-  // Определяем понятное название для типа задачи
+  // Define readable name for task type
   const getTaskTypeName = (type: string) => {
     switch (type) {
       case TaskTypeEnum.TXT2SCRIPT_FLOW:
-        return "Генерация сценария";
+        return "Script Generation";
       case TaskTypeEnum.SCRIPT2ENTITIES_FLOW:
-        return "Извлечение сущностей";
+        return "Entity Extraction";
       case TaskTypeEnum.SCRIPT2STORYBOARD_FLOW:
-        return "Создание раскадровки";
+        return "Storyboard Creation";
       case TaskTypeEnum.STORYBOARD2VIDEO_FLOW:
-        return "Генерация видео";
+        return "Video Generation";
       case TaskTypeEnum.AUDIO_GENERATION_FLOW:
-        return "Добавление аудио";
+        return "Audio Addition";
       default:
-        return type?.replace(/_/g, " ").toLowerCase() || "Неизвестная задача";
+        return type?.replace(/_/g, " ").toLowerCase() || "Unknown Task";
     }
   };
 
-  // Получаем статус задачи на русском языке
+  // Get task status in English
   const getTaskStatusText = (status: string) => {
     switch (status) {
       case "completed":
-        return "Завершено";
+        return "Completed";
       case "error":
-        return "Ошибка";
+        return "Error";
       case "in_progress":
-        return "В процессе";
+        return "In Progress";
       case "pending":
-        return "Ожидание";
+        return "Pending";
       default:
-        return "Неизвестно";
+        return "Unknown";
     }
   };
 
-  // Получаем иконку для статуса задачи
+  // Get icon for task status
   const getTaskStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -67,7 +67,7 @@ export const ProjectTaskList: React.FC<ProjectTaskListProps> = ({ tasks }) => {
 
   return (
     <div className="mt-4 space-y-3">
-      <h4 className="font-medium text-sm text-foreground">Детали задач:</h4>
+      <h4 className="font-medium text-sm text-foreground">Task Details:</h4>
       <div className="space-y-2">
         {tasks.map((task: ProjectTask, index: number) => (
           <div

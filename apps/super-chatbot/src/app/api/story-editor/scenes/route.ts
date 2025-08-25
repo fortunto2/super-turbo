@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Настраиваем OpenAPI конфигурацию перед использованием SceneService
+    // Setup OpenAPI configuration before using SceneService
     const config = await getSuperduperAIConfig();
     console.log("SuperDuperAI config:", {
       hasToken: !!config.token,
@@ -39,12 +39,12 @@ export async function GET(request: NextRequest) {
       hasToken: !!OpenAPI.TOKEN,
     });
 
-    // Проверяем, что конфигурация корректна
+    // Check that configuration is correct
     if (!OpenAPI.BASE || OpenAPI.BASE === "") {
       throw new Error("OpenAPI base URL is not configured");
     }
 
-    // Используем SceneService для получения сцен
+    // Use SceneService to get scenes
     const response = await SceneService.sceneGetList({
       projectId,
       orderBy: "order",
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     });
     console.log("SceneService response:", response);
 
-    // Извлекаем сцены из ответа
+    // Extract scenes from response
     const scenes = response.items || [];
 
     return NextResponse.json({
@@ -64,24 +64,24 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching scenes:", error);
 
-    // Проверяем, является ли ошибка связанной с URL
+    // Check if error is URL-related
     if (error instanceof Error && error.message.includes("Invalid URL")) {
       console.error("OpenAPI configuration error - invalid base URL");
       console.error("Current OpenAPI.BASE:", OpenAPI.BASE);
     }
 
-    // В случае ошибки возвращаем заглушку для демонстрации
+    // In case of error, return placeholder for demonstration
     return NextResponse.json({
       success: true,
       scenes: [
         {
           id: "scene-1",
           order: 1,
-          visual_description: "Красивый закат над морем",
-          action_description: "Камера плавно движется вдоль берега",
+                  visual_description: "Beautiful sunset over the sea",
+        action_description: "Camera smoothly moves along the shore",
           dialogue: {
-            speaker: "Рассказчик",
-            text: "Добро пожаловать в наш мир",
+            speaker: "Narrator",
+            text: "Welcome to our world",
           },
           duration: 5,
           file: {
@@ -93,11 +93,11 @@ export async function GET(request: NextRequest) {
         {
           id: "scene-2",
           order: 2,
-          visual_description: "Городской пейзаж ночью",
-          action_description: "Панорамный вид на городские огни",
+          visual_description: "Cityscape at night",
+          action_description: "Panoramic view of city lights",
           dialogue: {
-            speaker: "Рассказчик",
-            text: "Где технологии встречаются с мечтами",
+            speaker: "Narrator",
+            text: "Where technology meets dreams",
           },
           duration: 4,
           file: {

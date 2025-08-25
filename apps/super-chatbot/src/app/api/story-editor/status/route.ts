@@ -9,7 +9,7 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    // Проверка аутентификации
+    // Authentication check
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Получение конфигурации SuperDuperAI
+    // Getting SuperDuperAI configuration
     const superduperaiConfig = getSuperduperAIConfig();
 
     if (!superduperaiConfig.token) {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Настройка и вызов SuperDuperAI API
+    // Setup and call SuperDuperAI API
     const { OpenAPI } = await import("@turbo-super/api");
     OpenAPI.BASE = superduperaiConfig.url;
     OpenAPI.TOKEN = superduperaiConfig.token;
@@ -44,10 +44,10 @@ export async function GET(request: NextRequest) {
       id: projectId,
     });
 
-    // Определяем статус проекта на основе задач (используя логику из хука)
+    // Determine project status based on tasks (using logic from hook)
     const projectTasks = result.tasks || [];
 
-    // Проверяем статусы конкретных типов задач
+    // Check statuses of specific task types
     const txtTask = projectTasks.find(
       (task) => task.type === TaskTypeEnum.TXT2SCRIPT_FLOW
     );
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     const isEntityError = entityTask?.status === TaskStatusEnum.ERROR;
     const isStoryboardError = storyboardTask?.status === TaskStatusEnum.ERROR;
 
-    // Определяем общий статус проекта
+    // Determine overall project status
     const totalTasks = 3; // TXT2SCRIPT, SCRIPT2ENTITIES, SCRIPT2STORYBOARD
     const completedCount = [
       isTxtCompleted,

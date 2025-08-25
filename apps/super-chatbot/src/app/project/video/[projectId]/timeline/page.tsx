@@ -56,7 +56,7 @@ export default function VideoPage() {
 
   const timeline = useProjectData(project, DataTypeEnum.TIMELINE);
 
-  // Функция для экспорта timeline в video
+  // Function for exporting timeline to video
   const handleExport = async (projectId: string) => {
     try {
       const response = await fetch(
@@ -73,7 +73,7 @@ export default function VideoPage() {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Ошибка при экспорте timeline в video");
+        throw new Error(result.error || "Error exporting timeline to video");
       }
 
       console.log("🎬 Timeline to video export started successfully:", result);
@@ -83,14 +83,14 @@ export default function VideoPage() {
     }
   };
 
-  // Функция для скачивания файла
+  // Function for downloading file
   const handleDownload = (file: IFileRead) => {
     if (!file.url) {
       console.error("❌ No download URL available");
       return;
     }
 
-    // Создаем временную ссылку для скачивания
+    // Create temporary download link
     const link = document.createElement("a");
     link.href = file.url;
     link.download = `video-${projectId}.mp4`;
@@ -115,7 +115,7 @@ export default function VideoPage() {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Ошибка при обновлении timeline");
+        throw new Error(result.error || "Error updating timeline");
       }
 
       console.log("🎬 Timeline updated successfully:", result);
@@ -133,14 +133,14 @@ export default function VideoPage() {
             <Eye className="size-8 text-red-600 dark:text-red-400" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-4">
-            ID проекта не найден
+            Project ID not found
           </h1>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <ArrowLeft className="size-4 mr-2" />
-            Вернуться
+            Go Back
           </button>
         </div>
       </div>
@@ -157,10 +157,10 @@ export default function VideoPage() {
           </div>
           <div className="space-y-2">
             <p className="text-lg font-medium text-foreground">
-              Загрузка проекта...
+              Loading project...
             </p>
             <p className="text-sm text-muted-foreground">
-              Подготавливаем Timeline Editor
+              Preparing Timeline Editor
             </p>
           </div>
         </div>
@@ -171,11 +171,9 @@ export default function VideoPage() {
           </div>
           <div className="space-y-2">
             <p className="text-xl font-medium text-red-600 dark:text-red-400">
-              Ошибка загрузки
+              Loading Error
             </p>
-            <p className="text-muted-foreground">
-              Не удалось загрузить данные проекта
-            </p>
+            <p className="text-muted-foreground">Failed to load project data</p>
           </div>
         </div>
       ) : (
@@ -194,8 +192,8 @@ export default function VideoPage() {
         onClose={() => setIsExportDialogOpen(false)}
         onExport={handleExport}
         onDownload={handleDownload}
-        title="Экспорт Timeline в Video"
-        description="Подтвердите экспорт timeline в video для дальнейшей обработки"
+        title="Export Timeline to Video"
+        description="Confirm timeline export to video for further processing"
         exportType="timeline2video"
       />
     </>

@@ -43,16 +43,16 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Загрузка проектов пользователя
+  // Loading user projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const response = await fetch("/api/user-projects");
 
         if (!response.ok) {
-          // Если таблица не существует или другая ошибка БД
+          // If table doesn't exist or other DB error
           if (response.status === 500) {
-            console.log("База данных не готова, показываем пустое состояние");
+            console.log("Database not ready, showing empty state");
             setProjects([]);
             setIsLoading(false);
             return;
@@ -64,16 +64,16 @@ export default function ProjectsPage() {
 
         if (result.success) {
           setProjects(result.projects);
-          // Загружаем детали для каждого проекта
+          // Load details for each project
           result.projects.forEach((project: UserProject) => {
             fetchProjectDetails(project.projectId);
           });
         } else {
-          setError("Ошибка загрузки проектов");
+          setError("Error loading projects");
         }
       } catch (err) {
         console.error("Error fetching projects:", err);
-        // Не показываем ошибку пользователю, показываем пустое состояние
+        // Don't show error to user, show empty state
         setProjects([]);
       } finally {
         setIsLoading(false);
@@ -83,7 +83,7 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
-  // Загрузка деталей проекта
+  // Loading project details
   const fetchProjectDetails = async (projectId: string) => {
     try {
       const response = await fetch(
@@ -124,13 +124,13 @@ export default function ProjectsPage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "completed":
-        return "Завершен";
+        return "Completed";
       case "failed":
-        return "Ошибка";
+        return "Error";
       case "processing":
-        return "В обработке";
+        return "Processing";
       default:
-        return "Ожидает";
+        return "Pending";
     }
   };
 
@@ -160,14 +160,14 @@ export default function ProjectsPage() {
               <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться</span>
+              <span className="font-medium">Go Back</span>
             </button>
           </div>
 
           <div className="flex items-center justify-center ">
             <div className="size-full text-center bg-card border border-border rounded-2xl p-8 shadow-2xl min-h-[calc(100vh-200px)] flex flex-col items-center justify-center">
               <Loader2 className="size-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Загрузка проектов...</p>
+              <p className="text-muted-foreground">Loading projects...</p>
             </div>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function ProjectsPage() {
               <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться</span>
+              <span className="font-medium">Go Back</span>
             </button>
           </div>
 
@@ -196,18 +196,18 @@ export default function ProjectsPage() {
             <div className="text-center bg-card border border-border rounded-2xl p-8 shadow-2xl">
               <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                Ошибка загрузки
+                Loading Error
               </h2>
               <p className="text-muted-foreground mb-4">{error}</p>
               <div className="space-y-3 space-x-3">
                 <Button onClick={() => window.location.reload()}>
-                  Попробовать снова
+                  Try Again
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => router.back()}
                 >
-                  Вернуться
+                  Go Back
                 </Button>
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function ProjectsPage() {
               <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться</span>
+              <span className="font-medium">Go Back</span>
             </button>
           </div>
 
@@ -240,20 +240,21 @@ export default function ProjectsPage() {
                 <Play className="h-12 w-12 text-muted-foreground" />
               </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                У вас пока нет проектов
+                You don't have any projects yet
               </h2>
               <p className="text-muted-foreground mb-4">
-                Создайте свой первый проект в Story Editor и он появится здесь
+                Create your first project in Story Editor and it will appear
+                here
               </p>
               <div className="space-y-3">
                 <Link href="/tools/story-editor">
                   <Button className="w-full">
                     <Play className="h-4 w-4 mr-2" />
-                    Создать первый проект
+                    Create First Project
                   </Button>
                 </Link>
                 <p className="text-sm text-muted-foreground">
-                  💡 Каждый проект стоит 40 кредитов
+                  💡 Each project costs 40 credits
                 </p>
               </div>
             </div>
@@ -275,18 +276,18 @@ export default function ProjectsPage() {
             <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <ArrowLeft className="size-4" />
             </div>
-            <span className="font-medium">Вернуться</span>
+            <span className="font-medium">Go Back</span>
           </button>
           <Link href="/tools/story-editor">
-            <Button>Создать новый проект</Button>
+            <Button>Create New Project</Button>
           </Link>
         </div>
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Мои проекты</h1>
+            <h1 className="text-3xl font-bold text-foreground">My Projects</h1>
             <p className="text-muted-foreground mt-2">
-              Все ваши проекты Story Editor в одном месте
+              All your Story Editor projects in one place
             </p>
           </div>
         </div>
@@ -304,20 +305,20 @@ export default function ProjectsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg truncate text-foreground">
-                      Проект {project.projectId.slice(-8)}
+                      Project {project.projectId.slice(-8)}
                     </CardTitle>
                     {getStatusIcon(status)}
                   </div>
                   <CardDescription className="text-muted-foreground">
-                    Создан{" "}
-                    {new Date(project.createdAt).toLocaleDateString("ru-RU")}
+                    Created{" "}
+                    {new Date(project.createdAt).toLocaleDateString("en-US")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-muted-foreground">
-                        Статус:
+                        Status:
                       </span>
                       <span
                         className={`text-sm font-medium ${getStatusColor(status)}`}
@@ -330,10 +331,10 @@ export default function ProjectsPage() {
                       <>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-muted-foreground">
-                            Прогресс:
+                            Progress:
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            {details.completedTasks}/{details.totalTasks} задач
+                            {details.completedTasks}/{details.totalTasks} tasks
                           </span>
                         </div>
 
@@ -355,7 +356,7 @@ export default function ProjectsPage() {
                           variant="outline"
                         >
                           <Play className="h-4 w-4 mr-2" />
-                          Открыть проект
+                          Open Project
                         </Button>
                       </Link>
                     </div>

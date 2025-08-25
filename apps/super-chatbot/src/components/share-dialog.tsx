@@ -17,7 +17,7 @@ export const ShareDialog: React.FC<Props> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  // URL для шаринга - страница preview проекта
+  // URL for sharing - project preview page
   const shareUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/project/video/${projectId}/preview`
@@ -58,10 +58,10 @@ export const ShareDialog: React.FC<Props> = ({
             <Share2 className="size-8 text-primary" />
           </div>
           <h2 className="text-xl md:text-2xl font-bold text-foreground">
-            Поделиться проектом
+            Share Project
           </h2>
           <p className="text-muted-foreground mt-2">
-            Поделитесь ссылкой на ваш проект:
+            Share the link to your project:
           </p>
         </div>
 
@@ -82,7 +82,7 @@ export const ShareDialog: React.FC<Props> = ({
         {/* URL Copy */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-foreground">
-            Ссылка на проект:
+            Project link:
           </label>
           <div className="flex items-center space-x-2 rounded-xl border border-border p-3 bg-muted">
             <input
@@ -100,12 +100,12 @@ export const ShareDialog: React.FC<Props> = ({
               {copied ? (
                 <>
                   <Check className="size-4 mr-2" />
-                  Скопировано!
+                  Copied!
                 </>
               ) : (
                 <>
                   <Copy className="size-4 mr-2" />
-                  Копировать
+                  Copy
                 </>
               )}
             </Button>
@@ -119,7 +119,7 @@ export const ShareDialog: React.FC<Props> = ({
             variant="outline"
             className="w-full"
           >
-            Закрыть
+            Close
           </Button>
         </div>
       </div>

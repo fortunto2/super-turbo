@@ -49,8 +49,8 @@ export const ProjectVideoExportDialog: React.FC<
   onClose,
   onExport,
   onDownload,
-  title = "Экспорт видео",
-  description = "Подтвердите экспорт видео из storyboard",
+  title = "Export Video",
+  description = "Confirm video export from storyboard",
   exportType = "storyboard2video",
 }) => {
   const params = useParams();
@@ -62,7 +62,7 @@ export const ProjectVideoExportDialog: React.FC<
   const [result, setResult] = useState<IFileRead | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Функция для получения ключа localStorage в зависимости от типа экспорта
+  // Function for getting localStorage key based on export type
   const getStorageKey = useCallback(
     (projectId: string) => {
       return `${exportType}-result-${projectId}`;
@@ -70,7 +70,7 @@ export const ProjectVideoExportDialog: React.FC<
     [exportType]
   );
 
-  // Загружаем сохраненный результат из localStorage при открытии диалога
+  // Load saved result from localStorage when dialog opens
   useEffect(() => {
     if (isOpen && projectId) {
       const storageKey = getStorageKey(projectId);
@@ -102,7 +102,7 @@ export const ProjectVideoExportDialog: React.FC<
       setIsRendering(false);
       setError(null);
 
-      // Сохраняем результат в localStorage
+      // Save result to localStorage
       if (projectId && result.url) {
         const storageKey = getStorageKey(projectId);
         localStorage.setItem(storageKey, JSON.stringify(result));
@@ -112,9 +112,7 @@ export const ProjectVideoExportDialog: React.FC<
       eventData.type === "render_error"
     ) {
       setError(
-        eventData.error ||
-          eventData.message ||
-          "Произошла ошибка при рендеринге"
+        eventData.error || eventData.message || "Rendering error occurred"
       );
       setIsRendering(false);
       setProgress(null);
@@ -133,7 +131,7 @@ export const ProjectVideoExportDialog: React.FC<
     if (result && progress === 100) {
       onDownload(result);
       setProgress(null);
-      // Не закрываем диалог и не сбрасываем result, чтобы можно было скачать снова
+      // Don't close dialog and don't reset result, so it can be downloaded again
     }
   }, [result, progress, onDownload]);
 
@@ -147,7 +145,7 @@ export const ProjectVideoExportDialog: React.FC<
       setResult(null);
       setIsRendering(false);
 
-      // Очищаем старый результат при новом рендеринге
+      // Clear old result when starting new rendering
       clearSavedResult();
 
       await onExport(projectId);
@@ -155,9 +153,7 @@ export const ProjectVideoExportDialog: React.FC<
       // Start monitoring for SSE events
       setIsRendering(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Произошла ошибка при экспорте"
-      );
+      setError(err instanceof Error ? err.message : "Export error occurred");
       setIsRendering(false);
     } finally {
       setIsPending(false);
@@ -169,7 +165,7 @@ export const ProjectVideoExportDialog: React.FC<
     onDownload(result);
   };
 
-  // Очищаем сохраненный результат из localStorage
+  // Clear saved result from localStorage
   const clearSavedResult = useCallback(() => {
     if (projectId) {
       const storageKey = getStorageKey(projectId);
@@ -180,12 +176,12 @@ export const ProjectVideoExportDialog: React.FC<
 
   const exportText = useMemo(() => {
     if (!isRendering) {
-      return "Подтвердить и экспортировать →";
+      return "Confirm and Export →";
     }
     if (progress === 100) {
-      return "Скачивание...";
+      return "Downloading...";
     }
-    return progress === null ? "Подготовка..." : `Рендеринг... ${progress}%`;
+    return progress === null ? "Preparing..." : `Rendering... ${progress}%`;
   }, [isRendering, progress]);
 
   const isDisabled = isPending || isRendering;
@@ -223,14 +219,14 @@ export const ProjectVideoExportDialog: React.FC<
                 <div className="w-full space-y-2">
                   <ProgressBar value={progress} />
                   <p className="text-center text-sm text-muted-foreground">
-                    {progress}% завершено
+                    {progress}% completed
                   </p>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <Loader2 className="animate-spin" />
                   <span className="text-sm text-muted-foreground">
-                    Подготовка...
+                    Preparing...
                   </span>
                 </div>
               )}
@@ -246,7 +242,7 @@ export const ProjectVideoExportDialog: React.FC<
                   className="w-full"
                 >
                   <Download />
-                  Скачать видео
+                  Download Video
                 </Button>
               )}
             </div>

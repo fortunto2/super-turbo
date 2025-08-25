@@ -8,7 +8,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    // Проверка аутентификации
+    // Authentication check
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { projectId } = body;
 
-    // Валидация входных данных
+    // Input validation
     if (!projectId) {
       return NextResponse.json(
         {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`🎬 Starting storyboard2video for project: ${projectId}`);
 
-    // Получение конфигурации SuperDuperAI
+    // Getting SuperDuperAI configuration
     const superduperaiConfig = getSuperduperAIConfig();
 
     if (!superduperaiConfig.token) {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Настройка и вызов SuperDuperAI API
+    // Setup and call SuperDuperAI API
     OpenAPI.BASE = superduperaiConfig.url;
     OpenAPI.TOKEN = superduperaiConfig.token;
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Storyboard2Video API Error:", error);
 
-    // Обработка специфических ошибок API
+    // Handle specific API errors
     if (error.status === 422) {
       return NextResponse.json(
         {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Общая ошибка сервера
+    // General server error
     return NextResponse.json(
       {
         error: "Internal server error",

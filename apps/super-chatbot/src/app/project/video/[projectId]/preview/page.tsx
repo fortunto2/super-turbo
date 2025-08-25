@@ -23,7 +23,7 @@ import { ShareDialog } from "@/components/share-dialog";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
 import type { IFileRead } from "@/lib/api";
 
-// CSS для кастомного скроллбара
+// CSS for custom scrollbar
 const customScrollbarStyles = `
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -89,14 +89,14 @@ export default function PreviewPage() {
           setProject(projectData.project);
         } else {
           console.error("Failed to fetch project:", projectData.error);
-          setError("Не удалось загрузить проект");
+          setError("Failed to load project");
         }
 
         if (scenesData.success) {
           setScenes(scenesData.scenes);
         } else {
           console.error("Failed to fetch scenes:", scenesData.error);
-          setError("Не удалось загрузить сцены");
+          setError("Failed to load scenes");
           setScenes([]);
         }
       } catch (error) {
@@ -108,7 +108,7 @@ export default function PreviewPage() {
           return;
         }
 
-        setError("Ошибка загрузки данных");
+        setError("Data loading error");
       } finally {
         setIsLoading(false);
       }
@@ -143,7 +143,7 @@ export default function PreviewPage() {
     fetchData();
   }, [projectId]);
 
-  // Функция для экспорта видео
+  // Function for exporting video
   const handleExport = async (projectId: string) => {
     try {
       const response = await fetch(
@@ -160,7 +160,7 @@ export default function PreviewPage() {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Ошибка при экспорте видео");
+        throw new Error(result.error || "Error exporting video");
       }
 
       console.log("🎬 Video export started successfully:", result);
@@ -170,14 +170,14 @@ export default function PreviewPage() {
     }
   };
 
-  // Функция для скачивания файла
+  // Function for downloading file
   const handleDownload = (file: IFileRead) => {
     if (!file.url) {
       console.error("❌ No download URL available");
       return;
     }
 
-    // Создаем временную ссылку для скачивания
+    // Create temporary download link
     const link = document.createElement("a");
     link.href = file.url;
     link.download = `video-${projectId}.mp4`;
@@ -194,14 +194,14 @@ export default function PreviewPage() {
             <Eye className="size-8 text-red-600 dark:text-red-400" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-            ID проекта не найден
+            Project ID not found
           </h1>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <ArrowLeft className="size-4 mr-2" />
-            Вернуться
+            Go Back
           </button>
         </div>
       </div>
@@ -222,7 +222,7 @@ export default function PreviewPage() {
               <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться</span>
+              <span className="font-medium">Go Back</span>
             </button>
 
             <Link
@@ -232,7 +232,7 @@ export default function PreviewPage() {
               <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowRight className="size-4" />
               </div>
-              <span className="font-medium">Перейти к Timeline Edtitor</span>
+              <span className="font-medium">Go to Timeline Editor</span>
             </Link>
           </div>
 
@@ -241,17 +241,17 @@ export default function PreviewPage() {
             {/* Page Title */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
-                Предварительный просмотр
+                Preview
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Просмотрите готовое видео перед финальной обработкой
+                Preview your finished video before final processing
               </p>
             </div>
 
             {/* Video Player Section */}
             <div className="max-w-6xl mx-auto mb-8">
               <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-                {/* Фиксированная высота для всех состояний */}
+                {/* Fixed height for all states */}
                 <div className="h-[500px] flex items-center justify-center">
                   {isLoading ? (
                     <div className="w-screen text-center space-y-4 size-full items-center justify-center flex flex-col">
@@ -261,10 +261,10 @@ export default function PreviewPage() {
                       </div>
                       <div className="space-y-2">
                         <p className="text-lg font-medium text-foreground">
-                          Загрузка проекта и сцен...
+                          Loading project and scenes...
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Подготавливаем ваш видеоплеер
+                          Preparing your video player
                         </p>
                       </div>
                     </div>
@@ -275,7 +275,7 @@ export default function PreviewPage() {
                       </div>
                       <div className="space-y-2">
                         <p className="text-xl font-medium text-red-600 dark:text-red-400">
-                          Ошибка загрузки
+                          Loading Error
                         </p>
                         <p className="text-muted-foreground">{error}</p>
                       </div>
@@ -284,11 +284,11 @@ export default function PreviewPage() {
                     <div className="size-full p-6">
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-foreground">
-                          Видеоплеер
+                          Video Player
                         </h3>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-muted-foreground">
-                            {scenes.length} сцен
+                            {scenes.length} scenes
                           </span>
                           <div className="size-2 bg-primary rounded-full animate-pulse"></div>
                         </div>
@@ -309,10 +309,10 @@ export default function PreviewPage() {
                       </div>
                       <div className="space-y-2">
                         <p className="text-xl font-medium text-muted-foreground">
-                          Нет данных для отображения
+                          No data to display
                         </p>
                         <p className="text-muted-foreground">
-                          {!project ? "Проект не найден" : "Сцены не найдены"}
+                          {!project ? "Project not found" : "Scenes not found"}
                         </p>
                       </div>
                     </div>
@@ -331,25 +331,25 @@ export default function PreviewPage() {
                       <CheckCircle className="size-5 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">
-                      Проект
+                      Project
                     </h3>
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Статус:</span>
+                      <span className="text-muted-foreground">Status:</span>
                       <span className="px-3 py-1 bg-muted text-foreground rounded-full text-sm font-medium">
-                        Завершен
+                        Completed
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Сцены:</span>
+                      <span className="text-muted-foreground">Scenes:</span>
                       <span className="font-semibold text-foreground">
                         {scenes.length}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">
-                        Соотношение:
+                        Aspect Ratio:
                       </span>
                       <span className="font-semibold text-foreground">
                         {project.config?.aspect_ratio || "16:9"}
@@ -365,7 +365,7 @@ export default function PreviewPage() {
                       <Play className="size-5 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">
-                      Сцены ({scenes.length})
+                      Scenes ({scenes.length})
                     </h3>
                   </div>
                   <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
@@ -381,7 +381,7 @@ export default function PreviewPage() {
                           </div>
                           <span className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground">
                             {scene.visual_description ||
-                              "Описание сцены недоступно"}
+                              "Scene description unavailable"}
                           </span>
                           <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
                             <ArrowRight className="size-4 text-primary" />
@@ -399,7 +399,7 @@ export default function PreviewPage() {
                       <Share2 className="size-5 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">
-                      Действия
+                      Actions
                     </h3>
                   </div>
                   <div className="space-y-3">
@@ -408,14 +408,14 @@ export default function PreviewPage() {
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
                     >
                       <Download className="size-4" />
-                      <span>Экспортировать видео</span>
+                      <span>Export Video</span>
                     </button>
                     <button
                       onClick={() => setIsShareDialogOpen(true)}
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all duration-300 hover:scale-105 shadow-lg"
                     >
                       <Share2 className="size-4" />
-                      <span>Поделиться</span>
+                      <span>Share</span>
                     </button>
                   </div>
                 </div>

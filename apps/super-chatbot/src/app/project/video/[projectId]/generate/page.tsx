@@ -34,7 +34,7 @@ export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Отслеживание статуса проекта
+  // Project status tracking
   useEffect(() => {
     if (!projectId) return;
 
@@ -54,24 +54,24 @@ export default function GeneratePage() {
           setTotalTasks(result.totalTasks || 0);
           setErrorTasks(result.errorTasks || []);
 
-          // Если проект завершен, показываем сообщение
+          // If project is completed, show message
           if (result.status === "completed") {
-            // Можно добавить уведомление или автоматическое перенаправление
+            // Can add notification or automatic redirect
           } else if (result.status === "failed") {
-            setError("Генерация видео не удалась");
+            setError("Video generation failed");
           }
         } else {
-          setError("Ошибка получения статуса проекта");
+          setError("Error getting project status");
         }
       } catch (err) {
         console.error("Error checking project status:", err);
-        setError("Ошибка проверки статуса");
+        setError("Status check error");
       }
     };
 
-    // Проверяем статус каждые 5 секунд
+    // Check status every 5 seconds
     const interval = setInterval(checkStatus, 5000);
-    checkStatus(); // Первая проверка сразу
+    checkStatus(); // First check immediately
 
     return () => clearInterval(interval);
   }, [projectId]);
@@ -88,8 +88,8 @@ export default function GeneratePage() {
       setTotalTasks(0);
       setErrorTasks([]);
 
-      // Здесь можно добавить логику для перегенерации конкретных задач
-      // Пока что просто перезапускаем весь проект
+      // Here you can add logic for regenerating specific tasks
+      // For now, just restart the entire project
       const response = await fetch("/api/story-editor/generate", {
         method: "POST",
         headers: {
@@ -98,7 +98,7 @@ export default function GeneratePage() {
         body: JSON.stringify({
           template_name: "story",
           config: {
-            prompt: "Перегенерация проекта", // Можно добавить поле для промпта
+            prompt: "Project regeneration", // Can add field for prompt
             aspect_ratio: "16:9",
             image_generation_config_name: "default",
             auto_mode: true,
@@ -119,15 +119,15 @@ export default function GeneratePage() {
       const result = await response.json();
 
       if (result.success) {
-        // Обновляем projectId если создался новый проект
+        // Update projectId if a new project was created
         if (result.projectId !== projectId) {
           router.push(`/project/video/${result.projectId}/generate`);
         }
       } else {
-        throw new Error(result.error || "Ошибка перегенерации");
+        throw new Error(result.error || "Regeneration error");
       }
     } catch (err: any) {
-      setError(err.message || "Ошибка перегенерации");
+      setError(err.message || "Regeneration error");
     }
   };
 
@@ -136,13 +136,13 @@ export default function GeneratePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">
-            ID проекта не найден
+            Project ID not found
           </h1>
           <button
             onClick={() => router.back()}
             className="text-primary hover:text-primary/80 underline"
           >
-            Вернуться
+            Go Back
           </button>
         </div>
       </div>
@@ -163,27 +163,27 @@ export default function GeneratePage() {
                 <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <ArrowLeft className="size-4" />
                 </div>
-                <span className="font-medium">Вернуться</span>
+                <span className="font-medium">Go Back</span>
               </button>
               <h1 className="text-3xl font-bold text-foreground">
-                Отслеживание генерации
+                Generation Tracking
               </h1>
-              <p className="text-muted-foreground">ID проекта: {projectId}</p>
+              <p className="text-muted-foreground">Project ID: {projectId}</p>
             </div>
           </div>
 
           {/* Project status */}
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-primary">Статус проекта</CardTitle>
+              <CardTitle className="text-primary">Project Status</CardTitle>
               <CardDescription>
-                Отслеживание прогресса генерации видео
+                Tracking video generation progress
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span>ID проекта:</span>
+                  <span>Project ID:</span>
                   <code className="bg-muted px-2 py-1 rounded text-sm">
                     {projectId}
                   </code>
@@ -192,9 +192,9 @@ export default function GeneratePage() {
                 {/* Progress bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span>Прогресс:</span>
+                    <span>Progress:</span>
                     <span>
-                      {completedTasks}/{totalTasks} шагов
+                      {completedTasks}/{totalTasks} steps
                     </span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
@@ -217,16 +217,16 @@ export default function GeneratePage() {
                     <Loader2 className="size-4 animate-spin text-yellow-600" />
                   )}
                   <span className="capitalize">
-                    {projectStatus === "completed" && "Видео готово!"}
-                    {projectStatus === "failed" && "Ошибка генерации"}
-                    {projectStatus === "processing" && "Видео генерируется..."}
-                    {projectStatus === "pending" && "Ожидание начала..."}
-                    {projectStatus === "unknown" && "Проверка статуса..."}
+                    {projectStatus === "completed" && "Video ready!"}
+                    {projectStatus === "failed" && "Generation error"}
+                    {projectStatus === "processing" && "Video generating..."}
+                    {projectStatus === "pending" && "Waiting to start..."}
+                    {projectStatus === "unknown" && "Checking status..."}
                   </span>
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                  Статус обновляется автоматически каждые 5 секунд
+                  Status updates automatically every 5 seconds
                 </p>
 
                 {/* Error display */}
@@ -249,7 +249,7 @@ export default function GeneratePage() {
                       variant="default"
                     >
                       <Play className="mr-2 h-4 w-4" />
-                      Смотреть видео
+                      Watch Video
                     </Button>
                   )}
 
@@ -260,7 +260,7 @@ export default function GeneratePage() {
                       className="w-full"
                       variant="outline"
                     >
-                      Перегенерировать проект
+                      Regenerate Project
                     </Button>
                   )}
                 </div>
@@ -274,8 +274,8 @@ export default function GeneratePage() {
           {/* Footer info */}
           <div className="text-center text-sm text-muted-foreground border-t pt-8 mt-12">
             <p>
-              Powered by <strong>SuperDuperAI</strong> • Отслеживание генерации
-              видео
+              Powered by <strong>SuperDuperAI</strong> • Video generation
+              tracking
             </p>
           </div>
         </div>
