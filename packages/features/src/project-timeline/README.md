@@ -5,59 +5,66 @@
 ## Хуки
 
 ### useProjectTimeline2Video
+
 Хук для конвертации timeline проекта в видео.
 
 ```tsx
-import { useProjectTimeline2Video } from '@turbo-super/features/project-timeline';
+import { useProjectTimeline2Video } from "@turbo-super/features/project-timeline";
 
-const { mutate: convertToVideo, isLoading, error } = useProjectTimeline2Video({
+const {
+  mutate: convertToVideo,
+  isLoading,
+  error,
+} = useProjectTimeline2Video({
   onSuccess: (data) => {
-    console.log('Timeline успешно конвертирован в видео:', data);
+    console.log("Timeline успешно конвертирован в видео:", data);
   },
   onError: (error) => {
-    console.error('Ошибка конвертации:', error);
-  }
+    console.error("Ошибка конвертации:", error);
+  },
 });
 
 // Использование
-convertToVideo({ projectId: 'your-project-id' });
+convertToVideo({ projectId: "your-project-id" });
 ```
 
 ### useGenerateTimeline
+
 Хук для регенерации timeline проекта.
 
 ```tsx
-import { useGenerateTimeline } from '@turbo-super/features/project-timeline';
+import { useGenerateTimeline } from "@turbo-super/features/project-timeline";
 
 const { mutate: regenerateTimeline, isLoading } = useGenerateTimeline(
-  ['regenerate-timeline'], // mutationKey
+  ["regenerate-timeline"], // mutationKey
   {
     onSuccess: (data) => {
-      console.log('Timeline регенерирован:', data);
-    }
+      console.log("Timeline регенерирован:", data);
+    },
   }
 );
 
 // Использование
-regenerateTimeline({ projectId: 'your-project-id' });
+regenerateTimeline({ projectId: "your-project-id" });
 ```
 
 ### useDataUpdate
+
 Хук для обновления данных проекта.
 
 ```tsx
-import { useDataUpdate } from '@turbo-super/features/project-timeline';
+import { useDataUpdate } from "@turbo-super/features/project-timeline";
 
 const { mutate: updateData, isLoading } = useDataUpdate(true, {
   onSuccess: (data) => {
-    console.log('Данные обновлены:', data);
-  }
+    console.log("Данные обновлены:", data);
+  },
 });
 
 // Использование
 updateData({
-  id: 'data-id',
-  project_id: 'project-id',
+  id: "data-id",
+  project_id: "project-id",
   // другие поля для обновления
 });
 ```
@@ -65,43 +72,47 @@ updateData({
 ## Утилиты
 
 ### convertSceneToTimeline
+
 Конвертирует сцену в формат timeline.
 
 ```tsx
-import { convertSceneToTimeline } from '@turbo-super/features/project-timeline';
+import { convertSceneToTimeline } from "@turbo-super/features/project-timeline";
 
 const timelineData = convertSceneToTimeline(scene);
 ```
 
 ### convertScenesToTimeline
+
 Конвертирует массив сцен в timeline.
 
 ```tsx
-import { convertScenesToTimeline } from '@turbo-super/features/project-timeline';
+import { convertScenesToTimeline } from "@turbo-super/features/project-timeline";
 
 const timeline = convertScenesToTimeline(scenes);
 ```
 
 ### isProjectReadyForVideo
+
 Проверяет, готов ли проект к конвертации в видео.
 
 ```tsx
-import { isProjectReadyForVideo } from '@turbo-super/features/project-timeline';
+import { isProjectReadyForVideo } from "@turbo-super/features/project-timeline";
 
 const isReady = isProjectReadyForVideo(project);
 ```
 
 ### projectQueryKeys
+
 Ключи для React Query.
 
 ```tsx
-import { projectQueryKeys } from '@turbo-super/features/project-timeline';
+import { projectQueryKeys } from "@turbo-super/features/project-timeline";
 
 const keys = {
   all: projectQueryKeys.all,
-  byId: projectQueryKeys.byId('project-id'),
-  timeline: projectQueryKeys.timeline('project-id'),
-  video: projectQueryKeys.video('project-id'),
+  byId: projectQueryKeys.byId("project-id"),
+  timeline: projectQueryKeys.timeline("project-id"),
+  video: projectQueryKeys.video("project-id"),
 };
 ```
 
@@ -142,12 +153,3 @@ interface TimelineData {
 
 - `@tanstack/react-query` - для управления состоянием
 - `@turbo-super/api` - для работы с SuperDuperAI API
-
-
-
-
-
-
-
-
-
