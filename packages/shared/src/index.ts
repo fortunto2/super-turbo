@@ -10,3 +10,6 @@ export * from "./data";
 
 // Payment utilities
 export * from "./payment/stripe-config";
+
+// Translation system
+export * from "./translation";

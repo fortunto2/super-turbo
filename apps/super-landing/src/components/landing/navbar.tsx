@@ -7,7 +7,7 @@ import { default as Link } from "@/components/ui/optimized-link";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Dropdown } from "../ui/dropdown-menu";
-import { i18n, type Locale } from "@/config/i18n-config";
+import { i18nClient, type Locale } from "@/config/i18n-client";
 import { cn } from "@turbo-super/ui";
 import { useTranslation } from "@/hooks/use-translation";
 import { getValidLocale } from "@/lib/get-valid-locale";
@@ -25,25 +25,32 @@ export function Navbar() {
   // Функция для получения локали из URL
   const getLocaleFromPathname = useCallback((path: string): string => {
     const segments = path.split("/").filter(Boolean);
-    if (segments.length > 0 && i18n.locales.includes(segments[0] as Locale)) {
+    if (
+      segments.length > 0 &&
+      i18nClient.locales.includes(segments[0] as Locale)
+    ) {
       return segments[0];
     }
-    return i18n.defaultLocale;
+    return i18nClient.defaultLocale;
   }, []);
 
   // Получаем локаль с приоритетом URL
   const getLocale = useCallback(async () => {
     try {
-      let localeValue: Locale = i18n.defaultLocale as Locale;
+      let localeValue: Locale = i18nClient.defaultLocale as Locale;
 
       // 1. Проверяем URL (pathname)
       const urlLocale = getLocaleFromPathname(pathname);
-      if (urlLocale && urlLocale !== i18n.defaultLocale) {
+      if (urlLocale && urlLocale !== i18nClient.defaultLocale) {
         localeValue = urlLocale as Locale;
       }
 
       // 2. Если в URL нет локали, проверяем params
-      if (localeValue === i18n.defaultLocale && params && "locale" in params) {
+      if (
+        localeValue === i18nClient.defaultLocale &&
+        params &&
+        "locale" in params
+      ) {
         const localeParam = params.locale;
         if (
           localeParam &&
@@ -53,33 +60,36 @@ export function Navbar() {
           const resolvedLocale = await localeParam;
           if (
             typeof resolvedLocale === "string" &&
-            i18n.locales.includes(resolvedLocale as Locale)
+            i18nClient.locales.includes(resolvedLocale as Locale)
           ) {
             localeValue = resolvedLocale as Locale;
           }
         } else if (
           typeof localeParam === "string" &&
-          i18n.locales.includes(localeParam as Locale)
+          i18nClient.locales.includes(localeParam as Locale)
         ) {
           localeValue = localeParam as Locale;
         } else if (
           Array.isArray(localeParam) &&
           localeParam[0] &&
-          i18n.locales.includes(localeParam[0] as Locale)
+          i18nClient.locales.includes(localeParam[0] as Locale)
         ) {
           localeValue = localeParam[0] as Locale;
         }
       }
 
       // 3. Если все еще default, проверяем cookie (только на клиенте)
-      if (localeValue === i18n.defaultLocale && typeof window !== "undefined") {
+      if (
+        localeValue === i18nClient.defaultLocale &&
+        typeof window !== "undefined"
+      ) {
         const cookies = document.cookie.split(";");
         const localeCookie = cookies.find((cookie) =>
-          cookie.trim().startsWith(`${i18n.cookieName}=`)
+          cookie.trim().startsWith(`${i18nClient.cookieName}=`)
         );
         if (localeCookie) {
           const cookieValue = localeCookie.split("=")[1];
-          if (i18n.locales.includes(cookieValue as Locale)) {
+          if (i18nClient.locales.includes(cookieValue as Locale)) {
             localeValue = cookieValue as Locale;
           }
         }
@@ -88,7 +98,7 @@ export function Navbar() {
       setCurrentLocale(localeValue);
     } catch (error) {
       console.error("Error getting locale:", error);
-      setCurrentLocale(i18n.defaultLocale as Locale);
+      setCurrentLocale(i18nClient.defaultLocale as Locale);
     }
   }, [params, pathname, getLocaleFromPathname]);
 
@@ -352,26 +362,33 @@ export const LanguageSwitcher = () => {
   // Функция для получения локали из URL
   const getLocaleFromPathname = useCallback((path: string): string => {
     const segments = path.split("/").filter(Boolean);
-    if (segments.length > 0 && i18n.locales.includes(segments[0] as Locale)) {
+    if (
+      segments.length > 0 &&
+      i18nClient.locales.includes(segments[0] as Locale)
+    ) {
       return segments[0];
     }
-    return i18n.defaultLocale;
+    return i18nClient.defaultLocale;
   }, []);
 
   // Используем useCallback для получения локали
   const getLocale = useCallback(async () => {
     try {
       // Приоритет: сначала URL, потом params, потом cookie, потом default
-      let localeValue: Locale = i18n.defaultLocale as Locale;
+      let localeValue: Locale = i18nClient.defaultLocale as Locale;
 
       // 1. Проверяем URL (pathname)
       const urlLocale = getLocaleFromPathname(pathname);
-      if (urlLocale && urlLocale !== i18n.defaultLocale) {
+      if (urlLocale && urlLocale !== i18nClient.defaultLocale) {
         localeValue = urlLocale as Locale;
       }
 
       // 2. Если в URL нет локали, проверяем params
-      if (localeValue === i18n.defaultLocale && params && "locale" in params) {
+      if (
+        localeValue === i18nClient.defaultLocale &&
+        params &&
+        "locale" in params
+      ) {
         const localeParam = params.locale;
 
         if (
@@ -382,33 +399,36 @@ export const LanguageSwitcher = () => {
           const resolvedLocale = await localeParam;
           if (
             typeof resolvedLocale === "string" &&
-            i18n.locales.includes(resolvedLocale as Locale)
+            i18nClient.locales.includes(resolvedLocale as Locale)
           ) {
             localeValue = resolvedLocale as Locale;
           }
         } else if (
           typeof localeParam === "string" &&
-          i18n.locales.includes(localeParam as Locale)
+          i18nClient.locales.includes(localeParam as Locale)
         ) {
           localeValue = localeParam as Locale;
         } else if (
           Array.isArray(localeParam) &&
           localeParam[0] &&
-          i18n.locales.includes(localeParam[0] as Locale)
+          i18nClient.locales.includes(localeParam[0] as Locale)
         ) {
           localeValue = localeParam[0] as Locale;
         }
       }
 
       // 3. Если все еще default, проверяем cookie (только на клиенте)
-      if (localeValue === i18n.defaultLocale && typeof window !== "undefined") {
+      if (
+        localeValue === i18nClient.defaultLocale &&
+        typeof window !== "undefined"
+      ) {
         const cookies = document.cookie.split(";");
         const localeCookie = cookies.find((cookie) =>
-          cookie.trim().startsWith(`${i18n.cookieName}=`)
+          cookie.trim().startsWith(`${i18nClient.cookieName}=`)
         );
         if (localeCookie) {
           const cookieValue = localeCookie.split("=")[1];
-          if (i18n.locales.includes(cookieValue as Locale)) {
+          if (i18nClient.locales.includes(cookieValue as Locale)) {
             localeValue = cookieValue as Locale;
           }
         }
@@ -418,8 +438,8 @@ export const LanguageSwitcher = () => {
       setSelected(localeValue);
     } catch (error) {
       console.error("Error getting locale:", error);
-      setCurrentLocale(i18n.defaultLocale as Locale);
-      setSelected(i18n.defaultLocale as Locale);
+      setCurrentLocale(i18nClient.defaultLocale as Locale);
+      setSelected(i18nClient.defaultLocale as Locale);
     }
   }, [params, pathname, getLocaleFromPathname]);
 
@@ -441,14 +461,14 @@ export const LanguageSwitcher = () => {
     setSelected(language as Locale);
 
     // Устанавливаем cookie для сохранения выбранного языка
-    document.cookie = `${i18n.cookieName}=${language}; path=/; max-age=${i18n.cookieMaxAge}`;
+    document.cookie = `${i18nClient.cookieName}=${language}; path=/; max-age=${i18nClient.cookieMaxAge}`;
 
     // Получаем текущую локаль из URL
     const currentUrlLocale = getLocaleFromPathname(pathname);
 
     // Для главной страницы, если мы используем чистые URL
     if (
-      i18n.preserveRouteOnHome &&
+      i18nClient.preserveRouteOnHome &&
       (pathname === "/" ||
         pathname === `/${currentUrlLocale}` ||
         pathname === `/${currentUrlLocale}/`)
@@ -463,7 +483,7 @@ export const LanguageSwitcher = () => {
       const segments = pathname.split("/").filter(Boolean);
 
       // Если первый сегмент - это локаль, заменяем её
-      if (segments.length > 0 && i18n.locales.includes(segments[0] as Locale)) {
+      if (segments.length > 0 && i18nClient.locales.includes(segments[0] as Locale)) {
         segments[0] = language;
       } else {
         // Если локали нет в URL, добавляем её в начало

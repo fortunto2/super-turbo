@@ -1,4 +1,4 @@
-import { Locale, i18n } from "@/config/i18n-config";
+import { Locale, i18nServer } from "@/config/i18n-server";
 
 export function getValidLocale(input: unknown): Locale {
   const value =
@@ -6,9 +6,10 @@ export function getValidLocale(input: unknown): Locale {
       ? input
       : Array.isArray(input)
         ? input[0]
-        : i18n.defaultLocale;
+        : i18nServer.defaultLocale;
 
-  return i18n.locales.includes(value as Locale)
+  const locales = i18nServer.locales;
+  return locales.includes(value as Locale)
     ? (value as Locale)
-    : i18n.defaultLocale;
+    : i18nServer.defaultLocale;
 }

@@ -1,0 +1,283 @@
+import type { NestedDictionary } from "../../types";
+
+export const en: NestedDictionary = {
+  "blog": {
+    "page_title": "Blog"
+  },
+  "site": {
+    "name": "SuperDuperAI"
+  },
+  "footer": {
+    "pages": {
+      "about": "About",
+      "pricing": "Pricing",
+      "terms": "Terms and Conditions",
+      "privacy": "Privacy",
+      "blog": "Blog",
+      "demo": "Book a Demo"
+    },
+    "company": "SuperDuperAI",
+    "corp": "SuperDuperAi, Corp.",
+    "address1": "57 Saulsbury Rd, Unit E #1333",
+    "address2": "Dover, DE 19904",
+    "phone": "+1 818 619 0966",
+    "email": "info@superduperai.co",
+    "copyright": "© {year} SuperDuperAi Corp. All rights reserved.",
+    "social": {
+      "instagram": "Follow SuperDuperAI on Instagram",
+      "youtube": "Subscribe to SuperDuperAI on YouTube",
+      "telegram": "Join SuperDuperAI on Telegram",
+      "tiktok": "Follow SuperDuperAI on TikTok",
+      "discord": "Join SuperDuperAI Discord server",
+      "linkedin": "Connect with SuperDuperAI on LinkedIn"
+    }
+  },
+  "marketing": {
+    "pages": "Pages",
+    "tools": "AI Tools",
+    "cases": "Use Cases",
+    "ai_tool_title": "AI tool by SuperDuperAI",
+    "ai_case_title": "Case Study by SuperDuperAI",
+    "view_all_tools": "View All Tools →",
+    "view_all_cases": "View All Use Cases →"
+  },
+  "hero": {
+    "title": "Turn Vibes into Videos Instantly",
+    "description": "Revolutionary AI platform for creating professional videos without skills, equipment, or budget. 10x faster and cheaper.",
+    "cta": "Start Creating for Free"
+  },
+  "features": {
+    "section_title": "What Makes SuperDuperAI Super",
+    "section_description": "Advanced features and technologies for creating stunning videos",
+    "list": [
+      {
+        "icon": "users",
+        "title": "Custom Characters with AI Memory",
+        "description": "Your AI actor database using LoRA technology. Create and save unique characters for your videos."
+      },
+      {
+        "icon": "image",
+        "title": "Cinematic Camera Controls",
+        "description": "Pans, zooms, bullet-time — without physical cameras. Add professional camera movements with one click."
+      },
+      {
+        "icon": "settings",
+        "title": "Multi-Agent AI Workflow",
+        "description": "A model where each agent does its job. Specialized AI for scripting, filming, editing, and sound."
+      },
+      {
+        "icon": "speed",
+        "title": "Fast & Efficient",
+        "description": "Idea → video in minutes, not hours or days. Speed up your workflow and create more content."
+      },
+      {
+        "icon": "chart",
+        "title": "Cost Saving",
+        "description": "Cinematography on a budget. Get professional video without spending on crew and equipment."
+      },
+      {
+        "icon": "edit",
+        "title": "Easy Editing & Integration",
+        "description": "Storyboard, drag-drop, export to TikTok / YouTube. Intuitive interface for quick finalization of your video."
+      }
+    ]
+  },
+  "howItWorks": {
+    "section_title": "How It Works",
+    "section_description": "Direct your video in 3 easy steps – AI agents handle the rest.",
+    "steps": [
+      {
+        "title": "Define Your Vision",
+        "description": "Describe your idea, vibe, or plot — just a few phrases are enough"
+      },
+      {
+        "title": "AI Generates the Scene",
+        "description": "Multi-agent system creates script, frames, and characters"
+      },
+      {
+        "title": "Refine and Finalize",
+        "description": "Adjust the style, export your video, and share it with the world"
+      }
+    ]
+  },
+  "useCases": {
+    "section_title": "Made for Creators, Businesses, Musicians & Teams",
+    "section_description": "Find the perfect use case for SuperDuperAI to meet your needs.",
+    "categories": {
+      "ai-video": "Content Creators",
+      "business": "Small Businesses",
+      "creative": "Musicians & Artists",
+      "teams": "Agencies & Teams",
+      "social": "Social Media"
+    }
+  },
+  "cta": {
+    "title": "Ready to create your next video sensation?",
+    "description": "Join SuperDuperAI and start creating amazing videos right now.",
+    "button": "Start Creating for Free",
+    "note": "No credit card required"
+  },
+  "navbar": {
+    "home": "Home",
+    "about": "About",
+    "pricing": "Pricing",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "blog": "Blog",
+    "tools": "Tools",
+    "start": "Start For Free",
+    "menu": "Menu",
+    "close_menu": "Close menu",
+    "open_menu": "Open menu"
+  },
+  "ui": {
+    "faq": "FAQ",
+    "approved_by": "Approved by",
+    "look": "Look!",
+    "show_more": "Show more",
+    "collapse": "Collapse",
+    "no_results": "No results",
+    "loading": "Loading...",
+    "success": "Success!",
+    "error": "Error",
+    "try_again": "Try again",
+    "empty": "Empty",
+    "nothing_found": "Nothing found",
+    "get_started": "Get Started"
+  },
+  "pricing": {
+    "banner_title": "Try SuperDuperAI with 100 Free Credits!",
+    "banner_desc": "New users get 100 credits completely free - enough to create multiple projects and explore almost all our features. Test the power of AI creativity with no commitment.",
+    "banner_cta": "Start Creating Now",
+    "without_package": "Without a Package",
+    "with_power_package": "With a Power Package",
+    "base_name": "BASE - 100 credits",
+    "pro_name": "PRO - 1000 credits",
+    "base_projects": "5-10 projects",
+    "pro_projects": "20-50 projects",
+    "save_50": "save 50%",
+    "free_features": [
+      "100 free credits per month",
+      "Access to basic editing tools only",
+      "Limited animation and voiceover options",
+      "Videos with watermarks"
+    ],
+    "base_features": [
+      "Full access to all editing tools",
+      "Unlimited creation",
+      "Download finished videos without watermarks",
+      "Personal manager to assist with your projects",
+      "Exclusive training sessions to boost your skills"
+    ],
+    "pro_features": [
+      "Full access to all editing tools",
+      "Unlimited creation",
+      "Download finished videos without watermarks",
+      "Personal manager to assist with your projects",
+      "Exclusive training sessions to boost your skills"
+    ],
+    "start": "Start Creating",
+    "buy": "Buy"
+  },
+  "creative": {
+    "title": "SuperDuperAI Creative Partnership Program",
+    "desc": "We're looking for passionate content creators and artists! Join our program and receive 1000+ free credits, 1-on-1 support, and early access to new features. Perfect for creators with socially meaningful projects and innovative ideas.",
+    "learn_more": "Learn More",
+    "or": "or",
+    "apply_email": "Apply via Email"
+  },
+  "privacy_policy": "Privacy policy",
+  "veo3PromptGenerator": {
+    "infoBanner": {
+      "title": "Master VEO3 Video Generation",
+      "description": "Learn professional prompting techniques and best practices for Google's most advanced AI video model."
+    },
+    "tabs": {
+      "builder": "Prompt Builder",
+      "enhance": "AI Enhancement",
+      "history": "History"
+    },
+    "promptBuilder": {
+      "scene": "Scene",
+      "scenePlaceholder": "Describe the setting, environment, or location...",
+      "style": "Style",
+      "stylePlaceholder": "Artistic, photorealistic, cinematic, etc...",
+      "camera": "Camera",
+      "cameraPlaceholder": "Camera movement, angle, shot type...",
+      "characters": "Characters",
+      "addCharacter": "Add Character",
+      "characterName": "Name",
+      "characterDescription": "Description",
+      "characterSpeech": "Speech/Dialogue",
+      "removeCharacter": "Remove",
+      "action": "Action",
+      "actionPlaceholder": "What's happening in the scene...",
+      "lighting": "Lighting",
+      "lightingPlaceholder": "Natural, dramatic, soft, etc...",
+      "mood": "Mood",
+      "moodPlaceholder": "Emotional atmosphere, tone...",
+      "language": "Language",
+      "moodboard": "Moodboard",
+      "moodboardEnabled": "Enable moodboard",
+      "moodboardDescription": "Upload reference images to guide generation"
+    },
+    "promptPreview": {
+      "title": "Generated Prompt",
+      "copyButton": "Copy",
+      "copied": "Copied!",
+      "randomizeButton": "Randomize",
+      "clearButton": "Clear All",
+      "enhanceButton": "Enhance with AI"
+    },
+    "aiEnhancement": {
+      "title": "AI Enhancement",
+      "description": "Enhance your prompt with advanced AI techniques",
+      "focusTypes": {
+        "character": "Character Focus",
+        "action": "Action Focus",
+        "cinematic": "Cinematic Focus",
+        "safe": "Safe Content"
+      },
+      "settings": {
+        "title": "Enhancement Settings",
+        "characterLimit": "Character Limit",
+        "includeAudio": "Include Audio Description",
+        "model": "AI Model"
+      },
+      "enhanceButton": "Enhance Prompt",
+      "enhancing": "Enhancing...",
+      "enhanceError": "Enhancement failed",
+      "enhancementInfo": {
+        "model": "Model",
+        "length": "Length",
+        "actualCharacters": "Actual Characters",
+        "targetCharacters": "Target Characters"
+      }
+    },
+    "promptHistory": {
+      "title": "Prompt History",
+      "empty": "No prompts in history yet",
+      "loadButton": "Load",
+      "clearButton": "Clear History",
+      "columns": {
+        "timestamp": "Date",
+        "basicPrompt": "Basic Prompt",
+        "enhancedPrompt": "Enhanced Prompt",
+        "length": "Length",
+        "model": "Model"
+      }
+    },
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close"
+    }
+  }
+} as const;
+
+

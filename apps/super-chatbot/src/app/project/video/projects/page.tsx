@@ -240,7 +240,7 @@ export default function ProjectsPage() {
                 <Play className="h-12 w-12 text-muted-foreground" />
               </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                You don't have any projects yet
+                You don&apos;t have any projects yet
               </h2>
               <p className="text-muted-foreground mb-4">
                 Create your first project in Story Editor and it will appear

@@ -15,6 +15,11 @@
       "import": "./dist/data/index.mjs",
       "require": "./dist/data/index.js"
     },
+    "./translation": {
+      "types": "./dist/translation/index.d.ts",
+      "import": "./dist/translation/index.mjs",
+      "require": "./dist/translation/index.js"
+    },
     "./tsconfig": "./tsconfig/base.json",
     "./tsconfig/library.json": "./tsconfig/library.json",
     "./tsconfig/nextjs.json": "./tsconfig/nextjs.json"
@@ -23,7 +28,8 @@
   "license": "MIT",
   "files": [
     "dist/**",
-    "tsconfig/**"
+    "tsconfig/**",
+    "dist/translation/index.d.ts"
   ],
   "scripts": {
     "build": "tsup",
