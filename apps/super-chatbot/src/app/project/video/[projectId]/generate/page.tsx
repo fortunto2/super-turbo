@@ -18,6 +18,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { ProjectTaskList } from "@/components/project-task-list";
 
 export default function GeneratePage() {
   const params = useParams();
@@ -134,15 +135,15 @@ export default function GeneratePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          <h1 className="text-2xl font-bold text-foreground mb-4">
             ID проекта не найден
           </h1>
-          <Link
-            href="/tools/story-editor"
-            className="text-blue-600 hover:text-blue-800 underline"
+          <button
+            onClick={() => router.back()}
+            className="text-primary hover:text-primary/80 underline"
           >
-            Вернуться к Story Editor
-          </Link>
+            Вернуться
+          </button>
         </div>
       </div>
     );
@@ -150,29 +151,31 @@ export default function GeneratePage() {
 
   return (
     <div className="min-h-screen bg-background w-full">
-      <div className="container mx-auto px-4 py-8 w-full max-w-4xl">
+      <div className="mx-auto px-4 py-8 w-full max-w-4xl">
         <div className="w-full space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Link
-                href="/tools/story-editor"
-                className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            <div className="space-y-4">
+              <button
+                onClick={() => router.back()}
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Вернуться к Story Editor
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900">
+                <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <ArrowLeft className="size-4" />
+                </div>
+                <span className="font-medium">Вернуться</span>
+              </button>
+              <h1 className="text-3xl font-bold text-foreground">
                 Отслеживание генерации
               </h1>
-              <p className="text-gray-600">ID проекта: {projectId}</p>
+              <p className="text-muted-foreground">ID проекта: {projectId}</p>
             </div>
           </div>
 
           {/* Project status */}
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-emerald-600">Статус проекта</CardTitle>
+              <CardTitle className="text-primary">Статус проекта</CardTitle>
               <CardDescription>
                 Отслеживание прогресса генерации видео
               </CardDescription>
@@ -194,9 +197,9 @@ export default function GeneratePage() {
                       {completedTasks}/{totalTasks} шагов
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
                       style={{ width: `${projectProgress}%` }}
                     />
                   </div>
@@ -209,7 +212,7 @@ export default function GeneratePage() {
                   ) : projectStatus === "failed" ? (
                     <AlertCircle className="size-4 text-red-600" />
                   ) : projectStatus === "processing" ? (
-                    <Loader2 className="size-4 animate-spin text-emerald-600" />
+                    <Loader2 className="size-4 animate-spin text-primary" />
                   ) : (
                     <Loader2 className="size-4 animate-spin text-yellow-600" />
                   )}
@@ -228,7 +231,7 @@ export default function GeneratePage() {
 
                 {/* Error display */}
                 {error && (
-                  <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-md">
+                  <div className="flex items-center space-x-2 text-red-600 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">
                     <AlertCircle className="size-5" />
                     <span>{error}</span>
                   </div>
@@ -262,61 +265,8 @@ export default function GeneratePage() {
                   )}
                 </div>
 
-                {/* Task details */}
-                {projectTasks.length > 0 && (
-                  <div className="mt-4 space-y-3">
-                    <h4 className="font-medium text-sm">Детали задач:</h4>
-                    <div className="space-y-2">
-                      {projectTasks.map((task: any, index: number) => {
-                        // Определяем понятное название для типа задачи
-                        const getTaskTypeName = (type: string) => {
-                          switch (type) {
-                            case "txt2script_flow":
-                              return "Генерация сценария";
-                            case "script2entities_flow":
-                              return "Извлечение сущностей";
-                            case "script2storyboard_flow":
-                              return "Создание раскадровки";
-                            default:
-                              return (
-                                type?.replace(/_/g, " ").toLowerCase() ||
-                                `Задача ${index + 1}`
-                              );
-                          }
-                        };
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between text-sm"
-                          >
-                            <span className="capitalize">
-                              {getTaskTypeName(task.type)}
-                            </span>
-                            <div className="flex items-center space-x-2">
-                              {task.status === "completed" ? (
-                                <CheckCircle className="size-3 text-green-600" />
-                              ) : task.status === "error" ? (
-                                <AlertCircle className="size-3 text-red-600" />
-                              ) : task.status === "in_progress" ? (
-                                <Loader2 className="size-3 animate-spin text-emerald-600" />
-                              ) : (
-                                <div className="size-3 rounded-full bg-gray-300" />
-                              )}
-                              <span className="text-xs capitalize">
-                                {task.status === "completed" && "Завершено"}
-                                {task.status === "error" && "Ошибка"}
-                                {task.status === "in_progress" && "В процессе"}
-                                {task.status === "pending" && "Ожидание"}
-                                {!task.status && "Неизвестно"}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Task details using the new component */}
+                <ProjectTaskList tasks={projectTasks} />
               </div>
             </CardContent>
           </Card>

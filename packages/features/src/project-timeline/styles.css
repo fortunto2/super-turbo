@@ -2,8 +2,6 @@
 @import "@radix-ui/colors/mauve.css";
 @import "@radix-ui/colors/violet.css";
 
-@import "@radix-ui/themes/styles.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

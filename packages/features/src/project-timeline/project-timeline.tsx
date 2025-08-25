@@ -1,12 +1,10 @@
 "use client";
-import { IProjectRead } from "@turbo-super/api";
+import { IDataUpdate, IProjectRead } from "@turbo-super/api";
 
 import type { FC } from "react";
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { Button } from "@turbo-super/ui";
-import { useProjectTimeline2Video } from "./hooks/useProjectTimeline2Video";
-import { useGenerateTimeline } from "./hooks/useGenerateTimeline";
 import {
   eventBus,
   SCENE_LOAD,
@@ -26,33 +24,26 @@ import "super-timeline/style.css";
 import "./styles.css";
 import { Scene } from "./components/scene";
 import { isEqual } from "lodash";
-import { useDataUpdate } from "./hooks";
 
 type Props = {
-  projectId: string;
   timeline: any;
   project: IProjectRead;
   onBack: () => void;
+  onExport?: () => void;
+  onUpdateTimeline?: (payload: IDataUpdate) => void;
 };
 
 const stateManager = new StateManager();
 
 export const ProjectTimeline: FC<Props> = ({
-  projectId,
   timeline,
   project,
   onBack,
+  onExport,
+  onUpdateTimeline,
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
-
-  const { mutate: generateTimeline, isLoading: isGenerating } =
-    useGenerateTimeline();
-
-  const { mutate: timeline2video, isLoading: isPending } =
-    useProjectTimeline2Video();
-
-  const { mutate: updateTimeline } = useDataUpdate(false);
 
   const {
     playerRef,
@@ -61,14 +52,11 @@ export const ProjectTimeline: FC<Props> = ({
     trackItemIds,
     trackItemsMap,
   } = useStore();
-  const store = useStore();
   const [data, setData] = useState<any>([]);
 
   const stableData = useMemo(() => {
     return data;
   }, [data]);
-
-  console.log(store);
 
   useEffect(() => {
     if (!stableData) return;
@@ -107,23 +95,14 @@ export const ProjectTimeline: FC<Props> = ({
     }
   }, [isClient]);
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     handleUpdateTimeline();
-  //   }, 1500);
-  //   return () => {
-  //     clearTimeout(timer);
-  //   };
-  // }, [trackItemsMap, trackItemDetailsMap, tracks, trackItemIds]);
-
   useEffect(() => {
-    if (!project || timeline) return;
-    handleGenerateTimeline();
-  }, [timeline, project]);
-
-  const handleGenerateTimeline = () => {
-    generateTimeline({ id: projectId });
-  };
+    const timer = setTimeout(() => {
+      handleUpdateTimeline();
+    }, 1500);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [trackItemsMap, trackItemDetailsMap, tracks, trackItemIds]);
 
   const handleUpdateTimeline = () => {
     if (!timeline || !project) return;
@@ -137,7 +116,7 @@ export const ProjectTimeline: FC<Props> = ({
         trackItemsMap,
       })
     ) {
-      updateTimeline({
+      onUpdateTimeline?.({
         id: timeline.id,
         value: {
           ...timeline.value,
@@ -187,6 +166,18 @@ export const ProjectTimeline: FC<Props> = ({
           <HistoryButtons />
         </div>
         <div></div>
+        <div className="pointer-events-auto flex h-14 items-center justify-end gap-2">
+          <div className="flex h-12 items-center gap-2 rounded-md bg-background px-2.5">
+            <Button
+              className="flex size-9 gap-1 border border-border"
+              size="icon"
+              variant="secondary"
+              onClick={onExport}
+            >
+              <Download width={18} />
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div

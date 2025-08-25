@@ -13,7 +13,7 @@ var superTimeline = require('super-timeline');
 var fade = require('@remotion/transitions/fade');
 var transitions = require('@remotion/transitions');
 require('super-timeline/style.css');
-require('lodash');
+var lodash = require('lodash');
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -2856,35 +2856,6 @@ var VideoPlayer = ({
   ) });
 };
 var RemotionPlayer = react.memo(VideoPlayer);
-var useProjectTimeline2Video = (options) => {
-  const [isLoading, setIsLoading] = react.useState(false);
-  const [error, setError] = react.useState(null);
-  const mutate = async (data) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await api.ProjectService.projectTimeline2Video(data);
-      if (options?.onSuccess) {
-        options.onSuccess(result);
-      }
-      return result;
-    } catch (err) {
-      const error2 = err instanceof Error ? err : new Error("Unknown error");
-      setError(error2);
-      if (options?.onError) {
-        options.onError(error2);
-      }
-      throw error2;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  return {
-    mutate,
-    isLoading,
-    error
-  };
-};
 var useGenerateTimeline = (mutationKey, options) => {
   const [isLoading, setIsLoading] = react.useState(false);
   const [error, setError] = react.useState(null);
@@ -2894,43 +2865,6 @@ var useGenerateTimeline = (mutationKey, options) => {
       setError(null);
       const result = await api.ProjectService.projectRegenerateTimeline(data);
       console.log("result", result);
-      if (options?.onSuccess) {
-        options.onSuccess(result);
-      }
-      return result;
-    } catch (err) {
-      const error2 = err instanceof Error ? err : new Error("Unknown error");
-      setError(error2);
-      if (options?.onError) {
-        options.onError(error2);
-      }
-      throw error2;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  return {
-    mutate,
-    isLoading,
-    error
-  };
-};
-var useDataUpdate = (updateKeys = true, options) => {
-  const [isLoading, setIsLoading] = react.useState(false);
-  const [error, setError] = react.useState(null);
-  const mutate = async (payload) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const config = await api.getClientSuperduperAIConfig();
-      if (config) {
-        api.OpenAPI.TOKEN = config.token;
-        api.OpenAPI.BASE = config.url;
-      }
-      const result = await api.DataService.dataUpdate({
-        id: payload.id,
-        requestBody: payload
-      });
       if (options?.onSuccess) {
         options.onSuccess(result);
       }
@@ -3219,16 +3153,14 @@ var Scene2 = () => {
 };
 var stateManager = new superTimeline.StateManager();
 var ProjectTimeline = ({
-  projectId,
   timeline,
   project,
-  onBack
+  onBack,
+  onExport,
+  onUpdateTimeline
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = react.useState(false);
   const [isClient, setIsClient] = react.useState(false);
-  const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
-  const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
-  const { mutate: updateTimeline } = useDataUpdate(false);
   const {
     playerRef,
     trackItemDetailsMap: trackItemDetailsMap2,
@@ -3236,12 +3168,10 @@ var ProjectTimeline = ({
     trackItemIds,
     trackItemsMap
   } = superTimeline.useStore();
-  const store = superTimeline.useStore();
   const [data, setData] = react.useState([]);
   const stableData = react.useMemo(() => {
     return data;
   }, [data]);
-  console.log(store);
   react.useEffect(() => {
     if (!stableData) return;
     superTimeline.eventBus.dispatch(superTimeline.SCENE_LOAD, {
@@ -3274,11 +3204,33 @@ var ProjectTimeline = ({
     }
   }, [isClient]);
   react.useEffect(() => {
-    if (!project || timeline) return;
-    handleGenerateTimeline();
-  }, [timeline, project]);
-  const handleGenerateTimeline = () => {
-    generateTimeline({ id: projectId });
+    const timer = setTimeout(() => {
+      handleUpdateTimeline();
+    }, 1500);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [trackItemsMap, trackItemDetailsMap2, tracks, trackItemIds]);
+  const handleUpdateTimeline = () => {
+    if (!timeline || !project) return;
+    if (!lodash.isEqual(timeline.value, {
+      ...timeline.value,
+      trackItemDetailsMap: trackItemDetailsMap2,
+      tracks,
+      trackItemIds,
+      trackItemsMap
+    })) {
+      onUpdateTimeline?.({
+        id: timeline.id,
+        value: {
+          ...timeline.value,
+          trackItemDetailsMap: trackItemDetailsMap2,
+          tracks,
+          trackItemIds,
+          trackItemsMap
+        }
+      });
+    }
   };
   if (!isComponentsLoaded || !isClient) {
     return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex min-h-screen size-full items-center justify-center", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
@@ -3311,7 +3263,17 @@ var ProjectTimeline = ({
             ) }),
             /* @__PURE__ */ jsxRuntime.jsx(superTimeline.HistoryButtons, {})
           ] }),
-          /* @__PURE__ */ jsxRuntime.jsx("div", {})
+          /* @__PURE__ */ jsxRuntime.jsx("div", {}),
+          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "pointer-events-auto flex h-14 items-center justify-end gap-2", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex h-12 items-center gap-2 rounded-md bg-background px-2.5", children: /* @__PURE__ */ jsxRuntime.jsx(
+            ui.Button,
+            {
+              className: "flex size-9 gap-1 border border-border",
+              size: "icon",
+              variant: "secondary",
+              onClick: onExport,
+              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Download, { width: 18 })
+            }
+          ) }) })
         ]
       }
     ),
@@ -3376,11 +3338,9 @@ exports.projectQueryKeys = projectQueryKeys;
 exports.ru = ru_default;
 exports.sceneToMediaFormatting = sceneToMediaFormatting;
 exports.tr = tr_default;
-exports.useDataUpdate = useDataUpdate;
 exports.useGenerateTimeline = useGenerateTimeline;
 exports.useMediaPrefetch = useMediaPrefetch;
 exports.useProject = useProject;
-exports.useProjectTimeline2Video = useProjectTimeline2Video;
 exports.useTranslation = useTranslation;
 exports.useVideoScenes = useVideoScenes;
 //# sourceMappingURL=index.js.map

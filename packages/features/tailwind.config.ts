@@ -12,9 +12,6 @@ const config: Config = {
     ...baseConfig.theme,
     extend: {
       ...(baseConfig.theme?.extend || {}),
-      fontFamily: {
-        sans: ['"Geist Variable"'],
-      },
       backgroundImage: {
         "card-gradient":
           "linear-gradient(to left, rgb(33, 33, 33) 70%, transparent)",
