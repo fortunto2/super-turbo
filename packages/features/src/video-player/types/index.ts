@@ -4,12 +4,3 @@ export type {
   VideoScene,
   VideoConfig,
 } from "../types";
-
-
-
-
-
-
-
-
-

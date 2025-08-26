@@ -47,7 +47,7 @@ interface ProjectVideoCreate {
     seed: number;
     quality: string;
     entity_ids: string[];
-    // Дополнительные поля для API
+    // Additional fields for API
     dynamic?: number;
     image_model_type?: string;
     voiceover_volume?: number;
@@ -74,7 +74,7 @@ export default function StoryEditorPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Загрузка конфигураций генерации
+  // Loading generation configurations
   useEffect(() => {
     const loadGenerationConfigs = async () => {
       try {
@@ -91,10 +91,10 @@ export default function StoryEditorPage() {
             setGenerationConfig(defaultConfig?.name || result.configs[0].name);
           }
         } else {
-          setError("Ошибка загрузки конфигураций генерации");
+          setError("Error loading generation configurations");
         }
       } catch (err) {
-        setError("Ошибка загрузки конфигураций генерации");
+        setError("Error loading generation configurations");
       } finally {
         setIsLoading(false);
       }
@@ -105,12 +105,12 @@ export default function StoryEditorPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      setError("Введите промпт для генерации");
+      setError("Enter a prompt for generation");
       return;
     }
 
     if (!generationConfig) {
-      setError("Выберите конфигурацию генерации");
+      setError("Select generation configuration");
       return;
     }
 
@@ -129,7 +129,7 @@ export default function StoryEditorPage() {
           seed: Number(seed),
           quality: quality,
           entity_ids: [],
-          // Добавляем дополнительные поля для API
+          // Add additional fields for API
           dynamic: 1,
           voiceover_volume: 0.5,
           music_volume: 0.5,
@@ -140,7 +140,7 @@ export default function StoryEditorPage() {
         },
       };
 
-      // Вызов API для генерации видео
+      // Call API for video generation
       const response = await fetch("/api/story-editor/generate", {
         method: "POST",
         headers: {
@@ -152,17 +152,17 @@ export default function StoryEditorPage() {
       const result = await response.json();
 
       if (result.success) {
-        setSuccess(`Видео генерируется! ID проекта: ${result.projectId}`);
+        setSuccess(`Video is generating! Project ID: ${result.projectId}`);
 
-        // Перенаправляем на страницу отслеживания через 2 секунды
+        // Redirect to tracking page after 2 seconds
         setTimeout(() => {
           router.push(`/project/video/${result.projectId}/generate`);
         }, 2000);
       } else {
-        throw new Error(result.error || "Ошибка генерации видео");
+        throw new Error(result.error || "Video generation error");
       }
     } catch (err: any) {
-      setError(err.message || "Ошибка генерации видео");
+      setError(err.message || "Video generation error");
     } finally {
       setIsGenerating(false);
     }
@@ -190,10 +190,10 @@ export default function StoryEditorPage() {
         </div>
         <div className="space-y-2">
           <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-            Загрузка конфигураций генерации...
+            Loading generation configurations...
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Подготавливаем ваш Story Editor
+            Preparing your Story Editor
           </p>
         </div>
       </div>
@@ -209,11 +209,11 @@ export default function StoryEditorPage() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               Story Editor
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Создайте видео, используя AI модели SuperDuperAI Project Video API
-            </p>
+                      <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Create videos using AI models with SuperDuperAI Project Video API
+          </p>
 
-            {/* Кнопка "Мои проекты" */}
+            {/* "My Projects" button */}
             <div className="pt-4">
               <Link href="/project/video/projects">
                 <Button
@@ -222,7 +222,7 @@ export default function StoryEditorPage() {
                   className="gap-2"
                 >
                   <FileText className="h-5 w-5" />
-                  Мои проекты
+                  My Projects
                 </Button>
               </Link>
             </div>
@@ -233,19 +233,19 @@ export default function StoryEditorPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <FileText className="size-6 text-emerald-600" />
-                <span>Генерация видео</span>
+                <span>Video Generation</span>
               </CardTitle>
               <CardDescription>
-                Заполните форму и нажмите &quot;Сгенерировать видео&quot;
+                Fill out the form and click &quot;Generate Video&quot;
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Prompt input */}
               <div className="space-y-2">
-                <Label htmlFor="prompt">Промпт для генерации</Label>
+                <Label htmlFor="prompt">Generation Prompt</Label>
                 <Textarea
                   id="prompt"
-                  placeholder="Опишите видео, которое хотите создать..."
+                  placeholder="Describe the video you want to create..."
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   rows={4}
@@ -257,7 +257,7 @@ export default function StoryEditorPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Aspect ratio */}
                 <div className="space-y-2">
-                  <Label htmlFor="aspect-ratio">Соотношение сторон</Label>
+                  <Label htmlFor="aspect-ratio">Aspect Ratio</Label>
                   <Select
                     value={aspectRatio}
                     onValueChange={setAspectRatio}
@@ -281,7 +281,7 @@ export default function StoryEditorPage() {
                 {/* Generation config */}
                 <div className="space-y-2">
                   <Label htmlFor="generation-config">
-                    Конфигурация генерации
+                    Generation Configuration
                   </Label>
                   <Select
                     value={generationConfig}
@@ -317,7 +317,7 @@ export default function StoryEditorPage() {
 
                 {/* Quality */}
                 <div className="space-y-2">
-                  <Label htmlFor="quality">Качество</Label>
+                  <Label htmlFor="quality">Quality</Label>
                   <Select
                     value={quality}
                     onValueChange={setQuality}
@@ -352,7 +352,7 @@ export default function StoryEditorPage() {
                   <CheckCircle className="size-5" />
                   <span>{success}</span>
                   <div className="text-sm text-green-500">
-                    Перенаправление на страницу отслеживания...
+                    Redirecting to tracking page...
                   </div>
                 </div>
               )}
@@ -367,12 +367,12 @@ export default function StoryEditorPage() {
                 {isGenerating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    Генерация...
+                    Generating...
                   </>
                 ) : (
                   <>
                     <Play className="size-4 mr-2" />
-                    Сгенерировать видео
+                    Generate Video
                   </>
                 )}
               </Button>
@@ -382,8 +382,8 @@ export default function StoryEditorPage() {
           {/* Footer info */}
           <div className="text-center text-sm text-muted-foreground border-t pt-8 mt-12">
             <p>
-              Powered by <strong>SuperDuperAI</strong> • Project Video API для
-              генерации профессиональных видео
+              Powered by <strong>SuperDuperAI</strong> • Project Video API for
+              generating professional videos
             </p>
           </div>
         </div>

@@ -17,7 +17,7 @@ import { useTranslation } from "@/hooks/use-translation";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Locale } from "@/config/i18n-config";
-import { getModelConfig, supportsImageToVideo } from "@/lib/models-config";
+import { getModelConfig } from "@/lib/models-config";
 
 export default function GenerateImagePage() {
   const searchParams = useSearchParams();

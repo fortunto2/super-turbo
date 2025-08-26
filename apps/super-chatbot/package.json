@@ -93,6 +93,7 @@
     "langsmith": "^0.3.47",
     "lucide-react": "^0.446.0",
     "marked": "^16.0.0",
+
     "nanoid": "^5.0.8",
     "next": "15.3.0-canary.31",
     "next-auth": "5.0.0-beta.25",

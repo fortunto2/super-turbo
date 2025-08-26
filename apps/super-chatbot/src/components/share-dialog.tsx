@@ -17,7 +17,7 @@ export const ShareDialog: React.FC<Props> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  // URL для шаринга - страница preview проекта
+  // URL for sharing - project preview page
   const shareUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/project/video/${projectId}/preview`
@@ -51,17 +51,17 @@ export const ShareDialog: React.FC<Props> = ({
       />
 
       {/* Dialog */}
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-6 max-w-md w-full mx-4">
+      <div className="relative bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="size-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Share2 className="size-8 text-blue-600 dark:text-blue-400" />
+          <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <Share2 className="size-8 text-primary" />
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-200">
-            Поделиться проектом
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">
+            Share Project
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Поделитесь ссылкой на ваш проект:
+          <p className="text-muted-foreground mt-2">
+            Share the link to your project:
           </p>
         </div>
 
@@ -81,15 +81,15 @@ export const ShareDialog: React.FC<Props> = ({
 
         {/* URL Copy */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Ссылка на проект:
+          <label className="text-sm font-medium text-foreground">
+            Project link:
           </label>
-          <div className="flex items-center space-x-2 rounded-xl border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-slate-700">
+          <div className="flex items-center space-x-2 rounded-xl border border-border p-3 bg-muted">
             <input
               type="text"
               value={shareUrl}
               readOnly
-              className="flex-1 bg-transparent text-sm outline-none text-gray-700 dark:text-gray-300"
+              className="flex-1 bg-transparent text-sm outline-none text-foreground"
             />
             <Button
               onClick={handleCopy}
@@ -100,12 +100,12 @@ export const ShareDialog: React.FC<Props> = ({
               {copied ? (
                 <>
                   <Check className="size-4 mr-2" />
-                  Скопировано!
+                  Copied!
                 </>
               ) : (
                 <>
                   <Copy className="size-4 mr-2" />
-                  Копировать
+                  Copy
                 </>
               )}
             </Button>
@@ -119,7 +119,7 @@ export const ShareDialog: React.FC<Props> = ({
             variant="outline"
             className="w-full"
           >
-            Закрыть
+            Close
           </Button>
         </div>
       </div>
@@ -138,12 +138,10 @@ const ShareButton = ({
 }) => (
   <button
     onClick={onClick}
-    className="flex flex-col items-center space-y-2 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200"
+    className="flex flex-col items-center space-y-2 p-3 rounded-xl hover:bg-muted transition-colors duration-200"
   >
     <div className="size-12 flex items-center justify-center">{icon}</div>
-    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-      {title}
-    </span>
+    <span className="text-xs font-medium text-foreground">{title}</span>
   </button>
 );
 
@@ -208,7 +206,7 @@ const shareOptions = [
         />
         <path
           fill="#FFF"
-          d="M12 19H17V36H12zM14.485 17h-.028C12.965 17 12 15.888 12 14.499 12 13.08 12.995 12 14.514 12c1.521 0 2.458 1.08 2.486 2.499C17 15.887 16.035 17 14.485 17zM36 36h-5v-9.099c0-2.198-1.225-3.698-3.192-3.698-1.501 0-2.313 1.012-2.707 1.99C24.957 25.543 25 26.511 25 27v9h-5V19h5v2.616C25.721 20.5 26.85 19 29.738 19c3.578 0 6.261 2.25 6.261 7.274L36 36 36 36z"
+          d="M12 19H17V36H12zM14.485 17h-.028C12.965 17 12 15.888 12 14.499 12 13.08 12.995 12 14.514 12c1.521 0 2.458 1.08 2.486 2.499C17 15.887 16.035 17 14.485 17zM36 36h-5v-9.099c0-2.198-1.225-3.698-3.192-3.698-1.501,0-2.313 1.012-2.707 1.99C24.957 25.543 25 26.511 25 27v9h-5V19h5v2.616C25.721 20.5 26.85 19 29.738 19c3.578 0 6.261 2.25 6.261 7.274L36 36 36 36z"
         />
       </svg>
     ),

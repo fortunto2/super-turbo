@@ -1,8 +1,8 @@
 import { memo, Fragment, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Badge, StripePaymentButton } from '@turbo-super/ui';
-import { BookOpen, ArrowLeft, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
+import { BookOpen, ArrowLeft, Download, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
-import { FileTypeEnum, getClientSuperduperAIConfig, OpenAPI, DataService, ProjectService } from '@turbo-super/api';
+import { FileTypeEnum, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
 import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio, prefetch } from 'remotion';
 import { Player } from '@remotion/player';
 import { Canvas, Textbox } from 'fabric';
@@ -10,8 +10,7 @@ import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guide
 import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, HistoryButtons, MenuList, MenuItem, ControlList, ControlItem, TimelineComponent, Composition } from 'super-timeline';
 import { fade } from '@remotion/transitions/fade';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
-import 'super-timeline/style.css';
-import 'lodash';
+import { isEqual } from 'lodash';
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx
 
@@ -2854,35 +2853,6 @@ var VideoPlayer = ({
   ) });
 };
 var RemotionPlayer = memo(VideoPlayer);
-var useProjectTimeline2Video = (options) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const mutate = async (data) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await ProjectService.projectTimeline2Video(data);
-      if (options?.onSuccess) {
-        options.onSuccess(result);
-      }
-      return result;
-    } catch (err) {
-      const error2 = err instanceof Error ? err : new Error("Unknown error");
-      setError(error2);
-      if (options?.onError) {
-        options.onError(error2);
-      }
-      throw error2;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  return {
-    mutate,
-    isLoading,
-    error
-  };
-};
 var useGenerateTimeline = (mutationKey, options) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -2892,43 +2862,6 @@ var useGenerateTimeline = (mutationKey, options) => {
       setError(null);
       const result = await ProjectService.projectRegenerateTimeline(data);
       console.log("result", result);
-      if (options?.onSuccess) {
-        options.onSuccess(result);
-      }
-      return result;
-    } catch (err) {
-      const error2 = err instanceof Error ? err : new Error("Unknown error");
-      setError(error2);
-      if (options?.onError) {
-        options.onError(error2);
-      }
-      throw error2;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  return {
-    mutate,
-    isLoading,
-    error
-  };
-};
-var useDataUpdate = (updateKeys = true, options) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const mutate = async (payload) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const config = await getClientSuperduperAIConfig();
-      if (config) {
-        OpenAPI.TOKEN = config.token;
-        OpenAPI.BASE = config.url;
-      }
-      const result = await DataService.dataUpdate({
-        id: payload.id,
-        requestBody: payload
-      });
       if (options?.onSuccess) {
         options.onSuccess(result);
       }
@@ -3215,18 +3148,25 @@ var Player2 = () => {
 var Scene2 = () => {
   return /* @__PURE__ */ jsx("div", { className: "bg-scene py-3 size-full flex justify-center flex-1", children: /* @__PURE__ */ jsx("div", { className: "max-w-3xl flex-1 size-full flex relative", children: /* @__PURE__ */ jsx(Player2, {}) }) });
 };
+var TimelineWrapper = ({ children }) => {
+  useEffect(() => {
+    import('super-timeline/style.css');
+    return () => {
+    };
+  }, []);
+  return /* @__PURE__ */ jsx("div", { className: "relative flex size-full flex-col min-h-screen", children });
+};
 var stateManager = new StateManager();
 var ProjectTimeline = ({
-  projectId,
   timeline,
   project,
-  onBack
+  onBack,
+  onExport,
+  onUpdateTimeline,
+  onRegenerateTimeline
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const { mutate: generateTimeline, isLoading: isGenerating } = useGenerateTimeline();
-  const { mutate: timeline2video, isLoading: isPending } = useProjectTimeline2Video();
-  const { mutate: updateTimeline } = useDataUpdate(false);
   const {
     playerRef,
     trackItemDetailsMap: trackItemDetailsMap2,
@@ -3234,12 +3174,10 @@ var ProjectTimeline = ({
     trackItemIds,
     trackItemsMap
   } = useStore();
-  const store = useStore();
   const [data, setData] = useState([]);
   const stableData = useMemo(() => {
     return data;
   }, [data]);
-  console.log(store);
   useEffect(() => {
     if (!stableData) return;
     eventBus.dispatch(SCENE_LOAD, {
@@ -3247,9 +3185,14 @@ var ProjectTimeline = ({
     });
   }, [stableData]);
   useEffect(() => {
+    if (!project || timeline) return;
+    onRegenerateTimeline?.();
+  }, [timeline, project]);
+  useEffect(() => {
     if (!timeline) return;
     const timer = setTimeout(() => {
       const timelineData = timeline.value;
+      console.log(timelineData);
       setData(timelineData);
     }, 1e3);
     return () => {
@@ -3272,11 +3215,34 @@ var ProjectTimeline = ({
     }
   }, [isClient]);
   useEffect(() => {
-    if (!project || timeline) return;
-    handleGenerateTimeline();
-  }, [timeline, project]);
-  const handleGenerateTimeline = () => {
-    generateTimeline({ id: projectId });
+    if (!project || !timeline) return;
+    const timer = setTimeout(() => {
+      handleUpdateTimeline();
+    }, 1500);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [trackItemsMap, trackItemDetailsMap2, tracks, trackItemIds]);
+  const handleUpdateTimeline = () => {
+    if (!timeline || !project) return;
+    if (!isEqual(timeline.value, {
+      ...timeline.value,
+      trackItemDetailsMap: trackItemDetailsMap2,
+      tracks,
+      trackItemIds,
+      trackItemsMap
+    })) {
+      onUpdateTimeline?.({
+        id: timeline.id,
+        value: {
+          ...timeline.value,
+          trackItemDetailsMap: trackItemDetailsMap2,
+          tracks,
+          trackItemIds,
+          trackItemsMap
+        }
+      });
+    }
   };
   if (!isComponentsLoaded || !isClient) {
     return /* @__PURE__ */ jsx("div", { className: "flex min-h-screen size-full items-center justify-center", children: /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
@@ -3284,7 +3250,7 @@ var ProjectTimeline = ({
       /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+  return /* @__PURE__ */ jsxs(TimelineWrapper, { children: [
     /* @__PURE__ */ jsxs(
       "div",
       {
@@ -3309,7 +3275,17 @@ var ProjectTimeline = ({
             ) }),
             /* @__PURE__ */ jsx(HistoryButtons, {})
           ] }),
-          /* @__PURE__ */ jsx("div", {})
+          /* @__PURE__ */ jsx("div", {}),
+          /* @__PURE__ */ jsx("div", { className: "pointer-events-auto flex h-14 items-center justify-end gap-2", children: /* @__PURE__ */ jsx("div", { className: "flex h-12 items-center gap-2 rounded-md bg-background px-2.5", children: /* @__PURE__ */ jsx(
+            Button,
+            {
+              className: "flex size-9 gap-1 border border-border",
+              size: "icon",
+              variant: "secondary",
+              onClick: onExport,
+              children: /* @__PURE__ */ jsx(Download, { width: 18 })
+            }
+          ) }) })
         ]
       }
     ),
@@ -3341,6 +3317,6 @@ var ProjectTimeline = ({
   ] });
 };
 
-export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useDataUpdate, useGenerateTimeline, useMediaPrefetch, useProject, useProjectTimeline2Video, useTranslation, useVideoScenes };
+export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

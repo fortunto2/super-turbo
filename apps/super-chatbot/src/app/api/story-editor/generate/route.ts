@@ -29,7 +29,7 @@ interface ProjectVideoCreate {
 
 export async function POST(request: NextRequest) {
   try {
-    // Проверка аутентификации
+    // Authentication check
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     const body: ProjectVideoCreate = await request.json();
 
-    // Валидация входных данных
+    // Input validation
     if (!body.config.prompt || !body.config.image_generation_config_name) {
       return NextResponse.json(
         {
@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Проверка баланса пользователя
+    // Check user balance
     const userId = session.user.id;
 
-    // Определяем множители качества для расчета стоимости
+    // Define quality multipliers for cost calculation
     const qualityMultipliers = [];
     switch (body.config.quality) {
       case "hd":
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       `💳 Balance validated: ${balanceValidation.cost} credits required for story editor project`
     );
 
-    // Получение конфигурации SuperDuperAI
+    // Getting SuperDuperAI configuration
     const superduperaiConfig = getSuperduperAIConfig();
 
     if (!superduperaiConfig.token) {
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Настройка и вызов SuperDuperAI API
+    // Setup and call SuperDuperAI API
     const { OpenAPI } = await import("@turbo-super/api");
     OpenAPI.BASE = superduperaiConfig.url;
     OpenAPI.TOKEN = superduperaiConfig.token;
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
 
     const result = await ProjectService.projectVideo({ requestBody: payload });
 
-    // Извлечение ID проекта из ответа
+    // Extract project ID from response
     const projectId = result.id;
 
     if (!projectId) {
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Списание баланса после успешного создания проекта
+    // Deduct balance after successful project creation
     try {
       await deductOperationBalance(
         userId,
@@ -159,12 +159,12 @@ export async function POST(request: NextRequest) {
         "⚠️ Failed to deduct balance after story editor project creation:",
         balanceError
       );
-      // Продолжаем с ответом - проект был создан успешно
+      // Continue with response - project was created successfully
     }
 
-    // Сохранение проекта в базу данных пользователя
+    // Save project to user database
     try {
-      // Создаем прямое подключение к базе данных
+      // Create direct database connection
       const databaseUrl =
         process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
       const client = postgres(databaseUrl, { ssl: "require" });
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (saveError) {
       console.error("⚠️ Error saving project to user database:", saveError);
-      // Продолжаем с ответом - проект был создан успешно
+      // Continue with response - project was created successfully
     }
 
     return NextResponse.json({

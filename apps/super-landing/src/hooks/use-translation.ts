@@ -1,47 +1,25 @@
-import en from "@/config/dictionaries/en.json";
-import ru from "@/config/dictionaries/ru.json";
-import tr from "@/config/dictionaries/tr.json";
-import es from "@/config/dictionaries/es.json";
-import hi from "@/config/dictionaries/hi.json";
-import generators from "@/lib/dictionaries/generators.json";
-import { Locale } from "@/config/i18n-config";
-import type { TranslationDictionary } from "@/types/translation";
-
-const dictionaries: Record<Locale, TranslationDictionary> = {
-  en,
-  ru,
-  tr,
-  es,
-  hi,
-};
-
-function getNested(obj: unknown, path: string | string[]) {
-  const keys = Array.isArray(path) ? path : path.split(".");
-  return keys.reduce((acc, key) => {
-    if (acc && typeof acc === "object" && key in acc) {
-      return (acc as Record<string, unknown>)[key];
-    }
-    return undefined;
-  }, obj);
-}
+import { getSuperLandingDictionaryServer } from "@turbo-super/shared";
+import { Locale } from "@/config/i18n-client";
 
 export function useTranslation(locale: Locale) {
-  const dict = dictionaries[locale] || dictionaries.en;
-  const generatorDict =
-    (generators as Record<string, unknown>)[locale] ||
-    (generators as Record<string, unknown>).en;
+  const dict = getSuperLandingDictionaryServer(locale);
 
   function t<T = string>(key: string, fallback?: T): T {
-    // Сначала ищем в основных словарях
-    let value = getNested(dict, key);
-    if (value !== undefined) return value as T;
+    // Ищем в словаре по ключу
+    const keys = key.split(".");
+    let value: unknown = dict;
 
-    // Затем ищем в словаре генераторов
-    value = getNested(generatorDict, key);
-    if (value !== undefined) return value as T;
+    for (const k of keys) {
+      if (value && typeof value === "object" && k in value) {
+        value = (value as Record<string, unknown>)[k];
+      } else {
+        // Если ключ не найден, возвращаем fallback или сам ключ
+        if (fallback !== undefined) return fallback;
+        return key as unknown as T;
+      }
+    }
 
-    if (fallback !== undefined) return fallback;
-    return key as unknown as T;
+    return value as T;
   }
 
   return { t };

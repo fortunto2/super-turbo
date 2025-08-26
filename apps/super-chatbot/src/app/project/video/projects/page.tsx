@@ -43,16 +43,16 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Загрузка проектов пользователя
+  // Loading user projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const response = await fetch("/api/user-projects");
 
         if (!response.ok) {
-          // Если таблица не существует или другая ошибка БД
+          // If table doesn't exist or other DB error
           if (response.status === 500) {
-            console.log("База данных не готова, показываем пустое состояние");
+            console.log("Database not ready, showing empty state");
             setProjects([]);
             setIsLoading(false);
             return;
@@ -64,16 +64,16 @@ export default function ProjectsPage() {
 
         if (result.success) {
           setProjects(result.projects);
-          // Загружаем детали для каждого проекта
+          // Load details for each project
           result.projects.forEach((project: UserProject) => {
             fetchProjectDetails(project.projectId);
           });
         } else {
-          setError("Ошибка загрузки проектов");
+          setError("Error loading projects");
         }
       } catch (err) {
         console.error("Error fetching projects:", err);
-        // Не показываем ошибку пользователю, показываем пустое состояние
+        // Don't show error to user, show empty state
         setProjects([]);
       } finally {
         setIsLoading(false);
@@ -83,7 +83,7 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
-  // Загрузка деталей проекта
+  // Loading project details
   const fetchProjectDetails = async (projectId: string) => {
     try {
       const response = await fetch(
@@ -117,59 +117,57 @@ export default function ProjectsPage() {
       case "processing":
         return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
       default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
+        return <Clock className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case "completed":
-        return "Завершен";
+        return "Completed";
       case "failed":
-        return "Ошибка";
+        return "Error";
       case "processing":
-        return "В обработке";
+        return "Processing";
       default:
-        return "Ожидает";
+        return "Pending";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "text-green-600";
+        return "text-green-600 dark:text-green-400";
       case "failed":
-        return "text-red-600";
+        return "text-red-600 dark:text-red-400";
       case "processing":
-        return "text-blue-600";
+        return "text-blue-600 dark:text-blue-400";
       default:
-        return "text-gray-600";
+        return "text-muted-foreground";
     }
   };
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="w-full min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header with Back Button */}
           <div className="mb-6">
-            <Link
-              href="/tools/story-editor"
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
             >
-              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться к Story Editor</span>
-            </Link>
+              <span className="font-medium">Go Back</span>
+            </button>
           </div>
 
-          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-            <div className="text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">
-                Загрузка проектов...
-              </p>
+          <div className="flex items-center justify-center ">
+            <div className="size-full text-center bg-card border border-border rounded-2xl p-8 shadow-2xl min-h-[calc(100vh-200px)] flex flex-col items-center justify-center">
+              <Loader2 className="size-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground">Loading projects...</p>
             </div>
           </div>
         </div>
@@ -179,35 +177,38 @@ export default function ProjectsPage() {
 
   if (error) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="w-full min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header with Back Button */}
           <div className="mb-6">
-            <Link
-              href="/tools/story-editor"
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
             >
-              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться к Story Editor</span>
-            </Link>
+              <span className="font-medium">Go Back</span>
+            </button>
           </div>
 
           <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-            <div className="text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
+            <div className="text-center bg-card border border-border rounded-2xl p-8 shadow-2xl">
               <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Ошибка загрузки
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Loading Error
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
-              <div className="space-y-3">
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <div className="space-y-3 space-x-3">
                 <Button onClick={() => window.location.reload()}>
-                  Попробовать снова
+                  Try Again
                 </Button>
-                <Link href="/tools/story-editor">
-                  <Button variant="outline">Вернуться к Story Editor</Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  onClick={() => router.back()}
+                >
+                  Go Back
+                </Button>
               </div>
             </div>
           </div>
@@ -218,41 +219,42 @@ export default function ProjectsPage() {
 
   if (projects.length === 0) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="w-full min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header with Back Button */}
           <div className="mb-6">
-            <Link
-              href="/tools/story-editor"
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
             >
-              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться к Story Editor</span>
-            </Link>
+              <span className="font-medium">Go Back</span>
+            </button>
           </div>
 
           <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-            <div className="text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-white/20 dark:border-slate-700/50">
-              <div className="h-24 w-24 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Play className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+            <div className="text-center bg-card border border-border rounded-2xl p-8 shadow-2xl">
+              <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Play className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                У вас пока нет проектов
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                You don&apos;t have any projects yet
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Создайте свой первый проект в Story Editor и он появится здесь
+              <p className="text-muted-foreground mb-4">
+                Create your first project in Story Editor and it will appear
+                here
               </p>
               <div className="space-y-3">
                 <Link href="/tools/story-editor">
                   <Button className="w-full">
                     <Play className="h-4 w-4 mr-2" />
-                    Создать первый проект
+                    Create First Project
                   </Button>
                 </Link>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  💡 Каждый проект стоит 40 кредитов
+                <p className="text-sm text-muted-foreground">
+                  💡 Each project costs 40 credits
                 </p>
               </div>
             </div>
@@ -263,31 +265,29 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className=" mx-auto px-4 py-8">
+    <div className="w-full min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
         {/* Header with Back Button */}
         <div className="mb-flex items-center flex justify-between mb-8 w-full">
-          <Link
-            href="/tools/story-editor"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-300  hover:scale-105 group"
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
           >
-            <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <ArrowLeft className="size-4" />
             </div>
-            <span className="font-medium">Вернуться к Story Editor</span>
-          </Link>
+            <span className="font-medium">Go Back</span>
+          </button>
           <Link href="/tools/story-editor">
-            <Button>Создать новый проект</Button>
+            <Button>Create New Project</Button>
           </Link>
         </div>
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Мои проекты
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Все ваши проекты Story Editor в одном месте
+            <h1 className="text-3xl font-bold text-foreground">My Projects</h1>
+            <p className="text-muted-foreground mt-2">
+              All your Story Editor projects in one place
             </p>
           </div>
         </div>
@@ -300,25 +300,25 @@ export default function ProjectsPage() {
             return (
               <Card
                 key={project.id}
-                className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-white/30 dark:border-slate-700/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
+                className="bg-card border border-border hover:shadow-xl hover:scale-105 transition-all duration-300"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg truncate text-gray-800 dark:text-gray-200">
-                      Проект {project.projectId.slice(-8)}
+                    <CardTitle className="text-lg truncate text-foreground">
+                      Project {project.projectId.slice(-8)}
                     </CardTitle>
                     {getStatusIcon(status)}
                   </div>
-                  <CardDescription className="text-gray-600 dark:text-gray-400">
-                    Создан{" "}
-                    {new Date(project.createdAt).toLocaleDateString("ru-RU")}
+                  <CardDescription className="text-muted-foreground">
+                    Created{" "}
+                    {new Date(project.createdAt).toLocaleDateString("en-US")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Статус:
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Status:
                       </span>
                       <span
                         className={`text-sm font-medium ${getStatusColor(status)}`}
@@ -330,17 +330,17 @@ export default function ProjectsPage() {
                     {details && (
                       <>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Прогресс:
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Progress:
                           </span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {details.completedTasks}/{details.totalTasks} задач
+                          <span className="text-sm text-muted-foreground">
+                            {details.completedTasks}/{details.totalTasks} tasks
                           </span>
                         </div>
 
-                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2">
+                        <div className="w-full bg-muted rounded-full h-2">
                           <div
-                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
+                            className="bg-primary h-2 rounded-full transition-all duration-300"
                             style={{ width: `${details.progress}%` }}
                           />
                         </div>
@@ -352,11 +352,11 @@ export default function ProjectsPage() {
                         href={`/project/video/${project.projectId}/generate`}
                       >
                         <Button
-                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 hover:scale-105 transition-all duration-300"
+                          className="w-full hover:scale-105 transition-all duration-300"
                           variant="outline"
                         >
                           <Play className="h-4 w-4 mr-2" />
-                          Открыть проект
+                          Open Project
                         </Button>
                       </Link>
                     </div>

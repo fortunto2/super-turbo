@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     OpenAPI.BASE = config.url;
     OpenAPI.TOKEN = config.token;
 
-    // Получаем сцену через SceneService
+    // Get scene via SceneService
     const response = await SceneService.sceneGetById({ id: sceneId });
 
     if (!response) {

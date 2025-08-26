@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { i18n, Locale } from "./config/i18n-config";
+import { i18nServer, type Locale } from "./config/i18n-server";
 import { match as matchLocale } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
 
@@ -64,13 +64,13 @@ export function middleware(request: NextRequest) {
     const pathSegments = pathWithoutExtension.split("/").filter(Boolean);
 
     // Определяем, есть ли локаль в URL
-    let locale: string = i18n.defaultLocale;
+    let locale: string = i18nServer.defaultLocale;
     let contentType: string = "";
     let slug: string = "";
 
     if (pathSegments.length > 0) {
       // Проверяем, является ли первый сегмент локалью
-      if (i18n.locales.includes(pathSegments[0] as Locale)) {
+      if (i18nServer.locales.includes(pathSegments[0] as Locale)) {
         locale = pathSegments[0];
 
         // Если после локали есть тип и слаг
@@ -143,21 +143,23 @@ export function middleware(request: NextRequest) {
   }
 
   // Проверяем, является ли текущий путь корневым путем с локалью (например, /en, /ru)
-  const isLocaleRoot = i18n.locales.some((locale) => pathname === `/${locale}`);
+  const isLocaleRoot = i18nServer.locales.some(
+    (locale) => pathname === `/${locale}`
+  );
   if (isLocaleRoot) {
     // Редиректим с /locale на корень /
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const pathnameHasLocale = i18n.locales.some(
+  const pathnameHasLocale = i18nServer.locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
   if (!pathnameHasLocale) {
-    const locale = getLocale(request) || i18n.defaultLocale;
+    const locale = getLocale(request) || i18nServer.defaultLocale;
 
     // Используем rewrite для корневого пути, сохраняя чистый URL
-    if (pathname === "/" && i18n.preserveRouteOnHome) {
+    if (pathname === "/" && i18nServer.preserveRouteOnHome) {
       const url = new URL(`/${locale}${pathname}`, request.url);
       return ensureUserIdCookie(request, NextResponse.rewrite(url));
     }
@@ -170,17 +172,17 @@ export function middleware(request: NextRequest) {
     const pathSegments = pathname.split("/").filter(Boolean);
     if (
       pathSegments.length > 0 &&
-      i18n.locales.includes(pathSegments[0] as Locale)
+      i18nServer.locales.includes(pathSegments[0] as Locale)
     ) {
       const urlLocale = pathSegments[0];
-      const cookieLocale = request.cookies.get(i18n.cookieName)?.value;
+      const cookieLocale = request.cookies.get(i18nServer.cookieName)?.value;
 
       // Обновляем cookie только если она отличается от локали в URL
       if (cookieLocale !== urlLocale) {
         const response = ensureUserIdCookie(request, NextResponse.next());
-        response.cookies.set(i18n.cookieName, urlLocale, {
+        response.cookies.set(i18nServer.cookieName, urlLocale, {
           path: "/",
-          maxAge: i18n.cookieMaxAge,
+          maxAge: i18nServer.cookieMaxAge,
         });
         return response;
       }
@@ -192,23 +194,23 @@ export function middleware(request: NextRequest) {
 
 function getLocale(request: NextRequest): string | undefined {
   const { pathname } = request.nextUrl;
-  const availableLocales = [...i18n.locales] as string[];
+  const availableLocales = [...i18nServer.locales] as string[];
 
   // 1. Сначала проверяем, есть ли локаль в URL
   const pathSegments = pathname.split("/").filter(Boolean);
   if (
     pathSegments.length > 0 &&
-    i18n.locales.includes(pathSegments[0] as Locale)
+    i18nServer.locales.includes(pathSegments[0] as Locale)
   ) {
     // Если в URL есть локаль, используем её
     return pathSegments[0];
   }
 
   // 2. Если в URL нет локали, пробуем достать из куки
-  const cookieLocale = request.cookies.get(i18n.cookieName)?.value;
+  const cookieLocale = request.cookies.get(i18nServer.cookieName)?.value;
   if (
     cookieLocale &&
-    (i18n.locales as readonly string[]).includes(cookieLocale)
+    (i18nServer.locales as readonly string[]).includes(cookieLocale)
   ) {
     return cookieLocale;
   }
@@ -223,7 +225,7 @@ function getLocale(request: NextRequest): string | undefined {
     availableLocales
   );
 
-  return matchLocale(languages, i18n.locales, i18n.defaultLocale);
+  return matchLocale(languages, i18nServer.locales, i18nServer.defaultLocale);
 }
 
 // Обновляем matcher, чтобы корректно обрабатывать все пути, кроме статических ресурсов

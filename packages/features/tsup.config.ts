@@ -8,6 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
+  noExternal: ["@radix-ui/colors"], // Исключаем radix-ui colors из внешних зависимостей
   external: [
     "@turbo-super/core",
     "@turbo-super/api",
@@ -16,4 +17,10 @@ export default defineConfig({
     "lucide-react",
     "@turbo-super/ui",
   ],
+  // Исключаем CSS из сборки
+  outExtension({ format }) {
+    return {
+      js: format === "cjs" ? ".js" : ".mjs",
+    };
+  },
 });

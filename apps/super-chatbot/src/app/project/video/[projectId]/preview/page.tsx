@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   RemotionPlayer,
   sceneToMediaFormatting,
@@ -20,8 +20,10 @@ import Link from "next/link";
 import { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
 import { useEffect, useMemo, useState } from "react";
 import { ShareDialog } from "@/components/share-dialog";
+import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
+import type { IFileRead } from "@/lib/api";
 
-// CSS для кастомного скроллбара
+// CSS for custom scrollbar
 const customScrollbarStyles = `
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -46,6 +48,7 @@ const customScrollbarStyles = `
 
 export default function PreviewPage() {
   const params = useParams();
+  const router = useRouter();
   const projectId = params.projectId as string;
 
   const [project, setProject] = useState<IProjectRead | null>(null);
@@ -53,6 +56,7 @@ export default function PreviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
   const music = useMemo(() => project?.music ?? null, [project?.music]);
 
@@ -85,32 +89,26 @@ export default function PreviewPage() {
           setProject(projectData.project);
         } else {
           console.error("Failed to fetch project:", projectData.error);
-          setError("Не удалось загрузить проект");
+          setError("Failed to load project");
         }
 
         if (scenesData.success) {
           setScenes(scenesData.scenes);
         } else {
           console.error("Failed to fetch scenes:", scenesData.error);
-          setError("Не удалось загрузить сцены");
+          setError("Failed to load scenes");
           setScenes([]);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
 
-        // Retry logic для временных ошибок
-        if (
-          retryCount < 2 &&
-          error instanceof Error &&
-          (error.message.includes("Invalid URL") ||
-            error.message.includes("Network"))
-        ) {
-          console.log(`Retrying... attempt ${retryCount + 1}`);
+        if (retryCount < 3) {
+          console.log(`Retrying... Attempt ${retryCount + 1}`);
           setTimeout(() => fetchData(retryCount + 1), 1000 * (retryCount + 1));
           return;
         }
 
-        setError("Ошибка загрузки данных");
+        setError("Data loading error");
       } finally {
         setIsLoading(false);
       }
@@ -145,6 +143,49 @@ export default function PreviewPage() {
     fetchData();
   }, [projectId]);
 
+  // Function for exporting video
+  const handleExport = async (projectId: string) => {
+    try {
+      const response = await fetch(
+        "/api/story-editor/project/storyboard2video",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ projectId }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Error exporting video");
+      }
+
+      console.log("🎬 Video export started successfully:", result);
+    } catch (error) {
+      console.error("❌ Error exporting video:", error);
+      throw error;
+    }
+  };
+
+  // Function for downloading file
+  const handleDownload = (file: IFileRead) => {
+    if (!file.url) {
+      console.error("❌ No download URL available");
+      return;
+    }
+
+    // Create temporary download link
+    const link = document.createElement("a");
+    link.href = file.url;
+    link.download = `video-${projectId}.mp4`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!projectId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
@@ -153,15 +194,15 @@ export default function PreviewPage() {
             <Eye className="size-8 text-red-600 dark:text-red-400" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-            ID проекта не найден
+            Project ID not found
           </h1>
-          <Link
-            href="/tools/story-editor"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300  hover:scale-105 shadow-lg"
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <ArrowLeft className="size-4 mr-2" />
-            Вернуться к Story Editor
-          </Link>
+            Go Back
+          </button>
         </div>
       </div>
     );
@@ -170,227 +211,245 @@ export default function PreviewPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: customScrollbarStyles }} />
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
-            <Link
-              href="/tools/story-editor"
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mb-6 transition-all duration-300  hover:scale-105 group"
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
             >
-              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowLeft className="size-4" />
               </div>
-              <span className="font-medium">Вернуться к Story Editor</span>
-            </Link>
+              <span className="font-medium">Go Back</span>
+            </button>
+
             <Link
               href={`/project/video/${projectId}/timeline`}
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mb-6 transition-all duration-300  hover:scale-105 group"
+              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
             >
-              <div className="size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <ArrowRight className="size-4" />
               </div>
-              <span className="font-medium">Перейти к Timeline</span>
+              <span className="font-medium">Go to Timeline Editor</span>
             </Link>
           </div>
 
-          {/* Video Player Section */}
-          <div className="max-w-6xl mx-auto mb-8">
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-slate-700/50">
-              {/* Фиксированная высота для всех состояний */}
-              <div className="h-[500px] flex items-center justify-center">
-                {isLoading ? (
-                  <div className="text-center space-y-4 size-full items-center justify-center flex flex-col">
-                    <div className="relative">
-                      <div className="size-16 border-4 border-emerald-200 dark:border-emerald-800 rounded-full animate-spin"></div>
-                      <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-emerald-500 dark:border-t-emerald-400 rounded-full animate-spin"></div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        Загрузка проекта и сцен...
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Подготавливаем ваш видеоплеер
-                      </p>
-                    </div>
-                  </div>
-                ) : error ? (
-                  <div className="size-full text-center space-y-4">
-                    <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-                      <Eye className="size-8 text-red-600 dark:text-red-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xl font-medium text-red-600 dark:text-red-400">
-                        Ошибка загрузки
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {error}
-                      </p>
-                    </div>
-                  </div>
-                ) : project && scenes.length > 0 ? (
-                  <div className="size-full p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        Видеоплеер
-                      </h3>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {scenes.length} сцен
-                        </span>
-                        <div className="size-2 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-pulse"></div>
+          {/* Main Content */}
+          <div className="max-w-6xl mx-auto">
+            {/* Page Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
+                Preview
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Preview your finished video before final processing
+              </p>
+            </div>
+
+            {/* Video Player Section */}
+            <div className="max-w-6xl mx-auto mb-8">
+              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+                {/* Fixed height for all states */}
+                <div className="h-[500px] flex items-center justify-center">
+                  {isLoading ? (
+                    <div className="w-screen text-center space-y-4 size-full items-center justify-center flex flex-col">
+                      <div className="relative">
+                        <div className="size-16 border-4 border-muted rounded-full animate-spin"></div>
+                        <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-lg font-medium text-foreground">
+                          Loading project and scenes...
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Preparing your video player
+                        </p>
                       </div>
                     </div>
-                    <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
-                      <RemotionPlayer
-                        scenes={scenes}
-                        music={music}
-                        isLoading={!isLoaded}
-                        aspectRatio={aspectRatio}
-                      />
+                  ) : error ? (
+                    <div className="size-full text-center space-y-4 flex flex-col items-center justify-center">
+                      <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
+                        <Eye className="size-8 text-red-600 dark:text-red-400" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xl font-medium text-red-600 dark:text-red-400">
+                          Loading Error
+                        </p>
+                        <p className="text-muted-foreground">{error}</p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center space-y-4">
-                    <div className="size-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto">
-                      <Eye className="size-8 text-gray-400 dark:text-gray-500" />
+                  ) : project && scenes.length > 0 ? (
+                    <div className="size-full p-6">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          Video Player
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-muted-foreground">
+                            {scenes.length} scenes
+                          </span>
+                          <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                      <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
+                        <RemotionPlayer
+                          scenes={scenes}
+                          music={music}
+                          isLoading={!isLoaded}
+                          aspectRatio={aspectRatio}
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-xl font-medium text-gray-600 dark:text-gray-300">
-                        Нет данных для отображения
-                      </p>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        {!project ? "Проект не найден" : "Сцены не найдены"}
-                      </p>
+                  ) : (
+                    <div className="text-center space-y-4">
+                      <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                        <Eye className="size-8 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xl font-medium text-muted-foreground">
+                          No data to display
+                        </p>
+                        <p className="text-muted-foreground">
+                          {!project ? "Project not found" : "Scenes not found"}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Project Info Cards */}
-          {project && scenes.length > 0 && (
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* Project Details */}
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-white/20 dark:border-slate-700/50">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="size-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="size-5 text-blue-600 dark:text-blue-400" />
+            {/* Project Info Cards */}
+            {project && scenes.length > 0 && (
+              <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {/* Project Details */}
+                <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="size-10 bg-muted rounded-lg flex items-center justify-center">
+                      <CheckCircle className="size-5 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Project
+                    </h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Проект
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Статус:
-                    </span>
-                    <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-medium">
-                      Завершен
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Сцены:
-                    </span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-200">
-                      {scenes.length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Соотношение:
-                    </span>
-                    <span className="font-semibold text-gray-800 dark:text-gray-200">
-                      {project.config?.aspect_ratio || "16:9"}
-                    </span>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Status:</span>
+                      <span className="px-3 py-1 bg-muted text-foreground rounded-full text-sm font-medium">
+                        Completed
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Scenes:</span>
+                      <span className="font-semibold text-foreground">
+                        {scenes.length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">
+                        Aspect Ratio:
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {project.config?.aspect_ratio || "16:9"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Scenes Overview */}
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-white/20 dark:border-slate-700/50">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="size-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                    <Play className="size-5 text-purple-600 dark:text-purple-400" />
+                {/* Scenes Overview */}
+                <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="size-10 bg-muted rounded-lg flex items-center justify-center">
+                      <Play className="size-5 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Scenes ({scenes.length})
+                    </h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Сцены ({scenes.length})
-                  </h3>
+                  <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                    {scenes.map((scene, index) => (
+                      <Link
+                        key={scene.id}
+                        href={`/project/video/${projectId}/scene/${scene.id}`}
+                        className="block"
+                      >
+                        <div className="flex space-x-3 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer group">
+                          <div className="size-6 bg-muted rounded-full flex items-center justify-center text-xs font-medium text-foreground shrink-0 group-hover:bg-muted/80">
+                            {index + 1}
+                          </div>
+                          <span className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground">
+                            {scene.visual_description ||
+                              "Scene description unavailable"}
+                          </span>
+                          <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ArrowRight className="size-4 text-primary" />
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                  {scenes.map((scene, index) => (
-                    <Link
-                      key={scene.id}
-                      href={`/project/video/${projectId}/scene/${scene.id}`}
-                      className="block"
+
+                {/* Actions */}
+                <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="size-10 bg-muted rounded-lg flex items-center justify-center">
+                      <Share2 className="size-5 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Actions
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setIsExportDialogOpen(true)}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
                     >
-                      <div className="flex space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
-                        <div className="size-6 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-xs font-medium text-purple-700 dark:text-purple-300 flex-shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-800/50">
-                          {index + 1}
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed group-hover:text-gray-800 dark:group-hover:text-gray-200">
-                          {scene.visual_description ||
-                            "Описание сцены недоступно"}
-                        </span>
-                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ArrowRight className="size-4 text-purple-500" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-white/20 dark:border-slate-700/50">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                    <Share2 className="size-5 text-emerald-600 dark:text-emerald-400" />
+                      <Download className="size-4" />
+                      <span>Export Video</span>
+                    </button>
+                    <button
+                      onClick={() => setIsShareDialogOpen(true)}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all duration-300 hover:scale-105 shadow-lg"
+                    >
+                      <Share2 className="size-4" />
+                      <span>Share</span>
+                    </button>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Действия
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-300  hover:scale-105 shadow-lg">
-                    <Download className="size-4" />
-                    <span>Скачать видео</span>
-                  </button>
-                  <button
-                    onClick={() => setIsShareDialogOpen(true)}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300  hover:scale-105 shadow-lg"
-                  >
-                    <Share2 className="size-4" />
-                    <span>Поделиться</span>
-                  </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Footer */}
-          <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-white/20 dark:border-slate-700/50">
-              <div className="size-2 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                Powered by{" "}
-                <strong className="text-gray-800 dark:text-gray-200">
-                  SuperDuperAI
-                </strong>
-              </span>
+            {/* Footer */}
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-2 bg-card border border-border px-6 py-3 rounded-full shadow-lg">
+                <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                <span className="text-sm text-muted-foreground">
+                  Powered by{" "}
+                  <strong className="text-foreground">SuperDuperAI</strong>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Share Dialog */}
-        <ShareDialog
-          isOpen={isShareDialogOpen}
-          onClose={() => setIsShareDialogOpen(false)}
-          projectId={projectId}
-        />
+          {/* Share Dialog */}
+          <ShareDialog
+            isOpen={isShareDialogOpen}
+            onClose={() => setIsShareDialogOpen(false)}
+            projectId={projectId}
+          />
+
+          {/* Export Dialog */}
+          <ProjectVideoExportDialog
+            isOpen={isExportDialogOpen}
+            onClose={() => setIsExportDialogOpen(false)}
+            onExport={handleExport}
+            onDownload={handleDownload}
+            exportType="storyboard2video"
+          />
+        </div>
       </div>
     </>
   );

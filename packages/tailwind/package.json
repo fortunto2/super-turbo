@@ -7,18 +7,22 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
     "./config": {
+      "types": "./dist/config.d.ts",
       "import": "./dist/config.mjs",
       "require": "./dist/config.js"
     },
-    "./css": "./dist/styles.css"
+    "./css": "./dist/styles.css",
+    "./landing-css": "./src/landing-styles.css"
   },
   "files": [
     "dist/**",
-    "src/styles.css"
+    "src/styles.css",
+    "src/landing-styles.css"
   ],
   "scripts": {
     "build": "tsup",
@@ -26,11 +30,12 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "tailwindcss": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7",
     "@tailwindcss/typography": "^0.5.15",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

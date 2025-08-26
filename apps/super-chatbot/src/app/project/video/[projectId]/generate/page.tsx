@@ -18,6 +18,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { ProjectTaskList } from "@/components/project-task-list";
 
 export default function GeneratePage() {
   const params = useParams();
@@ -33,7 +34,7 @@ export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Отслеживание статуса проекта
+  // Project status tracking
   useEffect(() => {
     if (!projectId) return;
 
@@ -53,24 +54,24 @@ export default function GeneratePage() {
           setTotalTasks(result.totalTasks || 0);
           setErrorTasks(result.errorTasks || []);
 
-          // Если проект завершен, показываем сообщение
+          // If project is completed, show message
           if (result.status === "completed") {
-            // Можно добавить уведомление или автоматическое перенаправление
+            // Can add notification or automatic redirect
           } else if (result.status === "failed") {
-            setError("Генерация видео не удалась");
+            setError("Video generation failed");
           }
         } else {
-          setError("Ошибка получения статуса проекта");
+          setError("Error getting project status");
         }
       } catch (err) {
         console.error("Error checking project status:", err);
-        setError("Ошибка проверки статуса");
+        setError("Status check error");
       }
     };
 
-    // Проверяем статус каждые 5 секунд
+    // Check status every 5 seconds
     const interval = setInterval(checkStatus, 5000);
-    checkStatus(); // Первая проверка сразу
+    checkStatus(); // First check immediately
 
     return () => clearInterval(interval);
   }, [projectId]);
@@ -87,8 +88,8 @@ export default function GeneratePage() {
       setTotalTasks(0);
       setErrorTasks([]);
 
-      // Здесь можно добавить логику для перегенерации конкретных задач
-      // Пока что просто перезапускаем весь проект
+      // Here you can add logic for regenerating specific tasks
+      // For now, just restart the entire project
       const response = await fetch("/api/story-editor/generate", {
         method: "POST",
         headers: {
@@ -97,7 +98,7 @@ export default function GeneratePage() {
         body: JSON.stringify({
           template_name: "story",
           config: {
-            prompt: "Перегенерация проекта", // Можно добавить поле для промпта
+            prompt: "Project regeneration", // Can add field for prompt
             aspect_ratio: "16:9",
             image_generation_config_name: "default",
             auto_mode: true,
@@ -118,15 +119,15 @@ export default function GeneratePage() {
       const result = await response.json();
 
       if (result.success) {
-        // Обновляем projectId если создался новый проект
+        // Update projectId if a new project was created
         if (result.projectId !== projectId) {
           router.push(`/project/video/${result.projectId}/generate`);
         }
       } else {
-        throw new Error(result.error || "Ошибка перегенерации");
+        throw new Error(result.error || "Regeneration error");
       }
     } catch (err: any) {
-      setError(err.message || "Ошибка перегенерации");
+      setError(err.message || "Regeneration error");
     }
   };
 
@@ -134,15 +135,15 @@ export default function GeneratePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            ID проекта не найден
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Project ID not found
           </h1>
-          <Link
-            href="/tools/story-editor"
-            className="text-blue-600 hover:text-blue-800 underline"
+          <button
+            onClick={() => router.back()}
+            className="text-primary hover:text-primary/80 underline"
           >
-            Вернуться к Story Editor
-          </Link>
+            Go Back
+          </button>
         </div>
       </div>
     );
@@ -150,37 +151,39 @@ export default function GeneratePage() {
 
   return (
     <div className="min-h-screen bg-background w-full">
-      <div className="container mx-auto px-4 py-8 w-full max-w-4xl">
+      <div className="mx-auto px-4 py-8 w-full max-w-4xl">
         <div className="w-full space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Link
-                href="/tools/story-editor"
-                className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            <div className="space-y-4">
+              <button
+                onClick={() => router.back()}
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Вернуться к Story Editor
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Отслеживание генерации
+                <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <ArrowLeft className="size-4" />
+                </div>
+                <span className="font-medium">Go Back</span>
+              </button>
+              <h1 className="text-3xl font-bold text-foreground">
+                Generation Tracking
               </h1>
-              <p className="text-gray-600">ID проекта: {projectId}</p>
+              <p className="text-muted-foreground">Project ID: {projectId}</p>
             </div>
           </div>
 
           {/* Project status */}
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-emerald-600">Статус проекта</CardTitle>
+              <CardTitle className="text-primary">Project Status</CardTitle>
               <CardDescription>
-                Отслеживание прогресса генерации видео
+                Tracking video generation progress
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span>ID проекта:</span>
+                  <span>Project ID:</span>
                   <code className="bg-muted px-2 py-1 rounded text-sm">
                     {projectId}
                   </code>
@@ -189,14 +192,14 @@ export default function GeneratePage() {
                 {/* Progress bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span>Прогресс:</span>
+                    <span>Progress:</span>
                     <span>
-                      {completedTasks}/{totalTasks} шагов
+                      {completedTasks}/{totalTasks} steps
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
                       style={{ width: `${projectProgress}%` }}
                     />
                   </div>
@@ -209,26 +212,26 @@ export default function GeneratePage() {
                   ) : projectStatus === "failed" ? (
                     <AlertCircle className="size-4 text-red-600" />
                   ) : projectStatus === "processing" ? (
-                    <Loader2 className="size-4 animate-spin text-emerald-600" />
+                    <Loader2 className="size-4 animate-spin text-primary" />
                   ) : (
                     <Loader2 className="size-4 animate-spin text-yellow-600" />
                   )}
                   <span className="capitalize">
-                    {projectStatus === "completed" && "Видео готово!"}
-                    {projectStatus === "failed" && "Ошибка генерации"}
-                    {projectStatus === "processing" && "Видео генерируется..."}
-                    {projectStatus === "pending" && "Ожидание начала..."}
-                    {projectStatus === "unknown" && "Проверка статуса..."}
+                    {projectStatus === "completed" && "Video ready!"}
+                    {projectStatus === "failed" && "Generation error"}
+                    {projectStatus === "processing" && "Video generating..."}
+                    {projectStatus === "pending" && "Waiting to start..."}
+                    {projectStatus === "unknown" && "Checking status..."}
                   </span>
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                  Статус обновляется автоматически каждые 5 секунд
+                  Status updates automatically every 5 seconds
                 </p>
 
                 {/* Error display */}
                 {error && (
-                  <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-md">
+                  <div className="flex items-center space-x-2 text-red-600 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">
                     <AlertCircle className="size-5" />
                     <span>{error}</span>
                   </div>
@@ -246,7 +249,7 @@ export default function GeneratePage() {
                       variant="default"
                     >
                       <Play className="mr-2 h-4 w-4" />
-                      Смотреть видео
+                      Watch Video
                     </Button>
                   )}
 
@@ -257,66 +260,13 @@ export default function GeneratePage() {
                       className="w-full"
                       variant="outline"
                     >
-                      Перегенерировать проект
+                      Regenerate Project
                     </Button>
                   )}
                 </div>
 
-                {/* Task details */}
-                {projectTasks.length > 0 && (
-                  <div className="mt-4 space-y-3">
-                    <h4 className="font-medium text-sm">Детали задач:</h4>
-                    <div className="space-y-2">
-                      {projectTasks.map((task: any, index: number) => {
-                        // Определяем понятное название для типа задачи
-                        const getTaskTypeName = (type: string) => {
-                          switch (type) {
-                            case "txt2script_flow":
-                              return "Генерация сценария";
-                            case "script2entities_flow":
-                              return "Извлечение сущностей";
-                            case "script2storyboard_flow":
-                              return "Создание раскадровки";
-                            default:
-                              return (
-                                type?.replace(/_/g, " ").toLowerCase() ||
-                                `Задача ${index + 1}`
-                              );
-                          }
-                        };
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between text-sm"
-                          >
-                            <span className="capitalize">
-                              {getTaskTypeName(task.type)}
-                            </span>
-                            <div className="flex items-center space-x-2">
-                              {task.status === "completed" ? (
-                                <CheckCircle className="size-3 text-green-600" />
-                              ) : task.status === "error" ? (
-                                <AlertCircle className="size-3 text-red-600" />
-                              ) : task.status === "in_progress" ? (
-                                <Loader2 className="size-3 animate-spin text-emerald-600" />
-                              ) : (
-                                <div className="size-3 rounded-full bg-gray-300" />
-                              )}
-                              <span className="text-xs capitalize">
-                                {task.status === "completed" && "Завершено"}
-                                {task.status === "error" && "Ошибка"}
-                                {task.status === "in_progress" && "В процессе"}
-                                {task.status === "pending" && "Ожидание"}
-                                {!task.status && "Неизвестно"}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Task details using the new component */}
+                <ProjectTaskList tasks={projectTasks} />
               </div>
             </CardContent>
           </Card>
@@ -324,8 +274,8 @@ export default function GeneratePage() {
           {/* Footer info */}
           <div className="text-center text-sm text-muted-foreground border-t pt-8 mt-12">
             <p>
-              Powered by <strong>SuperDuperAI</strong> • Отслеживание генерации
-              видео
+              Powered by <strong>SuperDuperAI</strong> • Video generation
+              tracking
             </p>
           </div>
         </div>

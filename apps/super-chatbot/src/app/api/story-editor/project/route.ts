@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching scenes:", error);
 
-    // В случае ошибки возвращаем заглушку для демонстрации
+    // In case of error, return placeholder for demonstration
     return NextResponse.json({
       success: true,
       project: null,
