@@ -3252,7 +3252,7 @@ var ProjectTimeline = ({
       /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsxRuntime.jsx(TimelineWrapper, { children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+  return /* @__PURE__ */ jsxRuntime.jsxs(TimelineWrapper, { children: [
     /* @__PURE__ */ jsxRuntime.jsxs(
       "div",
       {
@@ -3316,7 +3316,7 @@ var ProjectTimeline = ({
       }
     ),
     /* @__PURE__ */ jsxRuntime.jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsxRuntime.jsx(superTimeline.TimelineComponent, { stateManager }) })
-  ] }) });
+  ] });
 };
 
 exports.CharacterType = CharacterType;

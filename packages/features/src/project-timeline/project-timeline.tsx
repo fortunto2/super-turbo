@@ -154,78 +154,76 @@ export const ProjectTimeline: FC<Props> = ({
 
   return (
     <TimelineWrapper>
-      <div className="relative flex size-full flex-col min-h-screen">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "320px 1fr 320px",
-          }}
-          className="pointer-events-none absolute inset-x-0 top-0 z-[205] flex h-[72px] items-center px-2"
-        >
-          <div className="pointer-events-auto flex h-14 items-center gap-2">
-            <div className="flex h-12 items-center bg-background px-1.5">
-              <Button
-                className="flex gap-2 text-muted-foreground"
-                variant="ghost"
-                onClick={onBack}
-              >
-                <ArrowLeft /> Back
-              </Button>
-            </div>
-
-            <HistoryButtons />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "320px 1fr 320px",
+        }}
+        className="pointer-events-none absolute inset-x-0 top-0 z-[205] flex h-[72px] items-center px-2"
+      >
+        <div className="pointer-events-auto flex h-14 items-center gap-2">
+          <div className="flex h-12 items-center bg-background px-1.5">
+            <Button
+              className="flex gap-2 text-muted-foreground"
+              variant="ghost"
+              onClick={onBack}
+            >
+              <ArrowLeft /> Back
+            </Button>
           </div>
-          <div></div>
-          <div className="pointer-events-auto flex h-14 items-center justify-end gap-2">
-            <div className="flex h-12 items-center gap-2 rounded-md bg-background px-2.5">
-              <Button
-                className="flex size-9 gap-1 border border-border"
-                size="icon"
-                variant="secondary"
-                onClick={onExport}
-              >
-                <Download width={18} />
-              </Button>
-            </div>
+
+          <HistoryButtons />
+        </div>
+        <div></div>
+        <div className="pointer-events-auto flex h-14 items-center justify-end gap-2">
+          <div className="flex h-12 items-center gap-2 rounded-md bg-background px-2.5">
+            <Button
+              className="flex size-9 gap-1 border border-border"
+              size="icon"
+              variant="secondary"
+              onClick={onExport}
+            >
+              <Download width={18} />
+            </Button>
           </div>
         </div>
+      </div>
 
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "relative",
-            flex: 1,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <MenuList />
-          <MenuItem />
-          <ControlList />
-          <ControlItem />
-          {stableData && stableData.id ? (
-            <Scene />
-          ) : (
-            <>
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-600">
-                    {!stableData || !stableData.id
-                      ? "Загрузка timeline данных..."
-                      : "Инициализация плеера..."}
-                  </p>
-                </div>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          flex: 1,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <MenuList />
+        <MenuItem />
+        <ControlList />
+        <ControlItem />
+        {stableData && stableData.id ? (
+          <Scene />
+        ) : (
+          <>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
+                <p className="text-sm text-gray-600">
+                  {!stableData || !stableData.id
+                    ? "Загрузка timeline данных..."
+                    : "Инициализация плеера..."}
+                </p>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
+      </div>
 
-        <div className=" w-full">
-          {playerRef && <TimelineComponent stateManager={stateManager} />}
-        </div>
+      <div className=" w-full">
+        {playerRef && <TimelineComponent stateManager={stateManager} />}
       </div>
     </TimelineWrapper>
   );

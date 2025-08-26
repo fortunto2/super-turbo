@@ -3250,7 +3250,7 @@ var ProjectTimeline = ({
       /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsx(TimelineWrapper, { children: /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+  return /* @__PURE__ */ jsxs(TimelineWrapper, { children: [
     /* @__PURE__ */ jsxs(
       "div",
       {
@@ -3314,7 +3314,7 @@ var ProjectTimeline = ({
       }
     ),
     /* @__PURE__ */ jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsx(TimelineComponent, { stateManager }) })
-  ] }) });
+  ] });
 };
 
 export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
