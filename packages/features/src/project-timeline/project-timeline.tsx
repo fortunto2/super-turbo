@@ -20,7 +20,6 @@ import {
   ControlItem,
   HistoryButtons,
 } from "super-timeline";
-import "super-timeline/style.css";
 import "./styles.css";
 import { Scene } from "./components/scene";
 import { isEqual } from "lodash";

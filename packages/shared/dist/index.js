@@ -2023,6 +2023,18 @@ function getSuperLandingDictionary(locale) {
   return superLandingDictionaries[locale] || en;
 }
 
+// src/translation/dictionaries/super-landing/dictionaries-server.ts
+var superLandingDictionaries2 = {
+  en,
+  ru,
+  tr,
+  es,
+  hi
+};
+function getSuperLandingDictionaryServer(locale) {
+  return superLandingDictionaries2[locale] || en;
+}
+
 // src/translation/hooks.ts
 var import_react5 = require("react");
 
@@ -2114,18 +2126,6 @@ function useLandingTranslations(locale) {
 }
 function useChatbotTranslations(locale) {
   return useAppTranslations("super-chatbot", locale);
-}
-
-// src/translation/dictionaries/super-landing/dictionaries-server.ts
-var superLandingDictionaries2 = {
-  en,
-  ru,
-  tr,
-  es,
-  hi
-};
-function getSuperLandingDictionaryServer(locale) {
-  return superLandingDictionaries2[locale] || en;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

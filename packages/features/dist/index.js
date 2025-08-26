@@ -12,7 +12,6 @@ var fabricGuidelinePlugin = require('@superduperai/fabric-guideline-plugin');
 var superTimeline = require('super-timeline');
 var fade = require('@remotion/transitions/fade');
 var transitions = require('@remotion/transitions');
-require('super-timeline/style.css');
 var lodash = require('lodash');
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx

@@ -10,7 +10,6 @@ import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guide
 import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, HistoryButtons, MenuList, MenuItem, ControlList, ControlItem, TimelineComponent, Composition } from 'super-timeline';
 import { fade } from '@remotion/transitions/fade';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
-import 'super-timeline/style.css';
 import { isEqual } from 'lodash';
 
 // src/veo3-tools/components/Veo3PromptGenerator.tsx

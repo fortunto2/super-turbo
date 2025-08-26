@@ -1915,6 +1915,18 @@ function getSuperLandingDictionary(locale) {
   return superLandingDictionaries[locale] || en;
 }
 
+// src/translation/dictionaries/super-landing/dictionaries-server.ts
+var superLandingDictionaries2 = {
+  en,
+  ru,
+  tr,
+  es,
+  hi
+};
+function getSuperLandingDictionaryServer(locale) {
+  return superLandingDictionaries2[locale] || en;
+}
+
 // src/translation/hooks.ts
 import { useCallback, useMemo } from "react";
 
@@ -2006,18 +2018,6 @@ function useLandingTranslations(locale) {
 }
 function useChatbotTranslations(locale) {
   return useAppTranslations("super-chatbot", locale);
-}
-
-// src/translation/dictionaries/super-landing/dictionaries-server.ts
-var superLandingDictionaries2 = {
-  en,
-  ru,
-  tr,
-  es,
-  hi
-};
-function getSuperLandingDictionaryServer(locale) {
-  return superLandingDictionaries2[locale] || en;
 }
 export {
   AI_MODELS,

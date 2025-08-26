@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-export const baseConfig: Config = {
+export const landingConfig: Config = {
   darkMode: ["class"],
   content: [
     // Приложения
@@ -56,12 +56,9 @@ export const baseConfig: Config = {
         sans: ["var(--font-geist)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
-      screens: {
-        "toast-mobile": "600px",
-      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
 
-export default baseConfig;
+export default landingConfig;
