@@ -125,6 +125,32 @@ export default function VideoPage() {
     }
   };
 
+  const handleRegenerateTimeline = async () => {
+    try {
+      const response = await fetch(
+        "/api/story-editor/project/regenerate-timeline",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ projectId }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Error regenerating timeline");
+      }
+
+      console.log("🎬 Timeline regenerated successfully:", result);
+    } catch (error) {
+      console.error("❌ Error regenerating timeline:", error);
+      throw error;
+    }
+  };
+
   if (!projectId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -183,6 +209,7 @@ export default function VideoPage() {
           onBack={() => router.back()}
           onExport={() => setIsExportDialogOpen(true)}
           onUpdateTimeline={handleUpdateTimeline}
+          onRegenerateTimeline={handleRegenerateTimeline}
         />
       )}
 

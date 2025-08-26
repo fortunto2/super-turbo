@@ -3148,13 +3148,22 @@ var Player2 = () => {
 var Scene2 = () => {
   return /* @__PURE__ */ jsx("div", { className: "bg-scene py-3 size-full flex justify-center flex-1", children: /* @__PURE__ */ jsx("div", { className: "max-w-3xl flex-1 size-full flex relative", children: /* @__PURE__ */ jsx(Player2, {}) }) });
 };
+var TimelineWrapper = ({ children }) => {
+  useEffect(() => {
+    import('super-timeline/style.css');
+    return () => {
+    };
+  }, []);
+  return /* @__PURE__ */ jsx("div", { className: "relative flex size-full flex-col min-h-screen", children });
+};
 var stateManager = new StateManager();
 var ProjectTimeline = ({
   timeline,
   project,
   onBack,
   onExport,
-  onUpdateTimeline
+  onUpdateTimeline,
+  onRegenerateTimeline
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -3176,9 +3185,14 @@ var ProjectTimeline = ({
     });
   }, [stableData]);
   useEffect(() => {
+    if (!project || timeline) return;
+    onRegenerateTimeline?.();
+  }, [timeline, project]);
+  useEffect(() => {
     if (!timeline) return;
     const timer = setTimeout(() => {
       const timelineData = timeline.value;
+      console.log(timelineData);
       setData(timelineData);
     }, 1e3);
     return () => {
@@ -3201,6 +3215,7 @@ var ProjectTimeline = ({
     }
   }, [isClient]);
   useEffect(() => {
+    if (!project || !timeline) return;
     const timer = setTimeout(() => {
       handleUpdateTimeline();
     }, 1500);
@@ -3235,7 +3250,7 @@ var ProjectTimeline = ({
       /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+  return /* @__PURE__ */ jsx(TimelineWrapper, { children: /* @__PURE__ */ jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
     /* @__PURE__ */ jsxs(
       "div",
       {
@@ -3299,7 +3314,7 @@ var ProjectTimeline = ({
       }
     ),
     /* @__PURE__ */ jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsx(TimelineComponent, { stateManager }) })
-  ] });
+  ] }) });
 };
 
 export { CharacterType, EnhancementInfoType, HistoryItemType, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };

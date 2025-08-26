@@ -3150,13 +3150,22 @@ var Player2 = () => {
 var Scene2 = () => {
   return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "bg-scene py-3 size-full flex justify-center flex-1", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "max-w-3xl flex-1 size-full flex relative", children: /* @__PURE__ */ jsxRuntime.jsx(Player2, {}) }) });
 };
+var TimelineWrapper = ({ children }) => {
+  react.useEffect(() => {
+    import('super-timeline/style.css');
+    return () => {
+    };
+  }, []);
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "relative flex size-full flex-col min-h-screen", children });
+};
 var stateManager = new superTimeline.StateManager();
 var ProjectTimeline = ({
   timeline,
   project,
   onBack,
   onExport,
-  onUpdateTimeline
+  onUpdateTimeline,
+  onRegenerateTimeline
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = react.useState(false);
   const [isClient, setIsClient] = react.useState(false);
@@ -3178,9 +3187,14 @@ var ProjectTimeline = ({
     });
   }, [stableData]);
   react.useEffect(() => {
+    if (!project || timeline) return;
+    onRegenerateTimeline?.();
+  }, [timeline, project]);
+  react.useEffect(() => {
     if (!timeline) return;
     const timer = setTimeout(() => {
       const timelineData = timeline.value;
+      console.log(timelineData);
       setData(timelineData);
     }, 1e3);
     return () => {
@@ -3203,6 +3217,7 @@ var ProjectTimeline = ({
     }
   }, [isClient]);
   react.useEffect(() => {
+    if (!project || !timeline) return;
     const timer = setTimeout(() => {
       handleUpdateTimeline();
     }, 1500);
@@ -3237,7 +3252,7 @@ var ProjectTimeline = ({
       /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
     ] }) });
   }
-  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
+  return /* @__PURE__ */ jsxRuntime.jsx(TimelineWrapper, { children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative flex size-full flex-col min-h-screen", children: [
     /* @__PURE__ */ jsxRuntime.jsxs(
       "div",
       {
@@ -3301,7 +3316,7 @@ var ProjectTimeline = ({
       }
     ),
     /* @__PURE__ */ jsxRuntime.jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsxRuntime.jsx(superTimeline.TimelineComponent, { stateManager }) })
-  ] });
+  ] }) });
 };
 
 exports.CharacterType = CharacterType;
