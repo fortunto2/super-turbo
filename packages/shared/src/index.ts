@@ -13,3 +13,7 @@ export * from "./payment/stripe-config";
 
 // Translation system
 export * from "./translation";
+
+// Direct exports for easier access
+export { getSuperLandingDictionary } from "./translation/dictionaries/super-landing/dictionaries";
+export { getSuperLandingDictionaryServer } from "./translation/dictionaries/super-landing/dictionaries-server";

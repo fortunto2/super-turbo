@@ -483,7 +483,10 @@ export const LanguageSwitcher = () => {
       const segments = pathname.split("/").filter(Boolean);
 
       // Если первый сегмент - это локаль, заменяем её
-      if (segments.length > 0 && i18nClient.locales.includes(segments[0] as Locale)) {
+      if (
+        segments.length > 0 &&
+        i18nClient.locales.includes(segments[0] as Locale)
+      ) {
         segments[0] = language;
       } else {
         // Если локали нет в URL, добавляем её в начало

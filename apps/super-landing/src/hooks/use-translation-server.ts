@@ -1,7 +1,7 @@
 import { getSuperLandingDictionaryServer } from "@turbo-super/shared";
 import { Locale } from "@/config/i18n-client";
 
-export function useTranslation(locale: Locale) {
+export function useTranslationServer(locale: Locale) {
   const dict = getSuperLandingDictionaryServer(locale);
 
   function t<T = string>(key: string, fallback?: T): T {
