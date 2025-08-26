@@ -24,11 +24,6 @@ export function BlogModelGenerator({
   const modelType = getModelType(modelName);
   const supportsImageToVideoMode = supportsImageToVideo(modelName);
 
-  console.log("modelType", modelType);
-  console.log("modelName", modelName);
-  console.log("supportsImageToVideo", supportsImageToVideoMode);
-
-  // Рендерим соответствующий компонент на основе типа модели
   switch (modelType) {
     case "video":
       // Для видео моделей используем EnhancedModelVideoGenerator если поддерживают image-to-video

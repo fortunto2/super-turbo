@@ -143,7 +143,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Проверяем, является ли текущий путь корневым путем с локалью (например, /en, /ru)
-  const isLocaleRoot = i18nServer.locales.some((locale) => pathname === `/${locale}`);
+  const isLocaleRoot = i18nServer.locales.some(
+    (locale) => pathname === `/${locale}`
+  );
   if (isLocaleRoot) {
     // Редиректим с /locale на корень /
     return NextResponse.redirect(new URL("/", request.url));
