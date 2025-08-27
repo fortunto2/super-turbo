@@ -726,6 +726,24 @@ export async function POST(request: Request) {
                 });
 
                 console.log("🔍 Assistant message saved successfully");
+
+                // Отправляем команду перенаправления на страницу чата
+                // Это происходит только после успешного создания чата
+                try {
+                  dataStream.writeData({
+                    type: "redirect",
+                    url: `/chat/${id}`,
+                  });
+                  console.log(
+                    "🔍 Redirect command sent to client:",
+                    `/chat/${id}`
+                  );
+                } catch (redirectError) {
+                  console.error(
+                    "🔍 Failed to send redirect command:",
+                    redirectError
+                  );
+                }
               } catch (error) {
                 console.error("🔍 Failed to save assistant message:", error);
                 if (error instanceof Error) {
@@ -747,7 +765,7 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error("🔍 DataStream onError called with:", error);
         return `Oops, an error occurred! Error: ${error?.message || "Unknown error"}`;
       },

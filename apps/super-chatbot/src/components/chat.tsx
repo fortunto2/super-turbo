@@ -142,16 +142,10 @@ function ChatContent({
       };
     },
     onFinish: () => {
-      // Обновляем URL после успешного завершения чата
-      // Проверяем, что у нас есть ID чата и он валидный
-      if (
-        id &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          id
-        )
-      ) {
-        window.history.replaceState({}, "", `/chat/${id}`);
-      }
+      console.log("🔍 useChat onFinish called - НЕ обновляем URL");
+      console.log("🔍 Chat ID in onFinish:", id);
+      // НЕ обновляем URL здесь - ждем команду от сервера
+      // URL будет обновлен только после успешного создания чата
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
@@ -180,16 +174,7 @@ function ChatContent({
 
   const handleAppend = useCallback(
     (message: any, options?: any) => {
-      // Обновляем URL при добавлении сообщения
-      if (
-        id &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          id
-        )
-      ) {
-        window.history.replaceState({}, "", `/chat/${id}`);
-      }
-
+      // НЕ обновляем URL здесь - ждем команду от сервера
       append(message, options);
     },
     [append, id]
@@ -203,7 +188,7 @@ function ChatContent({
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, "", `/chat/${id}`);
+      // НЕ обновляем URL здесь - ждем команду от сервера
     }
   }, [query, handleAppend, hasAppendedQuery, id]);
 
@@ -221,6 +206,21 @@ function ChatContent({
     if (data && onDataStream) {
       // Notifying parent about dataStream changes
       onDataStream(data);
+    }
+
+    // Обрабатываем команды перенаправления от сервера
+    if (data) {
+      console.log("🔍 Data received from server:", data);
+      data.forEach((item: any) => {
+        console.log("🔍 Processing data item:", item);
+        if (item.type === "redirect" && item.url) {
+          console.log("🔍 Received redirect command:", item.url);
+          // Перенаправляем на страницу чата только после успешного создания
+          console.log("🔍 Executing redirect to:", item.url);
+          window.history.replaceState({}, "", item.url);
+          console.log("🔍 Redirect executed successfully");
+        }
+      });
     }
   }, [data, onDataStream]);
 
@@ -293,15 +293,12 @@ function ChatContent({
         event.preventDefault();
       }
 
-      // Обновляем URL сразу при отправке сообщения
-      if (
-        id &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          id
-        )
-      ) {
-        window.history.replaceState({}, "", `/chat/${id}`);
-      }
+      console.log("🔍 handleFormSubmit called - НЕ обновляем URL");
+      console.log("🔍 Chat ID:", id);
+      console.log("🔍 Chat request options:", chatRequestOptions);
+
+      // НЕ обновляем URL сразу - ждем успешного создания чата
+      // URL будет обновлен в onFinish callback API route
 
       handleSubmit(event, chatRequestOptions);
     },
