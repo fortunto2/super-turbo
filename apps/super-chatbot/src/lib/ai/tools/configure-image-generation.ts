@@ -158,7 +158,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             ) || config.defaultSettings.model
           : config.defaultSettings.model;
 
-        // If attachment:// provided, try to use the latest http(s) image from user attachments in this message
+        // Always prioritize defaultSourceImageUrl if provided, as it comes from our smart context analysis
         let normalizedSourceUrl = sourceImageUrl;
 
         console.log("🔍 configureImageGeneration sourceImageUrl resolution:", {
@@ -167,23 +167,25 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
           normalizedSourceUrl,
         });
 
-        // If sourceImageUrl is invalid (attachment://), use defaultSourceImageUrl instead
-        if (!normalizedSourceUrl || !/^https?:\/\//.test(normalizedSourceUrl)) {
-          if (
-            params?.defaultSourceImageUrl &&
-            /^https?:\/\//.test(params.defaultSourceImageUrl)
-          ) {
-            console.log(
-              "🔍 Using defaultSourceImageUrl instead of invalid sourceImageUrl:",
-              params.defaultSourceImageUrl
-            );
-            normalizedSourceUrl = params.defaultSourceImageUrl;
-          } else {
-            console.log(
-              "🔍 No valid source image URL available, will be text-to-image"
-            );
-            normalizedSourceUrl = undefined;
-          }
+        // If we have a valid defaultSourceImageUrl from our context analysis, use it instead of AI-provided sourceImageUrl
+        if (
+          params?.defaultSourceImageUrl &&
+          /^https?:\/\//.test(params.defaultSourceImageUrl)
+        ) {
+          console.log(
+            "🔍 Using defaultSourceImageUrl from smart context analysis:",
+            params.defaultSourceImageUrl
+          );
+          normalizedSourceUrl = params.defaultSourceImageUrl;
+        } else if (
+          !normalizedSourceUrl ||
+          !/^https?:\/\//.test(normalizedSourceUrl) ||
+          normalizedSourceUrl.startsWith("attachment://")
+        ) {
+          console.log(
+            "🔍 No valid source image URL available, will be text-to-image"
+          );
+          normalizedSourceUrl = undefined;
         }
 
         // Determine operation type and check balance
@@ -225,6 +227,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         };
 
         console.log("🔧 ✅ CREATING IMAGE DOCUMENT WITH PARAMS:", imageParams);
+        console.log("🔍 Final sourceImageUrl used:", normalizedSourceUrl);
 
         try {
           // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
