@@ -3318,10 +3318,471 @@ var ProjectTimeline = ({
     /* @__PURE__ */ jsxRuntime.jsx("div", { className: " w-full", children: playerRef && /* @__PURE__ */ jsxRuntime.jsx(superTimeline.TimelineComponent, { stateManager }) })
   ] });
 };
+var Layer = ({ active, setCanvas, imageUrl }) => {
+  const canvasRef = react.useRef(null);
+  const containerRef = react.useRef(null);
+  react.useEffect(() => {
+    if (!canvasRef.current || !containerRef.current) return;
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    console.log("Creating canvas with dimensions:", { width, height });
+    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+      width,
+      height,
+      isDrawingMode: false
+    });
+    setCanvas(fabricCanvas);
+    const resizeObserver = new ResizeObserver(() => {
+      if (!container) return;
+      const newRect = container.getBoundingClientRect();
+      const newWidth = newRect.width;
+      const newHeight = newRect.height;
+      console.log("Canvas resized to:", { newWidth, newHeight });
+      if (newWidth !== 0 && newHeight !== 0) {
+        fabricCanvas.setDimensions({ width: newWidth, height: newHeight });
+        fabricCanvas.renderAll();
+      }
+    });
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.unobserve(container);
+      resizeObserver.disconnect();
+      void fabricCanvas.dispose();
+      setCanvas(null);
+    };
+  }, [canvasRef]);
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      className: "absolute inset-0 w-full h-full",
+      style: {
+        zIndex: active ? 10 : -1,
+        pointerEvents: active ? "auto" : "none"
+      },
+      children: /* @__PURE__ */ jsxRuntime.jsx(
+        "div",
+        {
+          className: "w-full h-full",
+          ref: containerRef,
+          children: /* @__PURE__ */ jsxRuntime.jsx(
+            "canvas",
+            {
+              ref: canvasRef,
+              className: "w-full h-full block",
+              style: {
+                opacity: 1,
+                display: "block"
+              }
+            }
+          )
+        }
+      )
+    }
+  );
+};
+
+// ../../node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
+function r(e) {
+  var t, f, n = "";
+  if ("string" == typeof e || "number" == typeof e) n += e;
+  else if ("object" == typeof e) if (Array.isArray(e)) {
+    var o = e.length;
+    for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
+  } else for (f in e) e[f] && (n && (n += " "), n += f);
+  return n;
+}
+function clsx() {
+  for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
+  return n;
+}
+var clsx_default = clsx;
+var cursorName = "cursor";
+var InpaintingTools = ({
+  canvas,
+  onActiveChange,
+  active,
+  isCombined,
+  onClose
+}) => {
+  const [width, setWidth] = react.useState(100);
+  const [cursor, setCursor] = react.useState(null);
+  const maxBrushWidth = 200;
+  const handleWidthChange = (value) => {
+    const newWidth = value === 0 ? 1 : value;
+    if (cursor) {
+      cursor.set({
+        radius: newWidth / 2
+      });
+      canvas?.renderAll();
+    }
+    setWidth(newWidth);
+  };
+  react.useEffect(() => {
+    if (!canvas) return;
+    const circle = new fabric.Circle({
+      radius: width / 2,
+      fill: "rgba(0, 0, 0, 0.3)",
+      selectable: false,
+      evented: false,
+      visible: false
+    });
+    circle.set("name", cursorName);
+    canvas.add(circle);
+    setCursor(circle);
+    const updateCursorPosition = (options) => {
+      const pointer = canvas.getPointer(options.e);
+      circle.set({
+        left: pointer.x - width / 2,
+        top: pointer.y - width / 2,
+        visible: active
+      });
+      canvas.renderAll();
+    };
+    canvas.on("mouse:move", updateCursorPosition);
+    return () => {
+      canvas.off("mouse:move", updateCursorPosition);
+      canvas.remove(circle);
+    };
+  }, [canvas, width, active]);
+  react.useEffect(() => {
+    if (!canvas) return;
+    if (!canvas.freeDrawingBrush) return;
+    canvas.freeDrawingBrush.width = width;
+  }, [width, canvas]);
+  const handleDrawingModeChange = (e) => {
+    e.stopPropagation();
+    if (!canvas) return;
+    if (active) {
+      onActiveChange("");
+      if (isCombined) {
+        onClose();
+      }
+    } else {
+      onActiveChange("inpainting");
+    }
+  };
+  const handleDeleteObjects = () => {
+    if (!canvas) return;
+    const objectsToRemove = canvas.getObjects().filter((obj) => obj.get("name") !== cursorName);
+    objectsToRemove.forEach((obj) => canvas.remove(obj));
+    if (cursor) {
+      canvas.add(cursor);
+    }
+    canvas.renderAll();
+  };
+  const switchToPencil = () => {
+    if (!canvas) return;
+    if (!canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+    }
+    canvas.renderAll();
+    canvas.freeDrawingBrush.width = width;
+    canvas.freeDrawingBrush.color = "#a3e635";
+  };
+  react.useEffect(() => {
+    if (!canvas) return;
+    if (active) {
+      canvas.isDrawingMode = true;
+      switchToPencil();
+    } else {
+      canvas.isDrawingMode = false;
+    }
+  }, [active, canvas]);
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex flex-col gap-4 w-full", children: [
+    /* @__PURE__ */ jsxRuntime.jsx(
+      "div",
+      {
+        role: "button",
+        className: clsx_default(
+          "flex gap-3 items-center cursor-pointer p-3 rounded-lg border-2 transition-all",
+          {
+            "border-red-400 bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/70": active,
+            "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/70": !active
+          }
+        ),
+        onClick: handleDrawingModeChange,
+        children: active ? /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx(lucideReact.X, { className: "w-5 h-5" }),
+          /* @__PURE__ */ jsxRuntime.jsx("span", { className: "font-semibold", children: "CLOSE" })
+        ] }) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Palette, { className: "w-5 h-5" }),
+          /* @__PURE__ */ jsxRuntime.jsx("span", { className: "font-semibold", children: "INPAINTING" })
+        ] })
+      }
+    ),
+    /* @__PURE__ */ jsxRuntime.jsxs(
+      "div",
+      {
+        className: clsx_default(
+          "w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 transition-all duration-300",
+          active ? "opacity-100" : "opacity-0"
+        ),
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+            /* @__PURE__ */ jsxRuntime.jsx(
+              lucideReact.Circle,
+              {
+                size: 15,
+                className: "text-gray-500 dark:text-gray-400"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-sm font-medium text-gray-700 dark:text-gray-300", children: "\u0420\u0430\u0437\u043C\u0435\u0440 \u043A\u0438\u0441\u0442\u0438" }),
+            /* @__PURE__ */ jsxRuntime.jsx(
+              lucideReact.Circle,
+              {
+                size: 30,
+                className: "text-gray-500 dark:text-gray-400"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "input",
+            {
+              type: "range",
+              min: "1",
+              max: maxBrushWidth,
+              value: width,
+              onChange: (e) => handleWidthChange(Number(e.target.value)),
+              className: "w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center text-xs text-gray-500 dark:text-gray-400 mt-1", children: [
+            width,
+            "px"
+          ] })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntime.jsxs(
+      "div",
+      {
+        role: "button",
+        className: clsx_default(
+          "flex gap-3 items-center cursor-pointer p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all",
+          {
+            "opacity-100": active,
+            "opacity-0 pointer-events-none": !active
+          }
+        ),
+        onClick: handleDeleteObjects,
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { className: "w-5 h-5 text-red-500" }),
+          /* @__PURE__ */ jsxRuntime.jsx("span", { className: "font-medium", children: "Clear selection" })
+        ]
+      }
+    )
+  ] });
+};
+var InpaintingForm = ({
+  canvas,
+  onComplete,
+  loading = false,
+  initialPrompt = ""
+}) => {
+  const [disabled, setDisabled] = react.useState(true);
+  const [prompt, setPrompt] = react.useState(initialPrompt);
+  const [error, setError] = react.useState("");
+  react.useEffect(() => {
+    if (!canvas) return;
+    const updateDisable = () => {
+      const filteredCanvas = canvas.getObjects().filter((obj) => obj.get("name") !== cursorName);
+      setDisabled(!filteredCanvas.length);
+    };
+    canvas.on("object:added", updateDisable);
+    canvas.on("object:removed", updateDisable);
+    return () => {
+      canvas.off("object:added", updateDisable);
+      canvas.off("object:removed", updateDisable);
+      setDisabled(true);
+    };
+  }, [canvas]);
+  const handleClick = () => {
+    if (!canvas || !onComplete) return;
+    try {
+      canvas.getElement().toBlob((blob) => {
+        if (!blob) {
+          setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u043C\u0430\u0441\u043A\u0438");
+          return;
+        }
+        onComplete(
+          prompt.trim(),
+          new File([blob], "mask.png", { type: "image/png" }),
+          "comfyui/flux/inpainting"
+        );
+      }, "image/png");
+    } catch (error2) {
+      setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438");
+      console.error("Inpainting error:", error2);
+    }
+  };
+  const handlePromptChange = (e) => {
+    setPrompt(e.target.value);
+    if (error) {
+      setError("");
+    }
+  };
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "w-full h-full flex flex-col gap-4 justify-end p-4 bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700", children: [
+    /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "space-y-3", children: [
+      /* @__PURE__ */ jsxRuntime.jsx("label", { className: "block text-sm font-semibold text-gray-700 dark:text-gray-300", children: "Prompt" }),
+      /* @__PURE__ */ jsxRuntime.jsx(
+        ui.Textarea,
+        {
+          className: "w-full resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400",
+          value: prompt,
+          onChange: handlePromptChange,
+          placeholder: "\u041E\u043F\u0438\u0448\u0438\u0442\u0435, \u0447\u0442\u043E \u0434\u043E\u043B\u0436\u043D\u043E \u043F\u043E\u044F\u0432\u0438\u0442\u044C\u0441\u044F \u0432 \u0437\u0430\u043A\u0440\u0430\u0448\u0435\u043D\u043D\u043E\u0439 \u043E\u0431\u043B\u0430\u0441\u0442\u0438...",
+          autoFocus: true,
+          rows: 4
+        }
+      ),
+      error && /* @__PURE__ */ jsxRuntime.jsx("div", { className: "text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded border border-red-200 dark:border-red-800", children: error })
+    ] }),
+    /* @__PURE__ */ jsxRuntime.jsx(
+      "button",
+      {
+        disabled: disabled || loading,
+        onClick: handleClick,
+        className: "w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed shadow-sm",
+        children: loading ? /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" }),
+          "\u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0443\u0435\u043C..."
+        ] }) : "Inpaint"
+      }
+    )
+  ] });
+};
+var Control = ({
+  file,
+  projectId,
+  sceneId,
+  entityId,
+  onGenerating,
+  isActive,
+  canvas,
+  setCanvas,
+  onComplete,
+  loading = false,
+  initialPrompt = "",
+  onActiveChange
+}) => {
+  const handleInpainting = async (prompt, mask, generationConfig) => {
+    onComplete?.({ prompt, mask, config: generationConfig });
+  };
+  const handleActiveChange = (tool) => {
+    onActiveChange?.(tool);
+  };
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      className: "h-full overflow-hidden",
+      style: {
+        height: isActive ? "100%" : "50px",
+        transition: "height 0.25s ease-in-out"
+      },
+      children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "size-full bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex flex-col justify-between gap-5 items-start h-full w-full p-4", children: [
+        /* @__PURE__ */ jsxRuntime.jsx(
+          InpaintingTools,
+          {
+            active: isActive,
+            onActiveChange: handleActiveChange,
+            canvas,
+            isCombined: isActive,
+            onClose: () => {
+            }
+          }
+        ),
+        isActive && /* @__PURE__ */ jsxRuntime.jsx(
+          InpaintingForm,
+          {
+            canvas,
+            onComplete: handleInpainting,
+            loading,
+            initialPrompt
+          }
+        )
+      ] }) })
+    }
+  );
+};
+var Inpainting = ({
+  file,
+  projectId,
+  sceneId,
+  entityId,
+  imageUrl,
+  onGenerating,
+  onComplete,
+  initialPrompt = ""
+}) => {
+  const [activeTool, setActiveTool] = react.useState("inpainting");
+  const [canvas, setCanvas] = react.useState(null);
+  const [isLoading, setIsLoading] = react.useState(false);
+  react.useEffect(() => {
+    setActiveTool("inpainting");
+  }, []);
+  react.useEffect(() => {
+    if (canvas) {
+      console.log("Canvas is ready");
+    }
+  }, [canvas]);
+  const handleGenerating = () => {
+    setIsLoading(true);
+    onGenerating?.();
+  };
+  const handleComplete = (result) => {
+    setIsLoading(false);
+    onComplete?.(result);
+  };
+  const handleActiveToolChange = (tool) => {
+    setActiveTool(tool);
+  };
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "w-full h-full flex flex-col lg:flex-row bg-gray-50 dark:bg-gray-900", children: [
+    /* @__PURE__ */ jsxRuntime.jsx(
+      "div",
+      {
+        className: "flex-1 relative min-h-[500px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg m-4 shadow-sm",
+        style: {
+          backgroundImage: `url(${imageUrl})`,
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat"
+        },
+        children: /* @__PURE__ */ jsxRuntime.jsx(
+          Layer,
+          {
+            active: activeTool === "inpainting",
+            setCanvas,
+            imageUrl
+          }
+        )
+      }
+    ),
+    /* @__PURE__ */ jsxRuntime.jsx("div", { className: "w-full lg:w-80 lg:min-w-80 p-4 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900", children: /* @__PURE__ */ jsxRuntime.jsx(
+      Control,
+      {
+        file,
+        projectId,
+        sceneId,
+        entityId,
+        onGenerating: handleGenerating,
+        isActive: activeTool === "inpainting",
+        canvas,
+        setCanvas,
+        onComplete: handleComplete,
+        loading: isLoading,
+        initialPrompt,
+        onActiveChange: handleActiveToolChange
+      }
+    ) })
+  ] });
+};
 
 exports.CharacterType = CharacterType;
 exports.EnhancementInfoType = EnhancementInfoType;
 exports.HistoryItemType = HistoryItemType;
+exports.Inpainting = Inpainting;
 exports.MoodboardImageType = MoodboardImageType;
 exports.PresetOptionsType = PresetOptionsType;
 exports.ProjectTimeline = ProjectTimeline;

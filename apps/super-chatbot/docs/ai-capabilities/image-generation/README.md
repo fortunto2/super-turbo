@@ -2,6 +2,7 @@
 
 ## Recent Updates
 
+- **January 27, 2025**: [Image Editing Mode](image-editing-mode.md) - Встроенный режим редактирования изображений в артефактах
 - **January 27, 2025**: [Smart Image Context Understanding](smart-image-context.md) - AI now understands which image user refers to
 - **January 15, 2025**: [Optimized artifact content structure](artifact-content-structure.md) - Reduced storage by 80%
 - **January 15, 2025**: [Phase 1 Optimization](../../maintenance/changelog/optimize-image-artifact-content-phase1.md) - Removed redundant data from artifacts
@@ -62,6 +63,27 @@ const result = await generateImageWithStrategy("text-to-image", params);
 ## Расширение
 
 Чтобы добавить новые режимы (например, image-to-image), реализуйте новую стратегию и зарегистрируйте её в фабрике стратегий.
+
+## Image Editing Mode
+
+Добавлен встроенный режим редактирования изображений прямо в артефактах:
+
+### Ключевые возможности
+
+- **Встроенный редактор** - редактирование без перехода на внешние сервисы
+- **Два режима** - базовое и расширенное редактирование
+- **Интеграция с чатом** - сохранение изменений в истории чата
+- **Отмена изменений** - возможность вернуться к оригиналу
+
+### Как использовать
+
+1. Откройте изображение в артефакте
+2. Нажмите кнопку "✏️ Редактировать изображение"
+3. Выберите режим редактирования
+4. Внесите изменения
+5. Сохраните или отмените
+
+Подробная документация: [Image Editing Mode](image-editing-mode.md)
 
 ## Smart Image Context Understanding
 

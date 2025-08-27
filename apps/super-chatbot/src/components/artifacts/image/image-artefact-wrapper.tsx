@@ -1,176 +1,336 @@
-import { useImageSSE } from '@/hooks/use-image-sse';
-import { saveArtifactToDatabase, saveMediaToChat } from '@/lib/ai/chat/media';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { useImageSSE } from "@/hooks/use-image-sse";
+import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import { Skeleton } from '@turbo-super/ui';
-export const ImageArtifactWrapper = memo(function ImageArtifactWrapper(props: any) {
-  const { content, setArtifact, documentId, title, chatId, setMessages } = props;
-  const [localContent, setLocalContent] = useState(content);
+import { Skeleton } from "@turbo-super/ui";
+import { ImageEditing } from "./editing";
+export const ImageArtifactWrapper = memo(
+  function ImageArtifactWrapper(props: any) {
+    const { content, setArtifact, documentId, title, chatId, setMessages } =
+      props;
+    const [localContent, setLocalContent] = useState(content);
 
-  useEffect(() => {
-    setLocalContent(content);
-  }, [content]);
+    // Состояние режима редактирования
+    const [isEditing, setIsEditing] = useState(false);
+    const [editMode, setEditMode] = useState<string | null>(null);
 
-  const parsedContent = useMemo(() => {
-    try {
-      const parsed = JSON.parse(localContent);
-      return parsed;
-    } catch (error) {
-      // Only log parsing errors for debugging if needed
-      if (localContent?.trim()) {
-        console.log('🖼️ ❌ Failed to parse image content:', { 
-          contentPreview: localContent?.substring(0, 100), 
-          error: error instanceof Error ? error.message : String(error)
-        });
+    useEffect(() => {
+      setLocalContent(content);
+    }, [content]);
+
+    // Синхронизируем состояние редактирования с артефактом
+    useEffect(() => {
+      if (props.isEditing !== undefined) {
+        setIsEditing(props.isEditing);
       }
-      return null;
-    }
-  }, [localContent]);
+      if (props.editMode !== undefined) {
+        setEditMode(props.editMode);
+      }
+    }, [props.isEditing, props.editMode]);
 
-  const { status, imageUrl, prompt, projectId, requestId } = parsedContent || {};
+    const parsedContent = useMemo(() => {
+      try {
+        const parsed = JSON.parse(localContent);
+        return parsed;
+      } catch (error) {
+        // Only log parsing errors for debugging if needed
+        if (localContent?.trim()) {
+          console.log("🖼️ ❌ Failed to parse image content:", {
+            contentPreview: localContent?.substring(0, 100),
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return null;
+      }
+    }, [localContent]);
 
-  const updateContent = useCallback((newContent: any) => {
-    const finalContent = JSON.stringify(newContent);
-    setLocalContent(finalContent);
-    setArtifact((prev: any) => ({ ...prev, content: finalContent, status: 'idle' }));
-    
-    // AICODE-FIX: Include thumbnail in main save to avoid duplication
-    const thumbnailUrl = newContent.thumbnailUrl || (newContent.status === 'completed' ? newContent.imageUrl : undefined);
-    saveArtifactToDatabase(documentId, title, finalContent, "image", thumbnailUrl);
+    const { status, imageUrl, prompt, projectId, requestId } =
+      parsedContent || {};
 
-    // AICODE-FIX: Debug thumbnail save conditions
-    console.log('🖼️ 🔍 updateContent called:', {
-      status: newContent.status,
-      hasImageUrl: !!newContent.imageUrl,
-      hasThumbnailUrl: !!newContent.thumbnailUrl,
-      documentId,
-      documentIdValid: documentId && documentId !== 'undefined',
-      thumbnailUrl: newContent.thumbnailUrl,
-      finalThumbnailUrl: thumbnailUrl
+    const updateContent = useCallback(
+      (newContent: any) => {
+        const finalContent = JSON.stringify(newContent);
+        setLocalContent(finalContent);
+        setArtifact((prev: any) => ({
+          ...prev,
+          content: finalContent,
+          status: "idle",
+        }));
+
+        // AICODE-FIX: Include thumbnail in main save to avoid duplication
+        const thumbnailUrl =
+          newContent.thumbnailUrl ||
+          (newContent.status === "completed" ? newContent.imageUrl : undefined);
+        saveArtifactToDatabase(
+          documentId,
+          title,
+          finalContent,
+          "image",
+          thumbnailUrl
+        );
+
+        // AICODE-FIX: Debug thumbnail save conditions
+        console.log("🖼️ 🔍 updateContent called:", {
+          status: newContent.status,
+          hasImageUrl: !!newContent.imageUrl,
+          hasThumbnailUrl: !!newContent.thumbnailUrl,
+          documentId,
+          documentIdValid: documentId && documentId !== "undefined",
+          thumbnailUrl: newContent.thumbnailUrl,
+          finalThumbnailUrl: thumbnailUrl,
+        });
+
+        // AICODE-FIX: Add generated image to chat history
+        if (
+          newContent.status === "completed" &&
+          newContent.imageUrl &&
+          chatId &&
+          setMessages &&
+          newContent.prompt
+        ) {
+          saveMediaToChat(
+            chatId,
+            newContent.imageUrl,
+            newContent.prompt,
+            setMessages,
+            "image",
+            thumbnailUrl
+          );
+        }
+      },
+      [setArtifact, documentId, title, chatId, setMessages]
+    );
+
+    useEffect(() => {
+      if (!projectId) return;
+
+      // AICODE-FIX: Also poll if completed but missing thumbnail
+      const needsThumbnail =
+        status === "completed" && imageUrl && !parsedContent?.thumbnailUrl;
+      if (status === "completed" && !needsThumbnail) return;
+
+      const pollTimeout = setTimeout(async () => {
+        try {
+          const { pollFileCompletion } = await import(
+            "@/lib/utils/smart-polling-manager"
+          );
+          const result = await pollFileCompletion(projectId, {
+            maxDuration: 7 * 60 * 1000,
+          });
+          console.log("🖼️ 🔄 Polling result:", {
+            success: result.success,
+            hasUrl: !!result.data?.url,
+            hasThumbnail: !!result.data?.thumbnail_url,
+            url: result.data?.url,
+            thumbnail_url: result.data?.thumbnail_url,
+          });
+          if (result.success && result.data?.url) {
+            // AICODE-FIX: Always force thumbnail update from polling, even if image already completed
+            const newContent = {
+              ...parsedContent,
+              status: "completed",
+              imageUrl: result.data.url,
+              thumbnailUrl: result.data.thumbnail_url, // AICODE-FIX: Include thumbnail from polling
+              prompt:
+                result.data.image_generation?.prompt || parsedContent?.prompt, // Use prompt from polling result
+              progress: 100,
+            };
+            console.log("🖼️ 🔄 Forcing thumbnail update from polling:", {
+              imageUrl: result.data.url,
+              thumbnailUrl: result.data.thumbnail_url,
+              currentStatus: parsedContent?.status,
+            });
+            updateContent(newContent);
+          }
+        } catch (error) {
+          console.error("❌ Artifact smart polling system error:", error);
+        }
+      }, 20000); // 20s delay
+
+      return () => clearTimeout(pollTimeout);
+    }, [projectId, status, updateContent, parsedContent]);
+
+    useImageSSE({
+      fileId: projectId,
+      eventHandlers: useMemo(
+        () => [
+          (message: any) => {
+            console.log("🖼️ 📡 SSE message received:", {
+              type: message.type,
+              hasUrl: !!message.object?.url,
+              hasThumbnail: !!message.object?.thumbnail_url,
+            });
+            if (
+              message.type === "file" &&
+              message.object?.url &&
+              message.object?.contentType?.startsWith("image/")
+            ) {
+              console.log("🖼️ 📡 Processing file completion from SSE:", {
+                url: message.object.url,
+                thumbnail_url: message.object.thumbnail_url,
+              });
+              updateContent({
+                ...parsedContent,
+                status: "completed",
+                imageUrl: message.object.url,
+                thumbnailUrl: message.object.thumbnail_url, // AICODE-FIX: Include thumbnail from SSE
+                prompt:
+                  message.object.image_generation?.prompt ||
+                  parsedContent?.prompt,
+                progress: 100,
+              });
+            } else if (
+              message.type === "render_progress" &&
+              message.object?.progress !== undefined
+            ) {
+              setLocalContent(
+                JSON.stringify({
+                  ...parsedContent,
+                  status: "processing",
+                  progress: message.object.progress,
+                })
+              );
+            } else if (
+              message.type === "render_result" &&
+              (message.object?.url || message.object?.file_url)
+            ) {
+              console.log("🖼️ 📡 Processing render_result from SSE:", {
+                url: message.object.url || message.object.file_url,
+                thumbnail_url: message.object.thumbnail_url,
+              });
+              updateContent({
+                ...parsedContent,
+                status: "completed",
+                imageUrl: message.object.url || message.object.file_url,
+                thumbnailUrl: message.object.thumbnail_url, // AICODE-FIX: Include thumbnail from SSE
+                prompt: parsedContent?.prompt,
+                progress: 100,
+              });
+            }
+          },
+        ],
+        [updateContent, parsedContent]
+      ),
+      enabled: !!projectId && status !== "completed" && !!requestId,
     });
 
-    // AICODE-FIX: Add generated image to chat history
-    if (newContent.status === 'completed' && newContent.imageUrl && chatId && setMessages && newContent.prompt) {
-      saveMediaToChat(chatId, newContent.imageUrl, newContent.prompt, setMessages, "image", thumbnailUrl);
+    // Show skeleton while loading or if content cannot be parsed
+    if (!parsedContent) {
+      return (
+        <div className="space-y-2">
+          <Skeleton className="w-full h-[400px] rounded-lg" />
+          <Skeleton className="w-3/4 h-4 rounded-lg" />
+        </div>
+      );
     }
-  }, [setArtifact, documentId, title, chatId, setMessages]);
 
-  useEffect(() => {
-    if (!projectId) return;
-    
-    // AICODE-FIX: Also poll if completed but missing thumbnail
-    const needsThumbnail = status === 'completed' && imageUrl && !parsedContent?.thumbnailUrl;
-    if (status === 'completed' && !needsThumbnail) return;
+    if (status === "completed" && imageUrl) {
+      return (
+        <ImageDisplay
+          imageUrl={imageUrl}
+          prompt={prompt}
+          documentId={documentId}
+          chatId={chatId}
+          isEditing={isEditing}
+          editMode={editMode}
+          onEditToggle={() => setIsEditing(!isEditing)}
+          onEditModeChange={setEditMode}
+          onSaveEdit={(editedImageUrl: string) => {
+            // Здесь будет ваша логика сохранения отредактированного изображения
+            console.log("🔧 Saving edited image:", editedImageUrl);
 
-    const pollTimeout = setTimeout(async () => {
-      try {
-        const { pollFileCompletion } = await import('@/lib/utils/smart-polling-manager');
-        const result = await pollFileCompletion(projectId, { maxDuration: 7 * 60 * 1000 });
-        console.log('🖼️ 🔄 Polling result:', { 
-          success: result.success, 
-          hasUrl: !!result.data?.url, 
-          hasThumbnail: !!result.data?.thumbnail_url,
-          url: result.data?.url,
-          thumbnail_url: result.data?.thumbnail_url
-        });
-        if (result.success && result.data?.url) {
-          // AICODE-FIX: Always force thumbnail update from polling, even if image already completed
-          const newContent = {
-            ...parsedContent,
-            status: 'completed',
-            imageUrl: result.data.url,
-            thumbnailUrl: result.data.thumbnail_url, // AICODE-FIX: Include thumbnail from polling
-            prompt: result.data.image_generation?.prompt || parsedContent?.prompt, // Use prompt from polling result
-            progress: 100,
-          };
-          console.log('🖼️ 🔄 Forcing thumbnail update from polling:', { 
-            imageUrl: result.data.url, 
-            thumbnailUrl: result.data.thumbnail_url,
-            currentStatus: parsedContent?.status 
-          });
-          updateContent(newContent);
-        }
-      } catch (error) {
-        console.error('❌ Artifact smart polling system error:', error);
-      }
-    }, 20000); // 20s delay
+            // Обновляем контент с новым изображением
+            const newContent = {
+              ...parsedContent,
+              imageUrl: editedImageUrl,
+              editedAt: new Date().toISOString(),
+              originalImageUrl: parsedContent.imageUrl, // Сохраняем оригинал
+            };
 
-    return () => clearTimeout(pollTimeout);
-  }, [projectId, status, updateContent, parsedContent]);
-  
-  useImageSSE({
-    fileId: projectId,
-    eventHandlers: useMemo(() => [
-      (message: any) => {
-        console.log('🖼️ 📡 SSE message received:', { type: message.type, hasUrl: !!message.object?.url, hasThumbnail: !!message.object?.thumbnail_url });
-        if (message.type === 'file' && message.object?.url && message.object?.contentType?.startsWith('image/')) {
-          console.log('🖼️ 📡 Processing file completion from SSE:', { 
-            url: message.object.url, 
-            thumbnail_url: message.object.thumbnail_url 
-          });
-          updateContent({ 
-            ...parsedContent, 
-            status: 'completed', 
-            imageUrl: message.object.url, 
-            thumbnailUrl: message.object.thumbnail_url, // AICODE-FIX: Include thumbnail from SSE
-            prompt: message.object.image_generation?.prompt || parsedContent?.prompt, 
-            progress: 100 
-          });
-        } else if (message.type === 'render_progress' && message.object?.progress !== undefined) {
-          setLocalContent(JSON.stringify({ ...parsedContent, status: 'processing', progress: message.object.progress }));
-        } else if (message.type === 'render_result' && (message.object?.url || message.object?.file_url)) {
-          console.log('🖼️ 📡 Processing render_result from SSE:', { 
-            url: message.object.url || message.object.file_url, 
-            thumbnail_url: message.object.thumbnail_url 
-          });
-          updateContent({ 
-            ...parsedContent, 
-            status: 'completed', 
-            imageUrl: message.object.url || message.object.file_url, 
-            thumbnailUrl: message.object.thumbnail_url, // AICODE-FIX: Include thumbnail from SSE
-            prompt: parsedContent?.prompt, 
-            progress: 100 
-          });
-        }
-      }
-    ], [updateContent, parsedContent]),
-    enabled: !!projectId && status !== 'completed' && !!requestId
-  });
+            updateContent(newContent);
+            setIsEditing(false);
+            setEditMode(null);
+          }}
+          onCancelEdit={() => {
+            setIsEditing(false);
+            setEditMode(null);
+          }}
+        />
+      );
+    }
 
-  // Show skeleton while loading or if content cannot be parsed
-  if (!parsedContent) {
+    // Show skeleton for pending/processing states
     return (
       <div className="space-y-2">
         <Skeleton className="w-full h-[400px] rounded-lg" />
         <Skeleton className="w-3/4 h-4 rounded-lg" />
       </div>
     );
+  },
+  (prevProps, nextProps) => prevProps.content === nextProps.content
+);
+
+const ImageDisplay = ({
+  imageUrl,
+  prompt,
+  documentId,
+  chatId,
+  isEditing,
+  editMode,
+  onEditToggle,
+  onEditModeChange,
+  onSaveEdit,
+  onCancelEdit,
+}: {
+  imageUrl: string;
+  prompt: string;
+  documentId: string;
+  chatId: string;
+  isEditing: boolean;
+  editMode: string | null;
+  onEditToggle: () => void;
+  onEditModeChange: (mode: string | null) => void;
+  onSaveEdit: (editedImageUrl: string) => void;
+  onCancelEdit: () => void;
+}) => {
+  // Если включен режим редактирования, показываем редактор
+  if (isEditing) {
+    return (
+      <ImageEditing
+        imageUrl={imageUrl}
+        prompt={prompt}
+        documentId={documentId}
+        chatId={chatId}
+        onCancelEdit={onCancelEdit}
+        onSaveEdit={onSaveEdit}
+        onEditModeChange={onEditModeChange}
+        editMode={editMode || "inpainting"}
+      />
+    );
   }
 
-  if (status === 'completed' && imageUrl) {
-    return <ImageDisplay imageUrl={imageUrl} prompt={prompt} />;
-  }
-
-  // Show skeleton for pending/processing states
+  // Обычный режим просмотра
   return (
     <div className="space-y-2">
-      <Skeleton className="w-full h-[400px] rounded-lg" />
-      <Skeleton className="w-3/4 h-4 rounded-lg" />
+      <div className="rounded-lg overflow-hidden border">
+        <img
+          src={imageUrl}
+          alt={prompt || "AI-generated artwork"}
+          className="w-full h-auto object-contain"
+          style={{ maxHeight: "70vh" }}
+        />
+      </div>
+      <p className="text-sm text-gray-500 px-1">{prompt}</p>
+
+      {/* Кнопка переключения в режим редактирования */}
+      <div className="flex justify-center pt-2">
+        <button
+          onClick={onEditToggle}
+          className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+        >
+          ✏️ Редактировать изображение
+        </button>
+      </div>
     </div>
   );
-}, (prevProps, nextProps) => prevProps.content === nextProps.content);
-
-
-const ImageDisplay = ({ imageUrl, prompt }: { imageUrl: string; prompt: string }) => (
-  <div className="space-y-2">
-    <div className="rounded-lg overflow-hidden border">
-      <img
-        src={imageUrl}
-        alt={prompt || 'AI-generated artwork'}
-        className="w-full h-auto object-contain"
-        style={{ maxHeight: '70vh' }}
-      />
-    </div>
-    <p className="text-sm text-gray-500 px-1">{prompt}</p>
-  </div>
-);
+};
