@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from '@turbo-super/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Trash2, Settings } from "lucide-react";
 import type { GeneratedImage } from "../hooks/use-image-generator";
 import { ImageCard } from "./image-card";
@@ -15,6 +15,12 @@ interface ImageGalleryProps {
   onClearAll: () => void;
   onDownloadImage: (image: GeneratedImage) => Promise<void>;
   onCopyImageUrl: (image: GeneratedImage) => Promise<void>;
+  startInpaintingPolling: (
+    projectId: string,
+    prompt: string,
+    sourceImage: GeneratedImage
+  ) => Promise<void>;
+  isGenerating: boolean;
 }
 
 export function ImageGallery({
@@ -24,6 +30,8 @@ export function ImageGallery({
   onClearAll,
   onDownloadImage,
   onCopyImageUrl,
+  startInpaintingPolling,
+  isGenerating,
 }: ImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(
     null
@@ -33,6 +41,7 @@ export function ImageGallery({
   const handleImageError = (imageId: string) => {
     setImageErrors((prev) => new Set(prev).add(imageId));
   };
+  console.log(images);
 
   if (images.length === 0 && !currentGeneration) {
     return (
@@ -117,6 +126,8 @@ export function ImageGallery({
           image={selectedImage}
           setSelectedImage={setSelectedImage}
           handleImageError={handleImageError}
+          startInpaintingPolling={startInpaintingPolling}
+          isGenerating={isGenerating}
         />
       )}
     </>

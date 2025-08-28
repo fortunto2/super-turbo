@@ -58,7 +58,8 @@ export const saveMediaToChat = async (
   prompt: string,
   setMessages: any,
   type: "image" | "video",
-  thumbnailUrl?: string
+  thumbnailUrl?: string,
+  fileId?: string
 ) => {
   try {
     // Check for duplicates
@@ -77,12 +78,32 @@ export const saveMediaToChat = async (
       return;
     }
 
+    // Встраиваем fileId в имя, если он есть
+    const attachmentNameWithFileId = fileId
+      ? `[FILE_ID:${fileId}] ${prompt}`
+      : prompt;
+    const displayPromptForAttachment =
+      attachmentNameWithFileId.length > 50
+        ? `${attachmentNameWithFileId.substring(0, 50)}...`
+        : attachmentNameWithFileId;
+
     const videoAttachment = {
-      name: prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt,
+      name: displayPromptForAttachment, // Используем новое имя с встроенным fileId
       url: videoUrl,
       contentType: mediaType[type],
       thumbnailUrl: thumbnailUrl, // Add thumbnail for preview
+      // id: fileId, // Удаляем это, так как оно не сохраняется
     };
+
+    console.log(
+      "💾 saveMediaToChat: Saving attachment with fileId embedded in name:",
+      {
+        fileId: fileId || "none",
+        url: videoUrl ? `${videoUrl.substring(0, 50)}...` : "none",
+        type,
+        attachmentName: videoAttachment.name,
+      }
+    );
 
     const videoMessage = {
       id: generateUUID(),

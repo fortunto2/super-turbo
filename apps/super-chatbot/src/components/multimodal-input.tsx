@@ -114,15 +114,8 @@ function PureMultimodalInput({
       return;
     }
 
-    // Обновляем URL сразу при отправке сообщения
-    if (
-      chatId &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        chatId
-      )
-    ) {
-      window.history.replaceState({}, "", `/chat/${chatId}`);
-    }
+    // НЕ обновляем URL сразу - ждем успешного создания чата
+    // URL будет обновлен через команду от сервера
 
     handleSubmit(undefined, {
       experimental_attachments: attachments,
@@ -141,7 +134,6 @@ function PureMultimodalInput({
     setAttachments,
     setLocalStorageInput,
     width,
-    chatId,
     input,
   ]);
 
@@ -178,15 +170,7 @@ function PureMultimodalInput({
 
       setUploadQueue(files.map((file) => file.name));
 
-      // Обновляем URL при загрузке файлов
-      if (
-        chatId &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          chatId
-        )
-      ) {
-        window.history.replaceState({}, "", `/chat/${chatId}`);
-      }
+      // НЕ обновляем URL при загрузке файлов - ждем команду от сервера
 
       try {
         const uploadPromises = files.map((file) => uploadFile(file));
@@ -205,7 +189,7 @@ function PureMultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments, chatId]
+    [setAttachments]
   );
 
   const { isAtBottom, scrollToBottom } = useScrollToBottom();
@@ -252,15 +236,7 @@ function PureMultimodalInput({
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
             onAppend={(message) => {
-              // Обновляем URL при добавлении сообщения через suggested actions
-              if (
-                chatId &&
-                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-                  chatId
-                )
-              ) {
-                window.history.replaceState({}, "", `/chat/${chatId}`);
-              }
+              // НЕ обновляем URL здесь - ждем команду от сервера
               append(message);
             }}
           />

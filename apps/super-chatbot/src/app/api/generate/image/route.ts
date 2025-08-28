@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
         chatId: form.get("chatId") || "image-generator-tool",
         generationType: "image-to-image",
         file: form.get("file") as File,
+        mask: form.get("mask") as File,
+        sourceImageId: form.get("sourceImageId") as string,
+        sourceImageUrl: form.get("sourceImageUrl") as string,
       };
     } else {
       body = await request.json();
@@ -182,6 +185,7 @@ export async function POST(request: NextRequest) {
     const response = {
       success: true,
       fileId: result.fileId,
+      maskId: result?.maskId,
       projectId: result.projectId || chatId,
       url: result.url,
       message: result.message,

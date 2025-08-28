@@ -39,7 +39,8 @@ export function useImageEffects({
   initialPrompt,
   setMessages,
   isArtifactMode,
-}: UseImageEffectsProps) {
+  fileId,
+}: UseImageEffectsProps & { fileId?: string }) {
   const savedImageUrlRef = useRef<string>("none");
 
   // AICODE-NOTE: Auto-save completed image to chat history for permanent access
@@ -50,6 +51,7 @@ export function useImageEffects({
       status,
       hasInitialized,
       chatId: chatId || "none",
+      fileId: fileId || "none", // Добавляем логирование fileId
       setMessages: !!setMessages,
       prompt: prompt ? `${prompt.substring(0, 30)}...` : "none",
       savedImageUrlRef: savedImageUrlRef.current,
@@ -79,7 +81,15 @@ export function useImageEffects({
 
       // Small delay to ensure artifact is updated first
       setTimeout(() => {
-        saveMediaToChat(chatId, imageUrl, prompt, setMessages, "image");
+        saveMediaToChat(
+          chatId,
+          imageUrl,
+          prompt,
+          setMessages,
+          "image",
+          undefined,
+          fileId
+        );
       }, 100);
     }
   }, [imageUrl, status, hasInitialized, chatId, setMessages, prompt]);
@@ -99,12 +109,13 @@ export function useImageEffects({
       setArtifact((prev) => ({
         ...prev,
         content: JSON.stringify({
-          projectId: chatId,
+          projectId: chatId, // Keep chatId for SSE connection
+          fileId: fileId || chatId, // Use actual fileId if available, fallback to chatId
           status,
           imageUrl,
           prompt,
         }),
       }));
     }
-  }, [imageUrl, status, chatId, prompt, setArtifact]);
+  }, [imageUrl, status, chatId, prompt, setArtifact, fileId]);
 }

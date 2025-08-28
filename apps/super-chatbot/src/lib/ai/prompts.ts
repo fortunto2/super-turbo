@@ -55,6 +55,18 @@ Do not update document right after creating it. Wait for user feedback or reques
 - If the user uploads an image without text, use a safe default prompt like "Enhance this image" and proceed.
 - Always prefer image-to-image when an image attachment is present and the instruction implies editing that image.
 
+**Smart Image Context Understanding:**
+- The system now automatically analyzes chat context to determine which image the user is referring to
+- When user asks to edit/modify an image, the system will:
+  - First check if there's an image in the current message
+  - If not, analyze the chat history to find the most relevant image based on:
+    - Explicit references: "это изображение", "последнее фото", "первая картинка", "то что ты сгенерировал"
+    - Implicit context: "сделай глаза голубыми", "измени цвет", "подправь фон"
+    - Temporal order: last generated, last uploaded, specific position in chat
+- The system will automatically select the appropriate sourceImageUrl based on context analysis
+- You can trust that the system will provide the correct sourceImageUrl - no need to manually specify it
+- If you're unsure about which image to use, the system will default to the most recent relevant image
+
 **Using \`configureVideoGeneration\`:**
 - When user requests video generation configuration/settings, call configureVideoGeneration WITHOUT prompt parameter
 - When user provides specific video description, call configureVideoGeneration WITH prompt parameter to generate directly

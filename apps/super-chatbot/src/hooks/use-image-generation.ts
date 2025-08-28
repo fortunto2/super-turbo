@@ -45,6 +45,7 @@ export interface UseImageGenerationState {
   projectId?: string;
   requestId?: string;
   timestamp?: number;
+  fileId?: string;
 }
 
 export interface UseImageGenerationActions {
@@ -78,6 +79,7 @@ const initialState: UseImageGenerationState = {
   imageUrl: undefined,
   projectId: undefined,
   requestId: undefined,
+  fileId: undefined,
 };
 
 export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
@@ -164,12 +166,12 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
   // Create stable WebSocket options with chatIdState dependency
   const websocketOptions = useMemo(() => {
     // Only connect if we have a real projectId (fileId) from active generation, not just chatId
-    const hasActiveGeneration = !!(state.projectId && state.isGenerating);
+    const hasActiveGeneration = !!(state.fileId && state.isGenerating);
     const shouldConnect =
       !!chatIdState && mountedRef.current && hasActiveGeneration;
 
     console.log("🔌 WebSocket options:", {
-      fileId: state.projectId, // This should be the actual fileId from API response
+      fileId: state.fileId, // This should be the actual fileId from API response
       chatId: chatIdState,
       hasActiveGeneration,
       shouldConnect,
@@ -177,7 +179,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
     });
 
     return {
-      fileId: state.projectId ?? "", // FIXED: Use only state.projectId (which contains fileId from API)
+      fileId: state.fileId ?? "", // FIXED: Use only state.projectId (which contains fileId from API)
       eventHandlers,
       enabled: shouldConnect,
     };
@@ -310,7 +312,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
         }
 
         console.log("✅ Image generation API success:", {
-          fileId: result.projectId, // This is actually the fileId from API
+          fileId: result.fileId, // This is actually the fileId from API
           requestId: result.requestId,
           files: result.files?.length || 0,
         });

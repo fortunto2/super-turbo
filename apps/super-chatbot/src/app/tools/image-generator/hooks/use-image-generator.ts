@@ -30,6 +30,7 @@ export interface GeneratedImage {
     shotSize: string;
     seed?: number;
   };
+  fileId?: string;
 }
 
 export interface UseImageGeneratorReturn {
@@ -49,6 +50,13 @@ export interface UseImageGeneratorReturn {
   deleteImage: (imageId: string) => void;
   clearAllImages: () => void;
   forceCheckResults: () => Promise<void>;
+
+  // Inpainting actions
+  startInpaintingPolling: (
+    projectId: string,
+    prompt: string,
+    sourceImage: GeneratedImage
+  ) => Promise<void>;
 
   // Utils
   downloadImage: (image: GeneratedImage) => Promise<void>;
@@ -265,6 +273,143 @@ export function useImageGenerator(): UseImageGeneratorReturn {
     // In real implementation, would force polling check
   }, []);
 
+  // Inpainting polling function
+  const startInpaintingPolling = useCallback(
+    async (
+      projectId: string,
+      prompt: string,
+      sourceImage: GeneratedImage,
+      fileId?: string
+    ) => {
+      try {
+        setIsGenerating(true);
+        setConnectionStatus("connecting");
+        setGenerationStatus({
+          status: "pending",
+          progress: 0,
+          message: "Starting inpainting...",
+          estimatedTime: 30000,
+          projectId: projectId,
+          requestId: projectId,
+          fileId: fileId || projectId,
+        });
+
+        // Simulate connection
+        setTimeout(() => {
+          setConnectionStatus("connected");
+          setIsConnected(true);
+        }, 1000);
+
+        // Update status to processing
+        setGenerationStatus({
+          status: "processing",
+          progress: 50,
+          message: "Inpainting in progress...",
+          estimatedTime: 15000,
+          projectId: projectId,
+          requestId: projectId,
+          fileId: fileId || projectId,
+        });
+
+        // Polling function for inpainting result
+        const checkInpaintingResult = async (attempts = 0): Promise<void> => {
+          if (attempts > 30) {
+            // 5 minutes max
+            throw new Error("Inpainting timeout");
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
+
+          try {
+            // Check if we have a result
+            const checkResponse = await fetch(`/api/file/${projectId}`);
+            if (checkResponse.ok) {
+              const fileData = await checkResponse.json();
+              if (fileData.url) {
+                // Success!
+                const generatedImage: GeneratedImage = {
+                  id: projectId,
+                  url: fileData.url,
+                  prompt: prompt,
+                  timestamp: Date.now(),
+                  projectId: projectId,
+                  requestId: projectId,
+                  settings: {
+                    model: "comfyui/flux/inpainting",
+                    style: "inpainting",
+                    resolution: "1024x1024",
+                    shotSize: "medium_shot",
+                  },
+                  fileId: fileId || projectId,
+                };
+
+                setCurrentGeneration(generatedImage);
+                setGeneratedImages((prev) => [generatedImage, ...prev]);
+
+                // Save to localStorage
+                saveImage({
+                  id: generatedImage.id,
+                  url: generatedImage.url,
+                  prompt: generatedImage.prompt,
+                  timestamp: generatedImage.timestamp,
+                  projectId: generatedImage.projectId,
+                  requestId: generatedImage.requestId,
+                  settings: generatedImage.settings,
+                  fileId: fileId || projectId,
+                });
+
+                setGenerationStatus({
+                  status: "completed",
+                  progress: 100,
+                  message: "Inpainting completed!",
+                  estimatedTime: 0,
+                  projectId: projectId,
+                  requestId: projectId,
+                  fileId: fileId || projectId,
+                });
+
+                toast.success("Inpainting completed successfully!");
+                return;
+              }
+            }
+          } catch (error) {
+            console.log(
+              "Inpainting polling attempt",
+              attempts + 1,
+              "failed, retrying..."
+            );
+          }
+
+          // Continue polling
+          return checkInpaintingResult(attempts + 1);
+        };
+
+        await checkInpaintingResult();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Inpainting failed";
+        console.error("Inpainting error:", error);
+
+        setGenerationStatus({
+          status: "error",
+          progress: 0,
+          message: message,
+          estimatedTime: 0,
+          projectId: projectId,
+          requestId: projectId,
+          fileId: fileId || projectId,
+        });
+
+        toast.error(message);
+      } finally {
+        setIsGenerating(false);
+        setConnectionStatus("disconnected");
+        setIsConnected(false);
+      }
+    },
+    []
+  );
+
   const downloadImage = useCallback(async (image: GeneratedImage) => {
     try {
       const response = await fetch(image.url);
@@ -304,6 +449,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
     deleteImage,
     clearAllImages,
     forceCheckResults,
+    startInpaintingPolling,
     downloadImage,
     copyImageUrl,
   };

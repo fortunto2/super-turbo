@@ -542,7 +542,7 @@ export async function POST(request: Request) {
     }
 
     const stream = createDataStream({
-      execute: (dataStream) => {
+      execute: async (dataStream) => {
         const enhancedDataStream = {
           ...dataStream,
           end: () => {},
@@ -550,6 +550,56 @@ export async function POST(request: Request) {
             console.error("Stream error:", error);
           },
         };
+
+        // Анализируем контекст изображения
+        let defaultSourceImageUrl: string | undefined;
+        try {
+          const { analyzeImageContext, getChatImages } = await import(
+            "@/lib/ai/chat/image-context"
+          );
+
+          const chatImages = await getChatImages(id);
+          console.log("🔍 Pre-analysis: Chat images found:", chatImages.length);
+
+          const imageContext = await analyzeImageContext(
+            message.parts?.[0]?.text || "",
+            chatImages,
+            (message as any)?.experimental_attachments
+          );
+
+          console.log("🔍 Pre-analysis: Image context:", {
+            confidence: imageContext.confidence,
+            reasoning: imageContext.reasoning,
+            sourceImageUrl: imageContext.sourceImageUrl,
+          });
+
+          defaultSourceImageUrl = imageContext.sourceImageUrl;
+
+          console.log(
+            "🔍 defaultSourceImageUrl set to:",
+            defaultSourceImageUrl
+          );
+        } catch (error) {
+          console.error("🔍 Pre-analysis error:", error);
+          // Fallback к старой логике
+          try {
+            const atts = (message as any)?.experimental_attachments || [];
+            const img = atts.find(
+              (a: any) =>
+                typeof a?.url === "string" &&
+                /^https?:\/\//.test(a.url) &&
+                String(a?.contentType || "").startsWith("image/")
+            );
+            defaultSourceImageUrl = img?.url;
+            console.log(
+              "🔍 Fallback defaultSourceImageUrl:",
+              defaultSourceImageUrl
+            );
+          } catch (fallbackError) {
+            console.error("Fallback error:", fallbackError);
+            defaultSourceImageUrl = undefined;
+          }
+        }
 
         const tools = {
           createDocument: createDocument({
@@ -575,6 +625,11 @@ export async function POST(request: Request) {
           attachments: (message as any)?.attachments,
         });
 
+        console.log(
+          "🔍 About to call streamText with defaultSourceImageUrl:",
+          defaultSourceImageUrl
+        );
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
@@ -596,36 +651,13 @@ export async function POST(request: Request) {
                 ],
           experimental_transform: smoothStream({ chunking: "word" }),
           experimental_generateMessageId: generateUUID,
+
           tools: {
             ...tools,
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
               session,
-              defaultSourceImageUrl: (() => {
-                try {
-                  const atts = (message as any)?.experimental_attachments || [];
-                  console.log("🔍 Looking for image attachments in message:", {
-                    hasMessage: !!message,
-                    hasAttachments: !!atts,
-                    attachmentsCount: atts?.length || 0,
-                    attachments: atts,
-                  });
-                  const img = atts.find(
-                    (a: any) =>
-                      typeof a?.url === "string" &&
-                      /^https?:\/\//.test(a.url) &&
-                      String(a?.contentType || "").startsWith("image/")
-                  );
-                  console.log("🔍 Found image attachment:", img);
-                  return img?.url;
-                } catch (error) {
-                  console.error(
-                    "🔍 Error extracting defaultSourceImageUrl:",
-                    error
-                  );
-                  return undefined;
-                }
-              })(),
+              defaultSourceImageUrl: defaultSourceImageUrl,
             }),
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
@@ -641,6 +673,14 @@ export async function POST(request: Request) {
           },
           // Note: explicit toolChoice removed due to type constraints; tool remains available
           onFinish: async ({ response }) => {
+            console.log("🔍 onFinish called with response:", {
+              messagesCount: response.messages.length,
+              hasAssistantMessages: response.messages.some(
+                (m) => m.role === "assistant"
+              ),
+              responseKeys: Object.keys(response),
+            });
+
             if (session.user?.id) {
               try {
                 const assistantMessages = response.messages.filter(
@@ -662,7 +702,7 @@ export async function POST(request: Request) {
                 }
 
                 const [, assistantMessage] = appendResponseMessages({
-                  messages: [message],
+                  messages: [message as any],
                   responseMessages: response.messages,
                 });
 
@@ -684,11 +724,32 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-              } catch (error) {
-                console.error("Failed to save assistant message:", error);
-                if (error instanceof Error) {
-                  console.error(error.stack);
+
+                console.log("🔍 Assistant message saved successfully");
+
+                // Отправляем команду перенаправления на страницу чата
+                // Это происходит только после успешного создания чата
+                try {
+                  dataStream.writeData({
+                    type: "redirect",
+                    url: `/chat/${id}`,
+                  });
+                  console.log(
+                    "🔍 Redirect command sent to client:",
+                    `/chat/${id}`
+                  );
+                } catch (redirectError) {
+                  console.error(
+                    "🔍 Failed to send redirect command:",
+                    redirectError
+                  );
                 }
+              } catch (error) {
+                console.error("🔍 Failed to save assistant message:", error);
+                if (error instanceof Error) {
+                  console.error("🔍 Error stack:", error.stack);
+                }
+                // Не выбрасываем ошибку, чтобы не прерывать поток
               }
             }
           },
@@ -704,8 +765,9 @@ export async function POST(request: Request) {
           sendReasoning: true,
         });
       },
-      onError: () => {
-        return "Oops, an error occurred!";
+      onError: (error: any) => {
+        console.error("🔍 DataStream onError called with:", error);
+        return `Oops, an error occurred! Error: ${error?.message || "Unknown error"}`;
       },
     });
 

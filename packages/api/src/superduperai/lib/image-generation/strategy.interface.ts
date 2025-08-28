@@ -28,6 +28,7 @@ export interface ImageGenerationResult {
   url?: string;
   method?: "sse" | "polling";
   tasks?: any[];
+  maskId?: string;
 }
 
 // Base strategy interface
