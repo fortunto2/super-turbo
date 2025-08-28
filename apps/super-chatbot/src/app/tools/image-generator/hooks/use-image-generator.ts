@@ -30,6 +30,7 @@ export interface GeneratedImage {
     shotSize: string;
     seed?: number;
   };
+  fileId?: string;
 }
 
 export interface UseImageGeneratorReturn {
@@ -274,7 +275,12 @@ export function useImageGenerator(): UseImageGeneratorReturn {
 
   // Inpainting polling function
   const startInpaintingPolling = useCallback(
-    async (projectId: string, prompt: string, sourceImage: GeneratedImage) => {
+    async (
+      projectId: string,
+      prompt: string,
+      sourceImage: GeneratedImage,
+      fileId?: string
+    ) => {
       try {
         setIsGenerating(true);
         setConnectionStatus("connecting");
@@ -285,7 +291,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
           estimatedTime: 30000,
           projectId: projectId,
           requestId: projectId,
-          fileId: projectId,
+          fileId: fileId || projectId,
         });
 
         // Simulate connection
@@ -302,7 +308,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
           estimatedTime: 15000,
           projectId: projectId,
           requestId: projectId,
-          fileId: projectId,
+          fileId: fileId || projectId,
         });
 
         // Polling function for inpainting result
@@ -334,6 +340,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                     resolution: "1024x1024",
                     shotSize: "medium_shot",
                   },
+                  fileId: fileId || projectId,
                 };
 
                 setCurrentGeneration(generatedImage);
@@ -348,6 +355,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   projectId: generatedImage.projectId,
                   requestId: generatedImage.requestId,
                   settings: generatedImage.settings,
+                  fileId: fileId || projectId,
                 });
 
                 setGenerationStatus({
@@ -357,7 +365,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   estimatedTime: 0,
                   projectId: projectId,
                   requestId: projectId,
-                  fileId: projectId,
+                  fileId: fileId || projectId,
                 });
 
                 toast.success("Inpainting completed successfully!");
@@ -389,7 +397,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
           estimatedTime: 0,
           projectId: projectId,
           requestId: projectId,
-          fileId: projectId,
+          fileId: fileId || projectId,
         });
 
         toast.error(message);

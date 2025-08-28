@@ -19,7 +19,8 @@ export const ImagePreviewModal = ({
   startInpaintingPolling: (
     projectId: string,
     prompt: string,
-    sourceImage: GeneratedImage
+    sourceImage: GeneratedImage,
+    fileId?: string
   ) => Promise<void>;
   isGenerating: boolean;
 }) => {
@@ -52,7 +53,12 @@ export const ImagePreviewModal = ({
 
       // If successful, start polling for the result
       if (data.success && data.projectId) {
-        await startInpaintingPolling(data.projectId, result.prompt, image);
+        await startInpaintingPolling(
+          data.projectId,
+          result.prompt,
+          image,
+          image.fileId || image.id || data.projectId
+        );
         // Close the modal after starting polling
         setSelectedImage(null);
       }

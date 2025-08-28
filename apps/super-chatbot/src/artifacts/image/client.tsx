@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 import "@/lib/utils/console-helpers";
 import { ImageArtifactWrapper } from "@/components/artifacts/image/image-artefact-wrapper";
+import { useArtifact } from "@/hooks/use-artifact";
 
 export default function ArtifactContentImage(props: any) {
   return <ImageArtifactWrapper {...props} />;
@@ -99,25 +100,24 @@ export const imageArtifact = new Artifact({
     {
       icon: <PencilEditIcon size={18} />,
       description: "Edit image",
-      onClick: ({
-        content,
-        setArtifact,
-        documentId,
-        title,
-        chatId,
-        setMessages,
-      }) => {
-        // Переключаем в режим редактирования
-        // Вы передадите setArtifact, documentId, title, chatId, setMessages через контекст
-        console.log("🔧 Edit mode activated for image:", { documentId, title });
+      onClick: ({ content }) => {
+        // Получаем доступ к артефакту через глобальный объект
+        const artifactInstance = (window as any).artifactInstance;
+        if (artifactInstance) {
+          console.log("🔧 Edit mode activated for image:", {
+            documentId: artifactInstance.artifact.documentId,
+            title: artifactInstance.artifact.title,
+          });
 
-        // Здесь будет ваша логика переключения в режим редактирования
-        // Например, можно установить флаг isEditing в артефакте
-        setArtifact((prev: any) => ({
-          ...prev,
-          isEditing: true,
-          editMode: "image-editor",
-        }));
+          // Переключаем в режим редактирования
+          artifactInstance.setArtifact((prev: any) => ({
+            ...prev,
+            isEditing: true,
+            editMode: "image-editor",
+          }));
+        } else {
+          console.error("❌ Artifact instance not found");
+        }
       },
       isDisabled: ({ content }) => {
         try {

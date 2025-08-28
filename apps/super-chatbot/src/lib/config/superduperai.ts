@@ -529,28 +529,6 @@ export function getSuperduperAITokenForUser(session: any): {
     session,
   });
 
-  // Try to get user's SuperDuperAI token from session
-  let userToken =
-    session?.user?.superduperaiToken || session?.superduperaiToken;
-
-  // For testing: use TEST_USER_SUPERDUPERAI_TOKEN if available
-  if (!userToken && process.env.TEST_USER_SUPERDUPERAI_TOKEN) {
-    userToken = process.env.TEST_USER_SUPERDUPERAI_TOKEN;
-    console.log(
-      "🔧 SuperDuperAI: Using TEST_USER_SUPERDUPERAI_TOKEN for testing"
-    );
-  }
-
-  if (userToken && typeof userToken === "string" && userToken.length > 10) {
-    console.log(
-      "🔧 SuperDuperAI: Using user token for user:",
-      session?.user?.email,
-      `(token length: ${userToken.length})`
-    );
-    return { token: userToken, isUserToken: true };
-  }
-
-  // Fallback to system token
   const systemConfig = getSuperduperAIConfig();
   console.log(
     "🔧 SuperDuperAI: User has no token, using system token for user:",

@@ -44,8 +44,22 @@ export const ImageArtifactWrapper = memo(
       }
     }, [localContent]);
 
-    const { status, imageUrl, prompt, projectId, requestId } =
+    const { status, imageUrl, prompt, projectId, fileId, requestId } =
       parsedContent || {};
+
+    // Логирование для отладки инпаинтинга
+    useEffect(() => {
+      if (status === "completed" && imageUrl) {
+        console.log("🖼️ ImageArtifactWrapper - parsed content:", {
+          status,
+          imageUrl: imageUrl?.substring(0, 50) + "...",
+          prompt: prompt?.substring(0, 50) + "...",
+          projectId,
+          fileId,
+          requestId,
+        });
+      }
+    }, [status, imageUrl, prompt, projectId, fileId, requestId]);
 
     const updateContent = useCallback(
       (newContent: any) => {
@@ -148,10 +162,10 @@ export const ImageArtifactWrapper = memo(
       }, 20000); // 20s delay
 
       return () => clearTimeout(pollTimeout);
-    }, [projectId, status, updateContent, parsedContent]);
+    }, [projectId, status, updateContent, parsedContent, imageUrl]);
 
     useImageSSE({
-      fileId: projectId,
+      fileId: fileId || projectId,
       eventHandlers: useMemo(
         () => [
           (message: any) => {
@@ -231,8 +245,11 @@ export const ImageArtifactWrapper = memo(
           prompt={prompt}
           documentId={documentId}
           chatId={chatId}
+          projectId={projectId}
+          fileId={fileId}
           isEditing={isEditing}
           editMode={editMode}
+          setArtifact={setArtifact}
           onEditToggle={() => setIsEditing(!isEditing)}
           onEditModeChange={setEditMode}
           onSaveEdit={(editedImageUrl: string) => {
@@ -275,8 +292,11 @@ const ImageDisplay = ({
   prompt,
   documentId,
   chatId,
+  projectId,
+  fileId,
   isEditing,
   editMode,
+  setArtifact,
   onEditToggle,
   onEditModeChange,
   onSaveEdit,
@@ -286,8 +306,11 @@ const ImageDisplay = ({
   prompt: string;
   documentId: string;
   chatId: string;
+  projectId?: string;
+  fileId?: string;
   isEditing: boolean;
   editMode: string | null;
+  setArtifact: (fn: (prev: any) => any) => void;
   onEditToggle: () => void;
   onEditModeChange: (mode: string | null) => void;
   onSaveEdit: (editedImageUrl: string) => void;
@@ -301,6 +324,9 @@ const ImageDisplay = ({
         prompt={prompt}
         documentId={documentId}
         chatId={chatId}
+        projectId={projectId}
+        fileId={fileId}
+        setArtifact={setArtifact}
         onCancelEdit={onCancelEdit}
         onSaveEdit={onSaveEdit}
         onEditModeChange={onEditModeChange}
