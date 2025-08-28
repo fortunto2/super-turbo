@@ -15,6 +15,12 @@ interface ImageGalleryProps {
   onClearAll: () => void;
   onDownloadImage: (image: GeneratedImage) => Promise<void>;
   onCopyImageUrl: (image: GeneratedImage) => Promise<void>;
+  startInpaintingPolling: (
+    projectId: string,
+    prompt: string,
+    sourceImage: GeneratedImage
+  ) => Promise<void>;
+  isGenerating: boolean;
 }
 
 export function ImageGallery({
@@ -24,6 +30,8 @@ export function ImageGallery({
   onClearAll,
   onDownloadImage,
   onCopyImageUrl,
+  startInpaintingPolling,
+  isGenerating,
 }: ImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(
     null
@@ -118,6 +126,8 @@ export function ImageGallery({
           image={selectedImage}
           setSelectedImage={setSelectedImage}
           handleImageError={handleImageError}
+          startInpaintingPolling={startInpaintingPolling}
+          isGenerating={isGenerating}
         />
       )}
     </>

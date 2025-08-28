@@ -10,10 +10,18 @@ export const ImagePreviewModal = ({
   image,
   setSelectedImage,
   handleImageError,
+  startInpaintingPolling,
+  isGenerating,
 }: {
   image: GeneratedImage;
   setSelectedImage: (image: GeneratedImage | null) => void;
   handleImageError: (imageId: string) => void;
+  startInpaintingPolling: (
+    projectId: string,
+    prompt: string,
+    sourceImage: GeneratedImage
+  ) => Promise<void>;
+  isGenerating: boolean;
 }) => {
   const handleInpaintingComplete = async (result: {
     prompt: string;
@@ -21,7 +29,6 @@ export const ImagePreviewModal = ({
     config: string;
   }) => {
     try {
-      console.log(image);
       const formData = new FormData();
       formData.append("prompt", result.prompt);
       formData.append("mask", result.mask);
@@ -31,6 +38,7 @@ export const ImagePreviewModal = ({
       formData.append("sourceImageId", image.id);
       formData.append("sourceImageUrl", image.url);
       formData.append("model", "comfyui/flux/inpainting");
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
         {
@@ -38,10 +46,18 @@ export const ImagePreviewModal = ({
           body: formData,
         }
       );
+
       const data = await response.json();
       console.log("Inpainting response:", data);
+
+      // If successful, start polling for the result
+      if (data.success && data.projectId) {
+        await startInpaintingPolling(data.projectId, result.prompt, image);
+        // Close the modal after starting polling
+        setSelectedImage(null);
+      }
     } catch (error) {
-      console.error("Error saving image:", error);
+      console.error("Error during inpainting:", error);
     }
   };
   return (
@@ -61,6 +77,7 @@ export const ImagePreviewModal = ({
             imageUrl={image.url}
             onGenerating={() => {}}
             onComplete={handleInpaintingComplete}
+            isGenerating={isGenerating}
           />
         </div>
 

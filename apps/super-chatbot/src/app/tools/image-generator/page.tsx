@@ -5,7 +5,7 @@ import { ImageGeneratorForm } from "./components/image-generator-form";
 import { GenerationProgress } from "./components/generation-progress";
 import { ImageGallery } from "./components/image-gallery";
 import { useImageGenerator } from "./hooks/use-image-generator";
-import { Separator } from '@turbo-super/ui';
+import { Separator } from "@turbo-super/ui";
 import { ImageIcon, Sparkles, Zap } from "lucide-react";
 
 export default function ImageGeneratorPage() {
@@ -21,6 +21,7 @@ export default function ImageGeneratorPage() {
     deleteImage,
     clearAllImages,
     forceCheckResults,
+    startInpaintingPolling,
     downloadImage,
     copyImageUrl,
   } = useImageGenerator();
@@ -112,6 +113,8 @@ export default function ImageGeneratorPage() {
               onClearAll={clearAllImages}
               onDownloadImage={downloadImage}
               onCopyImageUrl={copyImageUrl}
+              startInpaintingPolling={startInpaintingPolling}
+              isGenerating={isGenerating}
             />
           </Suspense>
         </div>

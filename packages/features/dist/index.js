@@ -3706,14 +3706,12 @@ var Inpainting = ({
   imageUrl,
   onGenerating,
   onComplete,
-  initialPrompt = ""
+  initialPrompt = "",
+  isGenerating = false
 }) => {
-  const [activeTool, setActiveTool] = react.useState("inpainting");
+  const [activeTool, setActiveTool] = react.useState("");
   const [canvas, setCanvas] = react.useState(null);
   const [isLoading, setIsLoading] = react.useState(false);
-  react.useEffect(() => {
-    setActiveTool("inpainting");
-  }, []);
   react.useEffect(() => {
     if (canvas) {
       console.log("Canvas is ready");
@@ -3727,6 +3725,7 @@ var Inpainting = ({
     setIsLoading(false);
     onComplete?.(result);
   };
+  const currentLoading = isGenerating || isLoading;
   const handleActiveToolChange = (tool) => {
     setActiveTool(tool);
   };
@@ -3759,7 +3758,7 @@ var Inpainting = ({
         canvas,
         setCanvas,
         onComplete: handleComplete,
-        loading: isLoading,
+        loading: currentLoading,
         initialPrompt,
         onActiveChange: handleActiveToolChange
       }

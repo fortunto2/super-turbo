@@ -8,19 +8,17 @@ export const Inpainting = ({
   onGenerating,
   onComplete,
   initialPrompt = "",
+  isGenerating = false,
 }: {
   imageUrl: string;
   onGenerating?: () => void;
   onComplete?: (result: { prompt: string; mask: File; config: string }) => void;
   initialPrompt?: string;
+  isGenerating?: boolean;
 }) => {
-  const [activeTool, setActiveTool] = useState<string>("inpainting");
+  const [activeTool, setActiveTool] = useState<string>("");
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    setActiveTool("inpainting");
-  }, []);
 
   useEffect(() => {
     if (canvas) {
@@ -41,6 +39,9 @@ export const Inpainting = ({
     setIsLoading(false);
     onComplete?.(result);
   };
+
+  // Используем внешний isGenerating или внутренний isLoading
+  const currentLoading = isGenerating || isLoading;
 
   const handleActiveToolChange = (tool: string) => {
     setActiveTool(tool);
@@ -74,7 +75,7 @@ export const Inpainting = ({
           canvas={canvas}
           setCanvas={setCanvas}
           onComplete={handleComplete}
-          loading={isLoading}
+          loading={currentLoading}
           initialPrompt={initialPrompt}
           onActiveChange={handleActiveToolChange}
         />
