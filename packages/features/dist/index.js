@@ -3654,10 +3654,6 @@ var InpaintingForm = ({
   ] });
 };
 var Control = ({
-  file,
-  projectId,
-  sceneId,
-  entityId,
   onGenerating,
   isActive,
   canvas,
@@ -3678,7 +3674,7 @@ var Control = ({
     {
       className: "h-full overflow-hidden",
       style: {
-        height: isActive ? "100%" : "50px",
+        height: isActive ? "100%" : "85px",
         transition: "height 0.25s ease-in-out"
       },
       children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "size-full bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex flex-col justify-between gap-5 items-start h-full w-full p-4", children: [
@@ -3707,10 +3703,6 @@ var Control = ({
   );
 };
 var Inpainting = ({
-  file,
-  projectId,
-  sceneId,
-  entityId,
   imageUrl,
   onGenerating,
   onComplete,
@@ -3762,10 +3754,6 @@ var Inpainting = ({
     /* @__PURE__ */ jsxRuntime.jsx("div", { className: "w-full lg:w-80 lg:min-w-80 p-4 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900", children: /* @__PURE__ */ jsxRuntime.jsx(
       Control,
       {
-        file,
-        projectId,
-        sceneId,
-        entityId,
         onGenerating: handleGenerating,
         isActive: activeTool === "inpainting",
         canvas,

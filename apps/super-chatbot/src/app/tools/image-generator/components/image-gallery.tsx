@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from '@turbo-super/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Trash2, Settings } from "lucide-react";
 import type { GeneratedImage } from "../hooks/use-image-generator";
 import { ImageCard } from "./image-card";
@@ -33,6 +33,7 @@ export function ImageGallery({
   const handleImageError = (imageId: string) => {
     setImageErrors((prev) => new Set(prev).add(imageId));
   };
+  console.log(images);
 
   if (images.length === 0 && !currentGeneration) {
     return (

@@ -48,9 +48,8 @@ export const ImageEditing = ({
       formData.append("config", result.config);
       formData.append("generationType", "image-to-image");
       formData.append("mask", result.mask);
-
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
         {
           method: "POST",
           body: formData,
@@ -61,16 +60,6 @@ export const ImageEditing = ({
     } catch (error) {
       console.error("Error saving image:", error);
     }
-  };
-
-  const mockFile = {
-    id: documentId,
-    name: "image.jpg",
-    url: imageUrl,
-    type: "image/jpeg",
-    size: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
 
   return (
@@ -121,10 +110,6 @@ export const ImageEditing = ({
       {editMode === "advanced-edit" && (
         <div className="border border-border rounded-lg overflow-hidden">
           <Inpainting
-            file={mockFile}
-            projectId={documentId}
-            sceneId={chatId}
-            entityId={documentId}
             imageUrl={imageUrl}
             onGenerating={handleGenerating}
             onComplete={handleInpaintingComplete}

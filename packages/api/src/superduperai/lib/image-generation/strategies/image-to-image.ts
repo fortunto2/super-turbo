@@ -114,6 +114,9 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
       };
     }
 
+    let maskId: string | undefined;
+    let maskUrl: string | undefined;
+
     try {
       const formData = new FormData();
       formData.append("payload", params.mask);
@@ -168,13 +171,14 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     let imageId: string | undefined;
     let imageUrl: string | undefined;
     let maskId: string | undefined;
+    let maskUrl: string | undefined;
 
     if (params.sourceImageId) {
       imageId = params.sourceImageId;
       imageUrl = params.sourceImageUrl;
       console.log("🔍 ImageToImageStrategy: using sourceImageId:", imageId);
       console.log("🔍 ImageToImageStrategy: using sourceImageUrl:", imageUrl);
-    } else if (config) {
+    } else if (config && params.file) {
       console.log("📤 Starting image upload...");
       const uploadResult = await this.handleImageUpload(params, config);
       console.log("📤 Image upload result:", uploadResult);
@@ -185,8 +189,10 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     }
 
     if (params.mask) {
+      console.log("🔍 ImageToImageStrategy: using mask");
       const uploadResult = await this.handleMaskUpload(params, config);
       maskId = uploadResult.maskId;
+      maskUrl = uploadResult.maskUrl;
     }
 
     let references = [];
@@ -236,15 +242,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
         seed: params.seed || Math.floor(Math.random() * 1000000000000),
         generation_config_name: modelName,
         style_name: null,
-        references: imageId
-          ? [
-              {
-                type: "source",
-                reference_id: imageId,
-                reference_url: imageUrl,
-              },
-            ]
-          : [],
+        references,
         entity_ids: [],
       },
       ...(imageId ? { file_ids: [imageId] } : {}),

@@ -2,22 +2,13 @@ import { Layer } from "./layer";
 import { useState, useEffect } from "react";
 import { Canvas } from "fabric";
 import { Control } from "./control";
-import { IFileRead } from "@turbo-super/api";
 
 export const Inpainting = ({
-  file,
-  projectId,
-  sceneId,
-  entityId,
   imageUrl,
   onGenerating,
   onComplete,
   initialPrompt = "",
 }: {
-  file: IFileRead;
-  projectId: string;
-  sceneId: string;
-  entityId: string;
   imageUrl: string;
   onGenerating?: () => void;
   onComplete?: (result: { prompt: string; mask: File; config: string }) => void;
@@ -78,10 +69,6 @@ export const Inpainting = ({
       {/* Правая панель с инструментами */}
       <div className="w-full lg:w-80 lg:min-w-80 p-4 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <Control
-          file={file}
-          projectId={projectId}
-          sceneId={sceneId}
-          entityId={entityId}
           onGenerating={handleGenerating}
           isActive={activeTool === "inpainting"}
           canvas={canvas}

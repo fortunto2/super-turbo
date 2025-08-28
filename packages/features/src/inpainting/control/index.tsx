@@ -2,14 +2,9 @@
 
 import { InpaintingTools } from "./inpainting-tools";
 import { InpaintingForm } from "./inpainting-form";
-import { IFileRead } from "@turbo-super/api";
 import { Canvas } from "fabric";
 
 type Props = {
-  file: IFileRead;
-  projectId?: string;
-  sceneId?: string;
-  entityId?: string;
   onGenerating?: () => void;
   isActive?: boolean;
   canvas: Canvas | null;
@@ -21,10 +16,6 @@ type Props = {
 };
 
 export const Control = ({
-  file,
-  projectId,
-  sceneId,
-  entityId,
   onGenerating,
   isActive,
   canvas,
@@ -50,7 +41,7 @@ export const Control = ({
     <div
       className="h-full overflow-hidden"
       style={{
-        height: isActive ? "100%" : "50px",
+        height: isActive ? "100%" : "85px",
         transition: "height 0.25s ease-in-out",
       }}
     >
