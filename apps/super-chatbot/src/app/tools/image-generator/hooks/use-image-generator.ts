@@ -13,7 +13,10 @@ import {
 } from "@/lib/utils/local-storage";
 import type { ImageGenerationFormData } from "../components/image-generator-form";
 import type { GenerationStatus } from "../components/generation-progress";
-import { generateImageApi } from "../api/image-generation";
+import {
+  generateImageApi,
+  type ImageGenerationApiResult,
+} from "../api/image-generation";
 
 // Legacy interfaces - MUST remain exactly the same for compatibility
 export interface GeneratedImage {
@@ -144,7 +147,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
           estimatedTime: 15000,
           projectId: result.projectId || "",
           requestId: result.requestId || "",
-          fileId: result.projectId || "",
+          fileId: result.fileId || "",
         });
 
         // Simulate polling for result (in real implementation would use SSE)
@@ -202,7 +205,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   estimatedTime: 0,
                   projectId: result.projectId || "",
                   requestId: result.requestId || "",
-                  fileId: result.projectId || "",
+                  fileId: result.fileId || "",
                 });
 
                 toast.success("Image generated successfully!");

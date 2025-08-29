@@ -40,7 +40,7 @@ export const Inpainting = ({
     onComplete?.(result);
   };
 
-  // Используем внешний isGenerating или внутренний isLoading
+  // Use external isGenerating or internal isLoading
   const currentLoading = isGenerating || isLoading;
 
   const handleActiveToolChange = (tool: string) => {
@@ -49,9 +49,9 @@ export const Inpainting = ({
 
   return (
     <div className="w-full h-full flex flex-col lg:flex-row bg-gray-50 dark:bg-gray-900">
-      {/* Центральная область с фоновым изображением и canvas поверх */}
+      {/* Central area with background image and canvas overlay */}
       <div
-        className="flex-1 relative min-h-[500px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg m-4 shadow-sm"
+        className="flex-1 relative min-h-[550px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg m-4 shadow-sm"
         style={{
           backgroundImage: `url(${imageUrl})`,
           backgroundSize: "contain",
@@ -59,7 +59,7 @@ export const Inpainting = ({
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* Canvas накладывается поверх изображения */}
+        {/* Canvas overlays the image */}
         <Layer
           active={activeTool === "inpainting"}
           setCanvas={setCanvas}
@@ -67,7 +67,7 @@ export const Inpainting = ({
         />
       </div>
 
-      {/* Правая панель с инструментами */}
+      {/* Right panel with tools */}
       <div className="w-full lg:w-80 lg:min-w-80 p-4 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <Control
           onGenerating={handleGenerating}

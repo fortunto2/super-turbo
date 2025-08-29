@@ -35,6 +35,7 @@ export interface StoredVideo {
   fileId?: string;
   requestId?: string;
   thumbnailUrl?: string;
+  projectId?: string;
 }
 
 // Storage keys

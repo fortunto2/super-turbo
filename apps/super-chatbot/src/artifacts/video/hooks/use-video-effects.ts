@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { saveMediaToChat } from "@/lib/ai/chat/media";
 
-interface UseVideoEffectsProps {
+export interface UseVideoEffectsProps {
   videoUrl?: string;
   status: string;
   append?: UseChatHelpers["append"];

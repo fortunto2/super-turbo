@@ -131,3 +131,5 @@ const handleImageEdit = async (editedImage: File) => {
 - Поддерживается отмена изменений с возвратом к оригиналу
 
 
+
+

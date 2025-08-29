@@ -15,7 +15,7 @@ export const Layer: FC<{
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return;
 
-    // Получаем реальные размеры контейнера
+    // Get real container dimensions
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
     const width = rect.width;
@@ -73,7 +73,7 @@ export const Layer: FC<{
           ref={canvasRef}
           className="w-full h-full block"
           style={{
-            opacity: 1,
+            opacity: 0.5,
             display: "block",
           }}
         />

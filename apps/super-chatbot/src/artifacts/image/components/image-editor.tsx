@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+} from "@turbo-super/ui";
 import { CopyIcon } from "@/components/icons";
-import { useImageGeneration } from "@/hooks/use-image-generation";
-import { useImageEffects } from "@/hooks/use-image-effects";
+import { useImageGeneration } from "../hooks/use-image-generation";
+import { useImageEffects } from "../hooks/use-image-effects";
 import {
   copyImageUrlToClipboard,
   shouldShowSkeleton,
@@ -14,9 +19,8 @@ import {
   getDisplayImageUrl,
   getDisplayPrompt,
   type ImageState,
-} from "@/lib/utils/image-utils";
+} from "../utils/image-utils";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { toast } from "sonner";
 import { DebugParameters } from "@/components/debug-parameters";
 
 interface ImageEditorProps {
@@ -185,8 +189,22 @@ export function ImageEditor({
   const params = useParams();
   const chatId = propChatId || (params?.id as string);
 
-  // Use projectId from initialState if available (artifact mode), otherwise use chatId
+  // Use fileId from initialState if available (artifact mode), otherwise use chatId
   const effectiveProjectId = initialState?.fileId || chatId;
+
+  // AICODE-DEBUG: Подробное логирование fileId в ImageEditor
+  console.log("🔍 ImageEditor: FileId tracking:", {
+    propChatId: propChatId || "none",
+    paramsId: (params?.id as string) || "none",
+    finalChatId: chatId || "none",
+    initialStateFileId: initialState?.fileId || "none",
+    initialStateProjectId: initialState?.projectId || "none",
+    effectiveProjectId: effectiveProjectId || "none",
+    fallbackReason: initialState?.fileId
+      ? "using initialState.fileId"
+      : "using chatId as fallback",
+    initialStateKeys: initialState ? Object.keys(initialState) : "none",
+  });
   const imageGeneration = useImageGeneration(effectiveProjectId);
   const [prompt, setPrompt] = useState(initialState?.prompt || "");
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -266,7 +284,7 @@ export function ImageEditor({
     setPrompt,
     initialPrompt: initialState?.prompt,
     setMessages,
-    fileId: initialState?.fileId || imageGeneration.projectId,
+    fileId: initialState?.fileId || imageGeneration.fileId,
   });
 
   // Get connection status - prioritize SSE over WebSocket

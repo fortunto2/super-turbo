@@ -26,6 +26,30 @@ export const PreviewAttachment = ({
       if (match) {
         extractedFileId = match[1]; // Извлекаем fileId
         displayPrompt = match[2].trim(); // Остальная часть имени - это prompt
+      } else {
+        // AICODE-DEBUG: Попробуем извлечь fileId из URL изображения
+        console.log(
+          "🔍 PreviewAttachment: Trying to extract fileId from URL:",
+          {
+            url: url,
+            urlParts: url ? url.split("/") : [],
+          }
+        );
+
+        // Попробуем извлечь fileId из URL (например, из /file/{fileId} или из имени файла)
+        if (url) {
+          // Ищем UUID в URL
+          const uuidRegex =
+            /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i;
+          const urlMatch = url.match(uuidRegex);
+          if (urlMatch) {
+            extractedFileId = urlMatch[1];
+            console.log(
+              "🔍 PreviewAttachment: Found fileId in URL:",
+              extractedFileId
+            );
+          }
+        }
       }
 
       console.log("🖼️ PreviewAttachment: Opening image from chat:", {
@@ -35,6 +59,20 @@ export const PreviewAttachment = ({
         originalName: name || "none",
         displayPrompt: displayPrompt || "none",
         attachmentKeys: Object.keys(attachment),
+        fullAttachment: attachment,
+      });
+
+      // AICODE-DEBUG: Подробное логирование извлечения fileId
+      console.log("🔍 PreviewAttachment: FileId extraction details:", {
+        originalName: name,
+        fileIdRegex: /\[FILE_ID:([a-f0-9-]+)\]\s*(.*)/,
+        regexMatch: match,
+        extractedFileId: extractedFileId,
+        displayPrompt: displayPrompt,
+        willUseFileId: extractedFileId || chatId,
+        fallbackReason: extractedFileId
+          ? "fileId found"
+          : "using chatId as fallback",
       });
 
       setArtifact((prev) => ({
@@ -45,7 +83,7 @@ export const PreviewAttachment = ({
           status: "completed",
           imageUrl: url,
           prompt: displayPrompt, // Используем извлеченный prompt
-          projectId: chatId,
+          projectId: extractedFileId || chatId, // Используем извлеченный fileId для SSE соединения
           fileId: extractedFileId || chatId, // Используем извлеченный fileId, с запасным вариантом chatId
         }),
         title: displayPrompt || "Image", // Используем извлеченный prompt для заголовка

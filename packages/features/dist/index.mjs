@@ -3370,7 +3370,7 @@ var Layer = ({ active, setCanvas, imageUrl }) => {
               ref: canvasRef,
               className: "w-full h-full block",
               style: {
-                opacity: 1,
+                opacity: 0.5,
                 display: "block"
               }
             }
@@ -3430,7 +3430,7 @@ var InpaintingTools = ({
     canvas.add(circle);
     setCursor(circle);
     const updateCursorPosition = (options) => {
-      const pointer = canvas.getPointer(options.e);
+      const pointer = canvas.getScenePoint(options.e);
       circle.set({
         left: pointer.x - width / 2,
         top: pointer.y - width / 2,
@@ -3463,18 +3463,15 @@ var InpaintingTools = ({
   };
   const handleDeleteObjects = () => {
     if (!canvas) return;
-    const objectsToRemove = canvas.getObjects().filter((obj) => obj.get("name") !== cursorName);
-    objectsToRemove.forEach((obj) => canvas.remove(obj));
+    canvas.clear();
     if (cursor) {
       canvas.add(cursor);
+      canvas.renderAll();
     }
-    canvas.renderAll();
   };
   const switchToPencil = () => {
     if (!canvas) return;
-    if (!canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush = new PencilBrush(canvas);
-    }
+    canvas.freeDrawingBrush ?? (canvas.freeDrawingBrush = new PencilBrush(canvas));
     canvas.renderAll();
     canvas.freeDrawingBrush.width = width;
     canvas.freeDrawingBrush.color = "#a3e635";
@@ -3526,7 +3523,7 @@ var InpaintingTools = ({
                 className: "text-gray-500 dark:text-gray-400"
               }
             ),
-            /* @__PURE__ */ jsx("span", { className: "text-sm font-medium text-gray-700 dark:text-gray-300", children: "\u0420\u0430\u0437\u043C\u0435\u0440 \u043A\u0438\u0441\u0442\u0438" }),
+            /* @__PURE__ */ jsx("span", { className: "text-sm font-medium text-gray-700 dark:text-gray-300", children: "Brush Size" }),
             /* @__PURE__ */ jsx(
               Circle$1,
               {
@@ -3601,7 +3598,7 @@ var InpaintingForm = ({
     try {
       canvas.getElement().toBlob((blob) => {
         if (!blob) {
-          setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u043C\u0430\u0441\u043A\u0438");
+          setError("Error creating mask");
           return;
         }
         onComplete(
@@ -3611,7 +3608,7 @@ var InpaintingForm = ({
         );
       }, "image/png");
     } catch (error2) {
-      setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438");
+      setError("Processing error");
       console.error("Inpainting error:", error2);
     }
   };
@@ -3630,7 +3627,7 @@ var InpaintingForm = ({
           className: "w-full resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400",
           value: prompt,
           onChange: handlePromptChange,
-          placeholder: "\u041E\u043F\u0438\u0448\u0438\u0442\u0435, \u0447\u0442\u043E \u0434\u043E\u043B\u0436\u043D\u043E \u043F\u043E\u044F\u0432\u0438\u0442\u044C\u0441\u044F \u0432 \u0437\u0430\u043A\u0440\u0430\u0448\u0435\u043D\u043D\u043E\u0439 \u043E\u0431\u043B\u0430\u0441\u0442\u0438...",
+          placeholder: "Describe what should appear in the painted area...",
           autoFocus: true,
           rows: 4
         }
@@ -3645,8 +3642,8 @@ var InpaintingForm = ({
         className: "w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed shadow-sm",
         children: loading ? /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-center gap-2", children: [
           /* @__PURE__ */ jsx("div", { className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" }),
-          "\u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0443\u0435\u043C..."
-        ] }) : "Inpaint"
+          "Generating..."
+        ] }) : "Generate"
       }
     )
   ] });
@@ -3731,7 +3728,7 @@ var Inpainting = ({
     /* @__PURE__ */ jsx(
       "div",
       {
-        className: "flex-1 relative min-h-[500px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg m-4 shadow-sm",
+        className: "flex-1 relative min-h-[550px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg m-4 shadow-sm",
         style: {
           backgroundImage: `url(${imageUrl})`,
           backgroundSize: "contain",

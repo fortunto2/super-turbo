@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import {
   imageWebsocketStore,
   type ImageEventHandler,
-} from "@/lib/websocket/image-websocket-store";
+} from "@/artifacts/image/stores/image-websocket-store";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 
 type Props = {

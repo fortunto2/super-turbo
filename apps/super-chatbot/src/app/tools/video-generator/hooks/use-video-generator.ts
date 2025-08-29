@@ -11,7 +11,7 @@ import {
   deleteStoredVideo,
   clearStoredVideos,
 } from "@/lib/utils/local-storage";
-import { useVideoSSE } from "@/hooks/use-video-sse";
+import { useVideoSSE } from "@/artifacts/video";
 import {
   generationPersistence,
   type GenerationState,
@@ -210,7 +210,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.fileId,
+      projectId: stored.projectId || stored.fileId,
       requestId: stored.requestId,
       settings: stored.settings,
     }));

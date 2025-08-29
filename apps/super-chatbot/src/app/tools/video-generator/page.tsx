@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { VideoGeneratorForm } from './components/video-generator-form';
-import { VideoGallery } from './components/video-gallery';
-import { VideoGenerationProgress } from './components/video-generation-progress';
-import { useVideoGenerator } from './hooks/use-video-generator';
-import { useVideoEffects } from '@/hooks/use-video-effects';
-import { ImageIcon, VideoIcon } from 'lucide-react';
+import { useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { VideoGeneratorForm } from "./components/video-generator-form";
+import { VideoGallery } from "./components/video-gallery";
+import { VideoGenerationProgress } from "./components/video-generation-progress";
+import { useVideoGenerator } from "./hooks/use-video-generator";
+import { VideoIcon } from "lucide-react";
+import { useVideoEffects } from "@/artifacts/video";
 
 export default function VideoGeneratorPage() {
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
   const [hasInitialized, setHasInitialized] = useState(false);
-  
-  // AICODE-NOTE: Initialize chat for video persistence  
+
+  // AICODE-NOTE: Initialize chat for video persistence
   const { messages, setMessages } = useChat({
-    id: 'video-generator-tool',
+    id: "video-generator-tool",
     initialMessages: [],
   });
-  
+
   const {
     generationStatus,
     currentGeneration,
@@ -42,9 +42,9 @@ export default function VideoGeneratorPage() {
     status: generationStatus.status,
     prompt,
     hasInitialized,
-    chatId: 'video-generator-tool',
+    chatId: "video-generator-tool",
     resetState: () => {
-      setPrompt('');
+      setPrompt("");
       setHasInitialized(false);
     },
     setPrompt,
@@ -64,7 +64,9 @@ export default function VideoGeneratorPage() {
           </h1>
         </div>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Generate high-quality videos using advanced AI models from SuperDuperAI. Create professional videos from text descriptions with models like VEO3, KLING, LTX, and more.
+          Generate high-quality videos using advanced AI models from
+          SuperDuperAI. Create professional videos from text descriptions with
+          models like VEO3, KLING, LTX, and more.
         </p>
       </div>
 
@@ -80,9 +82,9 @@ export default function VideoGeneratorPage() {
             }}
             isGenerating={isGenerating}
           />
-          
+
           {/* Progress Indicator */}
-          {(isGenerating || generationStatus.status !== 'idle') && (
+          {(isGenerating || generationStatus.status !== "idle") && (
             <VideoGenerationProgress
               generationStatus={generationStatus}
               prompt={prompt}
@@ -90,23 +92,23 @@ export default function VideoGeneratorPage() {
               onStopGeneration={stopGeneration}
             />
           )}
-          
+
           {/* Connection Status */}
           {isGenerating && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-center gap-2 text-sm">
-                <div className={`size-2 rounded-full ${
-                  isConnected ? 'bg-green-500' : 'bg-yellow-500'
-                }`} />
+                <div
+                  className={`size-2 rounded-full ${
+                    isConnected ? "bg-green-500" : "bg-yellow-500"
+                  }`}
+                />
                 <span className="text-blue-800">
                   SSE Connection: {connectionStatus}
-                  {isConnected && ' ✓'}
+                  {isConnected && " ✓"}
                 </span>
               </div>
             </div>
           )}
-          
-
         </div>
 
         {/* Right Column: Gallery */}
@@ -148,4 +150,4 @@ export default function VideoGeneratorPage() {
       </div>
     </div>
   );
-} 
+}

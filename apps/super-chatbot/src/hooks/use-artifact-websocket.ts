@@ -2,9 +2,9 @@
 
 import { useEffect, useCallback, useRef } from "react";
 import { useArtifact } from "@/hooks/use-artifact";
-import { imageWebsocketStore } from "@/lib/websocket/image-websocket-store";
+import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
-import type { ImageEventHandler } from "@/lib/websocket/image-websocket-store";
+import type { ImageEventHandler } from "@/artifacts/image/stores/image-websocket-store";
 
 interface UseArtifactWebSocketOptions {
   enabled?: boolean;

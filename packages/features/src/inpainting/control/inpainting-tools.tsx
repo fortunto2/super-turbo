@@ -55,8 +55,7 @@ export const InpaintingTools: FC<Props> = ({
     setCursor(circle);
 
     const updateCursorPosition = (options: TPointerEventInfo) => {
-      const pointer = canvas.getPointer(options.e);
-
+      const pointer = canvas.getScenePoint(options.e);
       circle.set({
         left: pointer.x - width / 2,
         top: pointer.y - width / 2,
@@ -95,26 +94,17 @@ export const InpaintingTools: FC<Props> = ({
 
   const handleDeleteObjects = () => {
     if (!canvas) return;
-
-    const objectsToRemove = canvas
-      .getObjects()
-      .filter((obj) => obj.get("name") !== cursorName);
-
-    objectsToRemove.forEach((obj) => canvas.remove(obj));
+    canvas.clear();
 
     if (cursor) {
       canvas.add(cursor);
+      canvas.renderAll();
     }
-
-    canvas.renderAll();
   };
 
   const switchToPencil = () => {
     if (!canvas) return;
-
-    if (!canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush = new PencilBrush(canvas);
-    }
+    canvas.freeDrawingBrush ??= new PencilBrush(canvas);
 
     canvas.renderAll();
     canvas.freeDrawingBrush.width = width;
@@ -172,7 +162,7 @@ export const InpaintingTools: FC<Props> = ({
             className="text-gray-500 dark:text-gray-400"
           />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Размер кисти
+            Brush Size
           </span>
           <Circle
             size={30}

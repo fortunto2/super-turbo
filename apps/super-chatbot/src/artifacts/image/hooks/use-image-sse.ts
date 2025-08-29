@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import {
   imageSSEStore,
   type ImageEventHandler,
-} from "@/lib/websocket/image-sse-store";
+} from "../stores/image-sse-store";
 import { createFileSSEURL } from "@/lib/config/superduperai";
 
 type Props = {

@@ -1,6 +1,7 @@
-import { useImageSSE } from "@/hooks/use-image-sse";
+import { useImageSSE } from "../hooks/use-image-sse";
 import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 import { Skeleton } from "@turbo-super/ui";
 import { ImageEditing } from "./editing";
@@ -10,7 +11,7 @@ export const ImageArtifactWrapper = memo(
       props;
     const [localContent, setLocalContent] = useState(content);
 
-    // Состояние режима редактирования
+    // Edit mode state
     const [isEditing, setIsEditing] = useState(false);
     const [editMode, setEditMode] = useState<string | null>(null);
 
@@ -18,7 +19,7 @@ export const ImageArtifactWrapper = memo(
       setLocalContent(content);
     }, [content]);
 
-    // Синхронизируем состояние редактирования с артефактом
+    // Synchronize edit state with artifact
     useEffect(() => {
       if (props.isEditing !== undefined) {
         setIsEditing(props.isEditing);
@@ -47,7 +48,7 @@ export const ImageArtifactWrapper = memo(
     const { status, imageUrl, prompt, projectId, fileId, requestId } =
       parsedContent || {};
 
-    // Логирование для отладки инпаинтинга
+    // Logging for inpainting debugging
     useEffect(() => {
       if (status === "completed" && imageUrl) {
         console.log("🖼️ ImageArtifactWrapper - parsed content:", {
@@ -92,9 +93,56 @@ export const ImageArtifactWrapper = memo(
           documentIdValid: documentId && documentId !== "undefined",
           thumbnailUrl: newContent.thumbnailUrl,
           finalThumbnailUrl: thumbnailUrl,
+          fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
+          projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
         });
 
+        console.log("🖼️ 🔍 About to check saveMediaToChat conditions...");
+
         // AICODE-FIX: Add generated image to chat history
+        // AICODE-DEBUG: Logging conditions for saveMediaToChat
+        const saveConditions = {
+          statusIsCompleted: newContent.status === "completed",
+          hasImageUrl: !!newContent.imageUrl,
+          hasChatId: !!chatId,
+          hasSetMessages: !!setMessages,
+          hasPrompt: !!newContent.prompt,
+        };
+
+        console.log("🖼️ 🔍 SaveMediaToChat conditions check:", saveConditions);
+        console.log(
+          "🖼️ 🔍 All conditions met:",
+          Object.values(saveConditions).every(Boolean)
+        );
+
+        // AICODE-DEBUG: Detailed logging of each condition
+        console.log("🖼️ 🔍 Detailed conditions:", {
+          status: newContent.status,
+          statusIsCompleted: newContent.status === "completed",
+          imageUrl: newContent.imageUrl
+            ? `${newContent.imageUrl.substring(0, 50)}...`
+            : "none",
+          hasImageUrl: !!newContent.imageUrl,
+          chatId: chatId || "none",
+          hasChatId: !!chatId,
+          setMessages: setMessages ? "function" : "none",
+          hasSetMessages: !!setMessages,
+          prompt: newContent.prompt
+            ? `${newContent.prompt.substring(0, 30)}...`
+            : "none",
+          hasPrompt: !!newContent.prompt,
+        });
+
+        // AICODE-DEBUG: Логирование каждого условия отдельно для точной диагностики
+        console.log("🖼️ 🔍 Individual condition checks:", {
+          "newContent.status === 'completed'":
+            newContent.status === "completed",
+          "!!newContent.imageUrl": !!newContent.imageUrl,
+          "!!chatId": !!chatId,
+          "!!setMessages": !!setMessages,
+          "!!newContent.prompt": !!newContent.prompt,
+        });
+
         if (
           newContent.status === "completed" &&
           newContent.imageUrl &&
@@ -102,13 +150,29 @@ export const ImageArtifactWrapper = memo(
           setMessages &&
           newContent.prompt
         ) {
+          // AICODE-DEBUG: Логирование перед вызовом saveMediaToChat
+          console.log("🖼️ 🔍 Calling saveMediaToChat with:", {
+            chatId: chatId || "none",
+            imageUrl: newContent.imageUrl
+              ? `${newContent.imageUrl.substring(0, 50)}...`
+              : "none",
+            prompt: newContent.prompt
+              ? `${newContent.prompt.substring(0, 30)}...`
+              : "none",
+            fileId: newContent.fileId || "none",
+            fileIdType: typeof newContent.fileId,
+            projectId: newContent.projectId || "none",
+            projectIdType: typeof newContent.projectId,
+          });
+
           saveMediaToChat(
             chatId,
             newContent.imageUrl,
             newContent.prompt,
             setMessages,
             "image",
-            thumbnailUrl
+            thumbnailUrl,
+            newContent.fileId // AICODE-FIX: Передаем fileId для встраивания в имя вложения
           );
         }
       },
@@ -165,7 +229,7 @@ export const ImageArtifactWrapper = memo(
     }, [projectId, status, updateContent, parsedContent, imageUrl]);
 
     useImageSSE({
-      fileId: fileId || projectId,
+      fileId: fileId,
       eventHandlers: useMemo(
         () => [
           (message: any) => {
@@ -339,22 +403,25 @@ const ImageDisplay = ({
   return (
     <div className="space-y-2">
       <div className="rounded-lg overflow-hidden border">
-        <img
+        <Image
           src={imageUrl}
           alt={prompt || "AI-generated artwork"}
+          width={800}
+          height={600}
           className="w-full h-auto object-contain"
           style={{ maxHeight: "70vh" }}
+          unoptimized
         />
       </div>
       <p className="text-sm text-gray-500 px-1">{prompt}</p>
 
-      {/* Кнопка переключения в режим редактирования */}
+      {/* Edit mode toggle button */}
       <div className="flex justify-center pt-2">
         <button
           onClick={onEditToggle}
           className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
         >
-          ✏️ Редактировать изображение
+          ✏️ Edit Image
         </button>
       </div>
     </div>

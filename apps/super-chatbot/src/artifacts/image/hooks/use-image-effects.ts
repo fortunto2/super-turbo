@@ -65,6 +65,36 @@ export function useImageEffects({
       ),
     });
 
+    // AICODE-DEBUG: Подробное логирование fileId в useImageEffects
+    console.log("🔍 useImageEffects: FileId details:", {
+      receivedFileId: fileId || "none",
+      receivedChatId: chatId || "none",
+      willUseFileId: fileId || chatId,
+      fallbackReason: fileId
+        ? "using received fileId"
+        : "using chatId as fallback",
+      fileIdType: typeof fileId,
+      chatIdType: typeof chatId,
+    });
+
+    // AICODE-DEBUG: Логирование условий для сохранения
+    const saveConditions = {
+      hasImageUrl: !!imageUrl,
+      statusIsCompleted: status === "completed",
+      hasChatId: !!chatId,
+      hasSetMessages: !!setMessages,
+      hasPrompt: !!prompt,
+      notAlreadySaved: savedImageUrlRef.current !== imageUrl,
+      savedImageUrlRef: savedImageUrlRef.current,
+      currentImageUrl: imageUrl ? `${imageUrl.substring(0, 50)}...` : "none",
+    };
+
+    console.log("🔍 useImageEffects: Save conditions check:", saveConditions);
+    console.log(
+      "🔍 useImageEffects: All conditions met:",
+      Object.values(saveConditions).every(Boolean)
+    );
+
     // Only save if all conditions are met AND image hasn't been saved before
     if (
       imageUrl &&
@@ -81,6 +111,16 @@ export function useImageEffects({
 
       // Small delay to ensure artifact is updated first
       setTimeout(() => {
+        // AICODE-DEBUG: Логирование перед вызовом saveMediaToChat
+        console.log("🔍 useImageEffects: Calling saveMediaToChat with:", {
+          chatId: chatId || "none",
+          imageUrl: imageUrl ? `${imageUrl.substring(0, 50)}...` : "none",
+          prompt: prompt ? `${prompt.substring(0, 30)}...` : "none",
+          fileId: fileId || "none",
+          fileIdType: typeof fileId,
+          willUseFileId: fileId || "none",
+        });
+
         saveMediaToChat(
           chatId,
           imageUrl,
@@ -106,10 +146,20 @@ export function useImageEffects({
   // Handle artifact update
   useEffect(() => {
     if (imageUrl && setArtifact) {
+      // AICODE-DEBUG: Логирование перед обновлением артефакта
+      console.log("🔍 useImageEffects: Updating artifact with:", {
+        projectId: fileId || chatId,
+        fileId: fileId || chatId,
+        status,
+        imageUrl: imageUrl ? `${imageUrl.substring(0, 50)}...` : "none",
+        prompt: prompt ? `${prompt.substring(0, 30)}...` : "none",
+        fallbackReason: fileId ? "using fileId" : "using chatId as fallback",
+      });
+
       setArtifact((prev) => ({
         ...prev,
         content: JSON.stringify({
-          projectId: chatId, // Keep chatId for SSE connection
+          projectId: fileId || chatId, // Use fileId for SSE connection, fallback to chatId
           fileId: fileId || chatId, // Use actual fileId if available, fallback to chatId
           status,
           imageUrl,

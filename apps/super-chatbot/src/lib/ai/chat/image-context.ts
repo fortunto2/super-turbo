@@ -485,12 +485,32 @@ export async function getChatImages(chatId: string): Promise<ChatImage[]> {
               /^https?:\/\//.test(att.url) &&
               String(att?.contentType || "").startsWith("image/")
             ) {
+              // AICODE-DEBUG: Извлекаем fileId из имени вложения
+              let extractedFileId: string | undefined;
+              let displayPrompt = att.name || "";
+              const fileIdRegex = /\[FILE_ID:([a-f0-9-]+)\]\s*(.*)/;
+              const match = att.name?.match(fileIdRegex);
+
+              if (match) {
+                extractedFileId = match[1]; // Извлекаем fileId
+                displayPrompt = match[2].trim(); // Остальная часть имени - это prompt
+              }
+
+              console.log("🔍 getChatImages: FileId extraction:", {
+                originalName: att.name,
+                extractedFileId: extractedFileId || "none",
+                displayPrompt: displayPrompt,
+                fallbackReason: extractedFileId
+                  ? "fileId found"
+                  : "no fileId in name",
+              });
+
               const chatImage = {
                 url: att.url,
-                id: att.id,
+                id: extractedFileId || att.id, // Используем извлеченный fileId, fallback к att.id
                 role: msg.role as "user" | "assistant",
                 timestamp: msg.createdAt,
-                prompt: att.name,
+                prompt: displayPrompt, // Используем извлеченный prompt
                 messageIndex: index,
               };
 

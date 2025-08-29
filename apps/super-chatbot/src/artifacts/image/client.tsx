@@ -8,7 +8,7 @@ import {
 } from "@/components/icons";
 import { toast } from "sonner";
 import "@/lib/utils/console-helpers";
-import { ImageArtifactWrapper } from "@/components/artifacts/image/image-artefact-wrapper";
+import { ImageArtifactWrapper } from "@/artifacts/image";
 import { useArtifact } from "@/hooks/use-artifact";
 
 export default function ArtifactContentImage(props: any) {

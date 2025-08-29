@@ -15,6 +15,7 @@ export interface ImageGenerationApiResult {
   success: boolean;
   projectId?: string;
   requestId?: string;
+  fileId?: string;
   error?: string;
 }
 
@@ -88,6 +89,7 @@ export async function generateImageApi(
       success: true,
       projectId: result.fileId, // Use fileId as projectId for tracking
       requestId: result.fileId, // Use fileId as requestId
+      fileId: result.fileId, // Store the actual fileId
     };
   } catch (error) {
     console.error("Image generation API error:", error);

@@ -105,6 +105,21 @@ export const saveMediaToChat = async (
       }
     );
 
+    // AICODE-DEBUG: Логирование стека вызовов
+    console.log("🔍 saveMediaToChat: Call stack:", new Error().stack);
+
+    // AICODE-DEBUG: Подробное логирование fileId в saveMediaToChat
+    console.log("🔍 saveMediaToChat: FileId details:", {
+      receivedFileId: fileId || "none",
+      receivedChatId: chatId || "none",
+      willEmbedFileId: fileId || "none",
+      fallbackReason: fileId ? "using received fileId" : "no fileId provided",
+      fileIdType: typeof fileId,
+      chatIdType: typeof chatId,
+      attachmentNameWithFileId: attachmentNameWithFileId,
+      displayPromptForAttachment: displayPromptForAttachment,
+    });
+
     const videoMessage = {
       id: generateUUID(),
       role: "assistant" as const,

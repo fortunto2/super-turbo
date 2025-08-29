@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import {
   videoSSEStore,
   type VideoEventHandler,
-} from "@/lib/websocket/video-sse-store";
+} from "../stores/video-sse-store";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 
 type Props = {

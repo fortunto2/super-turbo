@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import {
   videoSSEStore,
   type VideoEventHandler as VideoSSEEventHandler,
-} from "@/lib/websocket/video-sse-store";
+} from "@/artifacts/video";
 import type { UseChatHelpers } from "@ai-sdk/react";
 
 interface ChatVideoSSEOptions {
