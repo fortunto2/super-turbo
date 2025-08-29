@@ -49,7 +49,7 @@ export const InpaintingForm: FC<Props> = ({
     try {
       canvas.getElement().toBlob((blob) => {
         if (!blob) {
-          setError("Ошибка создания маски");
+          setError("Error creating mask");
           return;
         }
 
@@ -60,7 +60,7 @@ export const InpaintingForm: FC<Props> = ({
         );
       }, "image/png");
     } catch (error) {
-      setError("Ошибка обработки");
+      setError("Processing error");
       console.error("Inpainting error:", error);
     }
   };
@@ -82,7 +82,7 @@ export const InpaintingForm: FC<Props> = ({
           className="w-full resize-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
           value={prompt}
           onChange={handlePromptChange}
-          placeholder="Опишите, что должно появиться в закрашенной области..."
+          placeholder="Describe what should appear in the painted area..."
           autoFocus
           rows={4}
         />
@@ -101,7 +101,7 @@ export const InpaintingForm: FC<Props> = ({
         {loading ? (
           <div className="flex items-center justify-center gap-2">
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            Генерируем...
+            Generating...
           </div>
         ) : (
           "Inpaint"

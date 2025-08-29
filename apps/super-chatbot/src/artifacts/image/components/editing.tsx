@@ -31,7 +31,7 @@ export const ImageEditing = ({
 }) => {
   const [internalIsGenerating, setInternalIsGenerating] = useState(false);
 
-  // Объединяем внешнее и внутреннее состояние загрузки
+  // Combine external and internal loading state
   const isGenerating = externalIsGenerating || internalIsGenerating;
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export const ImageEditing = ({
     setInternalIsGenerating(true);
   };
 
-  // Функция пулинга для инпаинтинга
+  // Polling function for inpainting
   const startInpaintingPolling = async (
     newProjectId: string,
     newPrompt: string
@@ -77,7 +77,7 @@ export const ImageEditing = ({
                 kind: "image",
                 content: JSON.stringify({
                   status: "completed",
-                  imageUrl: fileData.url, // Используем URL результата инпаинтинга
+                  imageUrl: fileData.url, // Use inpainting result URL
                   prompt: newPrompt,
                   projectId: newProjectId,
                   fileId: fileData?.fileId || fileId || newProjectId, // projectId is the fileId for the new image
@@ -107,7 +107,7 @@ export const ImageEditing = ({
                     experimental_attachments: [
                       {
                         name: `[FILE_ID:${newProjectId}] ${newPrompt}`,
-                        url: fileData.url, // Используем URL результата инпаинтинга
+                        url: fileData.url, // Use inpainting result URL
                         contentType: "image/png",
                         thumbnailUrl: fileData.thumbnail_url,
                       },
@@ -171,11 +171,11 @@ export const ImageEditing = ({
       formData.append("generationType", "image-to-image");
       formData.append("mask", result.mask);
 
-      // Извлекаем fileId из URL изображения
+      // Extract fileId from image URL
       const extractFileIdFromUrl = (url: string): string | null => {
         console.log("🔍 extractFileIdFromUrl: Analyzing URL:", url);
 
-        // Пытаемся извлечь fileId из URL (например, из /file/{fileId})
+        // Try to extract fileId from URL (e.g., from /file/{fileId})
         const fileIdMatch = url.match(/\/file\/([^/]+)/);
         if (fileIdMatch) {
           console.log(
@@ -185,8 +185,8 @@ export const ImageEditing = ({
           return fileIdMatch[1];
         }
 
-        // Если это URL сгенерированного изображения, извлекаем ID из пути
-        // Паттерн: generated/image/YYYY/M/D/H/filename.ext
+        // If this is a generated image URL, extract ID from path
+        // Pattern: generated/image/YYYY/M/D/H/filename.ext
         const generatedMatch = url.match(/generated\/image\/[^/]+\/([^/]+)\./);
         if (generatedMatch) {
           console.log(
@@ -196,7 +196,7 @@ export const ImageEditing = ({
           return generatedMatch[1];
         }
 
-        // Дополнительный паттерн для URL сгенерированных изображений без слеша в начале
+        // Additional pattern for generated image URLs without leading slash
         const generatedMatch2 = url.match(/generated\/image\/[^/]+\/([^/]+)\./);
         if (generatedMatch2) {
           console.log(
@@ -206,7 +206,7 @@ export const ImageEditing = ({
           return generatedMatch2[1];
         }
 
-        // Дополнительный паттерн для других форматов URL
+        // Additional pattern for other URL formats
         const altMatch = url.match(/\/([a-f0-9-]{36})\./);
         if (altMatch) {
           console.log(
@@ -216,15 +216,15 @@ export const ImageEditing = ({
           return altMatch[1];
         }
 
-        // AICODE-NOTE: Если не можем извлечь fileId из URL, возвращаем null
-        // Это предотвратит использование chatId как запасного варианта
+        // AICODE-NOTE: If we can't extract fileId from URL, return null
+        // This prevents using chatId as a fallback option
         console.log(
           "🔍 extractFileIdFromUrl: No fileId found in URL - cannot proceed with inpainting"
         );
         return null;
       };
 
-      // Добавляем sourceImageId и sourceImageUrl для инпаинтинга
+      // Add sourceImageId and sourceImageUrl for inpainting
       console.log("🔧 Chat inpainting - Starting fileId extraction:", {
         fileId: fileId || "none",
         projectId: projectId || "none",
@@ -233,8 +233,8 @@ export const ImageEditing = ({
 
       const extractedFileId = extractFileIdFromUrl(imageUrl);
 
-      // AICODE-NOTE: НЕ используем chatId как запасной вариант, так как это вызывает Foreign Key Constraint Violation
-      // Если нет fileId, то не делаем инпаинтинг
+      // AICODE-NOTE: Do NOT use chatId as fallback as it causes Foreign Key Constraint Violation
+      // If no fileId, don't do inpainting
       const sourceImageId = fileId || extractedFileId;
 
       console.log("🔧 Chat inpainting - sourceImageId selection:", {
@@ -279,7 +279,7 @@ export const ImageEditing = ({
       const data = await response.json();
       console.log("Inpainting response:", data);
 
-      // Если успешно, создаем новый артефакт и запускаем пулинг
+      // If successful, create new artifact and start polling
       if (data.success && data.projectId) {
         // Create new artifact immediately with pending status
         setArtifact((prev) => ({
@@ -288,7 +288,7 @@ export const ImageEditing = ({
           kind: "image",
           content: JSON.stringify({
             status: "pending",
-            imageUrl: imageUrl, // Показываем оригинальное изображение
+            imageUrl: imageUrl, // Show original image
             prompt: result.prompt,
             projectId: data.projectId,
             fileId: data.fileId || data.projectId,
@@ -312,23 +312,23 @@ export const ImageEditing = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Редактирование изображения</h3>
+        <h3 className="text-lg font-semibold">Image Editing</h3>
         <div className="flex gap-2">
           <button
             onClick={onCancelEdit}
             disabled={isGenerating}
             className="px-3 py-1 text-sm border border-border rounded-md hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Отмена
+            Cancel
           </button>
           <button
             onClick={() => onSaveEdit(imageUrl)}
             disabled={isGenerating}
             className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isGenerating ? "Обработка..." : "Сохранить"}
+            {isGenerating ? "Processing..." : "Save"}
           </button>
         </div>
       </div>
@@ -338,7 +338,7 @@ export const ImageEditing = ({
           imageUrl={imageUrl}
           onGenerating={handleGenerating}
           onComplete={handleInpaintingComplete}
-          initialPrompt={prompt}
+          initialPrompt="Edit image"
           isGenerating={isGenerating}
         />
       </div>

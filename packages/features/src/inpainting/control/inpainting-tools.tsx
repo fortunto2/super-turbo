@@ -162,7 +162,7 @@ export const InpaintingTools: FC<Props> = ({
             className="text-gray-500 dark:text-gray-400"
           />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Размер кисти
+            Brush Size
           </span>
           <Circle
             size={30}

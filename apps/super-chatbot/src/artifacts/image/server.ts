@@ -338,7 +338,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         draftContent = JSON.stringify({
           status: "failed",
           error:
-            "Не удалось получить исходное изображение для image-to-image (attachment не разрешился в URL)",
+            "Failed to get source image for image-to-image (attachment did not resolve to URL)",
           prompt,
         });
         return draftContent;
@@ -602,7 +602,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         draftContent = JSON.stringify({
           status: "failed",
           error:
-            "Не удалось получить исходное изображение для image-to-image (attachment не разрешился в URL)",
+            "Failed to get source image for image-to-image (attachment did not resolve to URL)",
           prompt,
         });
         return draftContent;

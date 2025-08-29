@@ -11,7 +11,7 @@ export const ImageArtifactWrapper = memo(
       props;
     const [localContent, setLocalContent] = useState(content);
 
-    // Состояние режима редактирования
+    // Edit mode state
     const [isEditing, setIsEditing] = useState(false);
     const [editMode, setEditMode] = useState<string | null>(null);
 
@@ -19,7 +19,7 @@ export const ImageArtifactWrapper = memo(
       setLocalContent(content);
     }, [content]);
 
-    // Синхронизируем состояние редактирования с артефактом
+    // Synchronize edit state with artifact
     useEffect(() => {
       if (props.isEditing !== undefined) {
         setIsEditing(props.isEditing);
@@ -48,7 +48,7 @@ export const ImageArtifactWrapper = memo(
     const { status, imageUrl, prompt, projectId, fileId, requestId } =
       parsedContent || {};
 
-    // Логирование для отладки инпаинтинга
+    // Logging for inpainting debugging
     useEffect(() => {
       if (status === "completed" && imageUrl) {
         console.log("🖼️ ImageArtifactWrapper - parsed content:", {
@@ -93,14 +93,14 @@ export const ImageArtifactWrapper = memo(
           documentIdValid: documentId && documentId !== "undefined",
           thumbnailUrl: newContent.thumbnailUrl,
           finalThumbnailUrl: thumbnailUrl,
-          fileId: newContent.fileId || "none", // AICODE-DEBUG: Добавляем fileId в логирование
-          projectId: newContent.projectId || "none", // AICODE-DEBUG: Добавляем projectId в логирование
+          fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
+          projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
         });
 
         console.log("🖼️ 🔍 About to check saveMediaToChat conditions...");
 
         // AICODE-FIX: Add generated image to chat history
-        // AICODE-DEBUG: Логирование условий для saveMediaToChat
+        // AICODE-DEBUG: Logging conditions for saveMediaToChat
         const saveConditions = {
           statusIsCompleted: newContent.status === "completed",
           hasImageUrl: !!newContent.imageUrl,
@@ -115,7 +115,7 @@ export const ImageArtifactWrapper = memo(
           Object.values(saveConditions).every(Boolean)
         );
 
-        // AICODE-DEBUG: Подробное логирование каждого условия
+        // AICODE-DEBUG: Detailed logging of each condition
         console.log("🖼️ 🔍 Detailed conditions:", {
           status: newContent.status,
           statusIsCompleted: newContent.status === "completed",
@@ -415,13 +415,13 @@ const ImageDisplay = ({
       </div>
       <p className="text-sm text-gray-500 px-1">{prompt}</p>
 
-      {/* Кнопка переключения в режим редактирования */}
+      {/* Edit mode toggle button */}
       <div className="flex justify-center pt-2">
         <button
           onClick={onEditToggle}
           className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
         >
-          ✏️ Редактировать изображение
+          ✏️ Edit Image
         </button>
       </div>
     </div>
