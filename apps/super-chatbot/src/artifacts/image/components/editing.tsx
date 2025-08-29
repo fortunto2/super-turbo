@@ -95,23 +95,25 @@ export const ImageEditing = ({
                   },
                   body: JSON.stringify({
                     chatId: chatId,
-                    messageId: `inpainting-${newProjectId}`,
-                    role: "assistant",
-                    content: "",
-                    parts: [
-                      {
-                        type: "text",
-                        text: `Inpainting result: ${newPrompt}`,
-                      },
-                    ],
-                    experimental_attachments: [
-                      {
-                        name: `[FILE_ID:${newProjectId}] ${newPrompt}`,
-                        url: fileData.url, // Use inpainting result URL
-                        contentType: "image/png",
-                        thumbnailUrl: fileData.thumbnail_url,
-                      },
-                    ],
+                    message: {
+                      id: `inpainting-${newProjectId}`,
+                      role: "assistant",
+                      content: `Inpainting result: ${newPrompt}`,
+                      parts: [
+                        {
+                          type: "text",
+                          text: `Inpainting result: ${newPrompt}`,
+                        },
+                      ],
+                      attachments: [
+                        {
+                          name: `[FILE_ID:${newProjectId}] ${newPrompt}`,
+                          url: fileData.url, // Use inpainting result URL
+                          contentType: "image/png",
+                          thumbnailUrl: fileData.thumbnail_url,
+                        },
+                      ],
+                    },
                   }),
                 });
 

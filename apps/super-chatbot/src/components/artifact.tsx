@@ -211,7 +211,10 @@ function PureArtifact({
             return currentDocuments;
           }
 
-          if (currentDocument.content !== updatedContent) {
+          if (
+            currentDocument.content !== updatedContent &&
+            artifact.documentId !== "init"
+          ) {
             await fetch(`/api/document?id=${artifact.documentId}`, {
               method: "POST",
               body: JSON.stringify({

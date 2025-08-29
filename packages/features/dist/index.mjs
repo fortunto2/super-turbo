@@ -3643,7 +3643,7 @@ var InpaintingForm = ({
         children: loading ? /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-center gap-2", children: [
           /* @__PURE__ */ jsx("div", { className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" }),
           "Generating..."
-        ] }) : "Inpaint"
+        ] }) : "Generate"
       }
     )
   ] });

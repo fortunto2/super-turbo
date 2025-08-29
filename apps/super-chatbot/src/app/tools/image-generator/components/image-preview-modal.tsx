@@ -5,6 +5,7 @@ import { formatTimestamp } from "@/lib/utils/format";
 import { X } from "lucide-react";
 import { Inpainting } from "@turbo-super/features";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
+import { useState } from "react";
 
 export const ImagePreviewModal = ({
   image,
@@ -24,12 +25,16 @@ export const ImagePreviewModal = ({
   ) => Promise<void>;
   isGenerating: boolean;
 }) => {
+  const [isInpainting, setIsInpainting] = useState(false);
   const handleInpaintingComplete = async (result: {
     prompt: string;
     mask: File;
     config: string;
   }) => {
     try {
+      // Block the inpainting button immediately
+      setIsInpainting(true);
+
       const formData = new FormData();
       formData.append("prompt", result.prompt);
       formData.append("mask", result.mask);
@@ -53,17 +58,23 @@ export const ImagePreviewModal = ({
 
       // If successful, start polling for the result
       if (data.success && data.projectId) {
+        // Close the modal immediately after successful request
+        setSelectedImage(null);
+
         await startInpaintingPolling(
           data.projectId,
           result.prompt,
           image,
           image.fileId || image.id || data.projectId
         );
-        // Close the modal after starting polling
-        setSelectedImage(null);
+      } else {
+        // If failed, unblock the button
+        setIsInpainting(false);
       }
     } catch (error) {
       console.error("Error during inpainting:", error);
+      // Unblock the button on error
+      setIsInpainting(false);
     }
   };
   return (
@@ -74,6 +85,7 @@ export const ImagePreviewModal = ({
           size="sm"
           className="absolute top-2 right-2 z-10 "
           onClick={() => setSelectedImage(null)}
+          disabled={isInpainting}
         >
           <X className="size-4" />
         </Button>
@@ -83,7 +95,7 @@ export const ImagePreviewModal = ({
             imageUrl={image.url}
             onGenerating={() => {}}
             onComplete={handleInpaintingComplete}
-            isGenerating={isGenerating}
+            isGenerating={isGenerating || isInpainting}
           />
         </div>
 
@@ -92,6 +104,12 @@ export const ImagePreviewModal = ({
           <p className="text-xs text-gray-300 mt-1">
             {formatTimestamp(image.timestamp)}
           </p>
+          {isInpainting && (
+            <div className="mt-2 flex items-center space-x-2 text-blue-300">
+              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs">Starting inpainting...</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

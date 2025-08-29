@@ -104,7 +104,7 @@ export const InpaintingForm: FC<Props> = ({
             Generating...
           </div>
         ) : (
-          "Inpaint"
+          "Generate"
         )}
       </button>
     </div>
