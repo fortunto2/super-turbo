@@ -210,7 +210,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.fileId,
+      projectId: stored.projectId || stored.fileId,
       requestId: stored.requestId,
       settings: stored.settings,
     }));

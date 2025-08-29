@@ -317,6 +317,16 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
           files: result.files?.length || 0,
         });
 
+        // AICODE-DEBUG: Подробное логирование fileId в useImageGeneration
+        console.log("🔍 useImageGeneration: API result details:", {
+          resultFileId: result.fileId || "none",
+          resultProjectId: result.projectId || "none",
+          resultRequestId: result.requestId || "none",
+          resultKeys: Object.keys(result),
+          willSetProjectId: result.projectId,
+          willSetFileId: result.fileId,
+        });
+
         // Set request ID for tracking
         if (result.requestId) {
           setCurrentRequestId(result.requestId);
@@ -325,7 +335,8 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
         // CRITICAL: Use result.projectId which contains the fileId for SSE connection
         setState((prev) => ({
           ...prev,
-          projectId: result.projectId, // FIXED: This is the fileId we need for SSE
+          projectId: result.projectId, // This is the fileId we need for SSE
+          fileId: result.fileId, // Store the actual fileId separately
           requestId: result.requestId,
           status: "processing",
         }));

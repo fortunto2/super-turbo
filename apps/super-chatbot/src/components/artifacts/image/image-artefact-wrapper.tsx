@@ -92,9 +92,56 @@ export const ImageArtifactWrapper = memo(
           documentIdValid: documentId && documentId !== "undefined",
           thumbnailUrl: newContent.thumbnailUrl,
           finalThumbnailUrl: thumbnailUrl,
+          fileId: newContent.fileId || "none", // AICODE-DEBUG: Добавляем fileId в логирование
+          projectId: newContent.projectId || "none", // AICODE-DEBUG: Добавляем projectId в логирование
         });
 
+        console.log("🖼️ 🔍 About to check saveMediaToChat conditions...");
+
         // AICODE-FIX: Add generated image to chat history
+        // AICODE-DEBUG: Логирование условий для saveMediaToChat
+        const saveConditions = {
+          statusIsCompleted: newContent.status === "completed",
+          hasImageUrl: !!newContent.imageUrl,
+          hasChatId: !!chatId,
+          hasSetMessages: !!setMessages,
+          hasPrompt: !!newContent.prompt,
+        };
+
+        console.log("🖼️ 🔍 SaveMediaToChat conditions check:", saveConditions);
+        console.log(
+          "🖼️ 🔍 All conditions met:",
+          Object.values(saveConditions).every(Boolean)
+        );
+
+        // AICODE-DEBUG: Подробное логирование каждого условия
+        console.log("🖼️ 🔍 Detailed conditions:", {
+          status: newContent.status,
+          statusIsCompleted: newContent.status === "completed",
+          imageUrl: newContent.imageUrl
+            ? `${newContent.imageUrl.substring(0, 50)}...`
+            : "none",
+          hasImageUrl: !!newContent.imageUrl,
+          chatId: chatId || "none",
+          hasChatId: !!chatId,
+          setMessages: setMessages ? "function" : "none",
+          hasSetMessages: !!setMessages,
+          prompt: newContent.prompt
+            ? `${newContent.prompt.substring(0, 30)}...`
+            : "none",
+          hasPrompt: !!newContent.prompt,
+        });
+
+        // AICODE-DEBUG: Логирование каждого условия отдельно для точной диагностики
+        console.log("🖼️ 🔍 Individual condition checks:", {
+          "newContent.status === 'completed'":
+            newContent.status === "completed",
+          "!!newContent.imageUrl": !!newContent.imageUrl,
+          "!!chatId": !!chatId,
+          "!!setMessages": !!setMessages,
+          "!!newContent.prompt": !!newContent.prompt,
+        });
+
         if (
           newContent.status === "completed" &&
           newContent.imageUrl &&
@@ -102,13 +149,29 @@ export const ImageArtifactWrapper = memo(
           setMessages &&
           newContent.prompt
         ) {
+          // AICODE-DEBUG: Логирование перед вызовом saveMediaToChat
+          console.log("🖼️ 🔍 Calling saveMediaToChat with:", {
+            chatId: chatId || "none",
+            imageUrl: newContent.imageUrl
+              ? `${newContent.imageUrl.substring(0, 50)}...`
+              : "none",
+            prompt: newContent.prompt
+              ? `${newContent.prompt.substring(0, 30)}...`
+              : "none",
+            fileId: newContent.fileId || "none",
+            fileIdType: typeof newContent.fileId,
+            projectId: newContent.projectId || "none",
+            projectIdType: typeof newContent.projectId,
+          });
+
           saveMediaToChat(
             chatId,
             newContent.imageUrl,
             newContent.prompt,
             setMessages,
             "image",
-            thumbnailUrl
+            thumbnailUrl,
+            newContent.fileId // AICODE-FIX: Передаем fileId для встраивания в имя вложения
           );
         }
       },
@@ -165,7 +228,7 @@ export const ImageArtifactWrapper = memo(
     }, [projectId, status, updateContent, parsedContent, imageUrl]);
 
     useImageSSE({
-      fileId: fileId || projectId,
+      fileId: fileId,
       eventHandlers: useMemo(
         () => [
           (message: any) => {
