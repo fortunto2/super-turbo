@@ -1,4 +1,4 @@
-import { imageWebsocketStore } from "@/features/image-generation/stores/image-websocket-store";
+import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
 
 /**
  * Utility to clean up WebSocket connections when switching between chats

@@ -11,7 +11,7 @@ import {
   deleteStoredVideo,
   clearStoredVideos,
 } from "@/lib/utils/local-storage";
-import { useVideoSSE } from "@/hooks/use-video-sse";
+import { useVideoSSE } from "@/artifacts/video";
 import {
   generationPersistence,
   type GenerationState,

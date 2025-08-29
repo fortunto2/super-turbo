@@ -1,6 +1,6 @@
 // System health check for image generation
-import { imageMonitor } from "@/features/image-generation";
-import { imageWebsocketStore } from "@/features/image-generation/stores/image-websocket-store";
+import { imageMonitor } from "@/artifacts/image";
+import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
 
 export interface SystemHealthReport {
   timestamp: number;

@@ -3372,7 +3372,7 @@ var Layer = ({ active, setCanvas, imageUrl }) => {
               ref: canvasRef,
               className: "w-full h-full block",
               style: {
-                opacity: 1,
+                opacity: 0.5,
                 display: "block"
               }
             }
@@ -3432,7 +3432,7 @@ var InpaintingTools = ({
     canvas.add(circle);
     setCursor(circle);
     const updateCursorPosition = (options) => {
-      const pointer = canvas.getPointer(options.e);
+      const pointer = canvas.getScenePoint(options.e);
       circle.set({
         left: pointer.x - width / 2,
         top: pointer.y - width / 2,
@@ -3465,18 +3465,15 @@ var InpaintingTools = ({
   };
   const handleDeleteObjects = () => {
     if (!canvas) return;
-    const objectsToRemove = canvas.getObjects().filter((obj) => obj.get("name") !== cursorName);
-    objectsToRemove.forEach((obj) => canvas.remove(obj));
+    canvas.clear();
     if (cursor) {
       canvas.add(cursor);
+      canvas.renderAll();
     }
-    canvas.renderAll();
   };
   const switchToPencil = () => {
     if (!canvas) return;
-    if (!canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-    }
+    canvas.freeDrawingBrush ?? (canvas.freeDrawingBrush = new fabric.PencilBrush(canvas));
     canvas.renderAll();
     canvas.freeDrawingBrush.width = width;
     canvas.freeDrawingBrush.color = "#a3e635";

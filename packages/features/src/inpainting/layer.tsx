@@ -73,7 +73,7 @@ export const Layer: FC<{
           ref={canvasRef}
           className="w-full h-full block"
           style={{
-            opacity: 1,
+            opacity: 0.5,
             display: "block",
           }}
         />

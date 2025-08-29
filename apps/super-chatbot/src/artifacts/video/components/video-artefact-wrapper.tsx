@@ -1,5 +1,5 @@
 import { CopyIcon } from "@/components/icons";
-import { VideoEditor } from "@/components/video-editor";
+import { VideoEditor } from "./video-editor";
 import { useArtifactSSE } from "@/hooks/use-artifact-sse";
 import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
 import { memo, useCallback, useEffect, useMemo } from "react";
