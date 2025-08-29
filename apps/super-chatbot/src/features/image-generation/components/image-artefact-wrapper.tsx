@@ -1,6 +1,7 @@
-import { useImageSSE } from "@/hooks/use-image-sse";
+import { useImageSSE } from "../hooks/use-image-sse";
 import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 import { Skeleton } from "@turbo-super/ui";
 import { ImageEditing } from "./editing";
@@ -402,11 +403,14 @@ const ImageDisplay = ({
   return (
     <div className="space-y-2">
       <div className="rounded-lg overflow-hidden border">
-        <img
+        <Image
           src={imageUrl}
           alt={prompt || "AI-generated artwork"}
+          width={800}
+          height={600}
           className="w-full h-auto object-contain"
           style={{ maxHeight: "70vh" }}
+          unoptimized
         />
       </div>
       <p className="text-sm text-gray-500 px-1">{prompt}</p>

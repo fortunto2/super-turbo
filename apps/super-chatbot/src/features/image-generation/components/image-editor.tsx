@@ -10,8 +10,8 @@ import {
   Button,
 } from "@turbo-super/ui";
 import { CopyIcon } from "@/components/icons";
-import { useImageGeneration } from "@/hooks/use-image-generation";
-import { useImageEffects } from "@/hooks/use-image-effects";
+import { useImageGeneration } from "../hooks/use-image-generation";
+import { useImageEffects } from "../hooks/use-image-effects";
 import {
   copyImageUrlToClipboard,
   shouldShowSkeleton,
@@ -19,7 +19,7 @@ import {
   getDisplayImageUrl,
   getDisplayPrompt,
   type ImageState,
-} from "@/lib/utils/image-utils";
+} from "../utils/image-utils";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { DebugParameters } from "@/components/debug-parameters";
 

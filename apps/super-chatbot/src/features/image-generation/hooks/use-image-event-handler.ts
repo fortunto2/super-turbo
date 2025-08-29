@@ -2,8 +2,8 @@ import { useCallback } from "react";
 import type {
   ImageEventHandler,
   ImageWSMessage,
-} from "@/lib/websocket/image-websocket-store";
-import { imageMonitor, validateImageAssignment } from "@/lib/utils/image-debug";
+} from "../stores/image-websocket-store";
+import { imageMonitor, validateImageAssignment } from "../utils/image-debug";
 import { FileTypeEnum } from "@/lib/api";
 
 export interface ImageGenerationState {

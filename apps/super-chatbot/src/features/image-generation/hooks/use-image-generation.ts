@@ -101,7 +101,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
       if (oldChatId) {
         console.log("🧹 Cleaning up old project immediately:", oldChatId);
         // Use the store directly for immediate cleanup
-        const { imageSSEStore } = require("@/lib/websocket/image-sse-store");
+        const { imageSSEStore } = require("../stores/image-sse-store");
         imageSSEStore.cleanupProject(oldChatId);
 
         // Also remove any lingering handlers for the old project
@@ -193,7 +193,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
 
       // Immediate cleanup without delays for React Strict Mode
       if (chatIdState) {
-        const { imageSSEStore } = require("@/lib/websocket/image-sse-store");
+        const { imageSSEStore } = require("../stores/image-sse-store");
         imageSSEStore.cleanupProject(chatIdState);
 
         // Check for excessive handlers and force cleanup if needed

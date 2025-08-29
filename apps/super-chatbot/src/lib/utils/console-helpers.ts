@@ -1,7 +1,7 @@
 // Console helper functions for quick debugging in browser
-import { imageWebsocketStore } from "@/lib/websocket/image-websocket-store";
+import { imageWebsocketStore } from "@/features/image-generation/stores/image-websocket-store";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
-import { imageMonitor, getImageDebugInfo } from "./image-debug";
+import { imageMonitor, getImageDebugInfo } from "@/features/image-generation";
 import { performSystemHealthCheck } from "./image-system-check";
 
 // Helper functions to expose in browser console

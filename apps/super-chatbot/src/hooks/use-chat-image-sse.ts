@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { imageSSEStore } from "@/lib/websocket/image-sse-store";
+import { imageSSEStore } from "@/features/image-generation";
 import type { UseChatHelpers } from "@ai-sdk/react";
 
 interface ChatImageSSEOptions {
