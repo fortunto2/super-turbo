@@ -150,15 +150,7 @@ export function DirectPaymentButton({
           generationType={generationType}
           imageFile={imageFile}
           modelName={modelName}
-          t={(key: string, params?: Record<string, string | number>) => {
-            let translation = t(key);
-            if (params) {
-              Object.entries(params).forEach(([param, value]) => {
-                translation = translation.replace(`{${param}}`, String(value));
-              });
-            }
-            return translation;
-          }}
+          t={t}
         />
 
         {/* Обработка состояния */}

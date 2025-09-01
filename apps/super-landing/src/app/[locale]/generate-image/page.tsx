@@ -159,18 +159,7 @@ export default function GenerateImagePage() {
                 generationType="text-to-image"
                 imageFile={null}
                 modelName={modelName}
-                t={(key: string, params?: Record<string, string | number>) => {
-                  let translation = t(key);
-                  if (params) {
-                    Object.entries(params).forEach(([param, value]) => {
-                      translation = translation.replace(
-                        `{${param}}`,
-                        String(value)
-                      );
-                    });
-                  }
-                  return translation;
-                }}
+                t={t}
               />
             )}
 

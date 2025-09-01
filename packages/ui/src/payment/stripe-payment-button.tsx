@@ -7,6 +7,7 @@ import { Badge } from "../components/badge";
 import { ExternalLink, Zap, Video, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { useStripePrices } from "./use-stripe-prices";
+import type { SuperLandingTranslationKey } from "@turbo-super/shared";
 
 interface StripePaymentButtonProps {
   prompt?: string;
@@ -20,7 +21,10 @@ interface StripePaymentButtonProps {
   checkoutEndpoint?: string;
   className?: string;
   locale?: string;
-  t?: (key: string, params?: Record<string, string | number>) => string;
+  t?: (
+    key: SuperLandingTranslationKey,
+    params?: Record<string, string | number>
+  ) => string;
   // Новые поля для поддержки image-to-video и image-to-image
   generationType?:
     | "text-to-video"
@@ -96,7 +100,7 @@ export function StripePaymentButton({
       return fallbackTranslations[key] || key;
     }
 
-    let translation = t(key);
+    let translation = t(key as SuperLandingTranslationKey);
 
     // Заменяем параметры в переводе
     if (params) {
