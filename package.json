@@ -9,11 +9,12 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo run build",
     "build:types": "turbo build:types",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "generate-translation-types": "cd packages/shared && npm run generate-types",
     "type-check": "turbo type-check",
     "clean": "turbo clean && rm -rf node_modules",
     "test": "turbo test"

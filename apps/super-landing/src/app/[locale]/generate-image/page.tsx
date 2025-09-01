@@ -148,7 +148,7 @@ export default function GenerateImagePage() {
             {showPayment && (
               <StripePaymentButton
                 prompt={prompt}
-                variant="video"
+                variant="image"
                 toolSlug={getToolSlug()}
                 toolTitle={getToolTitle()}
                 price={1.0}

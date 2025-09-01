@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
 import { Blog } from ".contentlayer/generated";
-import { useTranslation } from "@/hooks/use-translation";
+import { getTranslation } from "@/lib/translations";
 import { Locale } from "@/config/i18n-config";
 import { BlogModelGenerator } from "@/components/content/blog-model-generator";
 
@@ -87,7 +87,8 @@ function BlogPageContent({
 }) {
   // Проверяем наличие заголовка H1 в MDX
   const hasH1Heading = checkForH1InMDX(post.body.raw);
-  const { t } = useTranslation(locale as Locale);
+  // Получаем типизированные переводы для серверного компонента
+  const { t } = getTranslation(locale as Locale);
   // Подготавливаем метку для хлебных крошек
   const breadcrumbLabel = post.title;
 

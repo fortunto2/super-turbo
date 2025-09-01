@@ -460,19 +460,26 @@ export const ru: NestedDictionary = {
     failed_load_payment: "Не удалось загрузить варианты оплаты",
     top_up_balance: "Пополнить баланс",
     generate_veo3_videos: "Создать VEO3 видео",
+    generate_ai_images: "Создать AI изображения",
     top_up_balance_desc:
       "Пополните баланс на {amount} кредитов для использования AI-инструментов",
     generate_video_desc:
       "Ваш промпт готов! Выберите план для создания профессиональных AI-видео с Google VEO3.",
+    generate_image_desc:
+      "Ваш промпт готов! Выберите план для создания профессиональных AI-изображений.",
     top_up_credits: "Пополнить {amount} кредитов",
     generate_video: "Создать видео",
+    generate_image: "Создать изображение",
     get_credits_desc:
       "Получите {amount} кредитов для генерации изображений, видео и сценариев",
     generate_video_desc_short:
       "Создайте 1 высококачественное AI-видео с вашим кастомным промптом",
+    generate_image_desc_short:
+      "Создайте 1 высококачественное AI-изображение с вашим кастомным промптом",
     creating_payment: "Создание платежа...",
     top_up_for: "Пополнить за ${price}",
     generate_for: "Создать видео за ${price}",
+    generate_image_for: "Создать изображение за ${price}",
     instant_access:
       "✓ Мгновенный доступ • ✓ Без подписки • ✓ Безопасная оплата Stripe",
     test_mode:

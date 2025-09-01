@@ -36,7 +36,8 @@
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "generate-types": "node scripts/generate-translation-types.js"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

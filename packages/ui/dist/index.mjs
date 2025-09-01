@@ -456,15 +456,20 @@ function StripePaymentButton({
         "stripe_payment.failed_load_payment": "Failed to load payment options",
         "stripe_payment.top_up_balance": "Top Up Balance",
         "stripe_payment.generate_veo3_videos": "Generate VEO3 Videos",
+        "stripe_payment.generate_ai_images": "Generate AI Images",
         "stripe_payment.top_up_balance_desc": `Top up your balance with ${creditAmount} credits for using AI tools`,
         "stripe_payment.generate_video_desc": "Your prompt is ready! Choose a plan to generate professional AI videos with Google VEO3.",
+        "stripe_payment.generate_image_desc": "Your prompt is ready! Choose a plan to generate professional AI images.",
         "stripe_payment.top_up_credits": `Top up ${creditAmount} credits`,
         "stripe_payment.generate_video": "Generate Video",
+        "stripe_payment.generate_image": "Generate Image",
         "stripe_payment.get_credits_desc": `Get ${creditAmount} credits for generating images, videos and scripts`,
         "stripe_payment.generate_video_desc_short": "Generate 1 high-quality AI video with your custom prompt",
+        "stripe_payment.generate_image_desc_short": "Generate 1 high-quality AI image with your custom prompt",
         "stripe_payment.creating_payment": "Creating Payment...",
         "stripe_payment.top_up_for": `Top up for $${price.toFixed(2)}`,
         "stripe_payment.generate_for": `Generate Video for $${price.toFixed(2)}`,
+        "stripe_payment.generate_image_for": `Generate Image for $${price.toFixed(2)}`,
         "stripe_payment.instant_access": "\u2713 Instant access \u2022 \u2713 No subscription \u2022 \u2713 Secure Stripe payment",
         "stripe_payment.test_mode": "\u{1F9EA} Test mode - Use test card 4242 4242 4242 4242",
         "stripe_payment.generate_prompt_first": "Please generate a prompt first",
@@ -563,6 +568,7 @@ function StripePaymentButton({
     );
   }
   const isCreditsVariant = variant === "credits";
+  const isImageVariant = variant === "image";
   return /* @__PURE__ */ jsxs2(
     Card,
     {
@@ -571,19 +577,19 @@ function StripePaymentButton({
         /* @__PURE__ */ jsxs2(CardHeader, { className: "pb-3", children: [
           /* @__PURE__ */ jsxs2(CardTitle, { className: "flex items-center gap-2 text-lg", children: [
             /* @__PURE__ */ jsx11(Zap, { className: "size-5 text-yellow-500 dark:text-yellow-400" }),
-            isCreditsVariant ? getTranslation("stripe_payment.top_up_balance") : getTranslation("stripe_payment.generate_veo3_videos")
+            isCreditsVariant ? getTranslation("stripe_payment.top_up_balance") : isImageVariant ? getTranslation("stripe_payment.generate_ai_images") : getTranslation("stripe_payment.generate_veo3_videos")
           ] }),
           /* @__PURE__ */ jsx11("p", { className: "text-sm text-muted-foreground", children: isCreditsVariant ? getTranslation("stripe_payment.top_up_balance_desc", {
             amount: creditAmount
-          }) : getTranslation("stripe_payment.generate_video_desc") })
+          }) : isImageVariant ? getTranslation("stripe_payment.generate_image_desc") : getTranslation("stripe_payment.generate_video_desc") })
         ] }),
         /* @__PURE__ */ jsxs2(CardContent, { className: "space-y-3", children: [
           /* @__PURE__ */ jsx11("div", { className: "max-w-md mx-auto", children: /* @__PURE__ */ jsxs2("div", { className: "p-6 border-2 border-blue-200 dark:border-blue-700/50 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors text-center", children: [
             /* @__PURE__ */ jsxs2("div", { className: "flex items-center justify-center gap-2 mb-3", children: [
-              isCreditsVariant ? /* @__PURE__ */ jsx11(CreditCard, { className: "size-5 text-blue-500 dark:text-blue-400" }) : /* @__PURE__ */ jsx11(Video, { className: "size-5 text-blue-500 dark:text-blue-400" }),
+              isCreditsVariant ? /* @__PURE__ */ jsx11(CreditCard, { className: "size-5 text-blue-500 dark:text-blue-400" }) : isImageVariant ? /* @__PURE__ */ jsx11(Video, { className: "size-5 text-blue-500 dark:text-blue-400" }) : /* @__PURE__ */ jsx11(Video, { className: "size-5 text-blue-500 dark:text-blue-400" }),
               /* @__PURE__ */ jsx11("span", { className: "font-semibold text-lg", children: isCreditsVariant ? getTranslation("stripe_payment.top_up_credits", {
                 amount: creditAmount
-              }) : getTranslation("stripe_payment.generate_video") })
+              }) : isImageVariant ? getTranslation("stripe_payment.generate_image") : getTranslation("stripe_payment.generate_video") })
             ] }),
             /* @__PURE__ */ jsx11("div", { className: "mb-4", children: /* @__PURE__ */ jsxs2(
               Badge,
@@ -598,7 +604,7 @@ function StripePaymentButton({
             ) }),
             /* @__PURE__ */ jsx11("p", { className: "text-sm text-muted-foreground mb-4", children: isCreditsVariant ? getTranslation("stripe_payment.get_credits_desc", {
               amount: creditAmount
-            }) : getTranslation("stripe_payment.generate_video_desc_short") }),
+            }) : isImageVariant ? getTranslation("stripe_payment.generate_image_desc_short") : getTranslation("stripe_payment.generate_video_desc_short") }),
             /* @__PURE__ */ jsx11(
               Button,
               {
@@ -612,6 +618,8 @@ function StripePaymentButton({
                 ] }) : /* @__PURE__ */ jsxs2(Fragment, { children: [
                   /* @__PURE__ */ jsx11(ExternalLink, { className: "size-5 mr-2" }),
                   isCreditsVariant ? getTranslation("stripe_payment.top_up_for", {
+                    price: price.toFixed(2)
+                  }) : isImageVariant ? getTranslation("stripe_payment.generate_image_for", {
                     price: price.toFixed(2)
                   }) : getTranslation("stripe_payment.generate_for", {
                     price: price.toFixed(2)

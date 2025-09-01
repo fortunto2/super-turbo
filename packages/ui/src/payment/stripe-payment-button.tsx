@@ -13,7 +13,7 @@ interface StripePaymentButtonProps {
   onPaymentClick?: () => void;
   toolSlug?: string;
   toolTitle?: string;
-  variant?: "video" | "credits";
+  variant?: "video" | "credits" | "image";
   creditAmount?: number;
   price?: number;
   apiEndpoint?: string;
@@ -64,17 +64,24 @@ export function StripePaymentButton({
         "stripe_payment.failed_load_payment": "Failed to load payment options",
         "stripe_payment.top_up_balance": "Top Up Balance",
         "stripe_payment.generate_veo3_videos": "Generate VEO3 Videos",
+        "stripe_payment.generate_ai_images": "Generate AI Images",
         "stripe_payment.top_up_balance_desc": `Top up your balance with ${creditAmount} credits for using AI tools`,
         "stripe_payment.generate_video_desc":
           "Your prompt is ready! Choose a plan to generate professional AI videos with Google VEO3.",
+        "stripe_payment.generate_image_desc":
+          "Your prompt is ready! Choose a plan to generate professional AI images.",
         "stripe_payment.top_up_credits": `Top up ${creditAmount} credits`,
         "stripe_payment.generate_video": "Generate Video",
+        "stripe_payment.generate_image": "Generate Image",
         "stripe_payment.get_credits_desc": `Get ${creditAmount} credits for generating images, videos and scripts`,
         "stripe_payment.generate_video_desc_short":
           "Generate 1 high-quality AI video with your custom prompt",
+        "stripe_payment.generate_image_desc_short":
+          "Generate 1 high-quality AI image with your custom prompt",
         "stripe_payment.creating_payment": "Creating Payment...",
         "stripe_payment.top_up_for": `Top up for $${price.toFixed(2)}`,
         "stripe_payment.generate_for": `Generate Video for $${price.toFixed(2)}`,
+        "stripe_payment.generate_image_for": `Generate Image for $${price.toFixed(2)}`,
         "stripe_payment.instant_access":
           "✓ Instant access • ✓ No subscription • ✓ Secure Stripe payment",
         "stripe_payment.test_mode":
@@ -212,6 +219,7 @@ export function StripePaymentButton({
   }
 
   const isCreditsVariant = variant === "credits";
+  const isImageVariant = variant === "image";
 
   return (
     <Card
@@ -222,14 +230,18 @@ export function StripePaymentButton({
           <Zap className="size-5 text-yellow-500 dark:text-yellow-400" />
           {isCreditsVariant
             ? getTranslation("stripe_payment.top_up_balance")
-            : getTranslation("stripe_payment.generate_veo3_videos")}
+            : isImageVariant
+              ? getTranslation("stripe_payment.generate_ai_images")
+              : getTranslation("stripe_payment.generate_veo3_videos")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {isCreditsVariant
             ? getTranslation("stripe_payment.top_up_balance_desc", {
                 amount: creditAmount,
               })
-            : getTranslation("stripe_payment.generate_video_desc")}
+            : isImageVariant
+              ? getTranslation("stripe_payment.generate_image_desc")
+              : getTranslation("stripe_payment.generate_video_desc")}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -239,6 +251,8 @@ export function StripePaymentButton({
             <div className="flex items-center justify-center gap-2 mb-3">
               {isCreditsVariant ? (
                 <CreditCard className="size-5 text-blue-500 dark:text-blue-400" />
+              ) : isImageVariant ? (
+                <Video className="size-5 text-blue-500 dark:text-blue-400" />
               ) : (
                 <Video className="size-5 text-blue-500 dark:text-blue-400" />
               )}
@@ -247,7 +261,9 @@ export function StripePaymentButton({
                   ? getTranslation("stripe_payment.top_up_credits", {
                       amount: creditAmount,
                     })
-                  : getTranslation("stripe_payment.generate_video")}
+                  : isImageVariant
+                    ? getTranslation("stripe_payment.generate_image")
+                    : getTranslation("stripe_payment.generate_video")}
               </span>
             </div>
             <div className="mb-4">
@@ -263,7 +279,9 @@ export function StripePaymentButton({
                 ? getTranslation("stripe_payment.get_credits_desc", {
                     amount: creditAmount,
                   })
-                : getTranslation("stripe_payment.generate_video_desc_short")}
+                : isImageVariant
+                  ? getTranslation("stripe_payment.generate_image_desc_short")
+                  : getTranslation("stripe_payment.generate_video_desc_short")}
             </p>
             <Button
               onClick={handlePayment}
@@ -283,9 +301,13 @@ export function StripePaymentButton({
                     ? getTranslation("stripe_payment.top_up_for", {
                         price: price.toFixed(2),
                       })
-                    : getTranslation("stripe_payment.generate_for", {
-                        price: price.toFixed(2),
-                      })}
+                    : isImageVariant
+                      ? getTranslation("stripe_payment.generate_image_for", {
+                          price: price.toFixed(2),
+                        })
+                      : getTranslation("stripe_payment.generate_for", {
+                          price: price.toFixed(2),
+                        })}
                 </>
               )}
             </Button>
