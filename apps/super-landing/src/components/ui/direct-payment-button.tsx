@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
 import { CreditCard, Loader2, Sparkles, Zap } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/ui";
+import { StripePaymentButton } from "@turbo-super/payment";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
 
@@ -147,18 +147,9 @@ export function DirectPaymentButton({
           className="w-full"
           locale={locale}
           // Новые поля для поддержки image-to-video
-          generationType={generationType}
           imageFile={imageFile}
+          generationType={generationType}
           modelName={modelName}
-          t={(key: string, params?: Record<string, string | number>) => {
-            let translation = t(key);
-            if (params) {
-              Object.entries(params).forEach(([param, value]) => {
-                translation = translation.replace(`{${param}}`, String(value));
-              });
-            }
-            return translation;
-          }}
         />
 
         {/* Обработка состояния */}

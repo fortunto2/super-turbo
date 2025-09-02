@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@turbo-super/ui";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { Badge } from "@turbo-super/ui";
-import { cn } from "@turbo-super/ui";
-import { CreditCard, Coins, Zap } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/ui";
+import { Coins, Zap } from "lucide-react";
+import { StripePaymentButton } from "@turbo-super/payment";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Button,
+  Badge,
+  cn,
 } from "@turbo-super/ui";
 
 interface ToolsBalanceData {

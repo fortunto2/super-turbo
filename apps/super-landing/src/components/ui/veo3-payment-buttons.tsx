@@ -1,12 +1,13 @@
 "use client";
 
-import { StripePaymentButton } from '@turbo-super/ui';
+import { StripePaymentButton } from "@turbo-super/payment";
 
 interface Veo3PaymentButtonsProps {
   prompt: string;
   onPaymentClick?: () => void;
   toolSlug?: string;
   toolTitle?: string;
+  locale?: string;
 }
 
 export function Veo3PaymentButtons({
@@ -14,6 +15,7 @@ export function Veo3PaymentButtons({
   onPaymentClick,
   toolSlug,
   toolTitle,
+  locale,
 }: Veo3PaymentButtonsProps) {
   return (
     <StripePaymentButton
@@ -22,9 +24,10 @@ export function Veo3PaymentButtons({
       toolSlug={toolSlug}
       toolTitle={toolTitle}
       variant="video"
-      price={1.00}
+      price={1.0}
       apiEndpoint="/api/stripe-prices"
       checkoutEndpoint="/api/create-checkout"
+      locale={locale}
     />
   );
 }

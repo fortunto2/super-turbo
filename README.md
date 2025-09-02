@@ -1,6 +1,46 @@
-# Turbo Super
+# Super Turbo Monorepo
 
-Турборепозиторий SuperDuperAI с Next.js приложениями и общими компонентами. Оптимизирован для лучшего переиспользования кода и устранения дублирования.
+Universal AGENTS.md - Canonical guidance for AI assistants and human contributors across the monorepo.
+
+## Quick Start
+
+### Translation Types Generation
+
+The project includes an **automatic translation types generation system** that creates TypeScript types for all translation keys:
+
+```bash
+# Generate translation types from the dictionary
+npm run generate-translation-types
+
+# This will:
+# 1. Parse packages/shared/src/translation/dictionaries/super-landing/en.ts
+# 2. Extract all 318+ translation keys (including nested ones)
+# 3. Generate SuperLandingTranslationKey union type
+# 4. Update packages/shared/src/translation/types.ts
+```
+
+**Benefits:**
+- ✅ **Zero manual work** - types update automatically
+- ✅ **Full autocompletion** in IDE for all translation keys
+- ✅ **Type safety** - TypeScript checks all keys at compile time
+- ✅ **Live system** - new keys automatically appear in types
+
+**Usage:**
+```typescript
+import { useTranslation } from "@/hooks/use-translation";
+
+export function MyComponent() {
+  const { t } = useTranslation("en");
+  
+  // IDE will autocomplete all available keys!
+  return <h1>{t("hero.title")}</h1>;
+}
+```
+
+## Quick entry points
+
+- apps/super-chatbot/README.md
+- apps/super-chatbot/docs/README.md
 
 ## 🚀 Структура проекта
 
@@ -12,7 +52,10 @@ turbo-super/
 ├── packages/
 │   ├── ui/               # Общие UI компоненты
 │   ├── shared/           # Общие утилиты и хуки
-│   ├── data/             # Общие типы и константы
+│   ├── payment/          # Платежные компоненты и логика
+│   ├── features/         # Бизнес-функциональность
+│   ├── api/              # API клиенты и интеграции
+│   ├── core/             # Базовые типы и валидация
 │   ├── eslint-config/    # Общая ESLint конфигурация
 │   └── tsconfig/         # Общие TypeScript конфигурации
 └── docs/                 # Документация

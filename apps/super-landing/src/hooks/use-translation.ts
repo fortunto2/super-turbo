@@ -1,10 +1,17 @@
-import { getSuperLandingDictionaryServer } from "@turbo-super/shared";
+import { getSuperLandingDictionary } from "@turbo-super/shared";
 import { Locale } from "@/config/i18n-client";
+import type { SuperLandingTranslationKey } from "@/types/translations";
 
 export function useTranslation(locale: Locale) {
-  const dict = getSuperLandingDictionaryServer(locale);
+  const dict = getSuperLandingDictionary(locale);
 
-  function t<T = string>(key: string, fallback?: T): T {
+  // Перегрузка функции для лучшего автодополнения
+  function t<T = string>(key: SuperLandingTranslationKey, fallback?: T): T;
+  function t<T = string>(key: string, fallback?: T): T;
+  function t<T = string>(
+    key: SuperLandingTranslationKey | string,
+    fallback?: T
+  ): T {
     // Ищем в словаре по ключу
     const keys = key.split(".");
     let value: unknown = dict;
@@ -22,5 +29,5 @@ export function useTranslation(locale: Locale) {
     return value as T;
   }
 
-  return { t };
+  return { t, dict };
 }

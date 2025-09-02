@@ -9,23 +9,25 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo run build",
     "build:types": "turbo build:types",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "generate-translation-types": "cd packages/shared && npm run generate-types",
     "type-check": "turbo type-check",
     "clean": "turbo clean && rm -rf node_modules",
     "test": "turbo test"
   },
   "devDependencies": {
     "@turbo/gen": "^2.3.0",
-    "turbo": "^2.3.0",
+    "@types/minimatch": "^6.0.0",
     "prettier": "^3.2.5",
+    "turbo": "^2.3.0",
     "typescript": "^5.6.3"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ]
-} 
+}

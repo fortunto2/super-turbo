@@ -1,7 +1,8 @@
 import { memo, Fragment, useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Badge, StripePaymentButton } from '@turbo-super/ui';
+import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Badge } from '@turbo-super/ui';
 import { BookOpen, ArrowLeft, Download, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown, X, Palette, Circle as Circle$1 } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
+import { StripePaymentButton } from '@turbo-super/payment';
 import { FileTypeEnum, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
 import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio, prefetch } from 'remotion';
 import { Player } from '@remotion/player';
@@ -1599,7 +1600,8 @@ function AIEnhancement({
             apiEndpoint: "/api/stripe-prices",
             checkoutEndpoint: "/api/create-checkout",
             className: "border-0 shadow-none",
-            prompt: generatedPrompt
+            prompt: generatedPrompt,
+            locale
           }
         )
       ] })

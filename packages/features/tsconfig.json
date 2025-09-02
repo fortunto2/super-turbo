@@ -4,7 +4,6 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "outDir": "./dist",
-    "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -22,7 +21,8 @@
       "@turbo-super/api": ["../api/src"],
       "@turbo-super/core": ["../core/src"],
       "@turbo-super/ui": ["../ui/src"],
-      "@turbo-super/shared": ["../shared/src"]
+      "@turbo-super/shared": ["../shared/src"],
+      "@turbo-super/payment": ["../payment/src"]
     }
   },
   "include": ["src/**/*"],
