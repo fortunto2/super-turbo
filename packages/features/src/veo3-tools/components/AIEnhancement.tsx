@@ -6,8 +6,8 @@ import {
   Button,
   Textarea,
   Badge,
-  StripePaymentButton,
 } from "@turbo-super/ui";
+import { StripePaymentButton } from "@turbo-super/payment";
 import {
   Sparkles,
   Loader2,
@@ -368,6 +368,7 @@ export function AIEnhancement({
                 checkoutEndpoint="/api/create-checkout"
                 className="border-0 shadow-none"
                 prompt={generatedPrompt}
+                locale={locale}
                 // toolSlug="veo3-prompt-generator"
                 // toolTitle="VEO3 Video Generator"
                 // onPaymentClick={() => console.log("VEO3 payment started")}

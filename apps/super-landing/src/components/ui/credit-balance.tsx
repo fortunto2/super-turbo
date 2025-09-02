@@ -9,7 +9,7 @@ import {
   Badge,
 } from "@turbo-super/ui";
 import { Coins } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/ui";
+import { StripePaymentButton } from "@turbo-super/payment";
 import { useTranslation } from "@/hooks/use-translation";
 import { Locale } from "@/config/i18n-config";
 
@@ -39,22 +39,6 @@ export function CreditBalance({
   const { t } = useTranslation(locale);
 
   // Обертка для функции перевода с поддержкой параметров
-  const translateWithParams = (
-    key: string,
-    params?: Record<string, string | number>
-  ) => {
-    let translation = t(key);
-
-    // Заменяем параметры в переводе
-    if (params) {
-      Object.entries(params).forEach(([param, value]) => {
-        translation = translation.replace(`{${param}}`, String(value));
-      });
-    }
-
-    return translation;
-  };
-
   const [data, setData] = useState<CreditBalanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -224,7 +208,7 @@ export function CreditBalance({
             checkoutEndpoint="/api/create-checkout"
             className="border-0 shadow-none"
             locale={locale}
-            t={translateWithParams}
+            onPaymentClick={() => {}}
           />
         )}
       </CardContent>

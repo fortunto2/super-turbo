@@ -4,6 +4,7 @@ var react = require('react');
 var ui = require('@turbo-super/ui');
 var lucideReact = require('lucide-react');
 var jsxRuntime = require('react/jsx-runtime');
+var payment = require('@turbo-super/payment');
 var api = require('@turbo-super/api');
 var remotion = require('remotion');
 var player = require('@remotion/player');
@@ -1592,7 +1593,7 @@ function AIEnhancement({
           /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-purple-700 dark:text-purple-300", children: "Your enhanced prompt is ready! Generate a professional VEO3 video for just $1.00" })
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(
-          ui.StripePaymentButton,
+          payment.StripePaymentButton,
           {
             variant: "video",
             toolSlug: "veo3-prompt-generator",
@@ -1601,7 +1602,8 @@ function AIEnhancement({
             apiEndpoint: "/api/stripe-prices",
             checkoutEndpoint: "/api/create-checkout",
             className: "border-0 shadow-none",
-            prompt: generatedPrompt
+            prompt: generatedPrompt,
+            locale
           }
         )
       ] })

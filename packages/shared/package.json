@@ -4,7 +4,7 @@
   "private": true,
   "description": "Общие утилиты и хуки для turbo-super",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs", 
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@turbo-super/eslint-config": "workspace:*",
+    "@types/minimatch": "^6.0.0",
     "@types/node": "^20.17.32",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",
@@ -59,9 +60,10 @@
   "dependencies": {
     "clsx": "^2.1.0",
     "lucide-react": "^0.446.0",
+    "minimatch": "^10.0.3",
     "sonner": "^1.4.0"
   },
   "publishConfig": {
     "access": "restricted"
   }
-} 
+}

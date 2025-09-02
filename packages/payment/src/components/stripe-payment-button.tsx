@@ -1,13 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/card";
-import { Badge } from "../components/badge";
+
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+} from "@turbo-super/ui";
 import { ExternalLink, Zap, Video, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import { useStripePrices } from "./use-stripe-prices";
-import type { SuperLandingTranslationKey } from "@turbo-super/shared";
+import { useStripePrices } from "../hooks/use-stripe-prices";
+import {
+  Locale,
+  SuperLandingTranslationKey,
+  getClientSuperLandingTranslation,
+} from "@turbo-super/shared";
 
 interface StripePaymentButtonProps {
   prompt?: string;
@@ -21,10 +31,6 @@ interface StripePaymentButtonProps {
   checkoutEndpoint?: string;
   className?: string;
   locale?: string;
-  t?: (
-    key: SuperLandingTranslationKey,
-    params?: Record<string, string | number>
-  ) => string;
   // Новые поля для поддержки image-to-video и image-to-image
   generationType?:
     | "text-to-video"
@@ -47,7 +53,6 @@ export function StripePaymentButton({
   checkoutEndpoint = "/api/create-checkout",
   className,
   locale = "en",
-  t,
   // Новые поля для поддержки image-to-video и image-to-image
   generationType = "text-to-video",
   imageFile = null,
@@ -56,6 +61,8 @@ export function StripePaymentButton({
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
   const { prices, mode, loading, error } = useStripePrices(apiEndpoint);
 
+  const { t } = getClientSuperLandingTranslation(locale as Locale);
+  console.log(locale);
   // Функция для получения перевода с поддержкой параметров
   const getTranslation = (
     key: string,

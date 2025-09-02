@@ -3,7 +3,14 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "skipLibCheck": true
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "paths": {
+      "@turbo-super/api": ["../api/src"],
+      "@turbo-super/core": ["../core/src"],
+      "@turbo-super/ui": ["../ui/src"],
+      "@turbo-super/features": ["../features/src"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.*"]

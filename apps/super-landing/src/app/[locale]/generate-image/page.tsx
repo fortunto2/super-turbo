@@ -12,8 +12,7 @@ import {
 } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
 import { Image, Sparkles, ArrowLeft } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/ui";
-import { useTranslation } from "@/hooks/use-translation";
+import { StripePaymentButton } from "@turbo-super/payment";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Locale } from "@/config/i18n-config";
@@ -22,7 +21,6 @@ import { getModelConfig } from "@/lib/models-config";
 export default function GenerateImagePage() {
   const searchParams = useSearchParams();
   const locale = (searchParams.get("locale") as Locale) || "en";
-  const { t } = useTranslation(locale);
   const [prompt, setPrompt] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const modelName = searchParams.get("model") || "Unknown Model";
@@ -159,7 +157,7 @@ export default function GenerateImagePage() {
                 generationType="text-to-image"
                 imageFile={null}
                 modelName={modelName}
-                t={t}
+                onPaymentClick={() => {}}
               />
             )}
 

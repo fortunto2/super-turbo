@@ -2764,6 +2764,23 @@ var superLandingDictionaries = {
 function getSuperLandingDictionary(locale) {
   return superLandingDictionaries[locale] || en;
 }
+function getClientSuperLandingTranslation(locale) {
+  const dict = getSuperLandingDictionary(locale);
+  function t(key, fallback) {
+    const keys = key.split(".");
+    let value = dict;
+    for (const k of keys) {
+      if (value && typeof value === "object" && k in value) {
+        value = value[k];
+      } else {
+        if (fallback !== void 0) return fallback;
+        return key;
+      }
+    }
+    return value;
+  }
+  return { t, dict };
+}
 
 // src/translation/dictionaries/super-landing/dictionaries-server.ts
 var superLandingDictionaries2 = {
@@ -2775,6 +2792,23 @@ var superLandingDictionaries2 = {
 };
 function getSuperLandingDictionaryServer(locale) {
   return superLandingDictionaries2[locale] || en;
+}
+function getServerSuperLandingTranslation(locale) {
+  const dict = getSuperLandingDictionaryServer(locale);
+  const t = (key, fallback) => {
+    const keys = key.split(".");
+    let value = dict;
+    for (const k of keys) {
+      if (value && typeof value === "object" && k in value) {
+        value = value[k];
+      } else {
+        if (fallback !== void 0) return fallback;
+        return key;
+      }
+    }
+    return value;
+  };
+  return { t, dict };
 }
 
 // src/translation/hooks.ts
@@ -2899,9 +2933,11 @@ export {
   formatPercentage,
   formatRelativeTime,
   getAllTranslationKeys,
+  getClientSuperLandingTranslation,
   getCurrentMode,
   getCurrentPrices,
   getNestedValue,
+  getServerSuperLandingTranslation,
   getSingleVideoPrice,
   getStripeConfig,
   getSuperLandingDictionary,

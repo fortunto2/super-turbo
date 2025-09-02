@@ -2,5 +2,11 @@
 export * from "./super-landing";
 
 // Direct exports for easier access
-export { getSuperLandingDictionary } from "./super-landing/dictionaries";
-export { getSuperLandingDictionaryServer } from "./super-landing/dictionaries-server";
+export {
+  getSuperLandingDictionary,
+  getClientSuperLandingTranslation,
+} from "./super-landing/dictionaries";
+export {
+  getSuperLandingDictionaryServer,
+  getServerSuperLandingTranslation,
+} from "./super-landing/dictionaries-server";
