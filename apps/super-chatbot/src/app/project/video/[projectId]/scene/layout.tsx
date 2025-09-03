@@ -4,14 +4,14 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
 
-export default async function Layout({
+export default function Layout({
   children,
   params,
 }: {
   children: ReactNode;
   params: { projectId: string };
 }) {
-  const { projectId } = await params;
+  const { projectId } = params;
   return (
     <div className="w-full h-screen overflow-hidden bg-background">
       <div className="h-full px-4 py-4 flex flex-col">
