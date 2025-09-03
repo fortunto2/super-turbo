@@ -1,85 +1,314 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, Download, Share2, Eye } from "lucide-react";
-import { ISceneRead } from "@turbo-super/api";
-import { ShareDialog } from "@/components/share-dialog";
-import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Eye } from "lucide-react";
 
+import {
+  FileTypeEnum,
+  ISceneRead,
+  ITaskRead,
+  TaskStatusEnum,
+} from "@turbo-super/api";
+import type { IFileRead } from "@/lib/api/models/IFileRead";
+import { Toolbar, ToolType } from "./components/toolbar";
+import { AnimatingTool } from "./components/animating-tool";
+import { Placeholder } from "./components/helper";
+import { SoundEffectList } from "./components/soundeffect-list";
+import { MediaList } from "./components/media-list";
+import { ScenePreview } from "./components/scene-preview";
+import { VoiceoverList } from "./components/voiceover-list";
+
+// ---------- Types ----------
 interface SceneData {
   success: boolean;
   scene?: ISceneRead;
   error?: string;
 }
 
+// ---------- Main component ----------
 export default function ScenePage() {
   const params = useParams();
   const router = useRouter();
+
   const projectId = params.projectId as string;
   const sceneId = params.sceneId as string;
 
   const [scene, setScene] = useState<ISceneRead | null>(null);
+  const [files, setFiles] = useState<IFileRead[]>([]);
+  const [activeTool, setActiveTool] = useState<ToolType | null>("mediaList");
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [pendingFileIds, setPendingFileIds] = useState<string[]>([]);
 
+  const [fileGenerationStartTimes, setFileGenerationStartTimes] = useState<
+    Record<string, number>
+  >({});
+
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ---------- Data fetching ----------
   useEffect(() => {
+    if (!sceneId) return;
+
+    setIsLoading(true);
+
     const fetchScene = async () => {
       try {
-        if (sceneId !== scene?.id) {
-          setIsLoading(true);
-        }
+        if (sceneId !== scene?.id) setIsLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `/api/story-editor/scene?sceneId=${sceneId}`
-        );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("Scene not found");
-            return;
-          }
-          throw new Error(`HTTP ${response.status}`);
+        const res = await fetch(`/api/story-editor/scene?sceneId=${sceneId}`);
+        if (!res.ok) {
+          if (res.status === 404) setError("Scene not found");
+          else throw new Error(`HTTP ${res.status}`);
+          return;
         }
 
-        const data: SceneData = await response.json();
-
-        if (data.success && data.scene) {
-          setScene(data.scene);
-        } else {
-          setError(data.error || "Failed to load scene");
-        }
-      } catch (error) {
-        console.error("Error fetching scene:", error);
+        const data: SceneData = await res.json();
+        if (data.success && data.scene) setScene(data.scene);
+        else setError(data.error || "Failed to load scene");
+      } catch (e) {
+        console.error("Error fetching scene:", e);
         setError("Scene loading error");
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    if (sceneId) {
-      fetchScene();
-    }
-  }, [sceneId]);
+    const fetchFiles = async () => {
+      const types =
+        activeTool === "soundEffect"
+          ? FileTypeEnum.SOUND_EFFECT
+          : activeTool === "voiceover"
+            ? FileTypeEnum.VOICEOVER
+            : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
 
+      try {
+        const res = await fetch(
+          `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
+        );
+        if (!res.ok) return;
+
+        const json = await res.json();
+        setFiles(json.items as IFileRead[]);
+      } catch (e) {
+        console.error("Error fetching files", e);
+      }
+    };
+
+    Promise.all([fetchScene(), fetchFiles()]).finally(() => {
+      setIsLoading(false);
+    });
+  }, [sceneId, projectId, scene?.id, activeTool]);
+
+  // Poll pending files until ready, then refresh files list
+  useEffect(() => {
+    const TIMEOUT_MS = 8 * 60 * 1000; // 8 минут
+    const POLL_INTERVAL_MS = 10000; // 10 секунд
+
+    const checkPending = async () => {
+      let remaining: string[] = [];
+      const currentTime = Date.now();
+
+      // Получаем актуальные значения из состояния
+      const currentPendingFileIds = pendingFileIds;
+      const currentStartTimes = fileGenerationStartTimes;
+
+      for (const id of currentPendingFileIds) {
+        const startTime = currentStartTimes[id];
+
+        // Проверяем таймаут
+        if (startTime && currentTime - startTime > TIMEOUT_MS) {
+          console.warn(
+            `File generation timeout for ${id} after ${TIMEOUT_MS}ms`
+          );
+          // Не добавляем в remaining - считаем что файл "провалился"
+          continue;
+        }
+
+        try {
+          const res = await fetch(`/api/file/${id}`);
+
+          if (!res.ok) {
+            remaining.push(id);
+            continue;
+          }
+          const json = await res.json();
+          if (!json?.url) {
+            remaining.push(id);
+          }
+          if (
+            json.tasks.some(
+              (task: ITaskRead) => task.status === TaskStatusEnum.ERROR
+            )
+          ) {
+            remaining = remaining.filter((pendingId) => pendingId !== id);
+
+            setFileGenerationStartTimes((prev) => {
+              const updated = { ...prev };
+              delete updated[id];
+              return updated;
+            });
+          }
+        } catch {
+          remaining.push(id);
+        }
+      }
+
+      setPendingFileIds(remaining);
+
+      // Очищаем время генерации для завершенных файлов
+      const finishedFileIds = currentPendingFileIds.filter(
+        (id) => !remaining.includes(id)
+      );
+      if (finishedFileIds.length > 0) {
+        setFileGenerationStartTimes((prev) => {
+          const updated = { ...prev };
+          finishedFileIds.forEach((id) => delete updated[id]);
+          return updated;
+        });
+      }
+
+      // If any finished, refresh files
+      if (remaining.length < currentPendingFileIds.length) {
+        try {
+          const res = await fetch(
+            `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`
+          );
+          if (res.ok) {
+            const json = await res.json();
+            setFiles(json.items as IFileRead[]);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    // Очищаем предыдущий интервал
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    // Запускаем пулинг только если есть pending файлы
+    if (pendingFileIds.length > 0) {
+      pollingIntervalRef.current = setInterval(checkPending, POLL_INTERVAL_MS);
+      void checkPending();
+    }
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [pendingFileIds.length, projectId, sceneId, fileGenerationStartTimes]); // Зависим от длины массива и времен генерации
+
+  // ---------- Handlers ----------
+  const handleSelectFile = async (fileId: string) => {
+    if (!sceneId) return;
+
+    try {
+      // Обновляем сцену
+      const response = await fetch(`/api/scene/update?sceneId=${sceneId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sceneId,
+          requestBody: { ...scene, file_id: fileId },
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Scene update failed: ${errText}`);
+      }
+
+      const updatedScene: ISceneRead = await response.json();
+      if (!!updatedScene) setScene(updatedScene);
+    } catch (e) {
+      console.error("Select file error", e);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!scene?.file?.url) return;
+    const a = document.createElement("a");
+    a.href = scene.file.url;
+    a.download = `scene-${scene.id}.asset`;
+    a.click();
+  };
+
+  const handleChangeTool = (tool: ToolType | null) => setActiveTool(tool);
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      const response = await fetch("/api/file/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: fileId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete file");
+      }
+
+      // Обновляем список файлов
+      const types =
+        activeTool === "soundEffect"
+          ? FileTypeEnum.SOUND_EFFECT
+          : activeTool === "voiceover"
+            ? FileTypeEnum.VOICEOVER
+            : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
+
+      const res = await fetch(
+        `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
+      );
+      if (res.ok) {
+        const json = await res.json();
+        setFiles(json.items as IFileRead[]);
+      }
+
+      // Если удаленный файл был активным, очищаем сцену
+      if (scene?.file?.id === fileId) {
+        setScene((prev) => (prev ? { ...prev, file: null } : null));
+      }
+
+      // Очищаем время генерации для удаленного файла
+      setFileGenerationStartTimes((prev) => {
+        const updated = { ...prev };
+        delete updated[fileId];
+        return updated;
+      });
+
+      // Удаляем из pending файлов если он там был
+      setPendingFileIds((prev) => prev.filter((id) => id !== fileId));
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      throw error; // Пробрасываем ошибку для обработки в MediaList
+    }
+  };
+
+  // ---------- UI states ----------
   if (!projectId || !sceneId) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center bg-card border border-border rounded-2xl p-8 shadow-2xl">
-          <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="p-8 text-center bg-card border rounded-2xl shadow-2xl">
+          <div className="size-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
             <Eye className="size-8 text-red-600 dark:text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="mb-4 text-2xl font-bold text-foreground">
             Scene ID not found
           </h1>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="inline-flex items-center px-6 py-3 rounded-lg bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:bg-primary/90"
           >
-            <ArrowLeft className="size-4 mr-2" />
+            <ArrowLeft className="mr-2 size-4" />
             Go Back
           </button>
         </div>
@@ -87,172 +316,200 @@ export default function ScenePage() {
     );
   }
 
+  // ---------- Render ----------
   return (
-    <div className="w-full min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="flex-1 flex gap-4 overflow-hidden rounded-xl border bg-card p-4">
+      {/* Left: scene preview & content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
-              <ArrowLeft className="size-4" />
-            </div>
-            <span className="font-medium">Go Back</span>
-          </button>
-
-          <Link
-            href={`/project/video/${projectId}/timeline`}
-            className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
-              <ArrowRight className="size-4" />
-            </div>
-            <span className="font-medium">Go to Timeline</span>
-          </Link>
-        </div>
-
-        {/* Scene Content */}
-        <div className="max-w-6xl mx-auto mb-8">
-          <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-            {/* Fixed height for all states */}
-            <div className="min-h-[600px] flex items-center justify-center">
-              {isLoading ? (
-                <div className="text-center space-y-4 size-full items-center justify-center flex flex-col">
-                  <div className="relative">
-                    <div className="size-16 border-4 border-muted rounded-full animate-spin"></div>
-                    <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-lg font-medium text-foreground">
-                      Loading scene...
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Preparing your scene
-                    </p>
-                  </div>
-                </div>
-              ) : error ? (
-                <div className="size-full text-center space-y-4">
-                  <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-                    <Eye className="size-8 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xl font-medium text-red-600 dark:text-red-400">
-                      Loading Error
-                    </p>
-                    <p className="text-muted-foreground">{error}</p>
-                  </div>
-                </div>
-              ) : scene ? (
-                <div className="size-full p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Scene {scene.order + 1}
-                    </h3>
-                  </div>
-
-                  {/* Scene Image */}
-                  <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px] mb-6 flex items-center justify-center">
-                    {scene.file?.url ? (
-                      <Image
-                        src={scene.file?.url}
-                        alt={`Scene ${scene.id}`}
-                        className="max-w-full max-h-full object-contain"
-                        width={1000}
-                        height={1000}
-                      />
-                    ) : (
-                      <div className="text-center text-muted-foreground">
-                        <Eye className="size-16 mx-auto mb-4" />
-                        <p>Scene image unavailable</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Scene Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Scene Info */}
-                    <div className="bg-muted/50 rounded-xl p-6">
-                      <h4 className="text-lg font-semibold text-foreground mb-4">
-                        Scene Information
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">ID:</span>
-                          <span className="font-mono text-sm text-foreground">
-                            {scene.id.slice(-12)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Order:</span>
-                          <span className="px-3 py-1 bg-muted text-foreground rounded-full text-sm font-medium">
-                            {scene.order + 1}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Scene Actions */}
-                    <div className="bg-muted/50 rounded-xl p-6">
-                      <h4 className="text-lg font-semibold text-foreground mb-4">
-                        Actions
-                      </h4>
-                      <div className="space-y-3">
-                        <button className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg">
-                          <Download className="size-4" />
-                          <span>Download Image</span>
-                        </button>
-                        <button
-                          onClick={() => setIsShareDialogOpen(true)}
-                          className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all duration-300 hover:scale-105 shadow-lg"
-                        >
-                          <Share2 className="size-4" />
-                          <span>Share</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Scene Description */}
-                  {scene.visual_description && (
-                    <div className="mt-6 bg-muted/50 rounded-xl p-6">
-                      <h4 className="text-lg font-semibold text-foreground mb-4">
-                        Scene Description
-                      </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {scene.visual_description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center space-y-4">
-                  <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                    <Eye className="size-8 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xl font-medium text-muted-foreground">
-                      Scene not found
-                    </p>
-                    <p className="text-muted-foreground">
-                      Failed to load scene data
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+        <div className="mb-3 flex shrink-0 items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">
+            Scene {scene?.order != null ? scene.order + 1 : ""}
+          </h3>
+          <div className="text-xs text-muted-foreground">
+            Duration: {scene?.duration}
           </div>
         </div>
 
-        {/* Share Dialog */}
-        <ShareDialog
-          isOpen={isShareDialogOpen}
-          onClose={() => setIsShareDialogOpen(false)}
+        {/* Scene preview */}
+        <ScenePreview
+          scene={scene}
+          activeTool={activeTool}
+          isLoading={isLoading && !scene}
+          error={error}
+          onActiveToolChange={setActiveTool}
+          isPlaying={isPlaying}
+          onPlayingChange={setIsPlaying}
           projectId={projectId}
+          onStarted={(newFileId) => {
+            setPendingFileIds((prev) => {
+              return [...prev, newFileId];
+            });
+            setFileGenerationStartTimes((prev) => ({
+              ...prev,
+              [newFileId]: Date.now(),
+            }));
+            setActiveTool("mediaList");
+          }}
         />
+
+        {/* Tools content */}
+        <div className="mt-4 flex-1 overflow-hidden">
+          {activeTool === "mediaList" && (
+            <MediaList
+              files={files}
+              scene={scene}
+              onSelect={handleSelectFile}
+              onDelete={handleDeleteFile}
+              isLoading={isLoading}
+            />
+          )}
+          {activeTool === "voiceover" && (
+            <VoiceoverList
+              files={files}
+              scene={scene}
+              onSelect={handleSelectFile}
+              isLoading={isLoading}
+            />
+          )}
+          {activeTool === "soundEffect" && (
+            <SoundEffectList
+              files={files}
+              scene={scene}
+              onSelect={handleSelectFile}
+              isLoading={isLoading}
+            />
+          )}
+          {activeTool === "addText" && (
+            <Placeholder text="Добавление текстовых объектов" />
+          )}
+          {activeTool === "animating" && (
+            <AnimatingTool
+              sceneId={sceneId}
+              projectId={projectId}
+              imageUrl={scene?.file?.url}
+              onStarted={(newFileId) => {
+                setPendingFileIds((prev) => {
+                  return [...prev, newFileId];
+                });
+                setFileGenerationStartTimes((prev) => ({
+                  ...prev,
+                  [newFileId]: Date.now(),
+                }));
+                setActiveTool("mediaList");
+              }}
+            />
+          )}
+        </div>
       </div>
+
+      {/* Right: toolbar */}
+      <Toolbar
+        scene={scene}
+        isPlaying={isPlaying}
+        onDownload={handleDownload}
+        activeTool={activeTool}
+        onChangeTool={handleChangeTool}
+        togglePlay={togglePlay}
+        isLoading={isLoading && !scene}
+      />
     </div>
   );
 }
+
+// export function ScenePreview({
+//   scene,
+//   isLoading,
+//   error,
+//   activeTool,
+// }: ScenePreviewProps) {
+//   const imgRef = useRef<HTMLImageElement>(null);
+//   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+//   const containerRef = useRef<HTMLDivElement>(null);
+
+//   const aspectRatio: number = useMemo(() => {
+//     const value = "16:9";
+//     const [width, height] = value.split(":").map(Number);
+//     return width / height;
+//   }, []);
+
+//   // Определяем размеры картинки для канваса
+//   const updateCanvasSize = () => {
+//     const img = imgRef.current;
+//     const container = containerRef.current;
+//     if (!img || !container) return;
+
+//     const naturalWidth = img.naturalWidth || 0;
+//     const naturalHeight = img.naturalHeight || 0;
+//     const containerWidth = container.clientWidth || 0;
+//     const containerHeight = container.clientHeight || 0;
+
+//     if (!naturalWidth || !naturalHeight || !containerWidth || !containerHeight)
+//       return;
+
+//     const scale = Math.min(
+//       containerWidth / naturalWidth,
+//       containerHeight / naturalHeight
+//     );
+//     const width = Math.floor(naturalWidth * scale);
+//     const height = Math.floor(naturalHeight * scale);
+//     setCanvasSize({ width, height });
+//   };
+
+//   useEffect(() => {
+//     window.addEventListener("resize", updateCanvasSize);
+//     return () => window.removeEventListener("resize", updateCanvasSize);
+//   }, []);
+
+//   const containerHeight =
+//     activeTool === null ||
+//     activeTool === "animating" ||
+//     activeTool === "inpainting"
+//       ? "100%"
+//       : "60%";
+
+//   return (
+//     <div
+//       style={{ height: containerHeight }}
+//       className="flex items-center justify-center overflow-hidden rounded-lg bg-black relative"
+//       ref={containerRef}
+//     >
+//       {isLoading ? (
+//         <Loader />
+//       ) : error ? (
+//         <ErrorMessage message={error} />
+//       ) : scene?.file?.url ? (
+//         <div className="flex justify-center items-center w-full h-full">
+//           <div
+//             className="relative"
+//             style={{
+//               width: `${canvasSize.width}px`,
+//               height: `${canvasSize.height}px`,
+//             }}
+//           >
+//             {/* eslint-disable-next-line @next/next/no-img-element */}
+//             <img
+//               src={scene.file.url}
+//               alt={`Scene ${scene.id}`}
+//               className="absolute inset-0 w-full h-full object-contain"
+//               ref={imgRef}
+//               onLoad={updateCanvasSize}
+//             />
+//             {canvasSize.width > 0 && canvasSize.height > 0 && (
+//               <FabricCanvas
+//                 className="absolute top-0 left-0"
+//                 initialObjects={scene.objects}
+//                 onReady={() => {}}
+//                 readonly={false}
+//                 width={canvasSize.width}
+//                 height={canvasSize.height}
+//               />
+//             )}
+//           </div>
+//         </div>
+//       ) : (
+//         <EmptyPreview />
+//       )}
+//     </div>
+//   );
+// }

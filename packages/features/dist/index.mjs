@@ -2647,6 +2647,153 @@ var FabricCanvas = ({
     }
   );
 };
+var buildFabricEditor = (canvas) => {
+  return {
+    canvas,
+    addText(text, options) {
+      const textObject = new Textbox(text, options);
+      canvas.add(textObject);
+      canvas.setActiveObject(textObject);
+      canvas.renderAll();
+    },
+    removeText() {
+      const activeObject = this.getActiveText();
+      if (activeObject) {
+        canvas.remove(activeObject);
+        canvas.renderAll();
+      }
+    },
+    setStyleText(style) {
+      const activeObject = this.getActiveText();
+      if (!activeObject) return false;
+      const currentValue = activeObject.get(styleMap[style]);
+      if (style === "bold") {
+        const newValue = currentValue === "bold" ? "normal" : "bold";
+        this.updateText(activeObject, { fontWeight: newValue });
+      } else if (style === "italic") {
+        const newValue = currentValue === "italic" ? "normal" : "italic";
+        this.updateText(activeObject, { fontStyle: newValue });
+      } else if (style === "uppercase") {
+        const newText = isUppercase(activeObject.text);
+        this.updateText(activeObject, { text: newText });
+      } else {
+        this.updateText(activeObject, {
+          [styleMap[style]]: !currentValue
+        });
+      }
+    },
+    updateText(object, options) {
+      object.set(options);
+      canvas.fire("text:changed", { target: object });
+      canvas.renderAll();
+    },
+    getActiveText() {
+      const object = canvas.getActiveObject();
+      if (object instanceof Textbox) {
+        return object;
+      }
+    },
+    exportObjects() {
+      const canvasJSON = canvas.toJSON();
+      const canvasWidth = canvas.getWidth();
+      const canvasHeight = canvas.getHeight();
+      const canvasSquare = canvasWidth * canvasHeight;
+      const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
+      return canvasJSON.objects.map((object) => {
+        const { left, top, width, height, fontSize } = object;
+        return {
+          ...object,
+          left: left / canvasWidth,
+          top: top / canvasHeight,
+          width: width / canvasWidth,
+          height: height / canvasHeight,
+          fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
+        };
+      });
+    }
+  };
+};
+var isUppercase = (text) => {
+  const isUppercase2 = text === text.toUpperCase();
+  const newText = isUppercase2 ? text.toLowerCase() : text.toUpperCase();
+  return newText;
+};
+var styleMap = {
+  bold: "fontWeight",
+  italic: "fontStyle",
+  underline: "underline",
+  linethrough: "linethrough"
+};
+
+// src/fabric-editor/hook.ts
+var useFabricEditor = ({ onChange }) => {
+  const [canvas, setCanvas] = useState(null);
+  const isInitializing = useRef(true);
+  const [selectedObjects, setSelectedObject] = useState([]);
+  useEffect(() => {
+    const onSelectionCleared = () => {
+      setSelectedObject([]);
+    };
+    const onSelectionCreated = (event) => {
+      setSelectedObject(event.selected);
+    };
+    const onSelectionUpdated = (event) => {
+      setSelectedObject(event.selected);
+    };
+    const onObjectAdded = (event) => {
+      if (!isInitializing.current) {
+        onChange?.(event.target);
+      }
+    };
+    const onObjectRemoved = (event) => {
+      onChange?.(event.target);
+    };
+    const onObjectModified = (event) => {
+      onChange?.(event.target);
+    };
+    const onTextChange = (event) => {
+      onChange?.(event.target);
+    };
+    const bindEvents = (canvas2) => {
+      canvas2.on("selection:cleared", onSelectionCleared);
+      canvas2.on("selection:created", onSelectionCreated);
+      canvas2.on("selection:updated", onSelectionUpdated);
+      canvas2.on("object:added", onObjectAdded);
+      canvas2.on("object:removed", onObjectRemoved);
+      canvas2.on("object:modified", onObjectModified);
+      canvas2.on("text:changed", onTextChange);
+    };
+    if (canvas) {
+      bindEvents(canvas);
+      setTimeout(() => {
+        isInitializing.current = false;
+      }, 0);
+    }
+    return () => {
+      if (!canvas) return;
+      canvas.off("selection:cleared", onSelectionCleared);
+      canvas.off("selection:created", onSelectionCreated);
+      canvas.off("selection:updated", onSelectionUpdated);
+      canvas.off("object:added", onObjectAdded);
+      canvas.off("object:removed", onObjectRemoved);
+      canvas.off("object:modified", onObjectModified);
+      canvas.off("text:changed", onTextChange);
+    };
+  }, [canvas, onChange]);
+  const editor = useMemo(
+    () => canvas ? buildFabricEditor(canvas) : void 0,
+    [canvas]
+  );
+  const handleReady = (canvas2) => {
+    console.log("Fabric canvas ready");
+    setCanvas(canvas2);
+  };
+  return {
+    selectedObjects,
+    handleReady,
+    editor
+  };
+};
 var ScenesComponent = ({ scenes }) => {
   const { width, height } = useVideoConfig();
   return /* @__PURE__ */ jsxs(AbsoluteFill, { style: { backgroundColor: "black" }, children: [
@@ -3455,7 +3602,7 @@ var InpaintingTools = ({
     e.stopPropagation();
     if (!canvas) return;
     if (active) {
-      onActiveChange("");
+      onActiveChange(null);
       if (isCombined) {
         onClose();
       }
@@ -3706,7 +3853,7 @@ var Inpainting = ({
   initialPrompt = "",
   isGenerating = false
 }) => {
-  const [activeTool, setActiveTool] = useState("");
+  const [activeTool, setActiveTool] = useState(null);
   const [canvas, setCanvas] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
@@ -3763,6 +3910,6 @@ var Inpainting = ({
   ] });
 };
 
-export { CharacterType, EnhancementInfoType, HistoryItemType, Inpainting, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
+export { CharacterType, Control, EnhancementInfoType, FabricCanvas, HistoryItemType, Inpainting, Layer, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useFabricEditor, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

@@ -154,6 +154,8 @@ export async function POST(request: NextRequest) {
           frameRate: Number(body.frameRate) || 30,
           negativePrompt: body.negativePrompt || "",
           seed: body.seed ? Number(body.seed) : undefined,
+          projectId: body?.projectId,
+          sceneId: body?.sceneId,
         },
         config
       );
@@ -176,6 +178,8 @@ export async function POST(request: NextRequest) {
           frameRate: Number(body.frameRate) || 30,
           negativePrompt: body.negativePrompt || "",
           seed: body.seed ? Number(body.seed) : undefined,
+          projectId: body?.projectId,
+          sceneId: body?.sceneId,
         },
         config
       );

@@ -48,6 +48,8 @@ export async function POST(request: NextRequest) {
         mask: form.get("mask") as File,
         sourceImageId: form.get("sourceImageId") as string,
         sourceImageUrl: form.get("sourceImageUrl") as string,
+        projectId: form.get("projectId"),
+        sceneId: form.get("sceneId"),
       };
     } else {
       body = await request.json();

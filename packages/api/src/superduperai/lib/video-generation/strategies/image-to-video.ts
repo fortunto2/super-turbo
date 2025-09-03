@@ -163,6 +163,8 @@ export class ImageToVideoStrategy implements VideoGenerationStrategy {
         : params.model?.name || "azure-openai/sora";
 
     const payload: any = {
+      project_id: params?.projectId,
+      scene_id: params?.sceneId,
       config: {
         prompt: params.prompt || "animate this image naturally", // Default for image-to-video
         generation_config_name: modelName,

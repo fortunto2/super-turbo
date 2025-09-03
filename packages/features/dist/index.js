@@ -2649,6 +2649,153 @@ var FabricCanvas = ({
     }
   );
 };
+var buildFabricEditor = (canvas) => {
+  return {
+    canvas,
+    addText(text, options) {
+      const textObject = new fabric.Textbox(text, options);
+      canvas.add(textObject);
+      canvas.setActiveObject(textObject);
+      canvas.renderAll();
+    },
+    removeText() {
+      const activeObject = this.getActiveText();
+      if (activeObject) {
+        canvas.remove(activeObject);
+        canvas.renderAll();
+      }
+    },
+    setStyleText(style) {
+      const activeObject = this.getActiveText();
+      if (!activeObject) return false;
+      const currentValue = activeObject.get(styleMap[style]);
+      if (style === "bold") {
+        const newValue = currentValue === "bold" ? "normal" : "bold";
+        this.updateText(activeObject, { fontWeight: newValue });
+      } else if (style === "italic") {
+        const newValue = currentValue === "italic" ? "normal" : "italic";
+        this.updateText(activeObject, { fontStyle: newValue });
+      } else if (style === "uppercase") {
+        const newText = isUppercase(activeObject.text);
+        this.updateText(activeObject, { text: newText });
+      } else {
+        this.updateText(activeObject, {
+          [styleMap[style]]: !currentValue
+        });
+      }
+    },
+    updateText(object, options) {
+      object.set(options);
+      canvas.fire("text:changed", { target: object });
+      canvas.renderAll();
+    },
+    getActiveText() {
+      const object = canvas.getActiveObject();
+      if (object instanceof fabric.Textbox) {
+        return object;
+      }
+    },
+    exportObjects() {
+      const canvasJSON = canvas.toJSON();
+      const canvasWidth = canvas.getWidth();
+      const canvasHeight = canvas.getHeight();
+      const canvasSquare = canvasWidth * canvasHeight;
+      const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
+      return canvasJSON.objects.map((object) => {
+        const { left, top, width, height, fontSize } = object;
+        return {
+          ...object,
+          left: left / canvasWidth,
+          top: top / canvasHeight,
+          width: width / canvasWidth,
+          height: height / canvasHeight,
+          fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
+        };
+      });
+    }
+  };
+};
+var isUppercase = (text) => {
+  const isUppercase2 = text === text.toUpperCase();
+  const newText = isUppercase2 ? text.toLowerCase() : text.toUpperCase();
+  return newText;
+};
+var styleMap = {
+  bold: "fontWeight",
+  italic: "fontStyle",
+  underline: "underline",
+  linethrough: "linethrough"
+};
+
+// src/fabric-editor/hook.ts
+var useFabricEditor = ({ onChange }) => {
+  const [canvas, setCanvas] = react.useState(null);
+  const isInitializing = react.useRef(true);
+  const [selectedObjects, setSelectedObject] = react.useState([]);
+  react.useEffect(() => {
+    const onSelectionCleared = () => {
+      setSelectedObject([]);
+    };
+    const onSelectionCreated = (event) => {
+      setSelectedObject(event.selected);
+    };
+    const onSelectionUpdated = (event) => {
+      setSelectedObject(event.selected);
+    };
+    const onObjectAdded = (event) => {
+      if (!isInitializing.current) {
+        onChange?.(event.target);
+      }
+    };
+    const onObjectRemoved = (event) => {
+      onChange?.(event.target);
+    };
+    const onObjectModified = (event) => {
+      onChange?.(event.target);
+    };
+    const onTextChange = (event) => {
+      onChange?.(event.target);
+    };
+    const bindEvents = (canvas2) => {
+      canvas2.on("selection:cleared", onSelectionCleared);
+      canvas2.on("selection:created", onSelectionCreated);
+      canvas2.on("selection:updated", onSelectionUpdated);
+      canvas2.on("object:added", onObjectAdded);
+      canvas2.on("object:removed", onObjectRemoved);
+      canvas2.on("object:modified", onObjectModified);
+      canvas2.on("text:changed", onTextChange);
+    };
+    if (canvas) {
+      bindEvents(canvas);
+      setTimeout(() => {
+        isInitializing.current = false;
+      }, 0);
+    }
+    return () => {
+      if (!canvas) return;
+      canvas.off("selection:cleared", onSelectionCleared);
+      canvas.off("selection:created", onSelectionCreated);
+      canvas.off("selection:updated", onSelectionUpdated);
+      canvas.off("object:added", onObjectAdded);
+      canvas.off("object:removed", onObjectRemoved);
+      canvas.off("object:modified", onObjectModified);
+      canvas.off("text:changed", onTextChange);
+    };
+  }, [canvas, onChange]);
+  const editor = react.useMemo(
+    () => canvas ? buildFabricEditor(canvas) : void 0,
+    [canvas]
+  );
+  const handleReady = (canvas2) => {
+    console.log("Fabric canvas ready");
+    setCanvas(canvas2);
+  };
+  return {
+    selectedObjects,
+    handleReady,
+    editor
+  };
+};
 var ScenesComponent = ({ scenes }) => {
   const { width, height } = remotion.useVideoConfig();
   return /* @__PURE__ */ jsxRuntime.jsxs(remotion.AbsoluteFill, { style: { backgroundColor: "black" }, children: [
@@ -3457,7 +3604,7 @@ var InpaintingTools = ({
     e.stopPropagation();
     if (!canvas) return;
     if (active) {
-      onActiveChange("");
+      onActiveChange(null);
       if (isCombined) {
         onClose();
       }
@@ -3708,7 +3855,7 @@ var Inpainting = ({
   initialPrompt = "",
   isGenerating = false
 }) => {
-  const [activeTool, setActiveTool] = react.useState("");
+  const [activeTool, setActiveTool] = react.useState(null);
   const [canvas, setCanvas] = react.useState(null);
   const [isLoading, setIsLoading] = react.useState(false);
   react.useEffect(() => {
@@ -3766,9 +3913,12 @@ var Inpainting = ({
 };
 
 exports.CharacterType = CharacterType;
+exports.Control = Control;
 exports.EnhancementInfoType = EnhancementInfoType;
+exports.FabricCanvas = FabricCanvas;
 exports.HistoryItemType = HistoryItemType;
 exports.Inpainting = Inpainting;
+exports.Layer = Layer;
 exports.MoodboardImageType = MoodboardImageType;
 exports.PresetOptionsType = PresetOptionsType;
 exports.ProjectTimeline = ProjectTimeline;
@@ -3799,6 +3949,7 @@ exports.projectQueryKeys = projectQueryKeys;
 exports.ru = ru_default;
 exports.sceneToMediaFormatting = sceneToMediaFormatting;
 exports.tr = tr_default;
+exports.useFabricEditor = useFabricEditor;
 exports.useGenerateTimeline = useGenerateTimeline;
 exports.useMediaPrefetch = useMediaPrefetch;
 exports.useProject = useProject;

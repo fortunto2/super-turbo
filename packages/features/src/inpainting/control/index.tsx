@@ -12,7 +12,7 @@ type Props = {
   onComplete?: (result: { prompt: string; mask: File; config: string }) => void;
   loading?: boolean;
   initialPrompt?: string;
-  onActiveChange?: (tool: string) => void;
+  onActiveChange?: (tool: string | null) => void;
 };
 
 export const Control = ({
@@ -33,7 +33,7 @@ export const Control = ({
     onComplete?.({ prompt, mask, config: generationConfig });
   };
 
-  const handleActiveChange = (tool: string) => {
+  const handleActiveChange = (tool: string | null) => {
     onActiveChange?.(tool);
   };
 
