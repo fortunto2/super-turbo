@@ -128,16 +128,33 @@ export const ScenePreview = ({
   }, []);
 
   // Recalculate when activeTool changes (container height may change)
+  // Добавляем задержку для учета плавных переходов
   useEffect(() => {
-    updateCanvasSize();
+    const timer = setTimeout(() => {
+      updateCanvasSize();
+    }, 350); // 300ms анимация + 50ms буфер
+
+    return () => clearTimeout(timer);
   }, [activeTool]);
 
   // Observe container size changes to recompute contain fit precisely
   useEffect(() => {
     if (!containerRef.current) return;
-    const observer = new ResizeObserver(() => updateCanvasSize());
+
+    let timeoutId: NodeJS.Timeout;
+    const observer = new ResizeObserver(() => {
+      // Добавляем задержку для учета плавных переходов
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        updateCanvasSize();
+      }, 50); // Небольшая задержка для стабилизации размеров
+    });
+
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const containerHeight = useMemo(() => {
@@ -191,7 +208,7 @@ export const ScenePreview = ({
   return (
     <div
       style={{ height: containerHeight }}
-      className="flex items-center justify-center overflow-hidden rounded-lg bg-black relative gap-3"
+      className="flex items-center justify-center overflow-hidden rounded-lg bg-black relative gap-3 transition-[height] duration-300 ease-in-out"
       ref={containerRef}
     >
       {isLoading ? (

@@ -31,15 +31,7 @@ export default async function Layout({
         </div>
         {/* Main no-scroll layout */}
         <div className="flex-1 flex gap-4 overflow-hidden">
-          {/* Left side: scenes list */}
-          <aside className="w-1/5 min-w-[220px] bg-card border border-border rounded-xl p-2 overflow-hidden">
-            <div className="h-full grid grid-cols-1 auto-rows-[minmax(56px,auto)] gap-2 overflow-hidden">
-              <div className="flex-1 overflow-auto">
-                <Scenes />
-              </div>
-            </div>
-          </aside>
-
+          <Scenes />
           {children}
         </div>
       </div>
