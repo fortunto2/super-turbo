@@ -18,6 +18,9 @@ import { SoundEffectList } from "./components/soundeffect-list";
 import { MediaList } from "./components/media-list";
 import { ScenePreview } from "./components/scene-preview";
 import { VoiceoverList } from "./components/voiceover-list";
+import { SceneHeader } from "./components/scene-header";
+import { SceneContent } from "./components/scene-content";
+import { ErrorState } from "./components/error-state";
 
 // ---------- Types ----------
 interface SceneData {
@@ -26,29 +29,63 @@ interface SceneData {
   error?: string;
 }
 
-// ---------- Main component ----------
-export default function ScenePage() {
-  const params = useParams();
-  const router = useRouter();
+interface ScenePageState {
+  scene: ISceneRead | null;
+  files: IFileRead[];
+  activeTool: ToolType | null;
+  isLoading: boolean;
+  error: string | null;
+  isPlaying: boolean;
+  pendingFileIds: string[];
+  fileGenerationStartTimes: Record<string, number>;
+}
 
-  const projectId = params.projectId as string;
-  const sceneId = params.sceneId as string;
-
+// ---------- Custom hooks ----------
+function useSceneData(projectId: string, sceneId: string) {
   const [scene, setScene] = useState<ISceneRead | null>(null);
-  const [files, setFiles] = useState<IFileRead[]>([]);
-  const [activeTool, setActiveTool] = useState<ToolType | null>("mediaList");
-
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [pendingFileIds, setPendingFileIds] = useState<string[]>([]);
 
-  const [fileGenerationStartTimes, setFileGenerationStartTimes] = useState<
-    Record<string, number>
-  >({});
+  useEffect(() => {
+    if (!sceneId) return;
 
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const controllerRef = useRef<any>(null);
+    setIsLoading(true);
+    const fetchScene = async () => {
+      try {
+        if (sceneId !== scene?.id) setIsLoading(true);
+        setError(null);
+
+        const res = await fetch(`/api/story-editor/scene?sceneId=${sceneId}`);
+        if (!res.ok) {
+          if (res.status === 404) setError("Scene not found");
+          else throw new Error(`HTTP ${res.status}`);
+          return;
+        }
+
+        const data: SceneData = await res.json();
+        if (data.success && data.scene) setScene(data.scene);
+        else setError(data.error || "Failed to load scene");
+      } catch (e) {
+        console.error("Error fetching scene:", e);
+        setError("Scene loading error");
+      }
+    };
+
+    fetchScene().finally(() => {
+      setIsLoading(false);
+    });
+  }, [sceneId, projectId, scene?.id]);
+
+  return { scene, setScene, isLoading, error };
+}
+
+function useFilesData(
+  projectId: string,
+  sceneId: string,
+  activeTool: ToolType | null
+) {
+  const [files, setFiles] = useState<IFileRead[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
@@ -76,39 +113,18 @@ export default function ScenePage() {
       setIsLoading(false);
     });
   }, [activeTool, projectId, sceneId]);
-  // ---------- Data fetching ----------
-  useEffect(() => {
-    if (!sceneId) return;
 
-    setIsLoading(true);
+  return { files, setFiles, isLoading };
+}
 
-    const fetchScene = async () => {
-      try {
-        if (sceneId !== scene?.id) setIsLoading(true);
-        setError(null);
+function useFilePolling(projectId: string, sceneId: string) {
+  const [pendingFileIds, setPendingFileIds] = useState<string[]>([]);
+  const [fileGenerationStartTimes, setFileGenerationStartTimes] = useState<
+    Record<string, number>
+  >({});
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-        const res = await fetch(`/api/story-editor/scene?sceneId=${sceneId}`);
-        if (!res.ok) {
-          if (res.status === 404) setError("Scene not found");
-          else throw new Error(`HTTP ${res.status}`);
-          return;
-        }
-
-        const data: SceneData = await res.json();
-        if (data.success && data.scene) setScene(data.scene);
-        else setError(data.error || "Failed to load scene");
-      } catch (e) {
-        console.error("Error fetching scene:", e);
-        setError("Scene loading error");
-      }
-    };
-
-    fetchScene().finally(() => {
-      setIsLoading(false);
-    });
-  }, [sceneId, projectId]);
-
-  // Poll pending files until ready, then refresh files list
+  // Polling logic here...
   useEffect(() => {
     const TIMEOUT_MS = 8 * 60 * 1000; // 8 минут
     const POLL_INTERVAL_MS = 10000; // 10 секунд
@@ -117,19 +133,16 @@ export default function ScenePage() {
       let remaining: string[] = [];
       const currentTime = Date.now();
 
-      // Получаем актуальные значения из состояния
       const currentPendingFileIds = pendingFileIds;
       const currentStartTimes = fileGenerationStartTimes;
 
       for (const id of currentPendingFileIds) {
         const startTime = currentStartTimes[id];
 
-        // Проверяем таймаут
         if (startTime && currentTime - startTime > TIMEOUT_MS) {
           console.warn(
             `File generation timeout for ${id} after ${TIMEOUT_MS}ms`
           );
-          // Не добавляем в remaining - считаем что файл "провалился"
           continue;
         }
 
@@ -164,7 +177,6 @@ export default function ScenePage() {
 
       setPendingFileIds(remaining);
 
-      // Очищаем время генерации для завершенных файлов
       const finishedFileIds = currentPendingFileIds.filter(
         (id) => !remaining.includes(id)
       );
@@ -176,7 +188,6 @@ export default function ScenePage() {
         });
       }
 
-      // If any finished, refresh files
       if (remaining.length < currentPendingFileIds.length) {
         try {
           const res = await fetch(
@@ -184,7 +195,7 @@ export default function ScenePage() {
           );
           if (res.ok) {
             const json = await res.json();
-            setFiles(json.items as IFileRead[]);
+            // This will be handled by the parent component
           }
         } catch {
           // ignore
@@ -192,12 +203,10 @@ export default function ScenePage() {
       }
     };
 
-    // Очищаем предыдущий интервал
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
 
-    // Запускаем пулинг только если есть pending файлы
     if (pendingFileIds.length > 0) {
       pollingIntervalRef.current = setInterval(checkPending, POLL_INTERVAL_MS);
       void checkPending();
@@ -209,7 +218,49 @@ export default function ScenePage() {
         pollingIntervalRef.current = null;
       }
     };
-  }, [pendingFileIds.length, projectId, sceneId, fileGenerationStartTimes]);
+  }, [pendingFileIds, projectId, sceneId, fileGenerationStartTimes]);
+
+  return {
+    pendingFileIds,
+    setPendingFileIds,
+    fileGenerationStartTimes,
+    setFileGenerationStartTimes,
+  };
+}
+
+// ---------- Main component ----------
+export default function ScenePage() {
+  const params = useParams();
+  const router = useRouter();
+
+  const projectId = params.projectId as string;
+  const sceneId = params.sceneId as string;
+
+  const [activeTool, setActiveTool] = useState<ToolType | null>("mediaList");
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const controllerRef = useRef<any>(null);
+
+  // Custom hooks
+  const {
+    scene,
+    setScene,
+    isLoading: sceneLoading,
+    error,
+  } = useSceneData(projectId, sceneId);
+  const {
+    files,
+    setFiles,
+    isLoading: filesLoading,
+  } = useFilesData(projectId, sceneId, activeTool);
+  const {
+    pendingFileIds,
+    setPendingFileIds,
+    fileGenerationStartTimes,
+    setFileGenerationStartTimes,
+  } = useFilePolling(projectId, sceneId);
+
+  const isLoading = sceneLoading || filesLoading;
 
   // ---------- Handlers ----------
   const handleSelectFile = async (file: IFileRead, isPlaceholder?: boolean) => {
@@ -218,9 +269,7 @@ export default function ScenePage() {
     let idType;
     const id = isPlaceholder ? null : file.id;
 
-    // Определяем тип по ID файла или по типу
     if (file.id.startsWith("placeholder-") || isPlaceholder) {
-      // Для placeholder файлов определяем тип по ID
       if (file.id.includes("voiceover")) {
         idType = { voiceover_id: null };
       } else if (file.id.includes("soundeffect")) {
@@ -229,7 +278,6 @@ export default function ScenePage() {
         idType = { file_id: null };
       }
     } else {
-      // Для обычных файлов определяем по типу
       switch (file.type) {
         case FileTypeEnum.SOUND_EFFECT:
           idType = { sound_effect_id: id };
@@ -243,13 +291,7 @@ export default function ScenePage() {
     }
 
     try {
-      // Создаем обновленный объект сцены только с нужными полями
-      const updatedSceneData = {
-        ...scene,
-        ...idType,
-      };
-
-      // Обновляем сцену
+      const updatedSceneData = { ...scene, ...idType };
       const response = await fetch(`/api/scene/update?sceneId=${sceneId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -282,9 +324,7 @@ export default function ScenePage() {
   };
 
   const handleChangeTool = (tool: ToolType | null) => setActiveTool(tool);
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
+  const togglePlay = () => setIsPlaying(!isPlaying);
 
   const handleDeleteFile = async (fileId: string) => {
     try {
@@ -298,7 +338,6 @@ export default function ScenePage() {
         throw new Error("Failed to delete file");
       }
 
-      // Обновляем список файлов
       const types =
         activeTool === "soundEffect"
           ? FileTypeEnum.SOUND_EFFECT
@@ -314,46 +353,40 @@ export default function ScenePage() {
         setFiles(json.items as IFileRead[]);
       }
 
-      // Если удаленный файл был активным, очищаем сцену
       if (scene?.file?.id === fileId) {
         setScene((prev) => (prev ? { ...prev, file: null } : null));
       }
 
-      // Очищаем время генерации для удаленного файла
       setFileGenerationStartTimes((prev) => {
         const updated = { ...prev };
         delete updated[fileId];
         return updated;
       });
 
-      // Удаляем из pending файлов если он там был
       setPendingFileIds((prev) => prev.filter((id) => id !== fileId));
     } catch (error) {
       console.error("Error deleting file:", error);
-      throw error; // Пробрасываем ошибку для обработки в MediaList
+      throw error;
     }
   };
 
-  // ---------- UI states ----------
-  if (!projectId || !sceneId) {
+  const handleStarted = (newFileId: string) => {
+    setPendingFileIds((prev) => [...prev, newFileId]);
+    setFileGenerationStartTimes((prev) => ({
+      ...prev,
+      [newFileId]: Date.now(),
+    }));
+    setActiveTool("mediaList");
+  };
+
+  // ---------- Early returns ----------
+  if (!projectId || !sceneId || error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="p-8 text-center bg-card border rounded-2xl shadow-2xl">
-          <div className="size-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-            <Eye className="size-8 text-red-600 dark:text-red-400" />
-          </div>
-          <h1 className="mb-4 text-2xl font-bold text-foreground">
-            Scene ID not found
-          </h1>
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center px-6 py-3 rounded-lg bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:bg-primary/90"
-          >
-            <ArrowLeft className="mr-2 size-4" />
-            Go Back
-          </button>
-        </div>
-      </div>
+      <ErrorState
+        projectId={projectId}
+        sceneId={sceneId}
+        error={error}
+      />
     );
   }
 
@@ -362,17 +395,8 @@ export default function ScenePage() {
     <div className="flex-1 flex gap-4 overflow-hidden rounded-xl border bg-card p-4">
       {/* Left: scene preview & content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <div className="mb-3 flex shrink-0 items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground">
-            Scene {scene?.order != null ? scene.order + 1 : ""}
-          </h3>
-          <div className="text-xs text-muted-foreground">
-            Duration: {scene?.duration}
-          </div>
-        </div>
+        <SceneHeader scene={scene} />
 
-        {/* Scene preview */}
         <ScenePreview
           scene={scene}
           activeTool={activeTool}
@@ -382,68 +406,25 @@ export default function ScenePage() {
           isPlaying={isPlaying}
           onPlayingChange={setIsPlaying}
           projectId={projectId}
-          onStarted={(newFileId) => {
-            setPendingFileIds((prev) => {
-              return [...prev, newFileId];
-            });
-            setFileGenerationStartTimes((prev) => ({
-              ...prev,
-              [newFileId]: Date.now(),
-            }));
-            setActiveTool("mediaList");
-          }}
+          onStarted={handleStarted}
           controllerRef={controllerRef}
         />
 
-        {/* Tools content */}
         <div className="mt-4 flex-1 overflow-hidden">
-          {activeTool === "mediaList" && (
-            <MediaList
-              files={files}
-              scene={scene}
-              onSelect={handleSelectFile}
-              onDelete={handleDeleteFile}
-              isLoading={isLoading}
-            />
-          )}
-          {activeTool === "voiceover" && (
-            <VoiceoverList
-              files={files}
-              scene={scene}
-              onSelect={handleSelectFile}
-              isLoading={isLoading}
-            />
-          )}
-          {activeTool === "soundEffect" && (
-            <SoundEffectList
-              files={files}
-              scene={scene}
-              onSelect={handleSelectFile}
-              isLoading={isLoading}
-            />
-          )}
-
-          {activeTool === "animating" && (
-            <AnimatingTool
-              sceneId={sceneId}
-              projectId={projectId}
-              imageUrl={scene?.file?.url}
-              onStarted={(newFileId) => {
-                setPendingFileIds((prev) => {
-                  return [...prev, newFileId];
-                });
-                setFileGenerationStartTimes((prev) => ({
-                  ...prev,
-                  [newFileId]: Date.now(),
-                }));
-                setActiveTool("mediaList");
-              }}
-            />
-          )}
+          <SceneContent
+            activeTool={activeTool}
+            files={files}
+            scene={scene}
+            isLoading={isLoading}
+            onSelect={handleSelectFile}
+            onDelete={handleDeleteFile}
+            onStarted={handleStarted}
+            projectId={projectId}
+            sceneId={sceneId}
+          />
         </div>
       </div>
 
-      {/* Right: toolbar */}
       <Toolbar
         scene={scene}
         isPlaying={isPlaying}
