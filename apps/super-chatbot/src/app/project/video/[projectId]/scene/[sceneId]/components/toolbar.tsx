@@ -1,4 +1,4 @@
-import { FileTypeEnum, ISceneRead } from "@turbo-super/api";
+import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
 import { Skeleton } from "@turbo-super/ui";
 import {
   Download,
@@ -30,6 +30,7 @@ export function Toolbar({
   onChangeTool,
   togglePlay,
   isLoading,
+  onAddText,
 }: {
   scene: ISceneRead | null;
   activeTool: ToolType | null;
@@ -38,6 +39,7 @@ export function Toolbar({
   onChangeTool: (tool: ToolType | null) => void;
   togglePlay: () => void;
   isLoading?: boolean;
+  onAddText: () => void;
 }) {
   const tools = [
     {
@@ -90,7 +92,7 @@ export function Toolbar({
     {
       icon: <Type className="size-5" />,
       content: "Add text",
-      onClick: () => onChangeTool(activeTool === "addText" ? null : "addText"),
+      onClick: onAddText,
       hidden: !scene,
       type: "addText" as ToolType,
     },

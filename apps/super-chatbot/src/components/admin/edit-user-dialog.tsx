@@ -35,7 +35,7 @@ export function EditUserDialog({
     setError("");
 
     const newBalance = Number(balance);
-    if (isNaN(newBalance) || newBalance < 0) {
+    if (Number.isNaN(newBalance) || newBalance < 0) {
       setError("Please enter a valid balance (0 or greater)");
       return;
     }

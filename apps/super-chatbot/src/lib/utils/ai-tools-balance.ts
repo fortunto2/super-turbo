@@ -16,7 +16,7 @@ export async function checkBalanceBeforeArtifact(
   session: Session | null,
   operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
-  multipliers: string[] = [],
+  multipliers: string[],
   operationDisplayName: string
 ): Promise<BalanceCheckResult> {
   // Если пользователь не авторизован, разрешаем операцию

@@ -46,7 +46,7 @@ export function BulkBalanceDialog({
     setError("");
 
     const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount < 0) {
+    if (Number.isNaN(numAmount) || numAmount < 0) {
       setError("Please enter a valid amount (0 or greater)");
       return;
     }

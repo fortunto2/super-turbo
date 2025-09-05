@@ -10,7 +10,7 @@ import {
 } from "@turbo-super/ui";
 import { MoodboardUploader } from "@/components/ui/moodboard-uploader";
 import { Trash2 } from "lucide-react";
-import { Character, PromptData } from "../types";
+import type { Character, PromptData } from "../types";
 
 interface PromptBuilderProps {
   promptData: PromptData;

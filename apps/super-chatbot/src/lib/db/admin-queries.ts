@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, desc, eq, gte, sql } from "drizzle-orm";
+import { count, desc, eq, gte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { user, document } from "./schema";
@@ -117,7 +117,7 @@ export async function getAllUsers(page = 1, limit = 20, search = "") {
 
     // Build search condition
     const searchCondition = search
-      ? sql`${user.email} ILIKE ${"%" + search + "%"}`
+      ? sql`${user.email} ILIKE ${`%${search}%`}`
       : sql`1=1`;
 
     // Get users with pagination

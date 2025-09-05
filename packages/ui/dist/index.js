@@ -339,7 +339,8 @@ var textareaVariants = (0, import_class_variance_authority5.cva)(
       variant: {
         default: "border-input bg-transparent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         primary: "border-input bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-        accent: "border-input bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        accent: "border-input bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+        none: ""
       }
     },
     defaultVariants: {

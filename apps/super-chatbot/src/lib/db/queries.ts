@@ -17,8 +17,6 @@ import {
 } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import fs from "fs";
-import path from "path";
 
 import {
   user,
@@ -897,7 +895,7 @@ export async function getDocuments({
     if (search && typeof search === "string" && search.length > 0) {
       const searchCondition = or(
         ilike(document.title, `%${search}%`),
-        sql`${document.tags}::text LIKE ${"%" + search + "%"}` // <-- исправлено
+        sql`${document.tags}::text LIKE ${`%${search}%`}` // <-- исправлено
       );
       if (searchCondition) {
         conditions.push(searchCondition);

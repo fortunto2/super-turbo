@@ -1,5 +1,5 @@
 import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
-import { GenerationSourceEnum, GenerationTypeEnum } from "@turbo-super/api";
+import { type GenerationSourceEnum, GenerationTypeEnum } from "@turbo-super/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";

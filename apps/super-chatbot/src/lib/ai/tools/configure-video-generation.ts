@@ -5,7 +5,6 @@ import type {
   VideoGenerationConfig,
   AdaptedModel,
 } from "@/lib/types/media-settings";
-import type { VideoModel } from "@/lib/config/superduperai";
 import { getStyles } from "../api/get-styles";
 import { findStyle } from "./configure-image-generation";
 import { createVideoMediaSettings } from "@/lib/config/media-settings-factory";

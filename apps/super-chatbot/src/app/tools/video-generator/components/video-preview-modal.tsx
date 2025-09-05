@@ -1,5 +1,5 @@
 import { Button } from '@turbo-super/ui';
-import { GeneratedVideo } from "../hooks/use-video-generator";
+import type { GeneratedVideo } from "../hooks/use-video-generator";
 import { formatDuration, formatTimestamp } from "@/lib/utils/format";
 import { X } from "lucide-react";
 

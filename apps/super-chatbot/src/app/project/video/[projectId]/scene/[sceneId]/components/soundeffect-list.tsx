@@ -1,5 +1,6 @@
-import { IFileRead, ISceneRead } from "@turbo-super/api";
-import { AudioLines } from "lucide-react";
+import { FileTypeEnum, type IFileRead, type ISceneRead } from "@turbo-super/api";
+import { AudioFile } from "./audio-file";
+import { EmptyAudioFile } from "./empty-audio-file";
 
 export function SoundEffectList({
   files,
@@ -9,80 +10,60 @@ export function SoundEffectList({
 }: {
   files: IFileRead[];
   scene: ISceneRead | null;
-  onSelect: (id: string) => void;
+  onSelect: (file: IFileRead, isPlaceholder?: boolean) => void;
   isLoading?: boolean;
 }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="space-y-3 overflow-auto">
+      <div className="mb-4 text-sm font-medium text-muted-foreground">
+        Sound Effect Files
+      </div>
+      <div className="flex size-full gap-3 overflow-auto">
         {isLoading ? (
-          // 🟢 Показываем скелетоны пока идёт загрузка
-          Array.from({ length: 3 }).map((_, i) => (
+          Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="animate-pulse rounded-lg border p-4"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-muted" />
-                  <div>
-                    <div className="h-4 w-24 rounded bg-muted" />
-                    <div className="mt-1 h-3 w-16 rounded bg-muted" />
-                  </div>
-                </div>
-                <div className="h-6 w-16 rounded bg-muted" />
-              </div>
-              <div className="h-10 rounded-lg bg-muted" />
-            </div>
-          ))
-        ) : files.length > 0 ? (
-          files.map((f) => (
-            <div
-              key={f.id}
-              className={`rounded-lg border p-4 transition-all ${
-                scene?.sound_effect_id === f.id
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/60"
-              }`}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-                    <AudioLines className="size-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Sound Effect</div>
-                    <div className="text-xs text-muted-foreground">{f.id}</div>
-                  </div>
-                </div>
-                <button
-                  className={`rounded-md border px-3 py-1 text-xs transition-all ${
-                    scene?.sound_effect_id === f.id
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-foreground hover:border-primary/60"
-                  }`}
-                  onClick={() => onSelect(f.id)}
-                >
-                  {scene?.sound_effect_id === f.id ? "Active" : "Select"}
-                </button>
-              </div>
-              {f.url && (
-                <div className="rounded-lg bg-muted p-3">
-                  <audio
-                    controls
-                    className="w-full"
-                    src={f.url}
-                  >
-                    Your browser does not support the audio element.
-                  </audio>
-                </div>
-              )}
-            </div>
+              className="animate-pulse aspect-video rounded-lg border bg-muted"
+            />
           ))
         ) : (
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            Нет sound effect файлов
-          </div>
+          <>
+            {/* Пустая карточка для сброса выбора */}
+            <EmptyAudioFile
+              onSelect={() => {
+                // Создаем placeholder объект для sound effect
+                const placeholderFile: IFileRead = {
+                  id: "placeholder-soundeffect",
+                  url: null,
+                  thumbnail_url: null,
+                  type: FileTypeEnum.SOUND_EFFECT,
+                  image_generation_id: null,
+                  image_generation: null,
+                  video_generation_id: null,
+                  video_generation: null,
+                  audio_generation_id: null,
+                  audio_generation: null,
+                  duration: null,
+                  tasks: [],
+                };
+                onSelect(placeholderFile, true);
+              }}
+              type="soundeffect"
+              isActive={!scene?.sound_effect_id}
+            />
+
+            {/* Файлы */}
+            {files.map((file) => (
+              <AudioFile
+                key={file.id}
+                file={file}
+                scene={scene}
+                onSelect={onSelect}
+                type="soundeffect"
+                isActive={scene?.sound_effect_id === file.id}
+              />
+            ))}
+          </>
         )}
       </div>
     </div>

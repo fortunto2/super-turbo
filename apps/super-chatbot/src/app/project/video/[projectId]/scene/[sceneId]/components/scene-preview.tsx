@@ -1,9 +1,10 @@
 import {
   Control,
-  FabricCanvas,
   Layer,
   useMediaPrefetch,
+  TextToolbar,
 } from "@turbo-super/features";
+import { CanvasWrapper } from "./canvas-wrapper";
 import { ToolType } from "./toolbar";
 import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { FileTypeEnum, ISceneRead } from "@turbo-super/api";
@@ -20,6 +21,7 @@ interface ScenePreviewProps {
   onStarted: (id: string) => void;
   isPlaying?: boolean;
   projectId: string;
+  controllerRef: any;
 }
 
 export const ScenePreview = ({
@@ -32,12 +34,15 @@ export const ScenePreview = ({
   onStarted,
   isPlaying,
   projectId,
+  controllerRef,
 }: ScenePreviewProps) => {
   const imgRef = useRef<HTMLImageElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [canvas, setCanvas] = useState<any>(null);
+
+  const [toolbarVisible, setToolbarVisible] = useState(false);
   const [isInpainting, setIsInpainting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -53,12 +58,6 @@ export const ScenePreview = ({
   }, [scene?.voiceover, scene?.sound_effect, scene?.file]);
 
   const { loaded: isReady } = useMediaPrefetch({ files: filesScene });
-
-  const aspectRatio: number = useMemo(() => {
-    const value = "16:9";
-    const [width, height] = value.split(":").map(Number);
-    return width / height;
-  }, []);
 
   // Определяем размеры картинки для канваса
   const updateCanvasSize = () => {
@@ -122,8 +121,24 @@ export const ScenePreview = ({
     }
   };
 
+  const updateToolbarAnchorFromTarget = (target?: any) => {
+    const controller = controllerRef.current;
+    if (!controller) return;
+    const textbox = target ?? controller.getActiveText();
+    if (!textbox) {
+      setToolbarVisible(false);
+      return;
+    }
+    setToolbarVisible(true);
+  };
+
   useEffect(() => {
     window.addEventListener("resize", updateCanvasSize);
+    const onScroll = () => {
+      if (!toolbarVisible) return;
+      updateToolbarAnchorFromTarget();
+    };
+    window.addEventListener("scroll", onScroll, true);
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
@@ -259,19 +274,28 @@ export const ScenePreview = ({
             {activeTool !== "inpainting" &&
               canvasSize.width > 0 &&
               canvasSize.height > 0 && (
-                <FabricCanvas
-                  className="absolute top-0 left-0"
-                  initialObjects={scene.objects}
-                  onReady={() => {}}
-                  readonly={false}
+                <CanvasWrapper
+                  scene={scene}
                   width={canvasSize.width}
                   height={canvasSize.height}
+                  controllerRef={controllerRef}
+                  onToolbarUpdate={updateToolbarAnchorFromTarget}
                 />
               )}
           </div>
         </div>
       ) : (
         <EmptyPreview />
+      )}
+      {/* Floating text toolbar */}
+      {toolbarVisible && controllerRef.current && (
+        <TextToolbar
+          controller={controllerRef.current}
+          visible={toolbarVisible}
+          onClose={() => {
+            setToolbarVisible(false);
+          }}
+        />
       )}
       {activeTool === "inpainting" && (
         <div

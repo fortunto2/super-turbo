@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { auth } from "@/app/(auth)/auth";
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
       // Try to detect the correct port from request headers
       const host = request.headers.get("host");
-      if (host && host.includes("localhost")) {
+      if (host?.includes("localhost")) {
         return `http://${host}`;
       }
 

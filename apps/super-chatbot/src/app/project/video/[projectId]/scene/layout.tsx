@@ -2,7 +2,7 @@ import { BackButton } from "@/components/back-button";
 import { Scenes } from "@/components/scenes";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export default function Layout({
   children,

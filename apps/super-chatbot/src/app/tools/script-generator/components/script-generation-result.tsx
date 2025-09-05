@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { MarkdownEditor } from "@/components/markdown-editor";
-import { MDXEditorMethods } from "@mdxeditor/editor";
+import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { jsPDF } from "jspdf";
 import { marked } from "marked";
 import {
@@ -78,12 +78,12 @@ export default function ScriptGenerationResult({
                   r="10"
                   stroke="currentColor"
                   strokeWidth="4"
-                ></circle>
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
+                />
               </svg>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Enter a prompt and click &quot;Generate Script&quot; to get
@@ -113,12 +113,12 @@ export default function ScriptGenerationResult({
                 r="10"
                 stroke="currentColor"
                 strokeWidth="4"
-              ></circle>
+              />
               <path
                 className="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              ></path>
+              />
             </svg>
             Generating Script...
           </CardTitle>
@@ -142,12 +142,12 @@ export default function ScriptGenerationResult({
                   r="10"
                   stroke="currentColor"
                   strokeWidth="4"
-                ></circle>
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
+                />
               </svg>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Please wait while your script is being created...
@@ -287,11 +287,11 @@ const handleExportPdf = (script: string) => {
         );
         if (dialogueMatch) {
           doc.setFont("helvetica", "bold");
-          doc.text(String(dialogueMatch[1] ?? "") + ":", margin, y);
+          doc.text(`${String(dialogueMatch[1] ?? "")}:`, margin, y);
           doc.setFont("helvetica", "normal");
           doc.text(
-            ' "' + String(dialogueMatch[2] ?? "") + '"',
-            margin + doc.getTextWidth(String(dialogueMatch[1] ?? "") + ":"),
+            ` "${String(dialogueMatch[2] ?? "")}"`,
+            margin + doc.getTextWidth(`${String(dialogueMatch[1] ?? "")}:`),
             y
           );
           y += 16;
@@ -301,7 +301,7 @@ const handleExportPdf = (script: string) => {
           let lastIndex = 0;
           let match;
           let x = margin;
-          let localY = y;
+          const localY = y;
           const text = String(token.text ?? "");
           while ((match = strongRegex.exec(text)) !== null) {
             const before = text.slice(lastIndex, match.index);
@@ -333,18 +333,18 @@ const handleExportPdf = (script: string) => {
         );
         if (dialogueMatch) {
           doc.setFont("helvetica", "bold");
-          doc.text(String(dialogueMatch[1] ?? "") + ":", margin + 18, y);
+          doc.text(`${String(dialogueMatch[1] ?? "")}:`, margin + 18, y);
           doc.setFont("helvetica", "normal");
           doc.text(
-            ' "' + String(dialogueMatch[2] ?? "") + '"',
+            ` "${String(dialogueMatch[2] ?? "")}"`,
             margin +
               18 +
-              doc.getTextWidth(String(dialogueMatch[1] ?? "") + ":"),
+              doc.getTextWidth(`${String(dialogueMatch[1] ?? "")}:`),
             y
           );
           y += 16;
         } else {
-          doc.text("• " + itemText, margin + 18, y);
+          doc.text(`• ${itemText}`, margin + 18, y);
           y += 16;
         }
       });

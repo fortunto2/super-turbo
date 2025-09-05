@@ -15,7 +15,7 @@ import {
 import type { Suggestion } from "@/lib/db/schema";
 import { toast } from "sonner";
 import { getSuggestions } from "../actions";
-import { TextArtifactMetadata } from "@/types/artifact-types";
+import type { TextArtifactMetadata } from "@/types/artifact-types";
 
 export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   kind: "text",

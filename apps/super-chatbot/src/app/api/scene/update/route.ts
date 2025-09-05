@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
       id: body.sceneId,
       requestBody: {
         ...body.requestBody,
-        file_id: body.requestBody.file_id,
       } as ISceneUpdate,
     });
     console.log(response);

@@ -4,7 +4,7 @@ import {
   updateUserBalance,
   deleteUser,
 } from "@/lib/db/admin-queries";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Check if user is admin
 function isAdmin(email?: string | null): boolean {

@@ -2,12 +2,11 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { ProjectTimeline } from "@turbo-super/features";
-import { ArrowLeft, Clock, Play, Eye } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Eye } from "lucide-react";
 import {
   DataTypeEnum,
-  IDataUpdate,
-  IProjectRead,
+  type IDataUpdate,
+  type IProjectRead,
   useProjectData,
 } from "@turbo-super/api";
 import { useEffect, useState } from "react";
@@ -178,8 +177,8 @@ export default function VideoPage() {
       {isLoading ? (
         <div className="min-h-screen size-full text-center space-y-4 items-center justify-center flex flex-col bg-background">
           <div className="relative">
-            <div className="size-16 border-4 border-muted rounded-full animate-spin"></div>
-            <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
+            <div className="size-16 border-4 border-muted rounded-full animate-spin" />
+            <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin" />
           </div>
           <div className="space-y-2">
             <p className="text-lg font-medium text-foreground">

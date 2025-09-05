@@ -4,7 +4,7 @@ import {
   getSuperduperAIConfig,
   OpenAPI,
   FileService,
-  GenerateVideoPayload,
+  type GenerateVideoPayload,
 } from "@turbo-super/api";
 
 export async function POST(request: NextRequest) {

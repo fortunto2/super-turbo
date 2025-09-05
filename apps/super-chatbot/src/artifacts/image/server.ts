@@ -8,13 +8,8 @@ import { getAvailableImageModels } from "@/lib/config/superduperai";
 import { selectImageToImageModel } from "@/lib/generation/model-utils";
 import { getMessagesByChatId } from "@/lib/db/queries";
 import {
-  validateOperationBalance,
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
-import {
-  handleBalanceError,
-  createBalanceError,
-} from "@/lib/utils/balance-error-handler";
 
 // Import the same constants as in configure-image-generation
 const RESOLUTIONS: MediaResolution[] = [

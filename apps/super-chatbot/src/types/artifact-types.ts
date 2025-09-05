@@ -4,21 +4,13 @@ export interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;
 }
 
-export interface ImageArtifactMetadata {
-  // Add image-specific metadata here
-}
+export type ImageArtifactMetadata = {}
 
-export interface VideoArtifactMetadata {
-  // Add video-specific metadata here
-}
+export type VideoArtifactMetadata = {}
 
-export interface SheetArtifactMetadata {
-  // Add sheet-specific metadata here
-}
+export type SheetArtifactMetadata = {}
 
-export interface ScriptArtifactMetadata {
-  // Add script-specific metadata here
-}
+export type ScriptArtifactMetadata = {}
 
 export type ArtifactMetadata = 
   | TextArtifactMetadata 

@@ -2,25 +2,35 @@
 
 import type { FC } from "react";
 import { useEffect, useRef, useState } from "react";
-import { Canvas, Textbox } from "fabric";
+import { Canvas, FabricObject, Textbox } from "fabric";
 import {
   AlignGuidelines,
   CenteringGuidelines,
 } from "@superduperai/fabric-guideline-plugin";
 import { FONTS, loadFonts } from "super-timeline";
+import type { FabricController } from "./controller";
+import { buildFabricController } from "./controller";
 
 type Props = {
   className?: string;
   onReady?: (canvas: Canvas) => void;
+  onControllerReady?: (controller: FabricController) => void;
+  onChange?: (event: FabricObject) => void;
   initialObjects?: any[];
   readonly?: boolean;
   width?: number;
   height?: number;
 };
 
+type ObjectEvent = {
+  target: FabricObject;
+};
+
 export const FabricCanvas: FC<Props> = ({
   className,
   onReady,
+  onControllerReady,
+  onChange,
   readonly,
   initialObjects,
   width: initialWidth,
@@ -66,7 +76,7 @@ export const FabricCanvas: FC<Props> = ({
           font.family === objectFont || font.postScriptName === objectFont
       );
       return {
-        name: defaultFont?.fullName ?? objectFont,
+        name: defaultFont?.postScriptName ?? objectFont,
         url: defaultFont?.url ?? "",
       };
     });
@@ -78,6 +88,8 @@ export const FabricCanvas: FC<Props> = ({
         .map((f) => document.fonts.load(`1em "${f.name}"`))
     );
     await document.fonts.ready;
+
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
 
     const canvasObjects = initialObjects.map((object) => {
       const { text, type, left, top, width, height, fontSize, ...objectData } =
@@ -107,6 +119,7 @@ export const FabricCanvas: FC<Props> = ({
     });
 
     canvas.add(...canvasObjects);
+
     canvas.requestRenderAll();
   };
 
@@ -135,17 +148,53 @@ export const FabricCanvas: FC<Props> = ({
     canvas.renderAll();
   };
   useEffect(() => {
-    if (!canvas || !initialObjects || canvas.getActiveObject()) return;
+    if (!canvas || !initialObjects) return;
+    console.log("USE EFFECT 1");
     void loadObjects(canvas);
   }, [initialObjects, canvas]);
 
   useEffect(() => {
     if (!canvas) return;
-
+    console.log("USE EFFECT 2");
     setGuidelines(canvas);
 
     if (onReady) {
       onReady(canvas);
+    }
+    if (onControllerReady) {
+      const controller = buildFabricController(canvas);
+      onControllerReady(controller);
+    }
+
+    if (onChange) {
+      const handleObjAdded = (e: ObjectEvent) => {
+        console.log("added");
+        onChange(e.target);
+      };
+      const handleObjRemoved = (e: any) => {
+        console.log("removed");
+        onChange(e.target);
+      };
+      const handleObjModified = (e: any) => {
+        console.log("modified");
+        onChange(e.target);
+      };
+      const handleTextChanged = (e: any) => {
+        console.log("changed");
+        onChange(e.target);
+      };
+
+      canvas.on("object:added", handleObjAdded);
+      canvas.on("object:removed", handleObjRemoved);
+      canvas.on("object:modified", handleObjModified);
+      canvas.on("text:changed", handleTextChanged);
+
+      return () => {
+        canvas.off("object:added", handleObjAdded);
+        canvas.off("object:removed", handleObjRemoved);
+        canvas.off("object:modified", handleObjModified);
+        canvas.off("text:changed", handleTextChanged);
+      };
     }
   }, [canvas]);
 

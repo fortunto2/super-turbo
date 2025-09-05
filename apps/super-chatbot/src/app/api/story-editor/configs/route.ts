@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
   GenerationConfigService,
   GenerationTypeEnum,
   getSuperduperAIConfig,
-  ListOrderEnum,
 } from "@turbo-super/api";
 
 export async function GET(request: NextRequest) {

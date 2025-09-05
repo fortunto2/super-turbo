@@ -2,9 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
   getSuperduperAIConfigWithUserToken,
-  getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
-import { OpenAPI } from "@/lib/api/core/OpenAPI";
 import {
   generateImageWithStrategy,
   type ImageGenerationParams,
@@ -37,7 +35,7 @@ export async function POST(request: NextRequest) {
         resolution: (() => {
           const res = String(form.get("resolution") || "1024x1024");
           const [w, h] = res.split("x");
-          return { width: parseInt(w), height: parseInt(h) };
+          return { width: Number.parseInt(w), height: Number.parseInt(h) };
         })(),
         style: { id: String(form.get("style") || "flux_watercolor") },
         shotSize: { id: String(form.get("shotSize") || "medium_shot") },
@@ -90,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     // Configure OpenAPI client with user token from session (with system token fallback)
     console.log("SESSION USER", session);
-    let config = getSuperduperAIConfigWithUserToken(session);
+    const config = getSuperduperAIConfigWithUserToken(session);
 
     const normalizeShotSize = (val: any) => {
       const raw = typeof val === "string" ? val : val?.id || val?.label || "";

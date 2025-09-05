@@ -1,4 +1,4 @@
-import type { DBMessage } from "@/lib/db/schema";
+
 
 export interface ImageContext {
   sourceImageUrl?: string;

@@ -365,7 +365,7 @@ export function MoodboardUploader({
                               onChange={(e) =>
                                 updateImageWeight(
                                   image.id,
-                                  parseFloat(e.target.value)
+                                  Number.parseFloat(e.target.value)
                                 )
                               }
                               className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"

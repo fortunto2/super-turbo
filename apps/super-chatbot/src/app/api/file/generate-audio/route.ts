@@ -4,7 +4,7 @@ import {
   getSuperduperAIConfig,
   OpenAPI,
   FileService,
-  GenerateAudioPayload,
+  type GenerateAudioPayload,
 } from "@turbo-super/api";
 
 export async function POST(request: NextRequest) {

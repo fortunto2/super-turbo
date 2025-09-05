@@ -185,8 +185,8 @@ export default function StoryEditorPage() {
     return (
       <div className="mt-10 text-center space-y-4 size-full items-center justify-center flex flex-col">
         <div className="relative">
-          <div className="size-16 border-4 border-emerald-200 dark:border-emerald-800 rounded-full animate-spin"></div>
-          <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-emerald-500 dark:border-t-emerald-400 rounded-full animate-spin"></div>
+          <div className="size-16 border-4 border-emerald-200 dark:border-emerald-800 rounded-full animate-spin" />
+          <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-emerald-500 dark:border-t-emerald-400 rounded-full animate-spin" />
         </div>
         <div className="space-y-2">
           <p className="text-lg font-medium text-gray-700 dark:text-gray-300">

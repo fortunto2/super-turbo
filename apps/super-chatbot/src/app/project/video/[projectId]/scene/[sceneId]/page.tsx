@@ -1,19 +1,19 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Eye } from "lucide-react";
 
 import {
   FileTypeEnum,
-  ISceneRead,
-  ITaskRead,
+  type ISceneRead,
+  type ISceneUpdate,
+  type ITaskRead,
   TaskStatusEnum,
 } from "@turbo-super/api";
 import type { IFileRead } from "@/lib/api/models/IFileRead";
-import { Toolbar, ToolType } from "./components/toolbar";
+import { Toolbar, type ToolType } from "./components/toolbar";
 import { AnimatingTool } from "./components/animating-tool";
-import { Placeholder } from "./components/helper";
 import { SoundEffectList } from "./components/soundeffect-list";
 import { MediaList } from "./components/media-list";
 import { ScenePreview } from "./components/scene-preview";
@@ -48,7 +48,34 @@ export default function ScenePage() {
   >({});
 
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const controllerRef = useRef<any>(null);
 
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchFiles = async () => {
+      const types =
+        activeTool === "soundEffect"
+          ? FileTypeEnum.SOUND_EFFECT
+          : activeTool === "voiceover"
+            ? FileTypeEnum.VOICEOVER
+            : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
+
+      try {
+        const res = await fetch(
+          `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
+        );
+        if (!res.ok) return;
+
+        const json = await res.json();
+        setFiles(json.items as IFileRead[]);
+      } catch (e) {
+        console.error("Error fetching files", e);
+      }
+    };
+    fetchFiles().finally(() => {
+      setIsLoading(false);
+    });
+  }, [activeTool, projectId, sceneId]);
   // ---------- Data fetching ----------
   useEffect(() => {
     if (!sceneId) return;
@@ -76,31 +103,10 @@ export default function ScenePage() {
       }
     };
 
-    const fetchFiles = async () => {
-      const types =
-        activeTool === "soundEffect"
-          ? FileTypeEnum.SOUND_EFFECT
-          : activeTool === "voiceover"
-            ? FileTypeEnum.VOICEOVER
-            : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
-
-      try {
-        const res = await fetch(
-          `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
-        );
-        if (!res.ok) return;
-
-        const json = await res.json();
-        setFiles(json.items as IFileRead[]);
-      } catch (e) {
-        console.error("Error fetching files", e);
-      }
-    };
-
-    Promise.all([fetchScene(), fetchFiles()]).finally(() => {
+    fetchScene().finally(() => {
       setIsLoading(false);
     });
-  }, [sceneId, projectId, scene?.id, activeTool]);
+  }, [sceneId, projectId]);
 
   // Poll pending files until ready, then refresh files list
   useEffect(() => {
@@ -203,20 +209,53 @@ export default function ScenePage() {
         pollingIntervalRef.current = null;
       }
     };
-  }, [pendingFileIds.length, projectId, sceneId, fileGenerationStartTimes]); // Зависим от длины массива и времен генерации
+  }, [pendingFileIds.length, projectId, sceneId, fileGenerationStartTimes]);
 
   // ---------- Handlers ----------
-  const handleSelectFile = async (fileId: string) => {
-    if (!sceneId) return;
+  const handleSelectFile = async (file: IFileRead, isPlaceholder?: boolean) => {
+    if (!sceneId || !scene) return;
+
+    let idType;
+    const id = isPlaceholder ? null : file.id;
+
+    // Определяем тип по ID файла или по типу
+    if (file.id.startsWith("placeholder-") || isPlaceholder) {
+      // Для placeholder файлов определяем тип по ID
+      if (file.id.includes("voiceover")) {
+        idType = { voiceover_id: null };
+      } else if (file.id.includes("soundeffect")) {
+        idType = { sound_effect_id: null };
+      } else {
+        idType = { file_id: null };
+      }
+    } else {
+      // Для обычных файлов определяем по типу
+      switch (file.type) {
+        case FileTypeEnum.SOUND_EFFECT:
+          idType = { sound_effect_id: id };
+          break;
+        case FileTypeEnum.VOICEOVER:
+          idType = { voiceover_id: id };
+          break;
+        default:
+          idType = { file_id: id };
+      }
+    }
 
     try {
+      // Создаем обновленный объект сцены только с нужными полями
+      const updatedSceneData = {
+        ...scene,
+        ...idType,
+      };
+
       // Обновляем сцену
       const response = await fetch(`/api/scene/update?sceneId=${sceneId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sceneId,
-          requestBody: { ...scene, file_id: fileId },
+          requestBody: updatedSceneData as ISceneUpdate,
         }),
       });
 
@@ -226,7 +265,9 @@ export default function ScenePage() {
       }
 
       const updatedScene: ISceneRead = await response.json();
-      if (!!updatedScene) setScene(updatedScene);
+      if (updatedScene) {
+        setScene(updatedScene);
+      }
     } catch (e) {
       console.error("Select file error", e);
     }
@@ -351,6 +392,7 @@ export default function ScenePage() {
             }));
             setActiveTool("mediaList");
           }}
+          controllerRef={controllerRef}
         />
 
         {/* Tools content */}
@@ -380,9 +422,7 @@ export default function ScenePage() {
               isLoading={isLoading}
             />
           )}
-          {activeTool === "addText" && (
-            <Placeholder text="Добавление текстовых объектов" />
-          )}
+
           {activeTool === "animating" && (
             <AnimatingTool
               sceneId={sceneId}
@@ -412,104 +452,13 @@ export default function ScenePage() {
         onChangeTool={handleChangeTool}
         togglePlay={togglePlay}
         isLoading={isLoading && !scene}
+        onAddText={() => {
+          if (!controllerRef?.current) return;
+          controllerRef.current.addText("Text", {
+            fill: "white",
+          });
+        }}
       />
     </div>
   );
 }
-
-// export function ScenePreview({
-//   scene,
-//   isLoading,
-//   error,
-//   activeTool,
-// }: ScenePreviewProps) {
-//   const imgRef = useRef<HTMLImageElement>(null);
-//   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-//   const containerRef = useRef<HTMLDivElement>(null);
-
-//   const aspectRatio: number = useMemo(() => {
-//     const value = "16:9";
-//     const [width, height] = value.split(":").map(Number);
-//     return width / height;
-//   }, []);
-
-//   // Определяем размеры картинки для канваса
-//   const updateCanvasSize = () => {
-//     const img = imgRef.current;
-//     const container = containerRef.current;
-//     if (!img || !container) return;
-
-//     const naturalWidth = img.naturalWidth || 0;
-//     const naturalHeight = img.naturalHeight || 0;
-//     const containerWidth = container.clientWidth || 0;
-//     const containerHeight = container.clientHeight || 0;
-
-//     if (!naturalWidth || !naturalHeight || !containerWidth || !containerHeight)
-//       return;
-
-//     const scale = Math.min(
-//       containerWidth / naturalWidth,
-//       containerHeight / naturalHeight
-//     );
-//     const width = Math.floor(naturalWidth * scale);
-//     const height = Math.floor(naturalHeight * scale);
-//     setCanvasSize({ width, height });
-//   };
-
-//   useEffect(() => {
-//     window.addEventListener("resize", updateCanvasSize);
-//     return () => window.removeEventListener("resize", updateCanvasSize);
-//   }, []);
-
-//   const containerHeight =
-//     activeTool === null ||
-//     activeTool === "animating" ||
-//     activeTool === "inpainting"
-//       ? "100%"
-//       : "60%";
-
-//   return (
-//     <div
-//       style={{ height: containerHeight }}
-//       className="flex items-center justify-center overflow-hidden rounded-lg bg-black relative"
-//       ref={containerRef}
-//     >
-//       {isLoading ? (
-//         <Loader />
-//       ) : error ? (
-//         <ErrorMessage message={error} />
-//       ) : scene?.file?.url ? (
-//         <div className="flex justify-center items-center w-full h-full">
-//           <div
-//             className="relative"
-//             style={{
-//               width: `${canvasSize.width}px`,
-//               height: `${canvasSize.height}px`,
-//             }}
-//           >
-//             {/* eslint-disable-next-line @next/next/no-img-element */}
-//             <img
-//               src={scene.file.url}
-//               alt={`Scene ${scene.id}`}
-//               className="absolute inset-0 w-full h-full object-contain"
-//               ref={imgRef}
-//               onLoad={updateCanvasSize}
-//             />
-//             {canvasSize.width > 0 && canvasSize.height > 0 && (
-//               <FabricCanvas
-//                 className="absolute top-0 left-0"
-//                 initialObjects={scene.objects}
-//                 onReady={() => {}}
-//                 readonly={false}
-//                 width={canvasSize.width}
-//                 height={canvasSize.height}
-//               />
-//             )}
-//           </div>
-//         </div>
-//       ) : (
-//         <EmptyPreview />
-//       )}
-//     </div>
-//   );
-// }

@@ -1,7 +1,7 @@
 import { generateObject } from 'ai';
 import { createAzure } from '@ai-sdk/azure';
 import { z } from 'zod';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { AISDKExporter } from 'langsmith/vercel';
 
 // Initialize Azure provider
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
     const { prompt, customLimit, model, focusType, includeAudio, promptData, moodboard } = enhancePromptSchema.parse(body);
     
     console.log('Enhancement request:', { 
-      prompt: prompt.substring(0, 100) + '...', 
+      prompt: `${prompt.substring(0, 100)}...`, 
       customLimit, 
       model, 
       focusType, 

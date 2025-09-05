@@ -1,4 +1,4 @@
-import { IFileRead, ISceneRead } from "@turbo-super/api";
+import type { IFileRead, ISceneRead } from "@turbo-super/api";
 
 import { MediaFile } from "./media-file";
 
@@ -11,7 +11,7 @@ export function MediaList({
 }: {
   files: IFileRead[];
   scene: ISceneRead | null;
-  onSelect: (id: string) => void;
+  onSelect: (file: IFileRead) => void;
   onDelete: (id: string) => void;
   isLoading?: boolean;
 }) {

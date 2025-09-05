@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
   getSuperduperAIConfigWithUserToken,
-  getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
 import { generateVideoWithStrategy } from "@turbo-super/api";
 import {
@@ -127,8 +126,8 @@ export async function POST(request: NextRequest) {
     if (typeof body.resolution === "string") {
       const m = body.resolution.match(/(\d+)x(\d+)/);
       if (m) {
-        width = parseInt(m[1]);
-        height = parseInt(m[2]);
+        width = Number.parseInt(m[1]);
+        height = Number.parseInt(m[2]);
       }
     }
 

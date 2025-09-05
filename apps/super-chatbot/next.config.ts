@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
       {
         hostname: "superduper-acdagaa3e2h7chh0.z02.azurefd.net",
       },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 

@@ -47,9 +47,9 @@ async function saveScriptArtifactToChat({
     experimental_attachments: [
       {
         url:
-          (typeof window !== "undefined"
+          `${typeof window !== "undefined"
             ? window.location.origin
-            : "http://localhost:3000") + `/api/document?id=${docId}`,
+            : "http://localhost:3000"}/api/document?id=${docId}`,
         name: userPrompt || "Scenario.md",
         contentType: "text/markdown",
         documentId: docId,

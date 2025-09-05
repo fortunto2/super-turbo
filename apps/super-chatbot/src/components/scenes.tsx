@@ -3,14 +3,10 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Eye, Grid3X3, List } from "lucide-react";
-import { ISceneRead } from "@turbo-super/api";
+import type { ISceneRead } from "@turbo-super/api";
 import Image from "next/image";
-
-interface SceneData {
-  success: boolean;
-  scene?: ISceneRead;
-  error?: string;
-}
+import { ScenesList } from "./scene-list";
+import { cn, Textarea } from "@turbo-super/ui";
 
 export function Scenes() {
   const params = useParams();
@@ -20,7 +16,6 @@ export function Scenes() {
 
   const [scenes, setScenes] = useState<ISceneRead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"compact" | "full">("full");
 
   useEffect(() => {
@@ -35,14 +30,43 @@ export function Scenes() {
           setScenes(json.scenes);
         }
       } catch (e) {
-        console.error("Error fetching scenes list", e);
-        setError("Failed to load scenes");
+        console.error("Failed to fetch scenes", e);
       } finally {
         setIsLoading(false);
       }
     };
     if (projectId) fetchScenes();
   }, [projectId]);
+
+  const handleUpdateOrder = async (scene: ISceneRead, order: number) => {
+    if (!sceneId) return;
+
+    try {
+      // Обновляем сцену
+      const response = await fetch(
+        `/api/scene/update-order?sceneId=${sceneId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: scene.id,
+            requestBody: { id: scene.id, order },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Scene update failed: ${errText}`);
+      }
+    } catch (e) {
+      console.error("Select file error", e);
+    }
+  };
+
+  const handleDragChange = (scene: ISceneRead, order: number) => {
+    handleUpdateOrder(scene, order);
+  };
 
   if (!projectId || !sceneId) {
     return (
@@ -70,92 +94,80 @@ export function Scenes() {
     <aside
       style={{
         width: viewMode === "compact" ? "6%" : "20%",
-        minWidth: viewMode === "compact" ? "87px" : "220px",
+        minWidth: viewMode === "compact" ? "160px" : "350px",
       }}
       className="bg-card border border-border rounded-xl p-2 overflow-hidden"
     >
-      <div className="h-full grid grid-cols-1 auto-rows-[minmax(56px,auto)] gap-2 overflow-hidden">
-        <div className="flex-1 overflow-auto">
-          <div className="flex flex-col gap-2">
-            {/* Переключатель режимов просмотра */}
-            <div className="flex items-center justify-between mb-2">
-              {viewMode === "full" ? (
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  Scenes
-                </h3>
-              ) : (
-                <div></div>
-              )}
-              <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
-                <button
-                  onClick={() => setViewMode("full")}
-                  className={`p-1.5 rounded-md transition-all duration-200 ${
-                    viewMode === "full"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="Full"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("compact")}
-                  className={`p-1.5 rounded-md transition-all duration-200 ${
-                    viewMode === "compact"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  title="Compact"
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Список сцен */}
-            <div
-              className={`transition-all duration-500 ease-in-out ${
-                viewMode === "compact"
-                  ? "flex flex-col gap-2"
-                  : "flex flex-col gap-2"
+      <div className="h-full flex flex-col gap-2 overflow-auto pr-2 no-scrollbar">
+        {/* Переключатель viewMode */}
+        <div className="flex items-center justify-between mb-2">
+          {viewMode === "full" && (
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Scenes
+            </h3>
+          )}
+          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => setViewMode("full")}
+              className={`p-1.5 rounded-md transition-all duration-200 ${
+                viewMode === "full"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
+              title="Full"
             >
-              {isLoading
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <>
-                      {viewMode === "full" ? (
-                        <div
-                          key={i}
-                          className={`flex items-center gap-2 px-2 py-2 rounded-lg border border-border animate-pulse`}
-                        >
-                          <div className="size-12 rounded-md bg-muted" />
-                          <div className="flex flex-col gap-1">
-                            <div className="h-3 w-20 bg-muted rounded" />
-                            <div className="h-2 w-14 bg-muted rounded" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          key={i}
-                          className={`flex items-center justify-center gap-2 px-2 py-2 rounded-lg border border-border animate-pulse "w-full"`}
-                        >
-                          <div className="size-12 rounded-md bg-muted" />
-                        </div>
-                      )}
-                    </>
-                  ))
-                : scenes.map((s) => (
-                    <Scene
-                      scene={s}
-                      projectId={projectId}
-                      sceneId={sceneId}
-                      viewMode={viewMode}
-                      key={s.id}
-                    />
-                  ))}
-            </div>
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("compact")}
+              className={`p-1.5 rounded-md transition-all duration-200 ${
+                viewMode === "compact"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Compact"
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </button>
           </div>
         </div>
+
+        {isLoading ? (
+          Array.from({ length: 7 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 px-2 py-2 rounded-lg border border-border animate-pulse"
+            >
+              <div className="size-12 rounded-md bg-muted" />
+              {viewMode === "full" && (
+                <div className="flex flex-col gap-1">
+                  <div className="h-3 w-20 bg-muted rounded" />
+                  <div className="h-2 w-14 bg-muted rounded" />
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <ScenesList.Root
+            scenes={scenes}
+            onDragChange={handleDragChange}
+          >
+            {(scene, index) => (
+              <div
+                key={scene.id}
+                className="flex flex-col flex-grow relative"
+              >
+                <Scene
+                  scene={scene}
+                  isActive={sceneId === scene.id}
+                  viewMode={viewMode}
+                  index={index}
+                  projectId={projectId}
+                />
+              </div>
+            )}
+          </ScenesList.Root>
+        )}
       </div>
     </aside>
   );
@@ -166,13 +178,27 @@ const Scene = ({
   sceneId,
   projectId,
   viewMode,
+  isActive,
+  index,
 }: {
   scene: ISceneRead;
   sceneId?: string;
-  projectId?: string;
+  projectId: string;
   viewMode: "compact" | "full";
+  isActive: boolean;
+  index: number;
 }) => {
   const router = useRouter();
+
+  const sceneText = scene.action_description;
+
+  const [text, setText] = useState(sceneText ?? "");
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    // onTextChange(scene, value);
+    setText(value);
+  };
 
   if (viewMode === "full") {
     return (
@@ -181,10 +207,10 @@ const Scene = ({
         onClick={() =>
           router.push(`/project/video/${projectId}/scene/${scene.id}`)
         }
-        className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg border transition-all duration-300  ${
-          scene.id === sceneId
-            ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-            : "border-border hover:bg-muted/60 hover:border-primary/40"
+        className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg  transition-all duration-300  ${
+          isActive
+            ? "border-primary ring-2 ring-primary/20"
+            : "hover:bg-muted/60 hover:border-primary/40"
         }`}
       >
         <div className="size-12 rounded-md bg-black overflow-hidden flex items-center justify-center">
@@ -200,11 +226,35 @@ const Scene = ({
             <Eye className="size-4 text-muted-foreground" />
           )}
         </div>
-        <div className="text-left">
-          <div className="text-sm text-foreground">Scene {scene.order + 1}</div>
-          <div className="text-xs text-muted-foreground truncate max-w-[160px]">
-            {scene.id.slice(-8)}
-          </div>
+        <div className="text-left grow flex flex-col gap-1">
+          <div className="text-sm text-foreground">Scene {index + 1}</div>
+          <Textarea
+            color="gray"
+            className={cn(
+              "no-scrollbar h-full grow shadow-none outline-none bg-transparent resize-none w-full border-none p-0",
+              {
+                // ["line-clamp-none"]: isActive,
+                'line-clamp-3': !isActive,
+              }
+            )}
+            value={text}
+            onChange={handleChange}
+            variant="none"
+          />
+          {/* <div
+            className={`text-xs text-muted-foreground  max-w-[160px] overflow-hidden text-ellipsis ${
+              isActive ? "line-clamp-none " : "line-clamp-2"
+            }`}
+          >
+            <Textarea
+                            color="gray"
+                            className={"h-full grow"}
+                            value={text}
+                            onChange={handleChange}
+                            // disabled={readonly}
+                        />
+            {scene.action_description}
+          </div> */}
         </div>
       </button>
     );
@@ -217,8 +267,8 @@ const Scene = ({
         router.push(`/project/video/${projectId}/scene/${scene.id}`)
       }
       className={`w-full flex items-center justify-center px-2 py-2 rounded-lg border transition-all duration-300  ${
-        scene.id === sceneId
-          ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+        isActive
+          ? "border-primary  ring-2 ring-primary/20"
           : "border-border hover:bg-muted/60 hover:border-primary/40"
       }`}
     >

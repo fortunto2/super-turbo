@@ -190,7 +190,7 @@ export const saveArtifactToDatabase = async (
       readableTitle = titleParams.prompt || defaultTitle;
     }
     if (readableTitle.length > 255) {
-      readableTitle = readableTitle.substring(0, 252) + "...";
+      readableTitle = `${readableTitle.substring(0, 252)}...`;
     }
     const payload: any = { title: readableTitle, content, kind: type };
     if (thumbnailUrl) {

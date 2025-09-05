@@ -12,12 +12,11 @@ import {
   Download,
   Share2,
   Eye,
-  Clock,
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
+import type { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
 import { useEffect, useMemo, useState } from "react";
 import { ShareDialog } from "@/components/share-dialog";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
@@ -256,8 +255,8 @@ export default function PreviewPage() {
                   {isLoading ? (
                     <div className="w-screen text-center space-y-4 size-full items-center justify-center flex flex-col">
                       <div className="relative">
-                        <div className="size-16 border-4 border-muted rounded-full animate-spin"></div>
-                        <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
+                        <div className="size-16 border-4 border-muted rounded-full animate-spin" />
+                        <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin" />
                       </div>
                       <div className="space-y-2">
                         <p className="text-lg font-medium text-foreground">
@@ -290,7 +289,7 @@ export default function PreviewPage() {
                           <span className="text-sm text-muted-foreground">
                             {scenes.length} scenes
                           </span>
-                          <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                          <div className="size-2 bg-primary rounded-full animate-pulse" />
                         </div>
                       </div>
                       <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
@@ -425,7 +424,7 @@ export default function PreviewPage() {
             {/* Footer */}
             <div className="text-center">
               <div className="inline-flex items-center space-x-2 bg-card border border-border px-6 py-3 rounded-full shadow-lg">
-                <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                <div className="size-2 bg-primary rounded-full animate-pulse" />
                 <span className="text-sm text-muted-foreground">
                   Powered by{" "}
                   <strong className="text-foreground">SuperDuperAI</strong>

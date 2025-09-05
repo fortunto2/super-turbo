@@ -45,6 +45,7 @@
     "@codemirror/state": "^6.5.0",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
+    "@hello-pangea/dnd": "^18.0.1",
     "@mdxeditor/editor": "^3.39.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.200.0",
@@ -94,7 +95,6 @@
     "langsmith": "^0.3.47",
     "lucide-react": "^0.446.0",
     "marked": "^16.0.0",
-
     "nanoid": "^5.0.8",
     "next": "15.3.0-canary.31",
     "next-auth": "5.0.0-beta.25",

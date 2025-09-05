@@ -5,7 +5,7 @@ import {
   setUserBalance,
   getBalanceStatus,
 } from "@/lib/utils/tools-balance";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Check if user is admin (you may want to implement proper admin role checking)
 function isAdmin(email?: string | null): boolean {

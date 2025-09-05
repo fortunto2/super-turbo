@@ -286,7 +286,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
 
         console.log("🚀 Starting image generation for chat:", chatId);
 
-        let config = getSuperduperAIConfig();
+        const config = getSuperduperAIConfig();
 
         const result = await generateImageWithStrategy(
           "text-to-image",

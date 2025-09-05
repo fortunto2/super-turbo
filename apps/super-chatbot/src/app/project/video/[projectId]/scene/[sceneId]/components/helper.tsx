@@ -1,13 +1,13 @@
 "use client";
 
-import { IFileRead, TaskStatusEnum } from "@turbo-super/api";
+import { type IFileRead, TaskStatusEnum } from "@turbo-super/api";
 import { Eye } from "lucide-react";
 
 // ---------- Reusable small components ----------
 export function Loader() {
   return (
     <div className="space-y-2 text-center">
-      <div className="mx-auto w-8 h-8 animate-spin rounded-full border-4 border-gray-300 border-t-black"></div>
+      <div className="mx-auto w-8 h-8 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
       <div className="text-sm text-muted-foreground">Loading scene...</div>
     </div>
   );
