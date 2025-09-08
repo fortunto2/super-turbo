@@ -1,12 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Eye, Grid3X3, List } from "lucide-react";
 import type { ISceneRead } from "@turbo-super/api";
 import Image from "next/image";
 import { ScenesList } from "./scene-list";
 import { cn, Textarea } from "@turbo-super/ui";
+import { debounce } from "lodash";
 
 export function Scenes() {
   const params = useParams();
@@ -66,6 +67,40 @@ export function Scenes() {
 
   const handleDragChange = (scene: ISceneRead, order: number) => {
     handleUpdateOrder(scene, order);
+  };
+
+  const handleSceneUpdate = async (scene: ISceneRead, text: string) => {
+    if (!scene || !scene.file_id) return;
+    try {
+      const response = await fetch(`/api/scene/update?sceneId=${scene.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sceneId: scene.id,
+          requestBody: {
+            ...scene,
+            file_id: scene.file_id,
+            action_description: text,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Scene update failed: ${errText}`);
+      }
+    } catch (e) {
+      console.error("Scene update error", e);
+    }
+  };
+
+  const debouncedUpdate = debounce(handleSceneUpdate, 1000);
+
+  const handleTextChange = (scene: ISceneRead, text: string) => {
+    if (!scene.objects) return;
+    if (!scene.file_id) return;
+
+    debouncedUpdate(scene, text);
   };
 
   if (!projectId || !sceneId) {
@@ -163,6 +198,7 @@ export function Scenes() {
                   viewMode={viewMode}
                   index={index}
                   projectId={projectId}
+                  onTextChange={handleTextChange}
                 />
               </div>
             )}
@@ -175,18 +211,18 @@ export function Scenes() {
 
 const Scene = ({
   scene,
-  sceneId,
   projectId,
   viewMode,
   isActive,
   index,
+  onTextChange,
 }: {
   scene: ISceneRead;
-  sceneId?: string;
   projectId: string;
   viewMode: "compact" | "full";
   isActive: boolean;
   index: number;
+  onTextChange: (scene: ISceneRead, text: string) => void;
 }) => {
   const router = useRouter();
 
@@ -196,7 +232,7 @@ const Scene = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    // onTextChange(scene, value);
+    onTextChange(scene, value);
     setText(value);
   };
 
@@ -234,7 +270,7 @@ const Scene = ({
               "no-scrollbar h-full grow shadow-none outline-none bg-transparent resize-none w-full border-none p-0",
               {
                 // ["line-clamp-none"]: isActive,
-                'line-clamp-3': !isActive,
+                "line-clamp-3": !isActive,
               }
             )}
             value={text}

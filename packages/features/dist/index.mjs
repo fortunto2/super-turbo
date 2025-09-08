@@ -9,7 +9,6 @@ import { Player } from '@remotion/player';
 import { Canvas, Textbox, Circle, PencilBrush } from 'fabric';
 import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guideline-plugin';
 import { StateManager, FONTS, loadFonts, ScrollArea, FontFamily, FontStyle, FontSize, FontColor, Alignment, TextDecoration, Opacity, BackgroundColor, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, HistoryButtons, MenuList, MenuItem, ControlList, ControlItem, TimelineComponent, getCompactFontData, Composition } from 'super-timeline';
-import 'super-timeline/style.css';
 import { fade } from '@remotion/transitions/fade';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
 import { isEqual } from 'lodash';
@@ -3061,7 +3060,6 @@ var useFabricEditor = ({ onChange }) => {
   };
 };
 var TextToolbar = ({ controller, visible, onClose }) => {
-  console.log(controller);
   const [properties, setProperties] = useState({
     color: "#ffffff",
     colorDisplay: "#ffffff",
@@ -3088,6 +3086,9 @@ var TextToolbar = ({ controller, visible, onClose }) => {
     },
     name: "Regular"
   });
+  useEffect(() => {
+    import('super-timeline/style.css');
+  }, []);
   const handleSetProperties = () => {
     const active = controller.getActiveText();
     if (active) {

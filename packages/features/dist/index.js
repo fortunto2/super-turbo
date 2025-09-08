@@ -11,7 +11,6 @@ var player = require('@remotion/player');
 var fabric = require('fabric');
 var fabricGuidelinePlugin = require('@superduperai/fabric-guideline-plugin');
 var superTimeline = require('super-timeline');
-require('super-timeline/style.css');
 var fade = require('@remotion/transitions/fade');
 var transitions = require('@remotion/transitions');
 var lodash = require('lodash');
@@ -3063,7 +3062,6 @@ var useFabricEditor = ({ onChange }) => {
   };
 };
 var TextToolbar = ({ controller, visible, onClose }) => {
-  console.log(controller);
   const [properties, setProperties] = react.useState({
     color: "#ffffff",
     colorDisplay: "#ffffff",
@@ -3090,6 +3088,9 @@ var TextToolbar = ({ controller, visible, onClose }) => {
     },
     name: "Regular"
   });
+  react.useEffect(() => {
+    import('super-timeline/style.css');
+  }, []);
   const handleSetProperties = () => {
     const active = controller.getActiveText();
     if (active) {

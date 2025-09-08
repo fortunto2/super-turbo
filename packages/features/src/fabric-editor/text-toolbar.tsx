@@ -18,7 +18,7 @@ import {
   BackgroundColor,
 } from "super-timeline";
 import { ShoppingBasket, Trash2, X } from "lucide-react";
-import "super-timeline/style.css";
+
 // Types from super-timeline
 import type { ICompactFont, IFont } from "super-timeline";
 import { TextboxProps } from "fabric";
@@ -45,8 +45,6 @@ export const TextToolbar: FC<Props> = ({ controller, visible, onClose }) => {
     borderColor: string;
     backgroundColor?: string;
   };
-
-  console.log(controller);
 
   const [properties, setProperties] = useState<TextProperties>({
     color: "#ffffff",
@@ -75,6 +73,10 @@ export const TextToolbar: FC<Props> = ({ controller, visible, onClose }) => {
     },
     name: "Regular",
   });
+
+  useEffect(() => {
+    import("super-timeline/style.css");
+  }, []);
 
   const handleSetProperties = () => {
     const active = controller.getActiveText();

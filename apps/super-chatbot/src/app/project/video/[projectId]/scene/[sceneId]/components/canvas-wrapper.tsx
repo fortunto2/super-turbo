@@ -32,7 +32,6 @@ export function CanvasWrapper({
   );
 
   useEffect(() => {
-    console.log(isEqual(scene.objects, initialObjects));
     if (!scene || !scene.objects || isEqual(scene.objects, initialObjects))
       return;
     console.log("objects updated");
