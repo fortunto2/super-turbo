@@ -11,7 +11,7 @@ import {
   type ITaskRead,
   TaskStatusEnum,
 } from "@turbo-super/api";
-import type { IFileRead } from "@/lib/api/models/IFileRead";
+import type { IFileRead } from "@turbo-super/api";
 import { Toolbar, type ToolType } from "./components/toolbar";
 import { AnimatingTool } from "./components/animating-tool";
 import { SoundEffectList } from "./components/soundeffect-list";
@@ -21,6 +21,12 @@ import { VoiceoverList } from "./components/voiceover-list";
 import { SceneHeader } from "./components/scene-header";
 import { SceneContent } from "./components/scene-content";
 import { ErrorState } from "./components/error-state";
+import { keepPreviousData } from "@tanstack/react-query";
+import { useNextSceneGetById } from "@/lib/api/next/scene/query";
+import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
+import { useNextFileList } from "@/lib/api/next/file/query";
+import { useNextFileDelete } from "@/lib/api/next/file/delete/mutation";
+import { createUpdatedSceneData } from "./utils/file-utils";
 
 // ---------- Types ----------
 interface SceneData {
@@ -40,82 +46,7 @@ interface ScenePageState {
   fileGenerationStartTimes: Record<string, number>;
 }
 
-// ---------- Custom hooks ----------
-function useSceneData(projectId: string, sceneId: string) {
-  const [scene, setScene] = useState<ISceneRead | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!sceneId) return;
-
-    setIsLoading(true);
-    const fetchScene = async () => {
-      try {
-        if (sceneId !== scene?.id) setIsLoading(true);
-        setError(null);
-
-        const res = await fetch(`/api/story-editor/scene?sceneId=${sceneId}`);
-        if (!res.ok) {
-          if (res.status === 404) setError("Scene not found");
-          else throw new Error(`HTTP ${res.status}`);
-          return;
-        }
-
-        const data: SceneData = await res.json();
-        if (data.success && data.scene) setScene(data.scene);
-        else setError(data.error || "Failed to load scene");
-      } catch (e) {
-        console.error("Error fetching scene:", e);
-        setError("Scene loading error");
-      }
-    };
-
-    fetchScene().finally(() => {
-      setIsLoading(false);
-    });
-  }, [sceneId, projectId, scene?.id]);
-
-  return { scene, setScene, isLoading, error };
-}
-
-function useFilesData(
-  projectId: string,
-  sceneId: string,
-  activeTool: ToolType | null
-) {
-  const [files, setFiles] = useState<IFileRead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const fetchFiles = async () => {
-      const types =
-        activeTool === "soundEffect"
-          ? FileTypeEnum.SOUND_EFFECT
-          : activeTool === "voiceover"
-            ? FileTypeEnum.VOICEOVER
-            : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
-
-      try {
-        const res = await fetch(
-          `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
-        );
-        if (!res.ok) return;
-
-        const json = await res.json();
-        setFiles(json.items as IFileRead[]);
-      } catch (e) {
-        console.error("Error fetching files", e);
-      }
-    };
-    fetchFiles().finally(() => {
-      setIsLoading(false);
-    });
-  }, [activeTool, projectId, sceneId]);
-
-  return { files, setFiles, isLoading };
-}
+// ---------- Custom hooks (replaced by React Query hooks) ----------
 
 function useFilePolling(projectId: string, sceneId: string) {
   const [pendingFileIds, setPendingFileIds] = useState<string[]>([]);
@@ -243,16 +174,25 @@ export default function ScenePage() {
 
   // Custom hooks
   const {
-    scene,
-    setScene,
+    data: scene,
     isLoading: sceneLoading,
-    error,
-  } = useSceneData(projectId, sceneId);
-  const {
-    files,
-    setFiles,
-    isLoading: filesLoading,
-  } = useFilesData(projectId, sceneId, activeTool);
+    error: sceneError,
+  } = useNextSceneGetById({ sceneId });
+
+  const types =
+    activeTool === "soundEffect"
+      ? FileTypeEnum.SOUND_EFFECT
+      : activeTool === "voiceover"
+        ? FileTypeEnum.VOICEOVER
+        : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
+
+  const { data: files = [], isLoading: filesLoading } = useNextFileList(
+    { projectId, sceneId, types },
+    { placeholderData: keepPreviousData }
+  );
+
+  const updateSceneMutation = useNextSceneUpdate();
+  const deleteFileMutation = useNextFileDelete();
   const {
     pendingFileIds,
     setPendingFileIds,
@@ -266,50 +206,16 @@ export default function ScenePage() {
   const handleSelectFile = async (file: IFileRead, isPlaceholder?: boolean) => {
     if (!sceneId || !scene) return;
 
-    let idType;
-    const id = isPlaceholder ? null : file.id;
-
-    if (file.id.startsWith("placeholder-") || isPlaceholder) {
-      if (file.id.includes("voiceover")) {
-        idType = { voiceover_id: null };
-      } else if (file.id.includes("soundeffect")) {
-        idType = { sound_effect_id: null };
-      } else {
-        idType = { file_id: null };
-      }
-    } else {
-      switch (file.type) {
-        case FileTypeEnum.SOUND_EFFECT:
-          idType = { sound_effect_id: id };
-          break;
-        case FileTypeEnum.VOICEOVER:
-          idType = { voiceover_id: id };
-          break;
-        default:
-          idType = { file_id: id };
-      }
-    }
-
     try {
-      const updatedSceneData = { ...scene, ...idType };
-      const response = await fetch(`/api/scene/update?sceneId=${sceneId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sceneId,
-          requestBody: updatedSceneData as ISceneUpdate,
-        }),
+      const updatedSceneData = createUpdatedSceneData(
+        scene,
+        file,
+        isPlaceholder
+      );
+      await updateSceneMutation.mutateAsync({
+        sceneId,
+        requestBody: updatedSceneData as ISceneUpdate,
       });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Scene update failed: ${errText}`);
-      }
-
-      const updatedScene: ISceneRead = await response.json();
-      if (updatedScene) {
-        setScene(updatedScene);
-      }
     } catch (e) {
       console.error("Select file error", e);
     }
@@ -328,34 +234,7 @@ export default function ScenePage() {
 
   const handleDeleteFile = async (fileId: string) => {
     try {
-      const response = await fetch("/api/file/delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: fileId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete file");
-      }
-
-      const types =
-        activeTool === "soundEffect"
-          ? FileTypeEnum.SOUND_EFFECT
-          : activeTool === "voiceover"
-            ? FileTypeEnum.VOICEOVER
-            : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
-
-      const res = await fetch(
-        `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
-      );
-      if (res.ok) {
-        const json = await res.json();
-        setFiles(json.items as IFileRead[]);
-      }
-
-      if (scene?.file?.id === fileId) {
-        setScene((prev) => (prev ? { ...prev, file: null } : null));
-      }
+      await deleteFileMutation.mutateAsync({ id: fileId });
 
       setFileGenerationStartTimes((prev) => {
         const updated = { ...prev };
@@ -380,6 +259,10 @@ export default function ScenePage() {
   };
 
   // ---------- Early returns ----------
+  const error = sceneError
+    ? ((sceneError as Error)?.message ?? String(sceneError))
+    : null;
+
   if (!projectId || !sceneId || error) {
     return (
       <ErrorState

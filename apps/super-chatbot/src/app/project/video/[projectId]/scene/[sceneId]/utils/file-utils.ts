@@ -1,9 +1,9 @@
 import {
   FileTypeEnum,
+  IFileRead,
   type ISceneRead,
   type ISceneUpdate,
 } from "@turbo-super/api";
-import type { IFileRead } from "@/lib/api/models/IFileRead";
 
 // ---------- File Selection Logic ----------
 export function getFileIdType(file: IFileRead, isPlaceholder?: boolean) {

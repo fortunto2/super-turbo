@@ -1,13 +1,16 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Eye, Grid3X3, List } from "lucide-react";
 import type { ISceneRead } from "@turbo-super/api";
 import Image from "next/image";
-import { ScenesList } from "./scene-list";
+import { ScenesList } from "./scenes-drag-wrapper";
 import { cn, Textarea } from "@turbo-super/ui";
 import { debounce } from "lodash";
+import { useNextScenesListByProject } from "@/lib/api/next/scene/query";
+import { useNextSceneUpdateOrder } from "@/lib/api/next/scene/update-order/mutation";
+import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
 
 export function Scenes() {
   const params = useParams();
@@ -15,51 +18,18 @@ export function Scenes() {
   const projectId = params.projectId as string;
   const sceneId = params.sceneId as string;
 
-  const [scenes, setScenes] = useState<ISceneRead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: scenes = [], isLoading } = useNextScenesListByProject(
+    { projectId },
+    { placeholderData: [] }
+  );
+  const updateOrderMutation = useNextSceneUpdateOrder();
+  const updateSceneMutation = useNextSceneUpdate();
   const [viewMode, setViewMode] = useState<"compact" | "full">("full");
-
-  useEffect(() => {
-    const fetchScenes = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(
-          `/api/story-editor/scenes?projectId=${projectId}`
-        );
-        const json = await res.json();
-        if (json.success && Array.isArray(json.scenes)) {
-          setScenes(json.scenes);
-        }
-      } catch (e) {
-        console.error("Failed to fetch scenes", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (projectId) fetchScenes();
-  }, [projectId]);
 
   const handleUpdateOrder = async (scene: ISceneRead, order: number) => {
     if (!sceneId) return;
-
     try {
-      // Обновляем сцену
-      const response = await fetch(
-        `/api/scene/update-order?sceneId=${sceneId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: scene.id,
-            requestBody: { id: scene.id, order },
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Scene update failed: ${errText}`);
-      }
+      await updateOrderMutation.mutateAsync({ sceneId, id: scene.id, order });
     } catch (e) {
       console.error("Select file error", e);
     }
@@ -72,23 +42,14 @@ export function Scenes() {
   const handleSceneUpdate = async (scene: ISceneRead, text: string) => {
     if (!scene || !scene.file_id) return;
     try {
-      const response = await fetch(`/api/scene/update?sceneId=${scene.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sceneId: scene.id,
-          requestBody: {
-            ...scene,
-            file_id: scene.file_id,
-            action_description: text,
-          },
-        }),
+      await updateSceneMutation.mutateAsync({
+        sceneId: scene.id,
+        requestBody: {
+          ...scene,
+          file_id: scene.file_id,
+          action_description: text,
+        } as any,
       });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Scene update failed: ${errText}`);
-      }
     } catch (e) {
       console.error("Scene update error", e);
     }

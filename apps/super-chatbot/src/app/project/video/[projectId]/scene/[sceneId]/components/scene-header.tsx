@@ -1,7 +1,7 @@
 import type { ISceneRead } from "@turbo-super/api";
 
 interface SceneHeaderProps {
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
 }
 
 export function SceneHeader({ scene }: SceneHeaderProps) {

@@ -4,9 +4,8 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { modelsClient } from "@/lib/api/client/models-client";
-import type { IGenerationConfigRead } from "@/lib/api/models/IGenerationConfigRead";
-import type { ModelsResponse } from "@/lib/api/client/models-client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { IGenerationConfigRead } from "@turbo-super/api";
 
 export interface UseModelsReturn {
   // Data
@@ -33,27 +32,51 @@ export function useModels(): UseModelsReturn {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-  const loadModels = useCallback(async (forceRefresh = false) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const queryClient = useQueryClient();
 
-      const response: ModelsResponse =
-        await modelsClient.getModels(forceRefresh);
+  const modelsQuery = useQuery({
+    queryKey: ["models", { forceRefresh: false }],
+    queryFn: async () => {
+      // Предполагаем, что modelsClient доступен в области видимости
+      return modelsClient.getModels(false);
+    },
+    staleTime: 60_000,
+  });
 
-      setImageModels(response.data.imageModels);
-      setVideoModels(response.data.videoModels);
-      setAllModels(response.data.allModels);
-      setLastUpdated(response.timestamp);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load models";
-      setError(errorMessage);
-      console.error("❌ Failed to load models:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const loadModels = useCallback(
+    async (forceRefresh = false) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Если нужен форс, инвалидируем и рефетчим
+        if (forceRefresh) {
+          await queryClient.invalidateQueries({ queryKey: ["models"] });
+        }
+        const response = forceRefresh
+          ? await modelsClient.getModels(true)
+          : await modelsQuery
+              .refetch()
+              .then((r) => r.data ?? modelsClient.getModels(false));
+
+        // Приводим к единому формату
+        const result = response?.data ? response : (response as any);
+
+        setImageModels(result.data.imageModels);
+        setVideoModels(result.data.videoModels);
+        setAllModels(result.data.allModels);
+        setLastUpdated(result.timestamp);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load models";
+        setError(errorMessage);
+        console.error("❌ Failed to load models:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [modelsQuery, queryClient]
+  );
 
   const refreshModels = useCallback(async () => {
     await loadModels(true);
@@ -70,10 +93,32 @@ export function useModels(): UseModelsReturn {
     modelsClient.clearCache();
   }, []);
 
-  // Load models on mount
+  // Инициализация из кэша/запроса
   useEffect(() => {
-    loadModels();
-  }, [loadModels]);
+    if (modelsQuery.isLoading) {
+      setIsLoading(true);
+      return;
+    }
+    if (modelsQuery.isError) {
+      const err = modelsQuery.error as Error;
+      setError(err?.message || "Failed to load models");
+      setIsLoading(false);
+      return;
+    }
+    const data: any = modelsQuery.data;
+    if (data?.data) {
+      setImageModels(data.data.imageModels);
+      setVideoModels(data.data.videoModels);
+      setAllModels(data.data.allModels);
+      setLastUpdated(data.timestamp ?? null);
+    }
+    setIsLoading(false);
+  }, [
+    modelsQuery.isLoading,
+    modelsQuery.isError,
+    modelsQuery.data,
+    modelsQuery.error,
+  ]);
 
   return {
     // Data

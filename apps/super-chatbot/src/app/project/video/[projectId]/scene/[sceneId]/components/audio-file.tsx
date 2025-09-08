@@ -6,7 +6,7 @@ import { Play, Download, Info, MicVocal, AudioLines } from "lucide-react";
 
 interface AudioFileProps {
   file: IFileRead;
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   onSelect: (file: IFileRead) => void;
   type: "voiceover" | "soundeffect";
   isActive: boolean;

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { configureSuperduperAI } from "@/lib/config/superduperai";
-import { FileService } from "@/lib/api/services/FileService";
-import type { FileTypeEnum } from "@turbo-super/api";
+
+import { FileService, type FileTypeEnum } from "@turbo-super/api";
 
 export async function GET(request: NextRequest) {
   try {

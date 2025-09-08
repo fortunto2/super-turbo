@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { configureSuperduperAI } from "@/lib/config/superduperai";
-import { SceneService, getSuperduperAIConfig, OpenAPI } from "@turbo-super/api";
-import type { ISceneUpdate } from "@/lib/api/models/ISceneUpdate";
+import {
+  SceneService,
+  getSuperduperAIConfig,
+  OpenAPI,
+  ISceneUpdate,
+} from "@turbo-super/api";
 
 export async function POST(request: NextRequest) {
   try {

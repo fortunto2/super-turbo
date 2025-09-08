@@ -1,5 +1,4 @@
-import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
-import type { IFileRead } from "@/lib/api/models/IFileRead";
+import { FileTypeEnum, IFileRead, type ISceneRead } from "@turbo-super/api";
 import type { ToolType } from "./toolbar";
 import { AnimatingTool } from "./animating-tool";
 import { SoundEffectList } from "./soundeffect-list";
@@ -9,7 +8,7 @@ import { VoiceoverList } from "./voiceover-list";
 interface SceneContentProps {
   activeTool: ToolType | null;
   files: IFileRead[];
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   isLoading: boolean;
   onSelect: (file: IFileRead, isPlaceholder?: boolean) => void;
   onDelete: (fileId: string) => void;

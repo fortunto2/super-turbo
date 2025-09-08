@@ -1,9 +1,13 @@
 import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
-import { type GenerationSourceEnum, GenerationTypeEnum } from "@turbo-super/api";
+import {
+  type GenerationSourceEnum,
+  GenerationTypeEnum,
+} from "@turbo-super/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useNextGenerateVideo } from "@/lib/api/next/generate/video/mutation";
 
 type IGenerationConfigRead = {
   name: string;
@@ -32,6 +36,7 @@ export function AnimatingTool({
   const [error, setError] = useState<string | null>(null);
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
+  const generateVideoMutation = useNextGenerateVideo();
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -88,17 +93,7 @@ export function AnimatingTool({
       form.append("projectId", projectId);
       form.append("sceneId", sceneId);
 
-      const res = await fetch("/api/generate/video", {
-        method: "POST",
-        body: form,
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to start generation");
-      }
-
-      const json = await res.json();
+      const json = await generateVideoMutation.mutateAsync(form);
       const newFileId = json?.fileId || json?.projectId;
       if (newFileId) onStarted(newFileId);
     } catch (e: any) {

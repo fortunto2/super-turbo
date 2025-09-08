@@ -4,11 +4,14 @@
  */
 
 // Generated OpenAPI Client Configuration
-import { OpenAPI } from "@/lib/api/core/OpenAPI";
-import { GenerationConfigService } from "@/lib/api/services/GenerationConfigService";
-import type { IGenerationConfigRead } from "@/lib/api/models/IGenerationConfigRead";
-import { GenerationTypeEnum } from "@/lib/api/models/GenerationTypeEnum";
-import { ListOrderEnum } from "@/lib/api/models/ListOrderEnum";
+
+import {
+  GenerationConfigService,
+  GenerationTypeEnum,
+  IGenerationConfigRead,
+  ListOrderEnum,
+  OpenAPI,
+} from "@turbo-super/api";
 import { API_NEXT_ROUTES } from "./next-api-routes";
 
 // Type aliases for backward compatibility

@@ -10,7 +10,7 @@ export function MediaList({
   isLoading,
 }: {
   files: IFileRead[];
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   onSelect: (file: IFileRead) => void;
   onDelete: (id: string) => void;
   isLoading?: boolean;

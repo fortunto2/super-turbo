@@ -1,9 +1,8 @@
-import type { FileTypeEnum } from "@/lib/api";
+import { FileTypeEnum, FileService } from "@turbo-super/api";
 
 export const uploadFile = async (file: File, type?: FileTypeEnum) => {
   try {
     console.log("🖼️ Attempting direct file upload...", file);
-    const { FileService } = await import("@/lib/api/services/FileService");
 
     const uploadResult = await FileService.fileUpload({
       type,

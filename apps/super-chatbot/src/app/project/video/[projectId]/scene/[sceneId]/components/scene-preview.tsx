@@ -10,7 +10,7 @@ import { useToolbar } from "../hooks/use-toolbar";
 import { useInpainting } from "../hooks/use-inpainting";
 
 interface ScenePreviewProps {
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   isLoading: boolean;
   error: string | null;
   activeTool: string | null;

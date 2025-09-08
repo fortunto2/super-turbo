@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -97,7 +98,9 @@ export default async function RootLayout({
             }}
           >
             <Toaster position="top-center" />
-            <SessionProvider>{children}</SessionProvider>
+            <SessionProvider>
+              <QueryProvider>{children}</QueryProvider>
+            </SessionProvider>
             <Analytics />
           </SidebarProvider>
         </ThemeProvider>

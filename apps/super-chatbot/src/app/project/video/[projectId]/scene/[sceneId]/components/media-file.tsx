@@ -1,4 +1,8 @@
-import { FileTypeEnum, type IFileRead, type ISceneRead } from "@turbo-super/api";
+import {
+  FileTypeEnum,
+  type IFileRead,
+  type ISceneRead,
+} from "@turbo-super/api";
 import { FileGenerationStatus } from "./helper";
 import { FileMetadataModal } from "./file-metadata-modal";
 import { hasMetadata } from "./file-metadata-utils";
@@ -13,7 +17,7 @@ export function MediaFile({
   scene,
 }: {
   file: IFileRead;
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   onSelect: (file: IFileRead) => void;
   onDelete: (id: string) => void;
 }) {

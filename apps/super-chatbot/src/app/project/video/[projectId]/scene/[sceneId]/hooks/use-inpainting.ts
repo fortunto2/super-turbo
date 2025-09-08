@@ -2,9 +2,10 @@ import { useState } from "react";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
 import type { ISceneRead } from "@turbo-super/api";
 import type { ToolType } from "../components/toolbar";
+import { useNextGenerateImage } from "@/lib/api/next/generate/image/mutation";
 
 interface UseInpaintingProps {
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   projectId: string;
   onActiveToolChange?: (tool: ToolType | null) => void;
   onStarted: (id: string) => void;
@@ -18,6 +19,7 @@ export function useInpainting({
 }: UseInpaintingProps) {
   const [isInpainting, setIsInpainting] = useState(false);
   const [canvas, setCanvas] = useState<any>(null);
+  const { mutateAsync } = useNextGenerateImage();
 
   const handleInpainting = async (result: {
     prompt: string;
@@ -39,15 +41,7 @@ export function useInpainting({
       formData.append("model", "comfyui/flux/inpainting");
       formData.append("projectId", projectId);
       formData.append("sceneId", scene.id);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      const data = await response.json();
+      const data = await mutateAsync(formData);
 
       if (data.success) {
         onActiveToolChange?.("mediaList");

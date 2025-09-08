@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@turbo-super/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
-import { Input } from '@turbo-super/ui';
-import { Label } from '@turbo-super/ui';
-import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@turbo-super/ui';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import { useState, useEffect } from "react";
+import { Button } from "@turbo-super/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import { Input } from "@turbo-super/ui";
+import { Label } from "@turbo-super/ui";
+import { EnhancedTextarea } from "@/components/ui/enhanced-textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@turbo-super/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -26,35 +26,47 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Loader2, Video, Type, Image as ImageIcon, Shuffle, Check, ChevronsUpDown } from 'lucide-react';
-import { toast } from 'sonner';
-import { z } from 'zod';
-import { cn } from '@turbo-super/ui';
-import { getVideoGenerationConfig } from '@/lib/config/media-settings-factory';
-import type { MediaOption, MediaResolution, AdaptedModel } from '@/lib/types/media-settings';
-import { ImageUpload } from './image-upload';
-import { GenerationTypeEnum } from '@/lib/api/models/GenerationTypeEnum';
-import { getModelLabel } from '@/lib/config/superduperai';
+} from "@/components/ui/command";
+import {
+  Loader2,
+  Video,
+  Type,
+  Image as ImageIcon,
+  Shuffle,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { cn } from "@turbo-super/ui";
+import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
+import type {
+  MediaOption,
+  MediaResolution,
+  AdaptedModel,
+} from "@/lib/types/media-settings";
+import { ImageUpload } from "./image-upload";
+import { getModelLabel } from "@/lib/config/superduperai";
+import { GenerationTypeEnum } from "@turbo-super/api";
 
 // AICODE-NOTE: Duration options for different video use cases
 const DURATION_OPTIONS = [
-  { value: '3', label: '3 seconds', description: 'Quick clips' },
-  { value: '5', label: '5 seconds', description: 'Standard short' },
-  { value: '8', label: '8 seconds', description: 'Social media' },
-  { value: '10', label: '10 seconds', description: 'Stories format' },
-  { value: '15', label: '15 seconds', description: 'Reels/TikTok' },
-  { value: '20', label: '20 seconds', description: 'Product demos' },
-  { value: '30', label: '30 seconds', description: 'Advertising' },
-  { value: '45', label: '45 seconds', description: 'Presentations' },
-  { value: '60', label: '60 seconds', description: 'Full minute' },
-  { value: '90', label: '90 seconds', description: 'Extended content' },
-  { value: '120', label: '2 minutes', description: 'Long-form' },
+  { value: "3", label: "3 seconds", description: "Quick clips" },
+  { value: "5", label: "5 seconds", description: "Standard short" },
+  { value: "8", label: "8 seconds", description: "Social media" },
+  { value: "10", label: "10 seconds", description: "Stories format" },
+  { value: "15", label: "15 seconds", description: "Reels/TikTok" },
+  { value: "20", label: "20 seconds", description: "Product demos" },
+  { value: "30", label: "30 seconds", description: "Advertising" },
+  { value: "45", label: "45 seconds", description: "Presentations" },
+  { value: "60", label: "60 seconds", description: "Full minute" },
+  { value: "90", label: "90 seconds", description: "Extended content" },
+  { value: "120", label: "2 minutes", description: "Long-form" },
 ];
 
 // AICODE-NOTE: Form validation schema for video generation parameters
 const videoGenerationSchema = z.object({
-  prompt: z.string().min(1, 'Prompt is required'),
+  prompt: z.string().min(1, "Prompt is required"),
   negativePrompt: z.string().optional(),
   style: z.string().optional(),
   resolution: z.string().optional(),
@@ -63,10 +75,11 @@ const videoGenerationSchema = z.object({
   frameRate: z.number().min(24).max(120).optional(),
   duration: z.number().min(1).max(300).optional(), // Increased max to 5 minutes
   seed: z.number().optional(),
-  generationType: z.enum(['text-to-video', 'image-to-video']),
-  file: typeof window !== 'undefined' 
-  ? z.instanceof(File).optional() 
-  : z.any().optional(),
+  generationType: z.enum(["text-to-video", "image-to-video"]),
+  file:
+    typeof window !== "undefined"
+      ? z.instanceof(File).optional()
+      : z.any().optional(),
 });
 
 export type VideoGenerationFormData = z.infer<typeof videoGenerationSchema>;
@@ -77,32 +90,35 @@ interface VideoGeneratorFormProps {
   disabled?: boolean;
 }
 
-export function VideoGeneratorForm({ 
-  onGenerate, 
-  isGenerating, 
-  disabled = false 
+export function VideoGeneratorForm({
+  onGenerate,
+  isGenerating,
+  disabled = false,
 }: VideoGeneratorFormProps) {
   // AICODE-NOTE: Form state management using React hooks
   const [formData, setFormData] = useState<VideoGenerationFormData>({
-    prompt: '',
-    negativePrompt: '',
-    style: 'base',
-    resolution: '1280x720 (HD)',
-    shotSize: '',
-    model: '',
+    prompt: "",
+    negativePrompt: "",
+    style: "base",
+    resolution: "1280x720 (HD)",
+    shotSize: "",
+    model: "",
     frameRate: 30,
     duration: 5,
     seed: Math.floor(Math.random() * 1000000000000),
-    generationType: 'text-to-video',
+    generationType: "text-to-video",
     file: undefined,
   });
 
   // State for image upload
-  const [selectedImage, setSelectedImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    file: File;
+    previewUrl: string;
+  } | null>(null);
 
   // AICODE-NOTE: Duration combobox state
   const [durationOpen, setDurationOpen] = useState(false);
-  const [customDuration, setCustomDuration] = useState('');
+  const [customDuration, setCustomDuration] = useState("");
 
   // AICODE-NOTE: Configuration state loaded from SuperDuperAI API
   const [config, setConfig] = useState<{
@@ -114,7 +130,7 @@ export function VideoGeneratorForm({
     textToVideoModels: AdaptedModel[];
     imageToVideoModels: AdaptedModel[];
   } | null>(null);
-  
+
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
 
@@ -124,41 +140,52 @@ export function VideoGeneratorForm({
       try {
         setIsLoadingConfig(true);
         setConfigError(null);
-        
-        console.log('🎬 Loading video generation configuration...');
-        const videoConfig = await getVideoGenerationConfig();
-        
-        const textToVideoModels = videoConfig.availableModels.filter(m => m.type === GenerationTypeEnum.TEXT_TO_VIDEO);
-        const imageToVideoModels = videoConfig.availableModels.filter(m => m.type === GenerationTypeEnum.IMAGE_TO_VIDEO);
 
-        console.log('🎬 ✅ Configuration loaded:', {
+        console.log("🎬 Loading video generation configuration...");
+        const videoConfig = await getVideoGenerationConfig();
+
+        const textToVideoModels = videoConfig.availableModels.filter(
+          (m) => (m as any).type === GenerationTypeEnum.TEXT_TO_VIDEO
+        );
+        const imageToVideoModels = videoConfig.availableModels.filter(
+          (m) => (m as any).type === GenerationTypeEnum.IMAGE_TO_VIDEO
+        );
+
+        console.log("🎬 ✅ Configuration loaded:", {
           totalModels: videoConfig.availableModels.length,
           textToVideoModels: textToVideoModels.length,
           imageToVideoModels: imageToVideoModels.length,
           resolutionsCount: videoConfig.availableResolutions.length,
           stylesCount: videoConfig.availableStyles.length,
         });
-        
+
         setConfig({
           ...videoConfig,
           textToVideoModels,
           imageToVideoModels,
         });
-        
+
         // Set default values from configuration
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          style: videoConfig.defaultSettings.style?.id || 'base',
-          resolution: videoConfig.defaultSettings.resolution?.label || '1024x1024',
-          shotSize: videoConfig.defaultSettings.shotSize?.id || 'medium_shot',
-          model: videoConfig.defaultSettings.model?.id || videoConfig.defaultSettings.model?.name || '',
+          style: videoConfig.defaultSettings.style?.id || "base",
+          resolution:
+            videoConfig.defaultSettings.resolution?.label || "1024x1024",
+          shotSize: videoConfig.defaultSettings.shotSize?.id || "medium_shot",
+          model:
+            (videoConfig.defaultSettings.model as any)?.id ||
+            (videoConfig.defaultSettings.model as any)?.name ||
+            "",
           seed: prev.seed ?? Math.floor(Math.random() * 1000000000000),
         }));
-        
       } catch (error) {
-        console.error('🎬 ❌ Failed to load configuration:', error);
-        setConfigError(error instanceof Error ? error.message : 'Failed to load configuration');
-        toast.error('Failed to load video generation models');
+        console.error("🎬 ❌ Failed to load configuration:", error);
+        setConfigError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load configuration"
+        );
+        toast.error("Failed to load video generation models");
       } finally {
         setIsLoadingConfig(false);
       }
@@ -169,22 +196,29 @@ export function VideoGeneratorForm({
 
   // AICODE-NOTE: Ensure correct default model is selected when generation type or config changes
   useEffect(() => {
-    if (!config || !config.textToVideoModels || !config.imageToVideoModels) return;
+    if (!config || !config.textToVideoModels || !config.imageToVideoModels)
+      return;
 
-    const currentModelName = formData.generationType === 'text-to-video' 
-      ? config.textToVideoModels[0]?.name
-      : config.imageToVideoModels[0]?.name;
+    const currentModelName =
+      formData.generationType === "text-to-video"
+        ? ((config.textToVideoModels[0] as any)?.name ??
+          (config.textToVideoModels[0] as any)?.id)
+        : ((config.imageToVideoModels[0] as any)?.name ??
+          (config.imageToVideoModels[0] as any)?.id);
 
     if (currentModelName && formData.model !== currentModelName) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        model: currentModelName || ''
+        model: currentModelName || "",
       }));
     }
   }, [config, formData.generationType]);
 
-  const handleInputChange = (field: keyof VideoGenerationFormData, value: string | number | undefined) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof VideoGenerationFormData,
+    value: string | number | undefined
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -193,48 +227,53 @@ export function VideoGeneratorForm({
   // AICODE-NOTE: Duration combobox handler
   const handleDurationSelect = (selectedValue: string) => {
     const numValue = Number.parseInt(selectedValue);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       duration: numValue,
     }));
     setDurationOpen(false);
-    setCustomDuration(''); // Clear custom input when preset is selected
+    setCustomDuration(""); // Clear custom input when preset is selected
   };
 
   // AICODE-NOTE: Custom duration input handler
   const handleCustomDurationSubmit = () => {
     const numValue = Number.parseInt(customDuration);
     if (numValue && numValue >= 1 && numValue <= 300) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         duration: numValue,
       }));
       setDurationOpen(false);
-      setCustomDuration('');
+      setCustomDuration("");
     } else {
-      toast.error('Duration must be between 1 and 300 seconds');
+      toast.error("Duration must be between 1 and 300 seconds");
     }
   };
 
   // Generate random seed number
   const generateRandomSeed = () => {
     const newSeed = Math.floor(Math.random() * 1000000000000);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       seed: newSeed,
     }));
   };
 
-  const handleGenerationTypeChange = (type: 'text-to-video' | 'image-to-video') => {
+  const handleGenerationTypeChange = (
+    type: "text-to-video" | "image-to-video"
+  ) => {
     // Debug logging
-    if (type === 'image-to-video') {
-      console.log('🎬 Image-to-video models available:', config?.imageToVideoModels.map(m => ({
-        name: m.name,
-        label: m.label
-      })));
+    if (type === "image-to-video") {
+      console.log(
+        "🎬 Image-to-video models available:",
+        config?.imageToVideoModels.map((m) => ({
+          name: (m as any).name ?? (m as any).id,
+          label: (m as any).label,
+        }))
+      );
     }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
       generationType: type,
       // Model will be set automatically by useEffect based on new generationType
@@ -243,9 +282,9 @@ export function VideoGeneratorForm({
 
   const handleImageSelect = (file: File, previewUrl: string) => {
     setSelectedImage({ file, previewUrl });
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      file
+      file,
     }));
   };
 
@@ -254,21 +293,21 @@ export function VideoGeneratorForm({
       URL.revokeObjectURL(selectedImage.previewUrl);
     }
     setSelectedImage(null);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      file: undefined
+      file: undefined,
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Additional validation for image-to-video mode
-    if (formData.generationType === 'image-to-video' && !formData.file) {
-      toast.error('Please select a source image for image-to-video generation');
+    if (formData.generationType === "image-to-video" && !formData.file) {
+      toast.error("Please select a source image for image-to-video generation");
       return;
     }
-    
+
     // Validate form data
     try {
       const validatedData = videoGenerationSchema.parse(formData);
@@ -278,7 +317,7 @@ export function VideoGeneratorForm({
         const firstError = error.errors[0];
         toast.error(firstError.message);
       } else {
-        toast.error('Invalid form data');
+        toast.error("Invalid form data");
       }
     }
   };
@@ -310,11 +349,11 @@ export function VideoGeneratorForm({
         <CardContent>
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <div className="text-red-800 text-sm">
-              {configError || 'Failed to load configuration'}
+              {configError || "Failed to load configuration"}
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="mt-2"
               onClick={() => window.location.reload()}
             >
@@ -338,25 +377,41 @@ export function VideoGeneratorForm({
         </p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
           {/* Generation Type Tabs */}
-          <Tabs 
-            value={formData.generationType} 
-            onValueChange={(value: string) => handleGenerationTypeChange(value as 'text-to-video' | 'image-to-video')}
+          <Tabs
+            value={formData.generationType}
+            onValueChange={(value: string) =>
+              handleGenerationTypeChange(
+                value as "text-to-video" | "image-to-video"
+              )
+            }
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="text-to-video" className="flex items-center gap-2">
+              <TabsTrigger
+                value="text-to-video"
+                className="flex items-center gap-2"
+              >
                 <Type className="size-4" />
                 Text to Video
               </TabsTrigger>
-              <TabsTrigger value="image-to-video" className="flex items-center gap-2">
+              <TabsTrigger
+                value="image-to-video"
+                className="flex items-center gap-2"
+              >
                 <ImageIcon className="size-4" />
                 Image to Video
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="text-to-video" className="space-y-6 mt-6">
+            <TabsContent
+              value="text-to-video"
+              className="space-y-6 mt-6"
+            >
               {/* Text-to-Video Mode */}
               <div className="space-y-2">
                 <Label htmlFor="prompt">Video Description *</Label>
@@ -364,7 +419,7 @@ export function VideoGeneratorForm({
                   id="prompt"
                   placeholder="Describe the video you want to generate..."
                   value={formData.prompt}
-                  onChange={(e) => handleInputChange('prompt', e.target.value)}
+                  onChange={(e) => handleInputChange("prompt", e.target.value)}
                   disabled={disabled || isGenerating}
                   rows={3}
                   fullscreenTitle="Video Description"
@@ -379,20 +434,29 @@ export function VideoGeneratorForm({
                 <Label htmlFor="model">AI Model</Label>
                 <Select
                   value={formData.model}
-                  onValueChange={(value) => handleInputChange('model', value)}
+                  onValueChange={(value) => handleInputChange("model", value)}
                   disabled={disabled || isGenerating}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
                   <SelectContent>
-                    {config.textToVideoModels.map((model) => (
-                      <SelectItem key={model.name} value={model.name}>
+                    {config.textToVideoModels.map((model, idx) => (
+                      <SelectItem
+                        key={
+                          (model as any).name ??
+                          (model as any).id ??
+                          String(idx)
+                        }
+                        value={
+                          ((model as any).name ?? (model as any).id) as string
+                        }
+                      >
                         <div className="flex items-center justify-between w-full">
-                          <span>{getModelLabel(model)}</span>
-                          {model.params?.price && (
+                          <span>{getModelLabel(model as any)}</span>
+                          {(model as any).params?.price && (
                             <span className="text-xs text-muted-foreground ml-2">
-                              ${model.params.price}/sec
+                              ${(model as any).params?.price as number}/sec
                             </span>
                           )}
                         </div>
@@ -401,12 +465,16 @@ export function VideoGeneratorForm({
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {config.textToVideoModels.length} text-to-video models available
+                  {config.textToVideoModels.length} text-to-video models
+                  available
                 </p>
               </div>
             </TabsContent>
 
-            <TabsContent value="image-to-video" className="space-y-6 mt-6">
+            <TabsContent
+              value="image-to-video"
+              className="space-y-6 mt-6"
+            >
               {/* Image-to-Video Mode */}
               <ImageUpload
                 onImageSelect={handleImageSelect}
@@ -422,7 +490,7 @@ export function VideoGeneratorForm({
                   id="prompt"
                   placeholder="Describe how you want the image to be animated..."
                   value={formData.prompt}
-                  onChange={(e) => handleInputChange('prompt', e.target.value)}
+                  onChange={(e) => handleInputChange("prompt", e.target.value)}
                   disabled={disabled || isGenerating}
                   rows={2}
                   fullscreenTitle="Animation Description"
@@ -437,20 +505,29 @@ export function VideoGeneratorForm({
                 <Label htmlFor="model">AI Model</Label>
                 <Select
                   value={formData.model}
-                  onValueChange={(value) => handleInputChange('model', value)}
+                  onValueChange={(value) => handleInputChange("model", value)}
                   disabled={disabled || isGenerating}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
                   <SelectContent>
-                    {config.imageToVideoModels.map((model) => (
-                      <SelectItem key={model.name} value={model.name}>
+                    {config.imageToVideoModels.map((model, idx) => (
+                      <SelectItem
+                        key={
+                          (model as any).name ??
+                          (model as any).id ??
+                          String(idx)
+                        }
+                        value={
+                          ((model as any).name ?? (model as any).id) as string
+                        }
+                      >
                         <div className="flex items-center justify-between w-full">
-                          <span>{getModelLabel(model)}</span>
-                          {model.params?.price && (
+                          <span>{getModelLabel(model as any)}</span>
+                          {(model as any).params?.price && (
                             <span className="text-xs text-muted-foreground ml-2">
-                              ${model.params.price}/sec
+                              ${(model as any).params?.price as number}/sec
                             </span>
                           )}
                         </div>
@@ -459,7 +536,8 @@ export function VideoGeneratorForm({
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {config.imageToVideoModels.length} image-to-video models available
+                  {config.imageToVideoModels.length} image-to-video models
+                  available
                 </p>
               </div>
             </TabsContent>
@@ -471,8 +549,10 @@ export function VideoGeneratorForm({
             <EnhancedTextarea
               id="negativePrompt"
               placeholder="What to avoid in the video..."
-              value={formData.negativePrompt || ''}
-              onChange={(e) => handleInputChange('negativePrompt', e.target.value)}
+              value={formData.negativePrompt || ""}
+              onChange={(e) =>
+                handleInputChange("negativePrompt", e.target.value)
+              }
               disabled={disabled || isGenerating}
               rows={2}
               fullscreenTitle="Negative Prompt"
@@ -488,7 +568,7 @@ export function VideoGeneratorForm({
               <Label htmlFor="style">Style</Label>
               <Select
                 value={formData.style}
-                onValueChange={(value) => handleInputChange('style', value)}
+                onValueChange={(value) => handleInputChange("style", value)}
                 disabled={disabled || isGenerating}
               >
                 <SelectTrigger>
@@ -496,7 +576,10 @@ export function VideoGeneratorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.availableStyles.map((style) => (
-                    <SelectItem key={style.id} value={style.id}>
+                    <SelectItem
+                      key={style.id}
+                      value={style.id}
+                    >
                       {style.label}
                     </SelectItem>
                   ))}
@@ -509,7 +592,9 @@ export function VideoGeneratorForm({
               <Label htmlFor="resolution">Resolution</Label>
               <Select
                 value={formData.resolution}
-                onValueChange={(value) => handleInputChange('resolution', value)}
+                onValueChange={(value) =>
+                  handleInputChange("resolution", value)
+                }
                 disabled={disabled || isGenerating}
               >
                 <SelectTrigger>
@@ -517,7 +602,10 @@ export function VideoGeneratorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.availableResolutions.map((resolution) => (
-                    <SelectItem key={resolution.label} value={resolution.label}>
+                    <SelectItem
+                      key={resolution.label}
+                      value={resolution.label}
+                    >
                       {resolution.label} ({resolution.aspectRatio})
                     </SelectItem>
                   ))}
@@ -532,7 +620,7 @@ export function VideoGeneratorForm({
               <Label htmlFor="shotSize">Shot Size</Label>
               <Select
                 value={formData.shotSize}
-                onValueChange={(value) => handleInputChange('shotSize', value)}
+                onValueChange={(value) => handleInputChange("shotSize", value)}
                 disabled={disabled || isGenerating}
               >
                 <SelectTrigger>
@@ -540,7 +628,10 @@ export function VideoGeneratorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.availableShotSizes.map((shotSize) => (
-                    <SelectItem key={shotSize.id} value={shotSize.id}>
+                    <SelectItem
+                      key={shotSize.id}
+                      value={shotSize.id}
+                    >
                       {shotSize.label}
                     </SelectItem>
                   ))}
@@ -548,88 +639,105 @@ export function VideoGeneratorForm({
               </Select>
             </div>
 
-                          {/* Duration Input */}
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration</Label>
-                <Popover open={durationOpen} onOpenChange={setDurationOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-                      role="combobox"
-                      aria-expanded={durationOpen}
-                      aria-haspopup="dialog"
-                      disabled={disabled || isGenerating}
-                    >
-                      {!formData.duration || formData.duration === 0 ? (
-                        <span className="text-muted-foreground">Select duration...</span>
-                      ) : (
-                        <span>
-                          {DURATION_OPTIONS.find(option => option.value === formData.duration?.toString())?.label || `${formData.duration} seconds`}
-                        </span>
-                      )}
-                      <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[320px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search duration or type custom..." />
-                      <CommandList>
-                        <CommandEmpty>
-                          <div className="p-2">
-                            <div className="text-sm text-muted-foreground mb-2">
-                              No preset found. Enter custom duration:
-                            </div>
-                            <div className="flex gap-2">
-                              <Input
-                                type="number"
-                                min="1"
-                                max="300"
-                                placeholder="e.g. 25"
-                                value={customDuration}
-                                onChange={(e) => setCustomDuration(e.target.value)}
-                                className="h-8"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={handleCustomDurationSubmit}
-                                disabled={!customDuration}
-                              >
-                                Set
-                              </Button>
-                            </div>
+            {/* Duration Input */}
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration</Label>
+              <Popover
+                open={durationOpen}
+                onOpenChange={setDurationOpen}
+              >
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+                    role="combobox"
+                    aria-expanded={durationOpen}
+                    aria-haspopup="dialog"
+                    disabled={disabled || isGenerating}
+                  >
+                    {!formData.duration || formData.duration === 0 ? (
+                      <span className="text-muted-foreground">
+                        Select duration...
+                      </span>
+                    ) : (
+                      <span>
+                        {DURATION_OPTIONS.find(
+                          (option) =>
+                            option.value === formData.duration?.toString()
+                        )?.label || `${formData.duration} seconds`}
+                      </span>
+                    )}
+                    <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search duration or type custom..." />
+                    <CommandList>
+                      <CommandEmpty>
+                        <div className="p-2">
+                          <div className="text-sm text-muted-foreground mb-2">
+                            No preset found. Enter custom duration:
                           </div>
-                        </CommandEmpty>
-                        <CommandGroup heading="Preset durations">
-                          {DURATION_OPTIONS.map((option) => (
-                            <CommandItem
-                              key={option.value}
-                              value={option.value}
-                              onSelect={(currentValue) => {
-                                handleDurationSelect(currentValue);
-                              }}
+                          <div className="flex gap-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              max="300"
+                              placeholder="e.g. 25"
+                              value={customDuration}
+                              onChange={(e) =>
+                                setCustomDuration(e.target.value)
+                              }
+                              className="h-8"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={handleCustomDurationSubmit}
+                              disabled={!customDuration}
                             >
-                              <Check
-                                className={cn(
-                                  "mr-2 size-4",
-                                  formData.duration === Number.parseInt(option.value) ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <div className="flex flex-col">
-                                <span className="font-medium">{option.label}</span>
-                                <span className="text-xs text-muted-foreground">{option.description}</span>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <p className="text-xs text-muted-foreground">
-                  Select from presets or type custom duration (1-300 seconds)
-                </p>
-              </div>
+                              Set
+                            </Button>
+                          </div>
+                        </div>
+                      </CommandEmpty>
+                      <CommandGroup heading="Preset durations">
+                        {DURATION_OPTIONS.map((option) => (
+                          <CommandItem
+                            key={option.value}
+                            value={option.value}
+                            onSelect={(currentValue) => {
+                              handleDurationSelect(currentValue);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 size-4",
+                                formData.duration ===
+                                  Number.parseInt(option.value)
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {option.label}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {option.description}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">
+                Select from presets or type custom duration (1-300 seconds)
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -638,7 +746,9 @@ export function VideoGeneratorForm({
               <Label htmlFor="frameRate">Frame Rate (FPS)</Label>
               <Select
                 value={formData.frameRate?.toString()}
-                onValueChange={(value) => handleInputChange('frameRate', Number.parseInt(value))}
+                onValueChange={(value) =>
+                  handleInputChange("frameRate", Number.parseInt(value))
+                }
                 disabled={disabled || isGenerating}
               >
                 <SelectTrigger>
@@ -661,10 +771,13 @@ export function VideoGeneratorForm({
                   id="seed"
                   type="number"
                   placeholder="Random"
-                  value={formData.seed || ''}
+                  value={formData.seed || ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    handleInputChange('seed', value ? Number.parseInt(value) : undefined);
+                    handleInputChange(
+                      "seed",
+                      value ? Number.parseInt(value) : undefined
+                    );
                   }}
                   disabled={disabled || isGenerating}
                   className="flex-1"
@@ -691,10 +804,11 @@ export function VideoGeneratorForm({
             type="submit"
             className="w-full"
             disabled={
-              disabled || 
-              isGenerating || 
-              (formData.generationType === 'text-to-video' && !formData.prompt.trim()) ||
-              (formData.generationType === 'image-to-video' && !formData.file)
+              disabled ||
+              isGenerating ||
+              (formData.generationType === "text-to-video" &&
+                !formData.prompt.trim()) ||
+              (formData.generationType === "image-to-video" && !formData.file)
             }
             size="lg"
           >
@@ -714,11 +828,16 @@ export function VideoGeneratorForm({
           {/* Estimated cost */}
           {formData.duration && config.defaultSettings.model.price ? (
             <div className="text-center text-sm text-muted-foreground">
-              Estimated cost: ${(formData.duration * config.defaultSettings.model.price).toFixed(2)}
+              Estimated cost: $
+              {(formData.duration * config.defaultSettings.model.price).toFixed(
+                2
+              )}
             </div>
-          ) : <></>}
+          ) : (
+            <></>
+          )}
         </form>
       </CardContent>
     </Card>
   );
-} 
+}

@@ -11,6 +11,7 @@ import {
 import { FabricCanvas } from "@turbo-super/features";
 import type { ISceneRead, SceneTextbox_Output } from "@turbo-super/api";
 import { debounce, isEqual } from "lodash";
+import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
 
 interface CanvasWrapperProps {
   scene: ISceneRead;
@@ -27,6 +28,7 @@ export function CanvasWrapper({
   controllerRef,
   onToolbarUpdate,
 }: CanvasWrapperProps) {
+  const updateSceneMutation = useNextSceneUpdate();
   const [initialObjects, setInitialObjects] = useState<SceneTextbox_Output[]>(
     []
   );
@@ -44,33 +46,24 @@ export function CanvasWrapper({
 
       try {
         console.log("Updating scene with objects:", objects.length);
-
-        const response = await fetch(`/api/scene/update?sceneId=${scene.id}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sceneId: scene.id,
-            requestBody: {
-              ...scene,
-              file_id: scene.file_id,
-              objects: objects,
-            },
-          }),
+        // use react-query mutation instead of direct fetch
+        await updateSceneMutation.mutateAsync({
+          sceneId: scene.id,
+          requestBody: {
+            ...scene,
+            file_id: scene.file_id,
+            objects: objects,
+          } as any,
         });
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`Scene update failed: ${errText}`);
-        }
       } catch (e) {
         console.error("Scene update error", e);
       }
     },
-    [scene]
+    [scene, updateSceneMutation]
   );
 
   const debouncedUpdate = useMemo(
-    () => debounce(handleSceneUpdate, 400),
+    () => debounce(handleSceneUpdate, 700),
     [handleSceneUpdate]
   );
 

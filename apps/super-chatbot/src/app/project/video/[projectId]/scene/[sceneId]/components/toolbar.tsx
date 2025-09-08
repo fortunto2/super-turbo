@@ -32,7 +32,7 @@ export function Toolbar({
   isLoading,
   onAddText,
 }: {
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   activeTool: ToolType | null;
   isPlaying: boolean;
   onDownload: () => void;

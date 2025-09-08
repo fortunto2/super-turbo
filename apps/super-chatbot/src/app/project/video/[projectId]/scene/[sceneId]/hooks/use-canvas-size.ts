@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
 
 interface UseCanvasSizeProps {
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   activeTool: string | null;
   containerRef: React.RefObject<HTMLDivElement>;
   toolbarRef: React.RefObject<HTMLDivElement>;

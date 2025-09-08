@@ -1,4 +1,8 @@
-import { FileTypeEnum, type IFileRead, type ISceneRead } from "@turbo-super/api";
+import {
+  FileTypeEnum,
+  type IFileRead,
+  type ISceneRead,
+} from "@turbo-super/api";
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
 
@@ -9,7 +13,7 @@ export function VoiceoverList({
   isLoading,
 }: {
   files: IFileRead[];
-  scene: ISceneRead | null;
+  scene?: ISceneRead | null;
   onSelect: (file: IFileRead, isPlaceholder?: boolean) => void;
   isLoading?: boolean;
 }) {
