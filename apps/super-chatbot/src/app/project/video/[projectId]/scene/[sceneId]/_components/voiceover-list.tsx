@@ -6,21 +6,23 @@ import {
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
 
-export function SoundEffectList({
+export function VoiceoverList({
   files,
   scene,
   onSelect,
   isLoading,
+  onCreateAudio,
 }: {
   files: IFileRead[];
   scene?: ISceneRead | null;
   onSelect: (file: IFileRead, isPlaceholder?: boolean) => void;
   isLoading?: boolean;
+  onCreateAudio?: () => void;
 }) {
   return (
     <div className="flex h-full flex-col">
       <div className="mb-4 text-sm font-medium text-muted-foreground">
-        Sound Effect Files
+        Voiceover Files
       </div>
       <div className="flex size-full gap-3 overflow-auto">
         {isLoading ? (
@@ -35,12 +37,12 @@ export function SoundEffectList({
             {/* Пустая карточка для сброса выбора */}
             <EmptyAudioFile
               onSelect={() => {
-                // Создаем placeholder объект для sound effect
+                // Создаем placeholder объект для voiceover
                 const placeholderFile: IFileRead = {
-                  id: "placeholder-soundeffect",
+                  id: "placeholder-voiceover",
                   url: null,
                   thumbnail_url: null,
-                  type: FileTypeEnum.SOUND_EFFECT,
+                  type: FileTypeEnum.VOICEOVER,
                   image_generation_id: null,
                   image_generation: null,
                   video_generation_id: null,
@@ -52,8 +54,8 @@ export function SoundEffectList({
                 };
                 onSelect(placeholderFile, true);
               }}
-              type="soundeffect"
-              isActive={!scene?.sound_effect_id}
+              isActive={!scene?.voiceover_id}
+              onCreateAudio={onCreateAudio}
             />
 
             {/* Файлы */}
@@ -63,8 +65,8 @@ export function SoundEffectList({
                 file={file}
                 scene={scene}
                 onSelect={onSelect}
-                type="soundeffect"
-                isActive={scene?.sound_effect_id === file.id}
+                type="voiceover"
+                isActive={scene?.voiceover_id === file.id}
               />
             ))}
           </>

@@ -11,8 +11,7 @@ import {
 import { Button } from "@turbo-super/ui";
 import { Loader2, Download, CheckCircle } from "lucide-react";
 import { useArtifactSSE } from "@/hooks/use-artifact-sse";
-import { WSMessageTypeEnum } from "@/lib/api";
-import type { IFileRead } from "@/lib/api";
+import { IFileRead, WSMessageTypeEnum } from "@turbo-super/api";
 
 // Simple Progress component since it's not available in UI library
 function ProgressBar({

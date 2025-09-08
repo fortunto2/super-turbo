@@ -4,7 +4,7 @@ import type {
   ImageWSMessage,
 } from "../stores/image-websocket-store";
 import { imageMonitor, validateImageAssignment } from "../utils/image-debug";
-import { FileTypeEnum } from "@/lib/api";
+import { FileService, FileTypeEnum } from "@turbo-super/api";
 
 export interface ImageGenerationState {
   status: "pending" | "processing" | "completed" | "failed";
@@ -108,65 +108,56 @@ export const useImageEventHandler = (
               );
 
               // Import FileService dynamically to resolve file_id to URL
-              import("@/lib/api")
-                .then(async ({ FileService }) => {
-                  try {
-                    const fileResponse = await FileService.fileGetById({
-                      id: fileObject.file_id,
-                    });
+              try {
+                FileService.fileGetById({
+                  id: fileObject.file_id,
+                }).then((fileResponse) => {
+                  if (fileResponse?.url) {
+                    // Check if it's an image file using type field
+                    const isImage =
+                      fileResponse.type === FileTypeEnum.IMAGE ||
+                      fileResponse.url.match(
+                        /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
+                      );
 
-                    if (fileResponse?.url) {
-                      // Check if it's an image file using type field
-                      const isImage =
-                        fileResponse.type === FileTypeEnum.IMAGE ||
-                        fileResponse.url.match(
-                          /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
-                        );
+                    if (isImage) {
+                      console.log(
+                        "📁 ✅ File ID resolved to image URL:",
+                        fileResponse.url
+                      );
 
-                      if (isImage) {
-                        console.log(
-                          "📁 ✅ File ID resolved to image URL:",
-                          fileResponse.url
-                        );
+                      // Validate image assignment
+                      const isValid = validateImageAssignment(
+                        eventData.projectId || projectId,
+                        projectId,
+                        fileResponse.url,
+                        eventData.requestId || requestId
+                      );
 
-                        // Validate image assignment
-                        const isValid = validateImageAssignment(
-                          eventData.projectId || projectId,
-                          projectId,
-                          fileResponse.url,
-                          eventData.requestId || requestId
-                        );
-
-                        if (isValid) {
-                          onStateUpdate({
-                            status: "completed",
-                            imageUrl: fileResponse.url,
-                            progress: 100,
-                            projectId: eventData.projectId || projectId,
-                            requestId: eventData.requestId,
-                          });
-                        }
-                      } else {
-                        console.log(
-                          "📁 ⚠️ File ID resolved to non-image file:",
-                          fileResponse.type
-                        );
+                      if (isValid) {
+                        onStateUpdate({
+                          status: "completed",
+                          imageUrl: fileResponse.url,
+                          progress: 100,
+                          projectId: eventData.projectId || projectId,
+                          requestId: eventData.requestId,
+                        });
                       }
                     } else {
-                      console.error(
-                        "📁 ❌ File ID resolution failed - no URL in response"
+                      console.log(
+                        "📁 ⚠️ File ID resolved to non-image file:",
+                        fileResponse.type
                       );
                     }
-                  } catch (error) {
+                  } else {
                     console.error(
-                      "📁 ❌ Failed to resolve file ID to URL:",
-                      error
+                      "📁 ❌ File ID resolution failed - no URL in response"
                     );
                   }
-                })
-                .catch((error) => {
-                  console.error("📁 ❌ Failed to import FileService:", error);
                 });
+              } catch (error) {
+                console.error("📁 ❌ Failed to resolve file ID to URL:", error);
+              }
             }
           }
           // Also handle case where file data is directly in eventData
@@ -206,68 +197,59 @@ export const useImageEventHandler = (
             );
 
             // Import FileService dynamically to resolve file_id to URL
-            import("@/lib/api")
-              .then(async ({ FileService }) => {
-                try {
-                  const fileResponse = await FileService.fileGetById({
-                    id: fileId,
-                  });
+            try {
+              FileService.fileGetById({
+                id: fileId,
+              }).then((fileResponse) => {
+                if (fileResponse?.url) {
+                  // Check if it's an image file using type field
+                  const isImage =
+                    fileResponse.type === FileTypeEnum.IMAGE ||
+                    fileResponse.url.match(
+                      /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
+                    );
 
-                  if (fileResponse?.url) {
-                    // Check if it's an image file using type field
-                    const isImage =
-                      fileResponse.type === FileTypeEnum.IMAGE ||
-                      fileResponse.url.match(
-                        /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
-                      );
+                  if (isImage) {
+                    console.log(
+                      "📁 ✅ Direct file ID resolved to image URL:",
+                      fileResponse.url
+                    );
 
-                    if (isImage) {
-                      console.log(
-                        "📁 ✅ Direct file ID resolved to image URL:",
-                        fileResponse.url
-                      );
+                    // Validate image assignment
+                    const isValid = validateImageAssignment(
+                      eventData.projectId || projectId,
+                      projectId,
+                      fileResponse.url,
+                      eventData.requestId || requestId
+                    );
 
-                      // Validate image assignment
-                      const isValid = validateImageAssignment(
-                        eventData.projectId || projectId,
-                        projectId,
-                        fileResponse.url,
-                        eventData.requestId || requestId
-                      );
-
-                      if (isValid) {
-                        onStateUpdate({
-                          status: "completed",
-                          imageUrl: fileResponse.url,
-                          progress: 100,
-                          projectId: eventData.projectId || projectId,
-                          requestId: eventData.requestId,
-                        });
-                      }
-                    } else {
-                      console.log(
-                        "📁 ⚠️ Direct file ID resolved to non-image file:",
-                        fileResponse.type
-                      );
+                    if (isValid) {
+                      onStateUpdate({
+                        status: "completed",
+                        imageUrl: fileResponse.url,
+                        progress: 100,
+                        projectId: eventData.projectId || projectId,
+                        requestId: eventData.requestId,
+                      });
                     }
                   } else {
-                    console.error(
-                      "📁 ❌ Direct file ID resolution failed - no URL in response"
+                    console.log(
+                      "📁 ⚠️ Direct file ID resolved to non-image file:",
+                      fileResponse.type
                     );
                   }
-                } catch (error) {
+                } else {
                   console.error(
-                    "📁 ❌ Failed to resolve direct file ID to URL:",
-                    error
+                    "📁 ❌ Direct file ID resolution failed - no URL in response"
                   );
                 }
-              })
-              .catch((error) => {
-                console.error(
-                  "📁 ❌ Failed to import FileService for direct file ID:",
-                  error
-                );
               });
+            } catch (error) {
+              console.error(
+                "📁 ❌ Failed to resolve direct file ID to URL:",
+                error
+              );
+            }
           }
           break;
 
@@ -470,7 +452,6 @@ export const useImageEventHandler = (
                   );
 
                   // Import and resolve file_id to URL
-                  const { FileService } = await import("@/lib/api");
                   const fileResponse = await FileService.fileGetById({
                     id: fileId,
                   });

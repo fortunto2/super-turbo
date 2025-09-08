@@ -2736,6 +2736,7 @@ var FabricCanvas = ({
   const centeringGuidelines = useRef(null);
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const isInitializing = useRef(true);
   const loadObjects = async (canvas2) => {
     if (!initialObjects) return;
     const objectsFonts = [];
@@ -2813,12 +2814,10 @@ var FabricCanvas = ({
   };
   useEffect(() => {
     if (!canvas || !initialObjects) return;
-    console.log("USE EFFECT 1");
     void loadObjects(canvas);
   }, [initialObjects, canvas]);
   useEffect(() => {
     if (!canvas) return;
-    console.log("USE EFFECT 2");
     setGuidelines(canvas);
     if (onReady) {
       onReady(canvas);
@@ -2830,7 +2829,9 @@ var FabricCanvas = ({
     if (onChange) {
       const handleObjAdded = (e) => {
         console.log("added");
-        onChange(e.target);
+        if (!isInitializing.current) {
+          onChange?.(e.target);
+        }
       };
       const handleObjRemoved = (e) => {
         console.log("removed");
@@ -2848,6 +2849,11 @@ var FabricCanvas = ({
       canvas.on("object:removed", handleObjRemoved);
       canvas.on("object:modified", handleObjModified);
       canvas.on("text:changed", handleTextChanged);
+      if (canvas) {
+        setTimeout(() => {
+          isInitializing.current = false;
+        }, 0);
+      }
       return () => {
         canvas.off("object:added", handleObjAdded);
         canvas.off("object:removed", handleObjRemoved);

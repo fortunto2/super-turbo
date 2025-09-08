@@ -1,5 +1,9 @@
 import { createDocumentHandler } from "@/lib/artifacts/server";
-import { generateVideoWithStrategy } from "@turbo-super/api";
+import {
+  generateVideoWithStrategy,
+  GenerationSourceEnum,
+  GenerationTypeEnum,
+} from "@turbo-super/api";
 import {
   getSuperduperAIConfig,
   getAvailableVideoModels,
@@ -14,7 +18,6 @@ import {
   DEFAULT_VIDEO_DURATION,
   getModelCompatibleResolutions,
 } from "@/lib/config/video-constants";
-import { GenerationSourceEnum, GenerationTypeEnum } from "@/lib/api";
 import { deductOperationBalance } from "@/lib/utils/tools-balance";
 
 function convertToVideoModel(sdModel: VideoModel): VideoModel {

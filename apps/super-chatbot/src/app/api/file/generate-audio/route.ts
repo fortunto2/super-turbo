@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
     if (config?.url) OpenAPI.BASE = config.url;
     if (config?.token) OpenAPI.TOKEN = config.token;
 
-    const requestBody = (await request.json()) as GenerateAudioPayload;
+    const { requestBody } = (await request.json()) as {
+      requestBody: GenerateAudioPayload;
+    };
 
     const response = await FileService.fileGenerateAudio({ requestBody });
     console.log("Audio generation response:", response);

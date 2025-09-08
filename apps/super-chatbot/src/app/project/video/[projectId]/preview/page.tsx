@@ -16,11 +16,15 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import type { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
+import type {
+  IFileRead,
+  IProjectRead,
+  IProjectVideoRead,
+  ISceneRead,
+} from "@turbo-super/api";
 import { useEffect, useMemo, useState } from "react";
 import { ShareDialog } from "@/components/share-dialog";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import type { IFileRead } from "@/lib/api";
 
 // CSS for custom scrollbar
 const customScrollbarStyles = `

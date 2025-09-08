@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
 import type { ISceneRead } from "@turbo-super/api";
-import type { ToolType } from "../components/toolbar";
+import type { ToolType } from "../_components/toolbar";
 import { useNextGenerateImage } from "@/lib/api/next/generate/image/mutation";
 
 interface UseInpaintingProps {

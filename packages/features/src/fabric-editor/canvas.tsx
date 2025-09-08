@@ -46,6 +46,8 @@ export const FabricCanvas: FC<Props> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const isInitializing = useRef(true);
+
   const loadObjects = async (canvas: Canvas) => {
     if (!initialObjects) return;
 
@@ -149,13 +151,11 @@ export const FabricCanvas: FC<Props> = ({
   };
   useEffect(() => {
     if (!canvas || !initialObjects) return;
-    console.log("USE EFFECT 1");
     void loadObjects(canvas);
   }, [initialObjects, canvas]);
 
   useEffect(() => {
     if (!canvas) return;
-    console.log("USE EFFECT 2");
     setGuidelines(canvas);
 
     if (onReady) {
@@ -169,7 +169,9 @@ export const FabricCanvas: FC<Props> = ({
     if (onChange) {
       const handleObjAdded = (e: ObjectEvent) => {
         console.log("added");
-        onChange(e.target);
+        if (!isInitializing.current) {
+          onChange?.(e.target);
+        }
       };
       const handleObjRemoved = (e: any) => {
         console.log("removed");
@@ -188,6 +190,11 @@ export const FabricCanvas: FC<Props> = ({
       canvas.on("object:removed", handleObjRemoved);
       canvas.on("object:modified", handleObjModified);
       canvas.on("text:changed", handleTextChanged);
+      if (canvas) {
+        setTimeout(() => {
+          isInitializing.current = false;
+        }, 0);
+      }
 
       return () => {
         canvas.off("object:added", handleObjAdded);

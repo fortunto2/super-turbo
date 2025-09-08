@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         ...body.requestBody,
       } as ISceneUpdate,
     });
-    console.log(response);
+    console.log("response scene update", response);
 
     return NextResponse.json(response);
   } catch (error) {

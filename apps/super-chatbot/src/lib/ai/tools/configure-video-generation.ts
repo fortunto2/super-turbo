@@ -17,12 +17,12 @@ import {
   getModelCompatibleResolutions,
   getDefaultResolutionForModel,
 } from "@/lib/config/video-constants";
-import { GenerationTypeEnum, GenerationSourceEnum } from "@/lib/api";
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
 } from "@/lib/utils/ai-tools-balance";
 import type { Session } from "next-auth";
+import { GenerationSourceEnum, GenerationTypeEnum } from "@turbo-super/api";
 
 interface CreateVideoDocumentParams {
   createDocument: any;

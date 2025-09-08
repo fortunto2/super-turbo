@@ -6,12 +6,12 @@ import { ArrowLeft, Eye } from "lucide-react";
 import {
   DataTypeEnum,
   type IDataUpdate,
+  IFileRead,
   type IProjectRead,
   useProjectData,
 } from "@turbo-super/api";
 import { useEffect, useState } from "react";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import type { IFileRead } from "@/lib/api";
 
 export default function VideoPage() {
   const params = useParams();

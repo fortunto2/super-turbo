@@ -5,6 +5,8 @@ import type { ImageModel } from "@/lib/config/superduperai";
 import { useImageSSE } from "./use-image-sse";
 import { useImageEventHandler } from "./use-image-event-handler";
 import {
+  FileService,
+  FileTypeEnum,
   generateImageWithStrategy,
   getSuperduperAIConfig,
 } from "@turbo-super/api";
@@ -417,7 +419,6 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
               console.log("⏰ Found file_id via fallback, resolving:", fileId);
 
               // Import and resolve file_id to URL
-              const { FileService, FileTypeEnum } = await import("@/lib/api");
               const fileResponse = await FileService.fileGetById({
                 id: fileId,
               });
@@ -559,7 +560,6 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
         console.log("🔍 Found file_id manually, resolving:", fileId);
 
         // Import and resolve file_id to URL
-        const { FileService, FileTypeEnum } = await import("@/lib/api");
         const fileResponse = await FileService.fileGetById({ id: fileId });
 
         if (fileResponse?.url && fileResponse.type === FileTypeEnum.IMAGE) {

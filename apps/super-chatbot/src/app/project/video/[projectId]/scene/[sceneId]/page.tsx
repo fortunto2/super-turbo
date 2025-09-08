@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Eye } from "lucide-react";
 
 import {
   FileTypeEnum,
@@ -12,15 +11,12 @@ import {
   TaskStatusEnum,
 } from "@turbo-super/api";
 import type { IFileRead } from "@turbo-super/api";
-import { Toolbar, type ToolType } from "./components/toolbar";
-import { AnimatingTool } from "./components/animating-tool";
-import { SoundEffectList } from "./components/soundeffect-list";
-import { MediaList } from "./components/media-list";
-import { ScenePreview } from "./components/scene-preview";
-import { VoiceoverList } from "./components/voiceover-list";
-import { SceneHeader } from "./components/scene-header";
-import { SceneContent } from "./components/scene-content";
-import { ErrorState } from "./components/error-state";
+import { Toolbar, type ToolType } from "./_components/toolbar";
+
+import { ScenePreview } from "./_components/scene-preview";
+import { SceneHeader } from "./_components/scene-header";
+import { SceneContent } from "./_components/scene-content";
+import { ErrorState } from "./_components/error-state";
 import { keepPreviousData } from "@tanstack/react-query";
 import { useNextSceneGetById } from "@/lib/api/next/scene/query";
 import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";

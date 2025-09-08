@@ -4,6 +4,7 @@ import { AnimatingTool } from "./animating-tool";
 import { SoundEffectList } from "./soundeffect-list";
 import { MediaList } from "./media-list";
 import { VoiceoverList } from "./voiceover-list";
+import { useRouter } from "next/navigation";
 
 interface SceneContentProps {
   activeTool: ToolType | null;
@@ -28,6 +29,13 @@ export function SceneContent({
   projectId,
   sceneId,
 }: SceneContentProps) {
+  const router = useRouter();
+  const handleCreateVoiceover = () => {
+    router.push(`/project/video/${projectId}/scene/${sceneId}/voiceover`);
+  };
+  const handleCreateSoundEffect = () => {
+    router.push(`/project/video/${projectId}/scene/${sceneId}/soundEffect`);
+  };
   if (activeTool === "mediaList") {
     return (
       <MediaList
@@ -47,6 +55,7 @@ export function SceneContent({
         scene={scene}
         onSelect={onSelect}
         isLoading={isLoading}
+        onCreateAudio={handleCreateVoiceover}
       />
     );
   }
@@ -58,6 +67,7 @@ export function SceneContent({
         scene={scene}
         onSelect={onSelect}
         isLoading={isLoading}
+        onCreateAudio={handleCreateSoundEffect}
       />
     );
   }

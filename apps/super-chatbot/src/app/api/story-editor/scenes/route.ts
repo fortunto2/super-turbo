@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
       selectRelated: SelectRelatedEnum.FULL,
       limit: 50,
     });
-    console.log("SceneService response:", response);
 
     // Extract scenes from response
     const scenes = response.items || [];
@@ -77,8 +76,8 @@ export async function GET(request: NextRequest) {
         {
           id: "scene-1",
           order: 1,
-                  visual_description: "Beautiful sunset over the sea",
-        action_description: "Camera smoothly moves along the shore",
+          visual_description: "Beautiful sunset over the sea",
+          action_description: "Camera smoothly moves along the shore",
           dialogue: {
             speaker: "Narrator",
             text: "Welcome to our world",

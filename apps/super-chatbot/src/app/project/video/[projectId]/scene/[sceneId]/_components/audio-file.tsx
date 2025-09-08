@@ -71,6 +71,14 @@ export function AudioFile({
     );
   };
 
+  if (!file.url) {
+    return (
+      <div className="animate-pulse rounded-lg border bg-muted flex justify-center items-center aspect-video max-w-[300px]">
+        Generating...
+      </div>
+    );
+  }
+
   return (
     <div
       key={file.id}

@@ -1,25 +1,19 @@
-import { useState } from "react";
 import { Plus, CircleSlash2 } from "lucide-react";
 
 interface EmptyAudioFileProps {
   onSelect: () => void;
-  type: "voiceover" | "soundeffect";
   isActive: boolean;
+  onCreateAudio?: () => void;
 }
 
 export function EmptyAudioFile({
   onSelect,
-  type,
   isActive,
+  onCreateAudio,
 }: EmptyAudioFileProps) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div
-      className="group relative aspect-video max-w-[300px]"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group relative aspect-video max-w-[300px]">
+      {/* Оборудуем кнопку onClick для выбора */}
       <button
         onClick={onSelect}
         className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden rounded-lg border-2  transition-all duration-200 ${
@@ -33,15 +27,21 @@ export function EmptyAudioFile({
           <CircleSlash2 />
         </div>
 
-        {/* Плюс иконка */}
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/40">
+        {/* Плюс иконка без вложенной кнопки */}
+        <div
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/40 cursor-pointer hover:bg-muted/90"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCreateAudio?.();
+          }}
+        >
           <Plus className="size-5 text-muted-foreground" />
         </div>
 
         {/* Overlay при hover */}
-        {hovered && (
+        {/* {hovered && (
           <div className="absolute inset-0 bg-black/5 transition-opacity duration-200" />
-        )}
+        )} */}
       </button>
 
       {/* Индикатор активного состояния */}

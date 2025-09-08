@@ -22,6 +22,7 @@ import {
 } from "../utils/image-utils";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { DebugParameters } from "@/components/debug-parameters";
+import { FileService, FileTypeEnum } from "@turbo-super/api";
 
 interface ImageEditorProps {
   chatId?: string;
@@ -484,7 +485,6 @@ export function ImageEditor({
           .file_id as string;
         console.log("🔍 Found file_id manually, resolving:", fileId);
 
-        const { FileService, FileTypeEnum } = await import("@/lib/api");
         const fileResponse = await FileService.fileGetById({ id: fileId });
 
         if (fileResponse?.url && fileResponse.type === FileTypeEnum.IMAGE) {
