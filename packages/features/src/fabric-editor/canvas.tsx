@@ -8,29 +8,19 @@ import {
   CenteringGuidelines,
 } from "@superduperai/fabric-guideline-plugin";
 import { FONTS, loadFonts } from "super-timeline";
-import type { FabricController } from "./controller";
-import { buildFabricController } from "./controller";
 
 type Props = {
   className?: string;
   onReady?: (canvas: Canvas) => void;
-  onControllerReady?: (controller: FabricController) => void;
-  onChange?: (event: FabricObject) => void;
   initialObjects?: any[];
   readonly?: boolean;
   width?: number;
   height?: number;
 };
 
-type ObjectEvent = {
-  target: FabricObject;
-};
-
 export const FabricCanvas: FC<Props> = ({
   className,
   onReady,
-  onControllerReady,
-  onChange,
   readonly,
   initialObjects,
   width: initialWidth,
@@ -45,8 +35,6 @@ export const FabricCanvas: FC<Props> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const isInitializing = useRef(true);
 
   const loadObjects = async (canvas: Canvas) => {
     if (!initialObjects) return;
@@ -160,48 +148,6 @@ export const FabricCanvas: FC<Props> = ({
 
     if (onReady) {
       onReady(canvas);
-    }
-    if (onControllerReady) {
-      const controller = buildFabricController(canvas);
-      onControllerReady(controller);
-    }
-
-    if (onChange) {
-      const handleObjAdded = (e: ObjectEvent) => {
-        console.log("added");
-        if (!isInitializing.current) {
-          onChange?.(e.target);
-        }
-      };
-      const handleObjRemoved = (e: any) => {
-        console.log("removed");
-        onChange(e.target);
-      };
-      const handleObjModified = (e: any) => {
-        console.log("modified");
-        onChange(e.target);
-      };
-      const handleTextChanged = (e: any) => {
-        console.log("changed");
-        onChange(e.target);
-      };
-
-      canvas.on("object:added", handleObjAdded);
-      canvas.on("object:removed", handleObjRemoved);
-      canvas.on("object:modified", handleObjModified);
-      canvas.on("text:changed", handleTextChanged);
-      if (canvas) {
-        setTimeout(() => {
-          isInitializing.current = false;
-        }, 0);
-      }
-
-      return () => {
-        canvas.off("object:added", handleObjAdded);
-        canvas.off("object:removed", handleObjRemoved);
-        canvas.off("object:modified", handleObjModified);
-        canvas.off("text:changed", handleTextChanged);
-      };
     }
   }, [canvas]);
 

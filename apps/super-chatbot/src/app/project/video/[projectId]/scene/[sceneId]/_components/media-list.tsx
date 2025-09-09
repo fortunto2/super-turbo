@@ -8,7 +8,8 @@ import {
   useFileList,
   useSceneGetById,
   useSceneUpdate,
-} from "@/lib/api";
+} from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
 
 export function MediaList({
   projectId,
@@ -20,7 +21,6 @@ export function MediaList({
   const { data: scene, isLoading: isSceneLoading } = useSceneGetById({
     id: sceneId,
   });
-  console.log(OpenAPI);
 
   const { data: files, isLoading: isFilesLoading } = useFileList({
     projectId,
@@ -48,6 +48,10 @@ export function MediaList({
   };
 
   const isLoading = isSceneLoading || isFilesLoading;
+  const isError = !scene || !files;
+  const isEmpty =
+    !isLoading && !isError && (!files?.items || files.items.length === 0);
+
   return (
     <>
       <div className="mb-2 text-sm font-medium text-muted-foreground">
@@ -57,30 +61,23 @@ export function MediaList({
         className="grid h-full gap-2"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}
       >
-        {isLoading || !scene ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-video animate-pulse rounded-lg border bg-muted"
+        <QueryState
+          isLoading={isLoading}
+          isError={isError}
+          isEmpty={isEmpty}
+          emptyMessage="No files for this scene"
+          loadingMessage="Loading media files..."
+        >
+          {files?.items?.map((file) => (
+            <MediaFile
+              isActive={file.id === scene?.file_id}
+              file={file}
+              onDelete={handleDelete}
+              onSelect={handleSelect}
+              key={file.id}
             />
-          ))
-        ) : files?.items ? (
-          <>
-            {files.items?.map((file) => (
-              <MediaFile
-                isActive={file.id === scene?.file_id}
-                file={file}
-                onDelete={handleDelete}
-                onSelect={handleSelect}
-                key={file.id}
-              />
-            ))}
-          </>
-        ) : (
-          <div className="col-span-full py-6 text-center text-sm text-muted-foreground">
-            No files for this scene
-          </div>
-        )}
+          ))}
+        </QueryState>
       </div>
     </>
   );

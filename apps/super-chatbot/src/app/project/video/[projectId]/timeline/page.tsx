@@ -12,46 +12,29 @@ import {
 } from "@turbo-super/api";
 import { useEffect, useState } from "react";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
+import { useProjectGetById, useSceneList } from "@/lib/api/superduperai";
+import { QueryState, QueryCard } from "@/components/ui/query-state";
 
 export default function VideoPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.projectId as string;
 
-  const [project, setProject] = useState<IProjectRead | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
-  const getProject = async () => {
-    try {
-      const response = await fetch(
-        `/api/story-editor/project?projectId=${projectId}`
-      );
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      return { success: false, project: null };
-    }
-  };
+  // Используем React Query для загрузки данных
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error,
+  } = useProjectGetById({
+    id: projectId,
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getProject();
-        if (data.success) {
-          setProject(data.project);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [projectId]);
+  const { data: scenes } = useSceneList({
+    projectId,
+  });
 
   const timeline = useProjectData(project, DataTypeEnum.TIMELINE);
 
@@ -174,43 +157,24 @@ export default function VideoPage() {
 
   return (
     <>
-      {isLoading ? (
-        <div className="min-h-screen size-full text-center space-y-4 items-center justify-center flex flex-col bg-background">
-          <div className="relative">
-            <div className="size-16 border-4 border-muted rounded-full animate-spin" />
-            <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-lg font-medium text-foreground">
-              Loading project...
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Preparing Timeline Editor
-            </p>
-          </div>
-        </div>
-      ) : !project ? (
-        <div className="size-full text-center space-y-4 bg-background">
-          <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-            <Eye className="size-8 text-red-600 dark:text-red-400" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-xl font-medium text-red-600 dark:text-red-400">
-              Loading Error
-            </p>
-            <p className="text-muted-foreground">Failed to load project data</p>
-          </div>
-        </div>
-      ) : (
+      <QueryState
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        isEmpty={!project}
+        emptyMessage="Project not found"
+        loadingMessage="Loading project..."
+        errorMessage="Failed to load project"
+      >
         <ProjectTimeline
           timeline={timeline}
-          project={project}
+          project={project!}
           onBack={() => router.back()}
           onExport={() => setIsExportDialogOpen(true)}
           onUpdateTimeline={handleUpdateTimeline}
           onRegenerateTimeline={handleRegenerateTimeline}
         />
-      )}
+      </QueryState>
 
       {/* Export Dialog */}
       <ProjectVideoExportDialog

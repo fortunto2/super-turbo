@@ -2,7 +2,7 @@
 
 import type { Canvas, FabricObject, IText } from "fabric";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildFabricEditor } from "./editor";
+import { buildFabricController } from "./controller";
 
 type Props = {
   onChange?: (object: FabricObject) => void;
@@ -88,8 +88,8 @@ export const useFabricEditor = ({ onChange }: Props) => {
     };
   }, [canvas, onChange]);
 
-  const editor = useMemo(
-    () => (canvas ? buildFabricEditor(canvas) : undefined),
+  const controller = useMemo(
+    () => (canvas ? buildFabricController(canvas) : undefined),
     [canvas]
   );
 
@@ -101,6 +101,6 @@ export const useFabricEditor = ({ onChange }: Props) => {
   return {
     selectedObjects,
     handleReady,
-    editor,
+    controller,
   };
 };

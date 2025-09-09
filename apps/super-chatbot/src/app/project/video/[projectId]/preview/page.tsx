@@ -20,7 +20,8 @@ import type { IFileRead, IProjectVideoRead } from "@turbo-super/api";
 import { useMemo, useState } from "react";
 import { ShareDialog } from "@/components/share-dialog";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import { useProjectGetById, useSceneList } from "@/lib/api";
+import { useProjectGetById, useSceneList } from "@/lib/api/superduperai";
+import { QueryState, QueryCard } from "@/components/ui/query-state";
 
 // CSS for custom scrollbar
 const customScrollbarStyles = `
@@ -66,7 +67,10 @@ export default function PreviewPage() {
 
   const music = useMemo(() => project?.music ?? null, [project?.music]);
 
-  const scenesMedia = useMemo(() => sceneToMediaFormatting(scenes), [scenes]);
+  const scenesMedia = useMemo(
+    () => sceneToMediaFormatting((scenes?.items as any) ?? []),
+    [scenes?.items]
+  );
 
   const files = useMemo(() => [...scenesMedia], [scenesMedia]);
 
@@ -125,6 +129,11 @@ export default function PreviewPage() {
 
   const isLoading = isProjectLoading || isScenesLoading;
   const isError = isProjectError || isScenesError;
+  const error = isProjectError
+    ? "Failed to load project"
+    : isScenesError
+      ? "Failed to load scenes"
+      : null;
 
   if (!projectId) {
     return (
@@ -193,70 +202,55 @@ export default function PreviewPage() {
               <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
                 {/* Fixed height for all states */}
                 <div className="h-[500px] flex items-center justify-center">
-                  {isLoading ? (
-                    <div className="w-screen text-center space-y-4 size-full items-center justify-center flex flex-col">
-                      <div className="relative">
-                        <div className="size-16 border-4 border-muted rounded-full animate-spin" />
-                        <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-lg font-medium text-foreground">
-                          Loading project and scenes...
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Preparing your video player
-                        </p>
-                      </div>
-                    </div>
-                  ) : isError ? (
-                    <div className="size-full text-center space-y-4 flex flex-col items-center justify-center">
-                      <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-                        <Eye className="size-8 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xl font-medium text-red-600 dark:text-red-400">
-                          Loading Error
-                        </p>
-                        <p className="text-muted-foreground">Error</p>
-                      </div>
-                    </div>
-                  ) : project && !!scenes?.items ? (
-                    <div className="size-full p-6">
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-foreground">
-                          Video Player
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm text-muted-foreground">
-                            {scenes.items?.length} scenes
-                          </span>
-                          <div className="size-2 bg-primary rounded-full animate-pulse" />
+                  <QueryState
+                    isLoading={isLoading}
+                    isError={isError}
+                    error={error as any}
+                    isEmpty={!project || !scenes?.items}
+                    emptyMessage="No data to display"
+                    loadingMessage="Loading project and scenes..."
+                    errorMessage="Failed to load data"
+                  >
+                    {project && !!scenes?.items ? (
+                      <div className="size-full p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-foreground">
+                            Video Player
+                          </h3>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-muted-foreground">
+                              {scenes.items?.length} scenes
+                            </span>
+                            <div className="size-2 bg-primary rounded-full animate-pulse" />
+                          </div>
+                        </div>
+                        <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
+                          <RemotionPlayer
+                            scenes={scenes?.items as any}
+                            music={music}
+                            isLoading={!isLoaded}
+                            aspectRatio={aspectRatio}
+                          />
                         </div>
                       </div>
-                      <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
-                        <RemotionPlayer
-                          scenes={scenes}
-                          music={music}
-                          isLoading={!isLoaded}
-                          aspectRatio={aspectRatio}
-                        />
+                    ) : (
+                      <div className="text-center space-y-4">
+                        <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                          <Eye className="size-8 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-xl font-medium text-muted-foreground">
+                            No data to display
+                          </p>
+                          <p className="text-muted-foreground">
+                            {!project
+                              ? "Project not found"
+                              : "Scenes not found"}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-4">
-                      <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                        <Eye className="size-8 text-muted-foreground" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xl font-medium text-muted-foreground">
-                          No data to display
-                        </p>
-                        <p className="text-muted-foreground">
-                          {!project ? "Project not found" : "Scenes not found"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </QueryState>
                 </div>
               </div>
             </div>

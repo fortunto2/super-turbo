@@ -3,24 +3,12 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  FileTypeEnum,
-  type ISceneRead,
-  type ISceneUpdate,
-  type ITaskRead,
-  TaskStatusEnum,
-  type IFileRead,
-} from "@turbo-super/api";
+import { FileTypeEnum, type ITaskRead, TaskStatusEnum } from "@turbo-super/api";
 import { Toolbar, type ToolType } from "./_components/toolbar";
 
 import { ScenePreview } from "./_components/scene-preview";
 
-import {
-  useNextSceneUpdate,
-  useNextFileDelete,
-  useSceneGetById,
-  useFileList,
-} from "@/lib/api";
+import { useSceneGetById } from "@/lib/api/superduperai";
 
 import { MediaList } from "./_components/media-list";
 import { VoiceoverList } from "./_components/voiceover-list";
@@ -249,12 +237,6 @@ export default function ScenePage() {
         activeTool={activeTool}
         onChangeTool={handleChangeTool}
         togglePlay={togglePlay}
-        onAddText={() => {
-          if (!controllerRef?.current) return;
-          controllerRef.current.addText("Text", {
-            fill: "white",
-          });
-        }}
         isLoading={sceneLoading}
       />
     </div>

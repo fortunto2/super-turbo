@@ -1,7 +1,12 @@
 import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
-import { useFileList, useSceneGetById, useSceneUpdate } from "@/lib/api";
+import {
+  useFileList,
+  useSceneGetById,
+  useSceneUpdate,
+} from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
 
 export function VoiceoverList({
   projectId,
@@ -41,6 +46,9 @@ export function VoiceoverList({
   };
 
   const isLoading = isFilesLoading || isSceneLoading;
+  const isError = !scene || !files;
+  const isEmpty =
+    !isLoading && !isError && (!files?.items || files.items.length === 0);
 
   return (
     <div className="flex h-full flex-col">
@@ -48,14 +56,13 @@ export function VoiceoverList({
         Voiceover Files
       </div>
       <div className="flex size-full gap-3 overflow-auto">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse aspect-video rounded-lg border bg-muted"
-            />
-          ))
-        ) : (
+        <QueryState
+          isLoading={isLoading}
+          isError={isError}
+          isEmpty={isEmpty}
+          emptyMessage="No voiceover files"
+          loadingMessage="Loading voiceover files..."
+        >
           <>
             {/* Пустая карточка для сброса выбора */}
             <EmptyAudioFile
@@ -92,7 +99,7 @@ export function VoiceoverList({
               />
             ))}
           </>
-        )}
+        </QueryState>
       </div>
     </div>
   );

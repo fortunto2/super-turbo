@@ -2495,6 +2495,161 @@ var SceneComponent = ({ type, url, playbackRate = 1 }) => {
   );
 };
 var Scene = react.memo(SceneComponent);
+var FabricCanvas = ({
+  className,
+  onReady,
+  readonly,
+  initialObjects,
+  width: initialWidth,
+  height: initialHeight
+}) => {
+  const [canvas, setCanvas] = react.useState(null);
+  const alignGuidelines = react.useRef(null);
+  const centeringGuidelines = react.useRef(null);
+  const canvasRef = react.useRef(null);
+  const containerRef = react.useRef(null);
+  const loadObjects = async (canvas2) => {
+    if (!initialObjects) return;
+    const objectsFonts = [];
+    canvas2.remove(...canvas2.getObjects());
+    const canvasWidth = canvas2.getWidth();
+    const canvasHeight = canvas2.getHeight();
+    const canvasSquare = canvasWidth * canvasHeight;
+    const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
+    initialObjects.forEach((object) => {
+      if (object.fontFamily && !objectsFonts.includes(object.fontFamily)) {
+        objectsFonts.push(object.fontFamily);
+      }
+    });
+    const fontsData = objectsFonts.map((objectFont) => {
+      const obj = initialObjects.find((obj2) => obj2.fontFamily === objectFont);
+      if (obj) {
+        return { name: objectFont, url: obj.fontUrl };
+      }
+      const defaultFont = superTimeline.FONTS.find(
+        (font) => font.family === objectFont || font.postScriptName === objectFont
+      );
+      return {
+        name: defaultFont?.postScriptName ?? objectFont,
+        url: defaultFont?.url ?? ""
+      };
+    });
+    await superTimeline.loadFonts(fontsData);
+    await Promise.all(
+      fontsData.filter((f) => f.name).map((f) => document.fonts.load(`1em "${f.name}"`))
+    );
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    const canvasObjects = initialObjects.map((object) => {
+      const { text, type, left, top, width, height, fontSize, ...objectData } = object;
+      const relativeData = {
+        left: left * canvasWidth,
+        top: top * canvasHeight,
+        width: width * canvasWidth,
+        height: height * canvasHeight,
+        fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
+      };
+      if (type === "Textbox") {
+        const textbox = new fabric.Textbox(text, {
+          ...objectData,
+          ...relativeData,
+          fontFamily: object.fontFamily
+        });
+        textbox.setControlsVisibility({ mt: false, mb: false });
+        return textbox;
+      }
+      throw new Error(`Unsupported object type: ${object.type}`);
+    });
+    canvas2.add(...canvasObjects);
+    canvas2.requestRenderAll();
+  };
+  const setCurrentDimensions = (canvas2) => {
+    const oldWidth = canvas2.getWidth();
+    const oldHeight = canvas2.getHeight();
+    canvas2.setDimensions({
+      width: containerRef.current?.clientWidth ?? 0,
+      height: containerRef.current?.clientHeight ?? 0
+    });
+    const scaleX = canvas2.getWidth() / oldWidth;
+    const scaleY = canvas2.getHeight() / oldHeight;
+    canvas2.getObjects().forEach((object) => {
+      object.set({
+        width: object.width * scaleX,
+        height: object.height * scaleY,
+        left: object.left * scaleX,
+        top: object.top * scaleY,
+        fontSize: object.fontSize ? object.fontSize * scaleX : void 0
+      });
+    });
+    canvas2.renderAll();
+  };
+  react.useEffect(() => {
+    if (!canvas || !initialObjects) return;
+    void loadObjects(canvas);
+  }, [initialObjects, canvas]);
+  react.useEffect(() => {
+    if (!canvas) return;
+    setGuidelines(canvas);
+    if (onReady) {
+      onReady(canvas);
+    }
+  }, [canvas]);
+  const setGuidelines = (canvas2) => {
+    alignGuidelines.current = new fabricGuidelinePlugin.AlignGuidelines({
+      canvas: canvas2,
+      aligningOptions: {
+        lineColor: "#32D10A",
+        lineMargin: 8
+      }
+    });
+    alignGuidelines.current.init();
+    centeringGuidelines.current = new fabricGuidelinePlugin.CenteringGuidelines({
+      canvas: canvas2,
+      color: "#32D10A",
+      verticalOffset: 8,
+      horizontalOffset: 8
+    });
+    centeringGuidelines.current.init();
+  };
+  react.useEffect(() => {
+    const width = containerRef.current?.clientWidth ?? initialWidth ?? 0;
+    const height = containerRef.current?.clientHeight ?? initialHeight ?? 0;
+    const fabricCanvas = new fabric.Canvas(canvasRef.current ?? void 0, {
+      width,
+      height
+    });
+    const observeTarget = containerRef.current;
+    if (!observeTarget) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (!containerRef.current) return;
+      const width2 = containerRef.current.clientWidth;
+      const height2 = containerRef.current.clientHeight;
+      if (width2 !== 0 && height2 !== 0) {
+        setCurrentDimensions(fabricCanvas);
+        setCanvas(fabricCanvas);
+      }
+    });
+    resizeObserver.observe(observeTarget);
+    return () => {
+      resizeObserver.unobserve(observeTarget);
+      resizeObserver.disconnect();
+      void fabricCanvas.dispose();
+    };
+  }, []);
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      ref: containerRef,
+      className,
+      style: {
+        pointerEvents: readonly ? "none" : void 0,
+        width: initialWidth ? `${initialWidth}px` : void 0,
+        height: initialHeight ? `${initialHeight}px` : void 0
+      },
+      children: /* @__PURE__ */ jsxRuntime.jsx("canvas", { ref: canvasRef })
+    }
+  );
+};
 var FabricController = class {
   constructor(canvas) {
     this.listeners = /* @__PURE__ */ new Set();
@@ -2723,280 +2878,6 @@ var styleMap = {
   linethrough: "linethrough",
   overline: "overline"
 };
-var FabricCanvas = ({
-  className,
-  onReady,
-  onControllerReady,
-  onChange,
-  readonly,
-  initialObjects,
-  width: initialWidth,
-  height: initialHeight
-}) => {
-  const [canvas, setCanvas] = react.useState(null);
-  const alignGuidelines = react.useRef(null);
-  const centeringGuidelines = react.useRef(null);
-  const canvasRef = react.useRef(null);
-  const containerRef = react.useRef(null);
-  const isInitializing = react.useRef(true);
-  const loadObjects = async (canvas2) => {
-    if (!initialObjects) return;
-    const objectsFonts = [];
-    canvas2.remove(...canvas2.getObjects());
-    const canvasWidth = canvas2.getWidth();
-    const canvasHeight = canvas2.getHeight();
-    const canvasSquare = canvasWidth * canvasHeight;
-    const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
-    initialObjects.forEach((object) => {
-      if (object.fontFamily && !objectsFonts.includes(object.fontFamily)) {
-        objectsFonts.push(object.fontFamily);
-      }
-    });
-    const fontsData = objectsFonts.map((objectFont) => {
-      const obj = initialObjects.find((obj2) => obj2.fontFamily === objectFont);
-      if (obj) {
-        return { name: objectFont, url: obj.fontUrl };
-      }
-      const defaultFont = superTimeline.FONTS.find(
-        (font) => font.family === objectFont || font.postScriptName === objectFont
-      );
-      return {
-        name: defaultFont?.postScriptName ?? objectFont,
-        url: defaultFont?.url ?? ""
-      };
-    });
-    await superTimeline.loadFonts(fontsData);
-    await Promise.all(
-      fontsData.filter((f) => f.name).map((f) => document.fonts.load(`1em "${f.name}"`))
-    );
-    await document.fonts.ready;
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-    const canvasObjects = initialObjects.map((object) => {
-      const { text, type, left, top, width, height, fontSize, ...objectData } = object;
-      const relativeData = {
-        left: left * canvasWidth,
-        top: top * canvasHeight,
-        width: width * canvasWidth,
-        height: height * canvasHeight,
-        fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
-      };
-      if (type === "Textbox") {
-        const textbox = new fabric.Textbox(text, {
-          ...objectData,
-          ...relativeData,
-          fontFamily: object.fontFamily
-        });
-        textbox.setControlsVisibility({ mt: false, mb: false });
-        return textbox;
-      }
-      throw new Error(`Unsupported object type: ${object.type}`);
-    });
-    canvas2.add(...canvasObjects);
-    canvas2.requestRenderAll();
-  };
-  const setCurrentDimensions = (canvas2) => {
-    const oldWidth = canvas2.getWidth();
-    const oldHeight = canvas2.getHeight();
-    canvas2.setDimensions({
-      width: containerRef.current?.clientWidth ?? 0,
-      height: containerRef.current?.clientHeight ?? 0
-    });
-    const scaleX = canvas2.getWidth() / oldWidth;
-    const scaleY = canvas2.getHeight() / oldHeight;
-    canvas2.getObjects().forEach((object) => {
-      object.set({
-        width: object.width * scaleX,
-        height: object.height * scaleY,
-        left: object.left * scaleX,
-        top: object.top * scaleY,
-        fontSize: object.fontSize ? object.fontSize * scaleX : void 0
-      });
-    });
-    canvas2.renderAll();
-  };
-  react.useEffect(() => {
-    if (!canvas || !initialObjects) return;
-    void loadObjects(canvas);
-  }, [initialObjects, canvas]);
-  react.useEffect(() => {
-    if (!canvas) return;
-    setGuidelines(canvas);
-    if (onReady) {
-      onReady(canvas);
-    }
-    if (onControllerReady) {
-      const controller = buildFabricController(canvas);
-      onControllerReady(controller);
-    }
-    if (onChange) {
-      const handleObjAdded = (e) => {
-        console.log("added");
-        if (!isInitializing.current) {
-          onChange?.(e.target);
-        }
-      };
-      const handleObjRemoved = (e) => {
-        console.log("removed");
-        onChange(e.target);
-      };
-      const handleObjModified = (e) => {
-        console.log("modified");
-        onChange(e.target);
-      };
-      const handleTextChanged = (e) => {
-        console.log("changed");
-        onChange(e.target);
-      };
-      canvas.on("object:added", handleObjAdded);
-      canvas.on("object:removed", handleObjRemoved);
-      canvas.on("object:modified", handleObjModified);
-      canvas.on("text:changed", handleTextChanged);
-      if (canvas) {
-        setTimeout(() => {
-          isInitializing.current = false;
-        }, 0);
-      }
-      return () => {
-        canvas.off("object:added", handleObjAdded);
-        canvas.off("object:removed", handleObjRemoved);
-        canvas.off("object:modified", handleObjModified);
-        canvas.off("text:changed", handleTextChanged);
-      };
-    }
-  }, [canvas]);
-  const setGuidelines = (canvas2) => {
-    alignGuidelines.current = new fabricGuidelinePlugin.AlignGuidelines({
-      canvas: canvas2,
-      aligningOptions: {
-        lineColor: "#32D10A",
-        lineMargin: 8
-      }
-    });
-    alignGuidelines.current.init();
-    centeringGuidelines.current = new fabricGuidelinePlugin.CenteringGuidelines({
-      canvas: canvas2,
-      color: "#32D10A",
-      verticalOffset: 8,
-      horizontalOffset: 8
-    });
-    centeringGuidelines.current.init();
-  };
-  react.useEffect(() => {
-    const width = containerRef.current?.clientWidth ?? initialWidth ?? 0;
-    const height = containerRef.current?.clientHeight ?? initialHeight ?? 0;
-    const fabricCanvas = new fabric.Canvas(canvasRef.current ?? void 0, {
-      width,
-      height
-    });
-    const observeTarget = containerRef.current;
-    if (!observeTarget) return;
-    const resizeObserver = new ResizeObserver(() => {
-      if (!containerRef.current) return;
-      const width2 = containerRef.current.clientWidth;
-      const height2 = containerRef.current.clientHeight;
-      if (width2 !== 0 && height2 !== 0) {
-        setCurrentDimensions(fabricCanvas);
-        setCanvas(fabricCanvas);
-      }
-    });
-    resizeObserver.observe(observeTarget);
-    return () => {
-      resizeObserver.unobserve(observeTarget);
-      resizeObserver.disconnect();
-      void fabricCanvas.dispose();
-    };
-  }, []);
-  return /* @__PURE__ */ jsxRuntime.jsx(
-    "div",
-    {
-      ref: containerRef,
-      className,
-      style: {
-        pointerEvents: readonly ? "none" : void 0,
-        width: initialWidth ? `${initialWidth}px` : void 0,
-        height: initialHeight ? `${initialHeight}px` : void 0
-      },
-      children: /* @__PURE__ */ jsxRuntime.jsx("canvas", { ref: canvasRef })
-    }
-  );
-};
-var buildFabricEditor = (canvas) => {
-  return {
-    canvas,
-    addText(text, options) {
-      const textObject = new fabric.Textbox(text, options);
-      canvas.add(textObject);
-      canvas.setActiveObject(textObject);
-      canvas.renderAll();
-    },
-    removeText() {
-      const activeObject = this.getActiveText();
-      if (activeObject) {
-        canvas.remove(activeObject);
-        canvas.renderAll();
-      }
-    },
-    setStyleText(style) {
-      const activeObject = this.getActiveText();
-      if (!activeObject) return false;
-      const currentValue = activeObject.get(styleMap2[style]);
-      if (style === "bold") {
-        const newValue = currentValue === "bold" ? "normal" : "bold";
-        this.updateText(activeObject, { fontWeight: newValue });
-      } else if (style === "italic") {
-        const newValue = currentValue === "italic" ? "normal" : "italic";
-        this.updateText(activeObject, { fontStyle: newValue });
-      } else if (style === "uppercase") {
-        const newText = isUppercase2(activeObject.text);
-        this.updateText(activeObject, { text: newText });
-      } else {
-        this.updateText(activeObject, {
-          [styleMap2[style]]: !currentValue
-        });
-      }
-    },
-    updateText(object, options) {
-      object.set(options);
-      canvas.fire("text:changed", { target: object });
-      canvas.renderAll();
-    },
-    getActiveText() {
-      const object = canvas.getActiveObject();
-      if (object instanceof fabric.Textbox) {
-        return object;
-      }
-    },
-    exportObjects() {
-      const canvasJSON = canvas.toJSON();
-      const canvasWidth = canvas.getWidth();
-      const canvasHeight = canvas.getHeight();
-      const canvasSquare = canvasWidth * canvasHeight;
-      const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
-      return canvasJSON.objects.map((object) => {
-        const { left, top, width, height, fontSize } = object;
-        return {
-          ...object,
-          left: left / canvasWidth,
-          top: top / canvasHeight,
-          width: width / canvasWidth,
-          height: height / canvasHeight,
-          fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
-        };
-      });
-    }
-  };
-};
-var isUppercase2 = (text) => {
-  const isUppercase3 = text === text.toUpperCase();
-  const newText = isUppercase3 ? text.toLowerCase() : text.toUpperCase();
-  return newText;
-};
-var styleMap2 = {
-  bold: "fontWeight",
-  italic: "fontStyle",
-  underline: "underline",
-  linethrough: "linethrough"
-};
 
 // src/fabric-editor/hook.ts
 var useFabricEditor = ({ onChange }) => {
@@ -3053,8 +2934,8 @@ var useFabricEditor = ({ onChange }) => {
       canvas.off("text:changed", onTextChange);
     };
   }, [canvas, onChange]);
-  const editor = react.useMemo(
-    () => canvas ? buildFabricEditor(canvas) : void 0,
+  const controller = react.useMemo(
+    () => canvas ? buildFabricController(canvas) : void 0,
     [canvas]
   );
   const handleReady = (canvas2) => {
@@ -3064,7 +2945,7 @@ var useFabricEditor = ({ onChange }) => {
   return {
     selectedObjects,
     handleReady,
-    editor
+    controller
   };
 };
 var TextToolbar = ({ controller, visible, onClose }) => {

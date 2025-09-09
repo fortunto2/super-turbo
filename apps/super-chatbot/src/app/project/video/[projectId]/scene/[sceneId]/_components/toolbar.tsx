@@ -1,3 +1,4 @@
+import { useToolbarStore } from "@/lib/store";
 import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
 import { Skeleton } from "@turbo-super/ui";
 import {
@@ -29,7 +30,6 @@ export function Toolbar({
   onChangeTool,
   togglePlay,
   isLoading,
-  onAddText,
 }: {
   scene?: ISceneRead | null;
   activeTool: ToolType | null | string;
@@ -37,14 +37,22 @@ export function Toolbar({
   onChangeTool: (tool: ToolType | null) => void;
   togglePlay: () => void;
   isLoading?: boolean;
-  onAddText: () => void;
 }) {
+  const { controller } = useToolbarStore();
+
   const handleDownload = () => {
     if (!scene?.file?.url) return;
     const a = document.createElement("a");
     a.href = scene.file.url;
     a.download = `scene-${scene.id}.asset`;
     a.click();
+  };
+
+  const handleAddText = () => {
+    if (!controller) return;
+    controller.addText("Text", {
+      fill: "white",
+    });
   };
 
   const tools = [
@@ -98,7 +106,7 @@ export function Toolbar({
     {
       icon: <Type className="size-5" />,
       content: "Add text",
-      onClick: onAddText,
+      onClick: handleAddText,
       hidden: !scene,
       type: "addText" as ToolType,
     },

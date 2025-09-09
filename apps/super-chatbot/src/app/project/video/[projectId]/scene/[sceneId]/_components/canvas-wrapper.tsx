@@ -1,17 +1,13 @@
 "use client";
 
+import { useCallback, useMemo, useState, useEffect } from "react";
 import {
-  useRef,
-  useCallback,
-  useMemo,
-  RefObject,
-  useState,
-  useEffect,
-} from "react";
-import { FabricCanvas, FabricControllerType } from "@turbo-super/features";
-import type { ISceneRead, SceneTextbox_Output } from "@turbo-super/api";
+  FabricCanvas,
+  FabricController,
+  useFabricEditor,
+} from "@turbo-super/features";
+import type { SceneTextbox_Output } from "@turbo-super/api";
 import { debounce, isEqual } from "lodash";
-import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
 import { useToolbarStore } from "@/lib/store";
 import { useSceneGetById, useSceneUpdate } from "@/lib/api";
 
@@ -42,7 +38,7 @@ export function CanvasWrapper({
     if (!scene || !scene.objects || isEqual(scene.objects, initialObjects))
       return;
     setInitialObjects(scene.objects);
-  }, [scene?.objects, initialObjects]);
+  }, [scene, initialObjects]);
 
   const handleSceneUpdate = useCallback(
     async (objects: any[]) => {
@@ -70,19 +66,17 @@ export function CanvasWrapper({
     [handleSceneUpdate]
   );
 
-  const handleChange = useCallback(() => {
+  const handleChange = () => {
     if (!scene || !scene.file_id) return;
 
     const updatedObjects = controller?.exportObjects();
     if (updatedObjects) {
       debouncedUpdate(updatedObjects);
     }
-  }, [scene, debouncedUpdate, controller]);
+  };
 
   const handleControllerReady = useCallback(
-    (newController: FabricControllerType) => {
-      setController(newController);
-
+    (newController: FabricController) => {
       // Добавляем обработчики событий для тулбара
       newController.on((evt: any) => {
         if (evt.type === "object:clicked") {
@@ -99,9 +93,20 @@ export function CanvasWrapper({
           }
         }
       });
+      setController(newController);
     },
-    [controller, onToolbarUpdate]
+    [onToolbarUpdate, setController]
   );
+
+  const { handleReady, controller: updatedController } = useFabricEditor({
+    onChange: handleChange,
+  });
+
+  useEffect(() => {
+    if (updatedController) {
+      handleControllerReady(updatedController);
+    }
+  }, [updatedController, handleControllerReady]);
 
   if (width <= 0 || height <= 0) {
     return null;
@@ -111,9 +116,7 @@ export function CanvasWrapper({
     <FabricCanvas
       className="absolute top-0 left-0"
       initialObjects={initialObjects}
-      onReady={() => {}}
-      onControllerReady={handleControllerReady}
-      onChange={handleChange}
+      onReady={handleReady}
       readonly={false}
       width={width}
       height={height}
