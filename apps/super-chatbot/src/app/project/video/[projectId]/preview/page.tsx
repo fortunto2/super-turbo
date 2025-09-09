@@ -16,15 +16,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import type {
-  IFileRead,
-  IProjectRead,
-  IProjectVideoRead,
-  ISceneRead,
-} from "@turbo-super/api";
-import { useEffect, useMemo, useState } from "react";
+import type { IFileRead, IProjectVideoRead } from "@turbo-super/api";
+import { useMemo, useState } from "react";
 import { ShareDialog } from "@/components/share-dialog";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
+import { useProjectGetById, useSceneList } from "@/lib/api";
 
 // CSS for custom scrollbar
 const customScrollbarStyles = `
@@ -54,10 +50,17 @@ export default function PreviewPage() {
   const router = useRouter();
   const projectId = params.projectId as string;
 
-  const [project, setProject] = useState<IProjectRead | null>(null);
-  const [scenes, setScenes] = useState<ISceneRead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+  } = useProjectGetById({ id: projectId });
+  const {
+    data: scenes,
+    isLoading: isScenesLoading,
+    isError: isScenesError,
+  } = useSceneList({ projectId });
+
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
@@ -76,75 +79,6 @@ export default function PreviewPage() {
     const [numerator, denominator] = value.split(":").map(Number);
     return numerator / denominator;
   }, [project?.config?.aspect_ratio]);
-
-  useEffect(() => {
-    const fetchData = async (retryCount = 0) => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const [projectData, scenesData] = await Promise.all([
-          getProject(),
-          getScenes(),
-        ]);
-
-        if (projectData.success) {
-          setProject(projectData.project);
-        } else {
-          console.error("Failed to fetch project:", projectData.error);
-          setError("Failed to load project");
-        }
-
-        if (scenesData.success) {
-          setScenes(scenesData.scenes);
-        } else {
-          console.error("Failed to fetch scenes:", scenesData.error);
-          setError("Failed to load scenes");
-          setScenes([]);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-
-        if (retryCount < 3) {
-          console.log(`Retrying... Attempt ${retryCount + 1}`);
-          setTimeout(() => fetchData(retryCount + 1), 1000 * (retryCount + 1));
-          return;
-        }
-
-        setError("Data loading error");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const getProject = async () => {
-      try {
-        const response = await fetch(
-          `/api/story-editor/project?projectId=${projectId}`
-        );
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching project:", error);
-        return { success: false, project: null };
-      }
-    };
-
-    const getScenes = async () => {
-      try {
-        const response = await fetch(
-          `/api/story-editor/scenes?projectId=${projectId}`
-        );
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching scenes:", error);
-        return { success: false, scenes: [] };
-      }
-    };
-
-    fetchData();
-  }, [projectId]);
 
   // Function for exporting video
   const handleExport = async (projectId: string) => {
@@ -188,6 +122,9 @@ export default function PreviewPage() {
     link.click();
     document.body.removeChild(link);
   };
+
+  const isLoading = isProjectLoading || isScenesLoading;
+  const isError = isProjectError || isScenesError;
 
   if (!projectId) {
     return (
@@ -271,7 +208,7 @@ export default function PreviewPage() {
                         </p>
                       </div>
                     </div>
-                  ) : error ? (
+                  ) : isError ? (
                     <div className="size-full text-center space-y-4 flex flex-col items-center justify-center">
                       <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
                         <Eye className="size-8 text-red-600 dark:text-red-400" />
@@ -280,10 +217,10 @@ export default function PreviewPage() {
                         <p className="text-xl font-medium text-red-600 dark:text-red-400">
                           Loading Error
                         </p>
-                        <p className="text-muted-foreground">{error}</p>
+                        <p className="text-muted-foreground">Error</p>
                       </div>
                     </div>
-                  ) : project && scenes.length > 0 ? (
+                  ) : project && !!scenes?.items ? (
                     <div className="size-full p-6">
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-foreground">
@@ -291,7 +228,7 @@ export default function PreviewPage() {
                         </h3>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-muted-foreground">
-                            {scenes.length} scenes
+                            {scenes.items?.length} scenes
                           </span>
                           <div className="size-2 bg-primary rounded-full animate-pulse" />
                         </div>
@@ -325,7 +262,7 @@ export default function PreviewPage() {
             </div>
 
             {/* Project Info Cards */}
-            {project && scenes.length > 0 && (
+            {project && !!scenes?.items && (
               <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {/* Project Details */}
                 <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
@@ -347,7 +284,7 @@ export default function PreviewPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Scenes:</span>
                       <span className="font-semibold text-foreground">
-                        {scenes.length}
+                        {scenes.items.length}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -368,11 +305,11 @@ export default function PreviewPage() {
                       <Play className="size-5 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">
-                      Scenes ({scenes.length})
+                      Scenes ({scenes.items.length})
                     </h3>
                   </div>
                   <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                    {scenes.map((scene, index) => (
+                    {scenes?.items?.map((scene, index) => (
                       <Link
                         key={scene.id}
                         href={`/project/video/${projectId}/scene/${scene.id}`}

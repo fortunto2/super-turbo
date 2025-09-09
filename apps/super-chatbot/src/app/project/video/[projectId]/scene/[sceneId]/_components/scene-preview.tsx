@@ -1,43 +1,47 @@
-import { useMediaPrefetch, TextToolbar } from "@turbo-super/features";
+import {
+  useMediaPrefetch,
+  TextToolbar,
+  FabricControllerType,
+} from "@turbo-super/features";
 import { ToolType } from "./toolbar";
-import { useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
 import { EmptyPreview, ErrorMessage, Loader } from "./helper";
 import { CanvasContainer } from "./canvas-container";
 import { InpaintingPanel } from "./inpainting-panel";
 import { useCanvasSize } from "../hooks/use-canvas-size";
-import { useToolbar } from "../hooks/use-toolbar";
 import { useInpainting } from "../hooks/use-inpainting";
+import { useToolbarStore } from "@/lib/store";
+import { useSceneGetById } from "@/lib/api";
 
 interface ScenePreviewProps {
-  scene?: ISceneRead | null;
-  isLoading: boolean;
-  error: string | null;
   activeTool: string | null;
-  onActiveToolChange?: (tool: ToolType | null) => void;
+  onActiveToolChange?: (tool: ToolType | null | string) => void;
   onPlayingChange?: (value: boolean) => void;
   onStarted: (id: string) => void;
   isPlaying?: boolean;
   projectId: string;
-  controllerRef: any;
+  sceneId: string;
 }
 
 export const ScenePreview = ({
-  scene,
-  isLoading,
-  error,
   activeTool,
   onActiveToolChange,
   onPlayingChange,
   onStarted,
   isPlaying,
   projectId,
-  controllerRef,
+  sceneId,
 }: ScenePreviewProps) => {
+  const { data: scene, isLoading } = useSceneGetById({ id: sceneId });
+
   const toolbarRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Custom hooks
+  const [toolbarVisible, setToolbarVisible] = useState(false);
+
+  const { controller } = useToolbarStore();
+
   const { canvasSize, updateCanvasSize } = useCanvasSize({
     scene,
     activeTool,
@@ -45,17 +49,35 @@ export const ScenePreview = ({
     toolbarRef,
   });
 
-  const { toolbarVisible, setToolbarVisible, updateToolbarAnchorFromTarget } =
-    useToolbar({
-      controllerRef,
-    });
-
   const { isInpainting, canvas, setCanvas, handleInpainting } = useInpainting({
     scene,
     projectId,
     onActiveToolChange,
     onStarted,
   });
+
+  const updateToolbarAnchorFromTarget = useCallback(
+    (target?: FabricControllerType) => {
+      if (!controller) return;
+      const textbox = target ?? controller.getActiveText();
+      if (!textbox) {
+        setToolbarVisible(false);
+        return;
+      }
+      setToolbarVisible(true);
+    },
+    [controller]
+  );
+
+  // Scroll listener for toolbar positioning
+  useEffect(() => {
+    const onScroll = () => {
+      if (!toolbarVisible) return;
+      updateToolbarAnchorFromTarget();
+    };
+    window.addEventListener("scroll", onScroll, true);
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, [toolbarVisible, updateToolbarAnchorFromTarget]);
 
   const filesScene: any = useMemo(() => {
     // if (!scene || !project) return [];
@@ -82,8 +104,6 @@ export const ScenePreview = ({
     >
       {isLoading ? (
         <Loader />
-      ) : error ? (
-        <ErrorMessage message={error} />
       ) : scene?.file?.url ? (
         <CanvasContainer
           scene={scene}
@@ -93,7 +113,6 @@ export const ScenePreview = ({
           isPlaying={isPlaying}
           isReady={isReady}
           updateCanvasSize={updateCanvasSize}
-          controllerRef={controllerRef}
           onToolbarUpdate={updateToolbarAnchorFromTarget}
           setCanvas={setCanvas}
         />
@@ -102,9 +121,9 @@ export const ScenePreview = ({
       )}
 
       {/* Floating text toolbar */}
-      {toolbarVisible && controllerRef.current && (
+      {toolbarVisible && controller && (
         <TextToolbar
-          controller={controllerRef.current}
+          controller={controller}
           visible={toolbarVisible}
           onClose={() => setToolbarVisible(false)}
         />
@@ -117,7 +136,9 @@ export const ScenePreview = ({
         canvas={canvas}
         setCanvas={setCanvas}
         onComplete={handleInpainting}
-        onActiveChange={(tool: ToolType) => onActiveToolChange?.(tool)}
+        onActiveChange={(tool: ToolType | string | null) =>
+          onActiveToolChange?.(tool)
+        }
         toolbarRef={toolbarRef}
       />
     </div>

@@ -282,3 +282,5 @@ const styleMap: Record<string, keyof TextboxProps> = {
   linethrough: "linethrough",
   overline: "overline",
 };
+
+export type { FabricController as FabricControllerType };

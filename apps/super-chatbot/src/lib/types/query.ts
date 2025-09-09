@@ -14,6 +14,7 @@ export type UseInfiniteQueryOptions<TData> = Omit<
     any,
     any,
     InfiniteData<TData, any>,
+    //@ts-ignore
     InfiniteData<TData, any>,
     any
   >,

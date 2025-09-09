@@ -8,27 +8,32 @@ import {
   useState,
   useEffect,
 } from "react";
-import { FabricCanvas } from "@turbo-super/features";
+import { FabricCanvas, FabricControllerType } from "@turbo-super/features";
 import type { ISceneRead, SceneTextbox_Output } from "@turbo-super/api";
 import { debounce, isEqual } from "lodash";
 import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
+import { useToolbarStore } from "@/lib/store";
+import { useSceneGetById, useSceneUpdate } from "@/lib/api";
 
 interface CanvasWrapperProps {
-  scene: ISceneRead;
   width: number;
   height: number;
-  controllerRef: any;
   onToolbarUpdate: (target?: any) => void;
+  sceneId: string;
 }
 
 export function CanvasWrapper({
-  scene,
   width,
   height,
-  controllerRef,
+  sceneId,
   onToolbarUpdate,
 }: CanvasWrapperProps) {
-  const updateSceneMutation = useNextSceneUpdate();
+  const { data: scene } = useSceneGetById({ id: sceneId });
+
+  const { mutateAsync } = useSceneUpdate();
+
+  const { controller, setController } = useToolbarStore();
+
   const [initialObjects, setInitialObjects] = useState<SceneTextbox_Output[]>(
     []
   );
@@ -36,19 +41,17 @@ export function CanvasWrapper({
   useEffect(() => {
     if (!scene || !scene.objects || isEqual(scene.objects, initialObjects))
       return;
-    console.log("objects updated");
     setInitialObjects(scene.objects);
-  }, [scene.objects, initialObjects]);
+  }, [scene?.objects, initialObjects]);
 
   const handleSceneUpdate = useCallback(
     async (objects: any[]) => {
       if (!scene || !scene.file_id) return;
 
       try {
-        console.log("Updating scene with objects:", objects.length);
         // use react-query mutation instead of direct fetch
-        await updateSceneMutation.mutateAsync({
-          sceneId: scene.id,
+        await mutateAsync({
+          id: scene.id,
           requestBody: {
             ...scene,
             file_id: scene.file_id,
@@ -59,7 +62,7 @@ export function CanvasWrapper({
         console.error("Scene update error", e);
       }
     },
-    [scene, updateSceneMutation]
+    [scene, mutateAsync]
   );
 
   const debouncedUpdate = useMemo(
@@ -70,18 +73,18 @@ export function CanvasWrapper({
   const handleChange = useCallback(() => {
     if (!scene || !scene.file_id) return;
 
-    const updatedObjects = controllerRef.current?.exportObjects();
+    const updatedObjects = controller?.exportObjects();
     if (updatedObjects) {
       debouncedUpdate(updatedObjects);
     }
-  }, [scene, debouncedUpdate, controllerRef]);
+  }, [scene, debouncedUpdate, controller]);
 
   const handleControllerReady = useCallback(
-    (controller: any) => {
-      controllerRef.current = controller;
+    (newController: FabricControllerType) => {
+      setController(newController);
 
       // Добавляем обработчики событий для тулбара
-      controller.on((evt: any) => {
+      newController.on((evt: any) => {
         if (evt.type === "object:clicked") {
           if (evt.target && evt.target.type === "textbox") {
             onToolbarUpdate(evt.target);
@@ -89,7 +92,7 @@ export function CanvasWrapper({
         } else if (evt.type === "canvas:clicked") {
           onToolbarUpdate();
         } else if (evt.type === "selection:changed") {
-          const active = controller.getActiveText();
+          const active = newController.getActiveText();
           if (active) onToolbarUpdate(active);
           else {
             onToolbarUpdate();
@@ -97,7 +100,7 @@ export function CanvasWrapper({
         }
       });
     },
-    [controllerRef, onToolbarUpdate]
+    [controller, onToolbarUpdate]
   );
 
   if (width <= 0 || height <= 0) {

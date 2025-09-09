@@ -9,7 +9,7 @@ interface InpaintingPanelProps {
   canvas: any;
   setCanvas: (canvas: any) => void;
   onComplete: (result: { prompt: string; mask: File; config: string }) => void;
-  onActiveChange: (tool: ToolType) => void;
+  onActiveChange: (tool: ToolType | null | string) => void;
   toolbarRef: React.RefObject<HTMLDivElement>;
 }
 

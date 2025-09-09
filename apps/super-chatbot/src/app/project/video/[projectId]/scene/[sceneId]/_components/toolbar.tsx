@@ -26,26 +26,32 @@ export function Toolbar({
   scene,
   activeTool,
   isPlaying,
-  onDownload,
   onChangeTool,
   togglePlay,
   isLoading,
   onAddText,
 }: {
   scene?: ISceneRead | null;
-  activeTool: ToolType | null;
+  activeTool: ToolType | null | string;
   isPlaying: boolean;
-  onDownload: () => void;
   onChangeTool: (tool: ToolType | null) => void;
   togglePlay: () => void;
   isLoading?: boolean;
   onAddText: () => void;
 }) {
+  const handleDownload = () => {
+    if (!scene?.file?.url) return;
+    const a = document.createElement("a");
+    a.href = scene.file.url;
+    a.download = `scene-${scene.id}.asset`;
+    a.click();
+  };
+
   const tools = [
     {
       icon: <Download className="size-5" />,
       content: "Download",
-      onClick: onDownload,
+      onClick: handleDownload,
       hidden: !scene?.file?.url,
       type: null,
     },

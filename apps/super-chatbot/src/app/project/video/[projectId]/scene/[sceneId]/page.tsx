@@ -9,38 +9,23 @@ import {
   type ISceneUpdate,
   type ITaskRead,
   TaskStatusEnum,
+  type IFileRead,
 } from "@turbo-super/api";
-import type { IFileRead } from "@turbo-super/api";
 import { Toolbar, type ToolType } from "./_components/toolbar";
 
 import { ScenePreview } from "./_components/scene-preview";
-import { SceneHeader } from "./_components/scene-header";
-import { SceneContent } from "./_components/scene-content";
-import { ErrorState } from "./_components/error-state";
-import { keepPreviousData } from "@tanstack/react-query";
-import { useNextSceneGetById } from "@/lib/api/next/scene/query";
-import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
-import { useNextFileList } from "@/lib/api/next/file/query";
-import { useNextFileDelete } from "@/lib/api/next/file/delete/mutation";
-import { createUpdatedSceneData } from "./utils/file-utils";
 
-// ---------- Types ----------
-interface SceneData {
-  success: boolean;
-  scene?: ISceneRead;
-  error?: string;
-}
+import {
+  useNextSceneUpdate,
+  useNextFileDelete,
+  useSceneGetById,
+  useFileList,
+} from "@/lib/api";
 
-interface ScenePageState {
-  scene: ISceneRead | null;
-  files: IFileRead[];
-  activeTool: ToolType | null;
-  isLoading: boolean;
-  error: string | null;
-  isPlaying: boolean;
-  pendingFileIds: string[];
-  fileGenerationStartTimes: Record<string, number>;
-}
+import { MediaList } from "./_components/media-list";
+import { VoiceoverList } from "./_components/voiceover-list";
+import { SoundEffectList } from "./_components/soundeffect-list";
+import { AnimatingTool } from "./_components/animating-tool";
 
 // ---------- Custom hooks (replaced by React Query hooks) ----------
 
@@ -163,32 +148,17 @@ export default function ScenePage() {
   const projectId = params.projectId as string;
   const sceneId = params.sceneId as string;
 
-  const [activeTool, setActiveTool] = useState<ToolType | null>("mediaList");
+  const [activeTool, setActiveTool] = useState<ToolType | null | string>(
+    "mediaList"
+  );
   const [isPlaying, setIsPlaying] = useState(false);
 
   const controllerRef = useRef<any>(null);
 
-  // Custom hooks
-  const {
-    data: scene,
-    isLoading: sceneLoading,
-    error: sceneError,
-  } = useNextSceneGetById({ sceneId });
+  const { data: scene, isLoading: sceneLoading } = useSceneGetById({
+    id: sceneId,
+  });
 
-  const types =
-    activeTool === "soundEffect"
-      ? FileTypeEnum.SOUND_EFFECT
-      : activeTool === "voiceover"
-        ? FileTypeEnum.VOICEOVER
-        : `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;
-
-  const { data: files = [], isLoading: filesLoading } = useNextFileList(
-    { projectId, sceneId, types },
-    { placeholderData: keepPreviousData }
-  );
-
-  const updateSceneMutation = useNextSceneUpdate();
-  const deleteFileMutation = useNextFileDelete();
   const {
     pendingFileIds,
     setPendingFileIds,
@@ -196,54 +166,10 @@ export default function ScenePage() {
     setFileGenerationStartTimes,
   } = useFilePolling(projectId, sceneId);
 
-  const isLoading = sceneLoading || filesLoading;
-
   // ---------- Handlers ----------
-  const handleSelectFile = async (file: IFileRead, isPlaceholder?: boolean) => {
-    if (!sceneId || !scene) return;
-
-    try {
-      const updatedSceneData = createUpdatedSceneData(
-        scene,
-        file,
-        isPlaceholder
-      );
-      await updateSceneMutation.mutateAsync({
-        sceneId,
-        requestBody: updatedSceneData as ISceneUpdate,
-      });
-    } catch (e) {
-      console.error("Select file error", e);
-    }
-  };
-
-  const handleDownload = () => {
-    if (!scene?.file?.url) return;
-    const a = document.createElement("a");
-    a.href = scene.file.url;
-    a.download = `scene-${scene.id}.asset`;
-    a.click();
-  };
 
   const handleChangeTool = (tool: ToolType | null) => setActiveTool(tool);
   const togglePlay = () => setIsPlaying(!isPlaying);
-
-  const handleDeleteFile = async (fileId: string) => {
-    try {
-      await deleteFileMutation.mutateAsync({ id: fileId });
-
-      setFileGenerationStartTimes((prev) => {
-        const updated = { ...prev };
-        delete updated[fileId];
-        return updated;
-      });
-
-      setPendingFileIds((prev) => prev.filter((id) => id !== fileId));
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      throw error;
-    }
-  };
 
   const handleStarted = (newFileId: string) => {
     setPendingFileIds((prev) => [...prev, newFileId]);
@@ -254,70 +180,82 @@ export default function ScenePage() {
     setActiveTool("mediaList");
   };
 
-  // ---------- Early returns ----------
-  const error = sceneError
-    ? ((sceneError as Error)?.message ?? String(sceneError))
-    : null;
-
-  if (!projectId || !sceneId || error) {
-    return (
-      <ErrorState
-        projectId={projectId}
-        sceneId={sceneId}
-        error={error}
-      />
-    );
-  }
-
   // ---------- Render ----------
   return (
     <div className="flex-1 flex gap-4 overflow-hidden rounded-xl border bg-card p-4">
       {/* Left: scene preview & content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <SceneHeader scene={scene} />
+        <div className="mb-3 flex shrink-0 items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">
+            Scene {scene?.order != null ? scene.order + 1 : ""}
+          </h3>
+          <div className="text-xs text-muted-foreground">
+            Duration: {scene?.duration}
+          </div>
+        </div>
 
         <ScenePreview
-          scene={scene}
           activeTool={activeTool}
-          isLoading={isLoading && !scene}
-          error={error}
           onActiveToolChange={setActiveTool}
           isPlaying={isPlaying}
           onPlayingChange={setIsPlaying}
           projectId={projectId}
           onStarted={handleStarted}
-          controllerRef={controllerRef}
+          sceneId={sceneId}
         />
 
         <div className="mt-4 flex-1 overflow-hidden">
-          <SceneContent
-            activeTool={activeTool}
-            files={files}
-            scene={scene}
-            isLoading={isLoading}
-            onSelect={handleSelectFile}
-            onDelete={handleDeleteFile}
-            onStarted={handleStarted}
-            projectId={projectId}
-            sceneId={sceneId}
-          />
+          {activeTool === "mediaList" ? (
+            <MediaList
+              projectId={projectId}
+              sceneId={sceneId}
+            />
+          ) : activeTool === "voiceover" ? (
+            <VoiceoverList
+              projectId={projectId}
+              sceneId={sceneId}
+              onCreateAudio={() => {
+                router.push(
+                  `/project/video/${projectId}/scene/${sceneId}/voiceover`
+                );
+              }}
+            />
+          ) : activeTool === "soundEffect" ? (
+            <SoundEffectList
+              projectId={projectId}
+              sceneId={sceneId}
+              onCreateAudio={() => {
+                router.push(
+                  `/project/video/${projectId}/scene/${sceneId}/soundEffect`
+                );
+              }}
+            />
+          ) : activeTool === "animating" ? (
+            <AnimatingTool
+              sceneId={sceneId}
+              projectId={projectId}
+              imageUrl={scene?.file?.url}
+              onStarted={handleStarted}
+            />
+          ) : (
+            <></>
+          )}
         </div>
       </div>
 
       <Toolbar
         scene={scene}
         isPlaying={isPlaying}
-        onDownload={handleDownload}
         activeTool={activeTool}
         onChangeTool={handleChangeTool}
         togglePlay={togglePlay}
-        isLoading={isLoading && !scene}
         onAddText={() => {
           if (!controllerRef?.current) return;
           controllerRef.current.addText("Text", {
             fill: "white",
           });
         }}
+        isLoading={sceneLoading}
       />
     </div>
   );

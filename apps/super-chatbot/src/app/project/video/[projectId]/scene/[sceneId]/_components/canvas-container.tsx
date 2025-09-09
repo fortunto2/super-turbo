@@ -11,7 +11,6 @@ interface CanvasContainerProps {
   isPlaying?: boolean;
   isReady: boolean;
   updateCanvasSize: () => void;
-  controllerRef: any;
   onToolbarUpdate: (target?: any) => void;
   setCanvas: (canvas: any) => void;
 }
@@ -24,7 +23,6 @@ export function CanvasContainer({
   isPlaying,
   isReady,
   updateCanvasSize,
-  controllerRef,
   onToolbarUpdate,
   setCanvas,
 }: CanvasContainerProps) {
@@ -56,10 +54,9 @@ export function CanvasContainer({
           canvasSize.width > 0 &&
           canvasSize.height > 0 && (
             <CanvasWrapper
-              scene={scene}
+              sceneId={scene.id}
               width={canvasSize.width}
               height={canvasSize.height}
-              controllerRef={controllerRef}
               onToolbarUpdate={onToolbarUpdate}
             />
           )}
@@ -67,4 +64,3 @@ export function CanvasContainer({
     </div>
   );
 }
-

@@ -14,12 +14,12 @@ export function MediaFile({
   file,
   onDelete,
   onSelect,
-  scene,
+  isActive,
 }: {
   file: IFileRead;
-  scene?: ISceneRead | null;
   onSelect: (file: IFileRead) => void;
   onDelete: (id: string) => void;
+  isActive?: boolean;
 }) {
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export function MediaFile({
         <button
           onClick={() => onSelect(file)}
           className={`relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
-            scene?.file?.id === file.id
+            isActive
               ? "border-primary ring-2 ring-primary"
               : "border-border hover:border-primary/60 hover:shadow-md"
           }`}
@@ -120,7 +120,7 @@ export function MediaFile({
       )}
 
       {/* Индикатор активного файла */}
-      {scene?.file?.id === file.id && (
+      {isActive && (
         <div className="absolute top-1 left-1 p-1.5 bg-primary text-primary-foreground rounded-full shadow-lg">
           <div className="w-2 h-2 bg-current rounded-full" />
         </div>

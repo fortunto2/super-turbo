@@ -1,20 +1,53 @@
-import type { IFileRead, ISceneRead } from "@turbo-super/api";
+"use client";
+
+import { FileTypeEnum, OpenAPI, type IFileRead } from "@turbo-super/api";
 
 import { MediaFile } from "./media-file";
+import {
+  useFileDelete,
+  useFileList,
+  useSceneGetById,
+  useSceneUpdate,
+} from "@/lib/api";
 
 export function MediaList({
-  files,
-  scene,
-  onSelect,
-  onDelete,
-  isLoading,
+  projectId,
+  sceneId,
 }: {
-  files: IFileRead[];
-  scene?: ISceneRead | null;
-  onSelect: (file: IFileRead) => void;
-  onDelete: (id: string) => void;
-  isLoading?: boolean;
+  projectId: string;
+  sceneId: string;
 }) {
+  const { data: scene, isLoading: isSceneLoading } = useSceneGetById({
+    id: sceneId,
+  });
+  console.log(OpenAPI);
+
+  const { data: files, isLoading: isFilesLoading } = useFileList({
+    projectId,
+    sceneId,
+    types: [FileTypeEnum.IMAGE, FileTypeEnum.VIDEO],
+  });
+
+  const { mutate: update } = useSceneUpdate();
+
+  const { mutate: deleteFile } = useFileDelete();
+
+  const handleDelete = (id: string) => {
+    deleteFile({ id });
+  };
+
+  const handleSelect = (file: IFileRead) => {
+    if (!scene) return;
+    update({
+      id: scene.id,
+      requestBody: {
+        ...scene,
+        file_id: file.id,
+      },
+    });
+  };
+
+  const isLoading = isSceneLoading || isFilesLoading;
   return (
     <>
       <div className="mb-2 text-sm font-medium text-muted-foreground">
@@ -24,28 +57,28 @@ export function MediaList({
         className="grid h-full gap-2"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))" }}
       >
-        {isLoading ? (
+        {isLoading || !scene ? (
           Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
               className="aspect-video animate-pulse rounded-lg border bg-muted"
             />
           ))
-        ) : files.length > 0 ? (
+        ) : files?.items ? (
           <>
-            {files.map((file) => (
+            {files.items?.map((file) => (
               <MediaFile
+                isActive={file.id === scene?.file_id}
                 file={file}
-                scene={scene}
-                onDelete={onDelete}
-                onSelect={onSelect}
+                onDelete={handleDelete}
+                onSelect={handleSelect}
                 key={file.id}
               />
             ))}
           </>
         ) : (
           <div className="col-span-full py-6 text-center text-sm text-muted-foreground">
-            Нет файлов для этой сцены
+            No files for this scene
           </div>
         )}
       </div>

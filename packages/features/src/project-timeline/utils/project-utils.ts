@@ -31,17 +31,6 @@ export function convertScenesToTimeline(scenes: ISceneRead[]): TimelineData[] {
 }
 
 /**
- * Проверяет, готов ли проект к конвертации в видео
- */
-export function isProjectReadyForVideo(project: IProjectRead): boolean {
-  return (
-    project.status === "completed" &&
-    project.scenes &&
-    project.scenes.length > 0
-  );
-}
-
-/**
  * Получает общую длительность timeline
  */
 export function getTimelineDuration(timeline: TimelineData[]): number {

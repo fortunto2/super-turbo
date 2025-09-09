@@ -1,24 +1,47 @@
-import {
-  FileTypeEnum,
-  type IFileRead,
-  type ISceneRead,
-} from "@turbo-super/api";
+import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
+import { useFileList, useSceneGetById, useSceneUpdate } from "@/lib/api";
 
 export function VoiceoverList({
-  files,
-  scene,
-  onSelect,
-  isLoading,
+  projectId,
+  sceneId,
   onCreateAudio,
 }: {
-  files: IFileRead[];
-  scene?: ISceneRead | null;
-  onSelect: (file: IFileRead, isPlaceholder?: boolean) => void;
-  isLoading?: boolean;
+  projectId: string;
+  sceneId: string;
   onCreateAudio?: () => void;
 }) {
+  const { data: scene, isLoading: isSceneLoading } = useSceneGetById({
+    id: sceneId,
+  });
+
+  const { data: files, isLoading: isFilesLoading } = useFileList({
+    projectId,
+    sceneId,
+    types: [FileTypeEnum.VOICEOVER],
+  });
+
+  const { mutate: update } = useSceneUpdate();
+
+  const handleSelect = (file: IFileRead | null, isPlaceholder?: boolean) => {
+    if (!scene) return;
+    if (!scene.file_id) return;
+
+    const id = isPlaceholder ? null : file?.id;
+
+    update({
+      id: scene.id,
+      requestBody: {
+        ...scene,
+        file_id: scene.file_id,
+        voiceover_id: id,
+      },
+    });
+  };
+
+  const isLoading = isFilesLoading || isSceneLoading;
+
   return (
     <div className="flex h-full flex-col">
       <div className="mb-4 text-sm font-medium text-muted-foreground">
@@ -52,19 +75,18 @@ export function VoiceoverList({
                   duration: null,
                   tasks: [],
                 };
-                onSelect(placeholderFile, true);
+                handleSelect(placeholderFile, true);
               }}
               isActive={!scene?.voiceover_id}
               onCreateAudio={onCreateAudio}
             />
 
             {/* Файлы */}
-            {files.map((file) => (
+            {files?.items?.map((file) => (
               <AudioFile
                 key={file.id}
                 file={file}
-                scene={scene}
-                onSelect={onSelect}
+                onSelect={handleSelect}
                 type="voiceover"
                 isActive={scene?.voiceover_id === file.id}
               />

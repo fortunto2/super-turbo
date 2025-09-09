@@ -3582,9 +3582,6 @@ function convertSceneToTimeline(scene) {
 function convertScenesToTimeline(scenes) {
   return scenes.sort((a, b) => a.order - b.order).map(convertSceneToTimeline);
 }
-function isProjectReadyForVideo(project) {
-  return project.status === "completed" && project.scenes && project.scenes.length > 0;
-}
 function getTimelineDuration(timeline) {
   return timeline.reduce((acc, item) => acc + (item.duration || 5), 0);
 }
@@ -4470,7 +4467,6 @@ exports.getScenePreview = getScenePreview;
 exports.getTimelineDuration = getTimelineDuration;
 exports.getVideoConfig = getVideoConfig;
 exports.hi = hi_default;
-exports.isProjectReadyForVideo = isProjectReadyForVideo;
 exports.isSceneReady = isSceneReady;
 exports.locales = locales;
 exports.mediaTypeMap = mediaTypeMap2;

@@ -3580,9 +3580,6 @@ function convertSceneToTimeline(scene) {
 function convertScenesToTimeline(scenes) {
   return scenes.sort((a, b) => a.order - b.order).map(convertSceneToTimeline);
 }
-function isProjectReadyForVideo(project) {
-  return project.status === "completed" && project.scenes && project.scenes.length > 0;
-}
 function getTimelineDuration(timeline) {
   return timeline.reduce((acc, item) => acc + (item.duration || 5), 0);
 }
@@ -4436,6 +4433,6 @@ var Inpainting = ({
   ] });
 };
 
-export { CharacterType, Control, EnhancementInfoType, FabricCanvas, FabricController, HistoryItemType, Inpainting, Layer, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, TextToolbar, Veo3PromptGenerator, buildFabricController, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useFabricEditor, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
+export { CharacterType, Control, EnhancementInfoType, FabricCanvas, FabricController, HistoryItemType, Inpainting, Layer, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, TextToolbar, Veo3PromptGenerator, buildFabricController, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useFabricEditor, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

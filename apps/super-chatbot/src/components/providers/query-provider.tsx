@@ -6,12 +6,16 @@ import {
   MutationCache,
   QueryCache,
 } from "@tanstack/react-query";
-import { OpenAPI } from "@turbo-super/api";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { setupOpenAPI } from "@/lib/api/openapi-setup";
+import "@/lib/api/axios-interceptor";
 
 export const QueryProvider = ({ children }: { children: ReactNode }) => {
-  OpenAPI.BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+  // Настраиваем OpenAPI один раз
+  useEffect(() => {
+    setupOpenAPI();
+  }, []);
 
   const [queryClient] = useState(
     () =>

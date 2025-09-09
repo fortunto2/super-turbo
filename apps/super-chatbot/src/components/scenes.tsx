@@ -8,9 +8,7 @@ import Image from "next/image";
 import { ScenesList } from "./scenes-drag-wrapper";
 import { cn, Textarea } from "@turbo-super/ui";
 import { debounce } from "lodash";
-import { useNextScenesListByProject } from "@/lib/api/next/scene/query";
-import { useNextSceneUpdateOrder } from "@/lib/api/next/scene/update-order/mutation";
-import { useNextSceneUpdate } from "@/lib/api/next/scene/update/mutation";
+import { useSceneList, useSceneUpdate, useSceneUpdateOrder } from "@/lib/api";
 
 export function Scenes() {
   const params = useParams();
@@ -18,18 +16,24 @@ export function Scenes() {
   const projectId = params.projectId as string;
   const sceneId = params.sceneId as string;
 
-  const { data: scenes = [], isLoading } = useNextScenesListByProject(
-    { projectId },
-    { placeholderData: [] }
-  );
-  const updateOrderMutation = useNextSceneUpdateOrder();
-  const updateSceneMutation = useNextSceneUpdate();
+  const { data, isLoading } = useSceneList({
+    projectId,
+  });
+
+  const { mutateAsync: updateOrder } = useSceneUpdateOrder();
+  const { mutateAsync: updateScene } = useSceneUpdate();
+
   const [viewMode, setViewMode] = useState<"compact" | "full">("full");
 
   const handleUpdateOrder = async (scene: ISceneRead, order: number) => {
     if (!sceneId) return;
     try {
-      await updateOrderMutation.mutateAsync({ sceneId, id: scene.id, order });
+      await updateOrder({
+        id: scene.id,
+        requestBody: {
+          order,
+        },
+      });
     } catch (e) {
       console.error("Select file error", e);
     }
@@ -42,13 +46,13 @@ export function Scenes() {
   const handleSceneUpdate = async (scene: ISceneRead, text: string) => {
     if (!scene || !scene.file_id) return;
     try {
-      await updateSceneMutation.mutateAsync({
-        sceneId: scene.id,
+      await updateScene({
+        id: sceneId,
         requestBody: {
           ...scene,
           file_id: scene.file_id,
           action_description: text,
-        } as any,
+        },
       });
     } catch (e) {
       console.error("Scene update error", e);
@@ -145,7 +149,7 @@ export function Scenes() {
           ))
         ) : (
           <ScenesList.Root
-            scenes={scenes}
+            scenes={data?.items as any}
             onDragChange={handleDragChange}
           >
             {(scene, index) => (

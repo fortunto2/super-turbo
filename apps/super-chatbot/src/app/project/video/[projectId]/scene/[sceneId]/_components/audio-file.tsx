@@ -6,19 +6,12 @@ import { Play, Download, Info, MicVocal, AudioLines } from "lucide-react";
 
 interface AudioFileProps {
   file: IFileRead;
-  scene?: ISceneRead | null;
   onSelect: (file: IFileRead) => void;
   type: "voiceover" | "soundeffect";
   isActive: boolean;
 }
 
-export function AudioFile({
-  file,
-  scene,
-  onSelect,
-  type,
-  isActive,
-}: AudioFileProps) {
+export function AudioFile({ file, onSelect, type, isActive }: AudioFileProps) {
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
   const [showMetadata, setShowMetadata] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);

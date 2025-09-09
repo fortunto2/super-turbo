@@ -8,6 +8,7 @@ import {
   ISceneRead,
   SceneService,
 } from "@turbo-super/api";
+import { cancelableRequest } from "@/lib/utils/cancelable-request";
 
 export type ISceneListParams = Parameters<typeof SceneService.sceneGetList>[0];
 export type ISceneByIdParams = Parameters<typeof SceneService.sceneGetById>[0];
@@ -18,15 +19,15 @@ export type ISceneListByIdsParams = Parameters<
 export const sceneKeys = createQueryKeys("scene", {
   list: (params: ISceneListParams) => ({
     queryKey: [params],
-    queryFn: SceneService.sceneGetList,
+    queryFn: cancelableRequest(() => SceneService.sceneGetList(params)),
   }),
   getById: (params: ISceneByIdParams) => ({
     queryKey: [params],
-    queryFn: SceneService.sceneGetById,
+    queryFn: cancelableRequest(() => SceneService.sceneGetById(params)),
   }),
   getByIds: (params: ISceneListByIdsParams) => ({
     queryKey: [params],
-    queryFn: SceneService.sceneGetListByIds,
+    queryFn: cancelableRequest(() => SceneService.sceneGetListByIds(params)),
   }),
 });
 
