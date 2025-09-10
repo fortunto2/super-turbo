@@ -1,8 +1,4 @@
-import {
-  FileTypeEnum,
-  type IFileRead,
-  type ISceneRead,
-} from "@turbo-super/api";
+import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
 import { FileGenerationStatus } from "./helper";
 import { FileMetadataModal } from "./file-metadata-modal";
 import { hasMetadata } from "./file-metadata-utils";
@@ -15,11 +11,13 @@ export function MediaFile({
   onDelete,
   onSelect,
   isActive,
+  isSelecting,
 }: {
   file: IFileRead;
   onSelect: (file: IFileRead) => void;
   onDelete: (id: string) => void;
   isActive?: boolean;
+  isSelecting?: boolean;
 }) {
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
@@ -46,7 +44,7 @@ export function MediaFile({
   return (
     <div
       key={file.id}
-      className="group relative aspect-video"
+      className="group relative aspect-video w-[300px] flex-shrink-0"
       onMouseEnter={() => setHoveredFile(file.id)}
       onMouseLeave={() => setHoveredFile(null)}
     >
@@ -58,11 +56,12 @@ export function MediaFile({
       ) : (
         <button
           onClick={() => onSelect(file)}
+          disabled={isSelecting}
           className={`relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
             isActive
               ? "border-primary ring-2 ring-primary"
               : "border-border hover:border-primary/60 hover:shadow-md"
-          }`}
+          } ${isSelecting ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {file.type === FileTypeEnum.VIDEO && (
             <div className="absolute">
@@ -84,8 +83,15 @@ export function MediaFile({
           />
 
           {/* Overlay при hover */}
-          {hoveredFile === file.id && (
+          {hoveredFile === file.id && !isSelecting && (
             <div className="absolute inset-0 bg-black/20 transition-opacity duration-200" />
+          )}
+
+          {/* Pending overlay */}
+          {isSelecting && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
           )}
         </button>
       )}

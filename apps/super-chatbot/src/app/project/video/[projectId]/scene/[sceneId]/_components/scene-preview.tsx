@@ -1,14 +1,15 @@
 import {
   useMediaPrefetch,
   TextToolbar,
-  FabricControllerType,
+  type FabricControllerType,
 } from "@turbo-super/features";
-import { ToolType } from "./toolbar";
+import type { ToolType } from "./toolbar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
-import { EmptyPreview, ErrorMessage, Loader } from "./helper";
+import { FileTypeEnum, } from "@turbo-super/api";
+import { EmptyPreview, } from "./helper";
 import { CanvasContainer } from "./canvas-container";
 import { InpaintingPanel } from "./inpainting-panel";
+import { ScenePreviewSkeleton } from "./scene-preview-skeleton";
 import { useCanvasSize } from "../hooks/use-canvas-size";
 import { useInpainting } from "../hooks/use-inpainting";
 import { useToolbarStore } from "@/lib/store";
@@ -103,10 +104,10 @@ export const ScenePreview = ({
       ref={containerRef}
     >
       {isLoading ? (
-        <Loader />
+        <ScenePreviewSkeleton />
       ) : scene?.file?.url ? (
         <CanvasContainer
-          scene={scene}
+          scene={scene!}
           canvasSize={canvasSize}
           activeTool={activeTool}
           onPlayingChange={onPlayingChange}

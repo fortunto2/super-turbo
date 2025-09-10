@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { configureSuperduperAI } from "@/lib/config/superduperai";
-import { FileService, IFileRead } from "@turbo-super/api";
+import { FileService, type IFileRead } from "@turbo-super/api";
 
 export async function GET(
   request: NextRequest,

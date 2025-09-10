@@ -1,19 +1,24 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ProjectTimeline } from "@turbo-super/features";
+import { ProjectTimeline, useGenerateTimeline } from "@turbo-super/features";
 import { ArrowLeft, Eye } from "lucide-react";
 import {
   DataTypeEnum,
   type IDataUpdate,
-  IFileRead,
-  type IProjectRead,
+  type IFileRead,
+  TaskTypeEnum,
   useProjectData,
+  useTaskStatus,
 } from "@turbo-super/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import { useProjectGetById, useSceneList } from "@/lib/api/superduperai";
-import { QueryState, QueryCard } from "@/components/ui/query-state";
+import {
+  useDataUpdate,
+  useProjectGetById,
+  useProjectTimeline2Video,
+} from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
 
 export default function VideoPage() {
   const params = useParams();
@@ -32,40 +37,31 @@ export default function VideoPage() {
     id: projectId,
   });
 
-  const { data: scenes } = useSceneList({
-    projectId,
-  });
+  const { mutate: generateTimeline } = useGenerateTimeline();
+
+  const { mutate: timeline2video, isPending } = useProjectTimeline2Video();
+
+  const { mutate: updateTimeline } = useDataUpdate(false);
+
+  const handleTimeline2Video = () => {
+    timeline2video({ id: projectId });
+  };
+
+  const handleGenerateTimeline = () => {
+    generateTimeline({ id: projectId });
+  };
+
+  const handleUpdateTimeline = (payload: IDataUpdate) => {
+    updateTimeline(payload);
+  };
 
   const timeline = useProjectData(project, DataTypeEnum.TIMELINE);
 
-  // Function for exporting timeline to video
-  const handleExport = async (projectId: string) => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/timeline2storyboard",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        }
-      );
+  const { isPending: isRendering } = useTaskStatus(
+    TaskTypeEnum.TIMELINE2VIDEO_FLOW,
+    project?.tasks
+  );
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error exporting timeline to video");
-      }
-
-      console.log("🎬 Timeline to video export started successfully:", result);
-    } catch (error) {
-      console.error("❌ Error exporting timeline to storyboard:", error);
-      throw error;
-    }
-  };
-
-  // Function for downloading file
   const handleDownload = (file: IFileRead) => {
     if (!file.url) {
       console.error("❌ No download URL available");
@@ -79,58 +75,6 @@ export default function VideoPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const handleUpdateTimeline = async (payload: IDataUpdate) => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/update-timeline",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error updating timeline");
-      }
-
-      console.log("🎬 Timeline updated successfully:", result);
-    } catch (error) {
-      console.error("❌ Error updating timeline:", error);
-      throw error;
-    }
-  };
-
-  const handleRegenerateTimeline = async () => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/regenerate-timeline",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error regenerating timeline");
-      }
-
-      console.log("🎬 Timeline regenerated successfully:", result);
-    } catch (error) {
-      console.error("❌ Error regenerating timeline:", error);
-      throw error;
-    }
   };
 
   if (!projectId) {
@@ -156,7 +100,7 @@ export default function VideoPage() {
   }
 
   return (
-    <>
+    <div className="w-full min-h-screen">
       <QueryState
         isLoading={isLoading}
         isError={isError}
@@ -172,7 +116,7 @@ export default function VideoPage() {
           onBack={() => router.back()}
           onExport={() => setIsExportDialogOpen(true)}
           onUpdateTimeline={handleUpdateTimeline}
-          onRegenerateTimeline={handleRegenerateTimeline}
+          onRegenerateTimeline={handleGenerateTimeline}
         />
       </QueryState>
 
@@ -180,12 +124,13 @@ export default function VideoPage() {
       <ProjectVideoExportDialog
         isOpen={isExportDialogOpen}
         onClose={() => setIsExportDialogOpen(false)}
-        onExport={handleExport}
+        onExport={handleTimeline2Video}
         onDownload={handleDownload}
         title="Export Timeline to Video"
         description="Confirm timeline export to video for further processing"
-        exportType="timeline2video"
+        isRendering={isRendering}
+        isPending={isPending}
       />
-    </>
+    </div>
   );
 }

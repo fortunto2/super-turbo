@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useNextVoiceList } from "@/lib/api/next/voice/query";
-import { IResponsePaginated_IVoiceRead_ } from "@turbo-super/api";
+import { useVoiceList } from "@/lib/api";
+import type { IResponsePaginated_IVoiceRead_ } from "@turbo-super/api";
 import {
   Select,
   SelectContent,
@@ -19,7 +19,7 @@ export function VoiceSelect({
   value: string | null;
   onChange?: (value: string | null) => void;
 }) {
-  const { data, isLoading } = useNextVoiceList({ limit: 100 });
+  const { data, isLoading } = useVoiceList({ limit: 100 });
 
   const options = useMemo(() => {
     const items: {

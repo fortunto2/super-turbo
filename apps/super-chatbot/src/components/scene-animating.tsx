@@ -62,7 +62,7 @@ export function SceneAnimating({
     };
   }, []);
 
-  const handleActiveChange = (tool: string) => {
+  const handleActiveChange = (tool: string | null) => {
     setIsActive(tool === "inpainting");
   };
 

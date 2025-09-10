@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
 
 interface UseCanvasSizeProps {

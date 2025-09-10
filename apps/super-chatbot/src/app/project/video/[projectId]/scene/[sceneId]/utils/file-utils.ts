@@ -1,6 +1,6 @@
 import {
   FileTypeEnum,
-  IFileRead,
+  type IFileRead,
   type ISceneRead,
   type ISceneUpdate,
 } from "@turbo-super/api";

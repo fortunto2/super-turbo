@@ -1,4 +1,4 @@
-import { GenerationTypeEnum } from "../api";
+import { GenerationTypeEnum } from "@turbo-super/api";
 import { getAvailableVideoModels } from "./superduperai";
 import videoModelsConfig from "./video-models.json";
 import type { VideoModel } from "@/lib/config/superduperai";

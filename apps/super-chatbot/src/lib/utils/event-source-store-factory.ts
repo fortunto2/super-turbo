@@ -1,4 +1,4 @@
-import { WSMessage } from "@turbo-super/api";
+import type { WSMessage } from "@turbo-super/api";
 import { create } from "zustand";
 
 export type EventHandler = (eventData: WSMessage) => void;

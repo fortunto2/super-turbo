@@ -1,4 +1,4 @@
-import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
+import type { ISceneRead } from "@turbo-super/api";
 import { Layer } from "@turbo-super/features";
 import { CanvasWrapper } from "./canvas-wrapper";
 import { MediaPreview } from "./media-preview";

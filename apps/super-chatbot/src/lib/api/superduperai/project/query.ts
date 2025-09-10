@@ -1,11 +1,11 @@
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import {
-  IProjectRead,
-  IResponsePaginated_IProjectRead_,
+  type IProjectRead,
+  type IResponsePaginated_IProjectRead_,
   ProjectService,
 } from "@turbo-super/api";
 import { useQuery } from "@tanstack/react-query";
-import { UseQueryOptions } from "@/lib/types/query";
+import type { UseQueryOptions } from "@/lib/types/query";
 import { cancelableRequest } from "@/lib/utils/cancelable-request";
 
 export type IProjectListParams = Parameters<

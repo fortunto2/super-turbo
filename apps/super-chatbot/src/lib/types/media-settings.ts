@@ -1,4 +1,4 @@
-import { IGenerationConfigRead } from "@turbo-super/api";
+import type { IGenerationConfigRead } from "@turbo-super/api";
 
 // Extended model type with UI-friendly fields
 export interface AdaptedModel extends IGenerationConfigRead {

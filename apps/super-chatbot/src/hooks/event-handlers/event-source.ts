@@ -2,7 +2,7 @@
 
 import {
   createEventSourceStore,
-  EventHandler,
+  type EventHandler,
 } from "@/lib/utils/event-source-store-factory";
 import { useEffect } from "react";
 

@@ -5,10 +5,11 @@ import {
   useProjectEvents,
   useFileEventHandler,
   useSceneEventHandler,
+  useProjectVideoEventHandler,
 } from "@/hooks/event-handlers";
-import { useSearchParams } from "next/navigation";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
+import { use } from "react";
 
 type Params = {
   projectId: string;
@@ -16,11 +17,11 @@ type Params = {
 
 type Props = {
   children: ReactNode;
+  params: Promise<Params>;
 };
 
-const Layout = ({ children }: Props) => {
-  const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId")!;
+const Layout = ({ children, params }: Props) => {
+  const { projectId } = use(params);
 
   useProjectEvents({
     projectId,
@@ -28,7 +29,7 @@ const Layout = ({ children }: Props) => {
       useProjectEventHandler(projectId),
       // useEntityEventHandler(projectId),
       useSceneEventHandler(projectId),
-      // useProjectVideoEventHandler(),
+      useProjectVideoEventHandler(),
       useFileEventHandler(),
     ],
   });

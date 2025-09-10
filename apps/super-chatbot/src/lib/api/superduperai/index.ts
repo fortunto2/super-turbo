@@ -13,3 +13,4 @@ export * from "./project-video/script2storyboard";
 export * from "./project-video/storyboard2video";
 export * from "./project-video/timeline2video";
 export * from "./project-video/txt2script";
+export * from "./data/update/query";

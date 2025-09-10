@@ -1,4 +1,4 @@
-import { FileTypeEnum, FileService } from "@turbo-super/api";
+import { type FileTypeEnum, FileService } from "@turbo-super/api";
 
 export const uploadFile = async (file: File, type?: FileTypeEnum) => {
   try {

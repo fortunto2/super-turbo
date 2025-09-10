@@ -9,7 +9,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { projectKeys } from "@/lib/api";
 import { unshiftOrReplace } from "@/lib/utils/array";
-import { EventHandler } from "@/lib/utils/event-source-store-factory";
+import type { EventHandler } from "@/lib/utils/event-source-store-factory";
 
 export const useProjectEventHandler = (projectId: string): EventHandler => {
   const queryClient = useQueryClient();

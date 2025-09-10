@@ -1,4 +1,4 @@
-import type { IFileRead, ISceneRead } from "@turbo-super/api";
+import type { IFileRead } from "@turbo-super/api";
 import { FileMetadataModal } from "./file-metadata-modal";
 import { hasMetadata } from "./file-metadata-utils";
 import { useState } from "react";
@@ -9,9 +9,16 @@ interface AudioFileProps {
   onSelect: (file: IFileRead) => void;
   type: "voiceover" | "soundeffect";
   isActive: boolean;
+  isSelecting?: boolean;
 }
 
-export function AudioFile({ file, onSelect, type, isActive }: AudioFileProps) {
+export function AudioFile({
+  file,
+  onSelect,
+  type,
+  isActive,
+  isSelecting,
+}: AudioFileProps) {
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
   const [showMetadata, setShowMetadata] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -95,7 +102,7 @@ export function AudioFile({ file, onSelect, type, isActive }: AudioFileProps) {
         <div className="flex gap-4 relative z-10">
           <button
             onClick={handlePlayClick}
-            disabled={!file.url || isPlaying}
+            disabled={!file.url || isPlaying || isSelecting}
             className="p-2 bg-primary text-primary-foreground rounded-md transition-all duration-200 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             title={isPlaying ? "Playing..." : "Play audio"}
           >
@@ -104,7 +111,7 @@ export function AudioFile({ file, onSelect, type, isActive }: AudioFileProps) {
 
           <button
             onClick={handleDownloadClick}
-            disabled={!file.url}
+            disabled={!file.url || isSelecting}
             className="p-2 bg-secondary text-secondary-foreground rounded-md transition-all duration-200 hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Download audio"
           >
@@ -113,8 +120,15 @@ export function AudioFile({ file, onSelect, type, isActive }: AudioFileProps) {
         </div>
 
         {/* Overlay при hover */}
-        {hoveredFile === file.id && (
+        {hoveredFile === file.id && !isSelecting && (
           <div className="absolute inset-0 bg-black/10 transition-opacity duration-200" />
+        )}
+
+        {/* Pending overlay */}
+        {isSelecting && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
         )}
       </div>
 
@@ -122,7 +136,8 @@ export function AudioFile({ file, onSelect, type, isActive }: AudioFileProps) {
       {!isActive && (
         <button
           onClick={() => onSelect(file)}
-          className="absolute inset-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200 z-0"
+          disabled={isSelecting}
+          className={`absolute inset-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200 z-0 ${isSelecting ? "opacity-50 cursor-not-allowed" : ""}`}
           title="Select this file"
         />
       )}

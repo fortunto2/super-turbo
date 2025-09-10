@@ -18,7 +18,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { QueryState, QueryCard } from "@/components/ui/query-state";
+import { QueryState, } from "@/components/ui/query-state";
 import { useProjectList } from "@/lib/api/superduperai";
 
 interface UserProject {

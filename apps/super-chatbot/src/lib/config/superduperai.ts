@@ -8,7 +8,7 @@
 import {
   GenerationConfigService,
   GenerationTypeEnum,
-  IGenerationConfigRead,
+  type IGenerationConfigRead,
   ListOrderEnum,
   OpenAPI,
 } from "@turbo-super/api";
@@ -56,12 +56,12 @@ export function getSuperduperAIConfig(): SuperduperAIConfig {
     // Server-side: Real external API
     const url =
       process.env.SUPERDUPERAI_URL || "https://dev-editor.superduperai.co";
-    const token = process.env.SUPERDUPERAI_TOKEN || "";
-    const wsURL = url.replace("https://", "wss://").replace("http://", "ws://");
 
-    if (!token) {
-      throw new Error("SUPERDUPERAI_TOKEN environment variable is required");
-    }
+    // Импортируем кэшированный токен
+    const { getSuperduperToken } = require("./token-cache");
+    const token = getSuperduperToken();
+
+    const wsURL = url.replace("https://", "wss://").replace("http://", "ws://");
 
     // Token validation for Bearer token format
     if (!validateBearerToken(token)) {
@@ -528,16 +528,9 @@ export function getSuperduperAITokenForUser(session: any): {
   token: string;
   isUserToken: boolean;
 } {
-  console.log("session SUPERDUPERAI", {
-    session,
-  });
-
-  const systemConfig = getSuperduperAIConfig();
-  console.log(
-    "🔧 SuperDuperAI: User has no token, using system token for user:",
-    session?.user?.email || "unknown"
-  );
-  return { token: systemConfig.token, isUserToken: false };
+  // Используем токен-менеджер для оптимизированного получения токенов
+  const { tokenManager } = require("./token-cache");
+  return tokenManager.getUserToken(session);
 }
 
 /**

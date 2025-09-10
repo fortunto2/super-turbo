@@ -1,11 +1,11 @@
 import {
-  IFileRead,
-  IResponsePaginated_IFileRead_,
-  WSMessage,
+  type IFileRead,
+  type IResponsePaginated_IFileRead_,
+  type WSMessage,
   WSMessageTypeEnum,
 } from "@turbo-super/api";
 import { useQueryClient } from "@tanstack/react-query";
-import { EventHandler } from "@/lib/utils/event-source-store-factory";
+import type { EventHandler } from "@/lib/utils/event-source-store-factory";
 import { unshiftOrReplace } from "@/lib/utils/array";
 import { fileKeys } from "@/lib/api";
 

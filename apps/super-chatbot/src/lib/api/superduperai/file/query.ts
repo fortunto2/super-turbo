@@ -1,11 +1,11 @@
-import { UseQueryOptions } from "@/lib/types/query";
+import type { UseQueryOptions } from "@/lib/types/query";
 import { cancelableRequest } from "@/lib/utils/cancelable-request";
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { useQuery } from "@tanstack/react-query";
 import {
   FileService,
-  IFileRead,
-  IResponsePaginated_IFileRead_,
+  type IFileRead,
+  type IResponsePaginated_IFileRead_,
 } from "@turbo-super/api";
 
 export type IFileListParams = Parameters<typeof FileService.fileGetList>[0];

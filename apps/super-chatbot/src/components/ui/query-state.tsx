@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
-import { Loader2, AlertCircle, Eye } from "lucide-react";
+import type { ReactNode } from "react";
+import { AlertCircle, Eye } from "lucide-react";
 import { cn } from "@turbo-super/ui";
 
 interface QueryStateProps {

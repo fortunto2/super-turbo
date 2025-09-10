@@ -1,7 +1,7 @@
 import axios from "axios";
 
 /**
- * Перехватчик axios для автоматического добавления токена авторизации
+ * Перехватчик axios для автоматического перенаправления запросов через прокси
  * Работает только на клиенте
  */
 if (typeof window !== "undefined") {
@@ -12,12 +12,12 @@ if (typeof window !== "undefined") {
         // Заменяем URL на прокси
         const proxyUrl = config.url.replace(/^.*\/api\/v1\//, "/api/proxy/");
         config.url = proxyUrl;
+        console.log("🔄 Axios: Redirecting to proxy:", proxyUrl);
       }
 
       return config;
     },
     (error) => {
-      //   console.error("Axios request error:", error);
       return Promise.reject(error);
     }
   );
@@ -28,7 +28,6 @@ if (typeof window !== "undefined") {
       return response;
     },
     (error) => {
-      //   console.error("Axios response error:", error);
       return Promise.reject(error);
     }
   );

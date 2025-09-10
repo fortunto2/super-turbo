@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { uploadFile } from "@/lib/ai/api/upload-file";
 import { Button } from "@turbo-super/ui";
-import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
+import type { FileTypeEnum, IFileRead } from "@turbo-super/api";
 
 export function UploadAudio({
   projectId,

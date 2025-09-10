@@ -1,4 +1,4 @@
-import { CancelablePromise } from "@turbo-super/api";
+import type { CancelablePromise } from "@turbo-super/api";
 
 type CancelablePromiseFunction<T> = () => CancelablePromise<T>;
 

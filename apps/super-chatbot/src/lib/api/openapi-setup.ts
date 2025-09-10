@@ -7,10 +7,10 @@ import { getSuperduperAIConfig } from "@/lib/config/superduperai";
  */
 export function setupOpenAPI(): void {
   if (typeof window === "undefined") {
-    // На сервере - используем реальный URL и токен
+    // На сервере - используем реальный URL и кэшированный токен
     const config = getSuperduperAIConfig();
     OpenAPI.BASE = config.url;
-    OpenAPI.TOKEN = config.token;
+    OpenAPI.TOKEN = config.token; // Используем кэшированный токен из config
   } else {
     // На клиенте - НЕ настраиваем OpenAPI, используем только fetch interceptor
     // OpenAPI будет использовать дефолтные настройки, а fetch interceptor перехватит запросы

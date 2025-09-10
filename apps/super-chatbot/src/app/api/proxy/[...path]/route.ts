@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getServerOpenAPI } from "@/lib/api/server-openapi";
 
@@ -44,8 +44,11 @@ async function handleProxyRequest(
   method: string
 ) {
   try {
+    console.log(`🌐 Proxy ${method} request for path:`, path);
+
     const session = await auth();
     if (!session?.user) {
+      console.log("❌ Proxy: Unauthorized - no session");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -56,6 +59,8 @@ async function handleProxyRequest(
     const apiPath = path.join("/");
     const superduperaiUrl = `${process.env.SUPERDUPERAI_URL || "https://dev-editor.superduperai.co"}/api/v1/${apiPath}`;
 
+    console.log(`🎯 Proxy: Forwarding to ${superduperaiUrl}`);
+
     // Получаем параметры запроса
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
@@ -65,29 +70,49 @@ async function handleProxyRequest(
 
     // Получаем тело запроса
     let body: any = undefined;
+    let bodyString: string | undefined = undefined;
+
     if (method !== "GET") {
       try {
-        body = await request.json();
+        // Сначала получаем тело как текст
+        bodyString = await request.text();
+
+        // Пытаемся распарсить как JSON
+        if (bodyString.trim()) {
+          body = JSON.parse(bodyString);
+        }
       } catch {
-        // Если не JSON, получаем как текст
-        body = await request.text();
+        // Если не удается распарсить как JSON, используем как есть
+        body = bodyString;
       }
+    }
+
+    // Подготавливаем заголовки
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${process.env.SUPERDUPERAI_TOKEN}`,
+      "User-Agent": `SuperChatbot/3.0.22 (NextJS/${process.env.NODE_ENV || "development"})`,
+    };
+
+    // Добавляем Content-Type только если есть body
+    if (bodyString) {
+      headers["Content-Type"] = "application/json";
     }
 
     // Выполняем запрос к SuperDuperAI API
     const response = await fetch(fullUrl, {
       method,
-      headers: {
-        Authorization: `Bearer ${process.env.SUPERDUPERAI_TOKEN}`,
-        "Content-Type": "application/json",
-        "User-Agent": `SuperChatbot/3.0.22 (NextJS/${process.env.NODE_ENV || "development"})`,
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers,
+      body: bodyString || undefined,
     });
 
     const responseData = await response.json();
 
+    console.log(
+      `✅ Proxy: Response ${response.status} for ${method} ${apiPath}`
+    );
+
     if (!response.ok) {
+      console.log(`❌ Proxy: Error response:`, responseData);
       return NextResponse.json(
         { error: responseData.error || "API Error", details: responseData },
         { status: response.status }

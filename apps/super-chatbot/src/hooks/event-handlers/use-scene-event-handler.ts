@@ -1,12 +1,12 @@
 import {
-  IFileRead,
-  IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__,
-  ISceneRead,
-  WSMessage,
+  type IFileRead,
+  type IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__,
+  type ISceneRead,
+  type WSMessage,
   WSMessageTypeEnum,
 } from "@turbo-super/api";
 import { useQueryClient } from "@tanstack/react-query";
-import { EventHandler } from "@/lib/utils/event-source-store-factory";
+import type { EventHandler } from "@/lib/utils/event-source-store-factory";
 import { sceneKeys } from "@/lib/api";
 import { pushOrReplace } from "@/lib/utils/array";
 

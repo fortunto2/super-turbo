@@ -1,11 +1,11 @@
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 
 import { useQuery } from "@tanstack/react-query";
-import { UseQueryOptions } from "../../../types/query";
+import type { UseQueryOptions } from "../../../types/query";
 import {
-  IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__,
-  ISceneDetailedRead,
-  ISceneRead,
+  type IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__,
+  type ISceneDetailedRead,
+  type ISceneRead,
   SceneService,
 } from "@turbo-super/api";
 import { cancelableRequest } from "@/lib/utils/cancelable-request";

@@ -16,12 +16,21 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import type { IFileRead, IProjectVideoRead } from "@turbo-super/api";
+import {
+  TaskTypeEnum,
+  useTaskStatus,
+  type IFileRead,
+  type IProjectVideoRead,
+} from "@turbo-super/api";
 import { useMemo, useState } from "react";
 import { ShareDialog } from "@/components/share-dialog";
 import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import { useProjectGetById, useSceneList } from "@/lib/api/superduperai";
-import { QueryState, QueryCard } from "@/components/ui/query-state";
+import {
+  useProjectGetById,
+  useProjectStoryboard2Video,
+  useSceneList,
+} from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
 
 // CSS for custom scrollbar
 const customScrollbarStyles = `
@@ -62,6 +71,14 @@ export default function PreviewPage() {
     isError: isScenesError,
   } = useSceneList({ projectId });
 
+  const { mutate: projectStoryboard2Video, isPending } =
+    useProjectStoryboard2Video();
+
+  const { isPending: isRendering } = useTaskStatus(
+    TaskTypeEnum.STORYBOARD2VIDEO_FLOW,
+    project?.tasks
+  );
+
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
@@ -85,30 +102,8 @@ export default function PreviewPage() {
   }, [project?.config?.aspect_ratio]);
 
   // Function for exporting video
-  const handleExport = async (projectId: string) => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/storyboard2video",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error exporting video");
-      }
-
-      console.log("🎬 Video export started successfully:", result);
-    } catch (error) {
-      console.error("❌ Error exporting video:", error);
-      throw error;
-    }
+  const handleExport = () => {
+    projectStoryboard2Video({ id: projectId });
   };
 
   // Function for downloading file
@@ -160,8 +155,8 @@ export default function PreviewPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: customScrollbarStyles }} />
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+      <div className="w-full min-h-screen bg-background">
+        <div className="size-full mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <button
@@ -186,7 +181,7 @@ export default function PreviewPage() {
           </div>
 
           {/* Main Content */}
-          <div className="max-w-6xl mx-auto">
+          <div className="w-full max-w-6xl mx-auto">
             {/* Page Title */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
@@ -198,10 +193,10 @@ export default function PreviewPage() {
             </div>
 
             {/* Video Player Section */}
-            <div className="max-w-6xl mx-auto mb-8">
-              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-6xl mx-auto mb-8">
+              <div className="w-full bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
                 {/* Fixed height for all states */}
-                <div className="h-[500px] flex items-center justify-center">
+                <div className="w-full h-[500px] flex items-center justify-center">
                   <QueryState
                     isLoading={isLoading}
                     isError={isError}
@@ -381,7 +376,8 @@ export default function PreviewPage() {
             onClose={() => setIsExportDialogOpen(false)}
             onExport={handleExport}
             onDownload={handleDownload}
-            exportType="storyboard2video"
+            isRendering={isRendering}
+            isPending={isPending}
           />
         </div>
       </div>

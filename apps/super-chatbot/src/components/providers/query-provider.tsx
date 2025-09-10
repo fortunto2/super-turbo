@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import { setupOpenAPI } from "@/lib/api/openapi-setup";
 import "@/lib/api/axios-interceptor";
+import "@/lib/api/simple-fetch-interceptor";
 
 export const QueryProvider = ({ children }: { children: ReactNode }) => {
   // Настраиваем OpenAPI один раз

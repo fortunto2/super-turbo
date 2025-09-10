@@ -29,7 +29,7 @@ export function EmptyAudioFile({
 
         {/* Плюс иконка без вложенной кнопки */}
         <div
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/40 cursor-pointer hover:bg-muted/90"
+          className="flex items-center justify-center w-8 h-8 rounded-full  cursor-pointer hover:bg-muted/90"
           onClick={(e) => {
             e.stopPropagation();
             onCreateAudio?.();

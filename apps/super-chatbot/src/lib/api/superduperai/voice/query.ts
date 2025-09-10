@@ -1,8 +1,8 @@
 import { createQueryKeys } from "@lukemorales/query-key-factory";
-import { IResponsePaginated_IVoiceRead_, VoiceService } from "@turbo-super/api";
+import { type IResponsePaginated_IVoiceRead_, VoiceService } from "@turbo-super/api";
 import { useQuery } from "@tanstack/react-query";
 import { cancelableRequest } from "@/lib/utils/cancelable-request";
-import { UseQueryOptions } from "@/lib/types/query";
+import type { UseQueryOptions } from "@/lib/types/query";
 
 export type IVoiceListParams = Parameters<typeof VoiceService.voiceGetList>[0];
 

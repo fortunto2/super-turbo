@@ -9,6 +9,7 @@ import { ScenesList } from "./scenes-drag-wrapper";
 import { cn, Textarea } from "@turbo-super/ui";
 import { debounce } from "lodash";
 import { useSceneList, useSceneUpdate, useSceneUpdateOrder } from "@/lib/api";
+import { ScrollArea } from "./ui";
 
 export function Scenes() {
   const params = useParams();
@@ -96,11 +97,15 @@ export function Scenes() {
         width: viewMode === "compact" ? "6%" : "20%",
         minWidth: viewMode === "compact" ? "160px" : "350px",
       }}
-      className="bg-card border border-border rounded-xl p-2 overflow-hidden"
+      className="bg-card border border-border rounded-xl p-2 overflow-hidden "
     >
-      <div className="h-full flex flex-col gap-2 overflow-auto pr-2 no-scrollbar">
-        {/* Переключатель viewMode */}
-        <div className="flex items-center justify-between mb-2">
+      {/* Переключатель viewMode */}
+      <ScrollArea
+        scrollBehavior="hover"
+        hideDelay={400}
+        className="w-full h-full scroll-vertical flex flex-col gap-2 pr-3"
+      >
+        <div className="flex items-center justify-between mb-2 size-full">
           {viewMode === "full" && (
             <h3 className="text-sm font-medium text-muted-foreground">
               Scenes
@@ -169,7 +174,7 @@ export function Scenes() {
             )}
           </ScenesList.Root>
         )}
-      </div>
+      </ScrollArea>
     </aside>
   );
 }

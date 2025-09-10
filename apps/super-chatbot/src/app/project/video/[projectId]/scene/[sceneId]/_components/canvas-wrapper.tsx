@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import {
   FabricCanvas,
-  FabricController,
+  type FabricController,
   useFabricEditor,
 } from "@turbo-super/features";
 import type { SceneTextbox_Output } from "@turbo-super/api";

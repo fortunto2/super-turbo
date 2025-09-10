@@ -4,7 +4,7 @@ import {
   SceneService,
   getSuperduperAIConfig,
   OpenAPI,
-  ISceneUpdate,
+  type ISceneUpdate,
 } from "@turbo-super/api";
 
 export async function POST(request: NextRequest) {

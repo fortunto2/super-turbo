@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useNextGenerateVideo } from "@/lib/api/next/generate/video/mutation";
+import { useNextGenerateVideo } from "@/lib/api";
 
 type IGenerationConfigRead = {
   name: string;

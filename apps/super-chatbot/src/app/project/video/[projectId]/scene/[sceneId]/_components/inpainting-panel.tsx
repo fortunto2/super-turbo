@@ -1,5 +1,5 @@
 import { Control } from "@turbo-super/features";
-import { ToolType } from "./toolbar";
+import type { ToolType } from "./toolbar";
 import { cn } from "@turbo-super/ui";
 
 interface InpaintingPanelProps {
@@ -27,9 +27,9 @@ export function InpaintingPanel({
     <div
       ref={toolbarRef}
       className={cn("h-full transition-all duration-500", {
-        ["lg:w-96 lg:min-w-80 w-full p-4 dark:border-gray-700 bg-white dark:bg-gray-900 border-l border-gray-200"]:
+        'lg:w-96 lg:min-w-80 w-full p-4 dark:border-gray-700 bg-white dark:bg-gray-900 border-l border-gray-200':
           activeTool === "inpainting",
-        ["w-0"]: activeTool !== "inpainting",
+        'w-0': activeTool !== "inpainting",
       })}
     >
       <Control

@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useNextSceneGetById } from "@/lib/api/next/scene/query";
-import { useNextGenerateAudio } from "@/lib/api/next/generate/audio/mutation";
+import { useFileGenerateAudio, useSceneGetById } from "@/lib/api";
+
 import { AudioTypeEnum, type IFileRead } from "@turbo-super/api";
 import {
   Button,
@@ -33,8 +33,8 @@ export const FileAudioGenerate = ({
   onComplete: (file: IFileRead) => void;
   type: AudioTypeEnum;
 }) => {
-  const { data: scene } = useNextSceneGetById({ sceneId });
-  const { mutateAsync, isPending } = useNextGenerateAudio();
+  const { data: scene } = useSceneGetById({ id: sceneId });
+  const { mutateAsync, isPending } = useFileGenerateAudio();
 
   const initialValue = useMemo(() => {
     return scene?.voiceover?.audio_generation ?? undefined;
@@ -44,14 +44,14 @@ export const FileAudioGenerate = ({
   const [voiceName, setVoiceName] = useState<string>(
     initialValue?.voice_name ?? ""
   );
-  const [duration, setDuration] = useState<string | number>(
+  const [duration, setDuration] = useState<number>(
     initialValue?.duration ?? 10
   );
 
   const handleGenerate = async (params: {
     prompt?: string;
     voice_name?: string | null;
-    duration?: number | string;
+    duration?: number;
   }) => {
     try {
       const file: IFileRead = await mutateAsync({
@@ -104,7 +104,7 @@ export const FileAudioGenerate = ({
                 <Label htmlFor="vo-duration">Duration (sec)</Label>
                 <Select
                   value={String(duration)}
-                  onValueChange={setDuration}
+                  onValueChange={(v) => setDuration(Number(v))}
                 >
                   <SelectTrigger className="w-full ">
                     <SelectValue placeholder="Select voice" />
