@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import {
-  getSuperduperAIConfigWithUserToken,
-} from "@/lib/config/superduperai";
+import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
 import { generateVideoWithStrategy } from "@turbo-super/api";
 import {
   validateOperationBalance,
@@ -121,8 +119,8 @@ export async function POST(request: NextRequest) {
         : body?.shotSize?.id) || "medium_shot";
 
     // Parse resolution "WxH" or default
-    let width = 1280;
-    let height = 720;
+    let width = 1920;
+    let height = 1080;
     if (typeof body.resolution === "string") {
       const m = body.resolution.match(/(\d+)x(\d+)/);
       if (m) {

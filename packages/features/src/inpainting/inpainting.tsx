@@ -38,6 +38,7 @@ export const Inpainting = ({
   }) => {
     setIsLoading(false);
     onComplete?.(result);
+    canvas?.clear();
   };
 
   // Use external isGenerating or internal isLoading

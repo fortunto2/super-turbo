@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { Card, CardContent } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
+import { Card, CardContent } from "@turbo-super/ui";
+import { Button } from "@turbo-super/ui";
 import { X, Image as ImageIcon, AlertCircle, Crop } from "lucide-react";
 import { toast } from "sonner";
 import NextImage from "next/image";
@@ -19,8 +19,8 @@ interface ImageUploadProps {
 // AICODE-NOTE: Image processing utilities for resolution matching
 const parseResolution = (resolutionString?: string) => {
   // Default to HD 16:9
-  let width = 1280;
-  let height = 720;
+  let width = 1920;
+  let height = 1080;
 
   if (resolutionString) {
     const match = resolutionString.match(/(\d+)x(\d+)/);

@@ -3548,8 +3548,8 @@ var createVideoTrackItem = ({ duration, file, from }) => {
     },
     isMain: false,
     details: {
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       duration: fileDurationMs,
       src: file.url,
       volume: 100,
@@ -4274,6 +4274,7 @@ var Inpainting = ({
   const handleComplete = (result) => {
     setIsLoading(false);
     onComplete?.(result);
+    canvas?.clear();
   };
   const currentLoading = isGenerating || isLoading;
   const handleActiveToolChange = (tool) => {

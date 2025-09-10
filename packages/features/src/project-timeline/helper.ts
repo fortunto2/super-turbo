@@ -106,8 +106,8 @@ const createVideoTrackItem = ({ duration, file, from }: TrackItemProps) => {
     },
     isMain: false,
     details: {
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       duration: fileDurationMs,
       src: file.url,
       volume: 100,

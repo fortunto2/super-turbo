@@ -528,9 +528,14 @@ export function getSuperduperAITokenForUser(session: any): {
   token: string;
   isUserToken: boolean;
 } {
-  // Используем токен-менеджер для оптимизированного получения токенов
-  const { tokenManager } = require("./token-cache");
-  return tokenManager.getUserToken(session);
+  // Проверяем наличие пользовательского токена в сессии
+  const token =
+    process.env.SUPERDUPERAI_TOKEN || process.env.SUPERDUPERAI_API_KEY || "";
+
+  return {
+    token,
+    isUserToken: false,
+  };
 }
 
 /**

@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       prompt: prompt || "",
       videoCount: quantity,
       duration: 8,
-      resolution: "1280x720",
+      resolution: "1920x1080",
       style: "cinematic",
       toolSlug: toolSlug || "veo3-prompt-generator",
       toolTitle: toolTitle || "Free VEO3 Viral Prompt Generator",
