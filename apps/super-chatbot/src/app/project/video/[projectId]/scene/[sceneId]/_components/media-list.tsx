@@ -36,8 +36,8 @@ export function MediaList({
 
   const { mutate: deleteFile } = useFileDelete();
 
-  const handleDelete = (id: string) => {
-    deleteFile({ id });
+  const handleDelete = async (id: string) => {
+    await deleteFile({ id });
   };
 
   const handleSelect = async (file: IFileRead) => {

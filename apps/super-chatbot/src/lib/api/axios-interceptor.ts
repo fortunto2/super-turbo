@@ -4,6 +4,7 @@ import axios from "axios";
  * Перехватчик axios для автоматического перенаправления запросов через прокси
  * Работает только на клиенте
  */
+
 if (typeof window !== "undefined") {
   // Добавляем interceptor для запросов
   axios.interceptors.request.use(

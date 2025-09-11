@@ -16,12 +16,13 @@ const SceneVoiceoverGenerationPage = () => {
   const sceneId = params.sceneId as string;
 
   const { data: scene } = useSceneGetById({ id: sceneId });
-  const updateScene = useSceneUpdate();
+  const { mutate } = useSceneUpdate();
 
   const handleComplete = async (file?: IFileRead) => {
     router.push(`/project/video/${projectId}/scene/${sceneId}`);
     if (!scene || !scene.file_id) return;
-    await updateScene.mutateAsync({
+    console.log("file", file);
+    mutate({
       id: scene.id,
       requestBody: {
         ...scene,

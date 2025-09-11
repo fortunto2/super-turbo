@@ -10,6 +10,7 @@ const originalFetch = globalThis.fetch;
 /**
  * Перехватчик fetch для автоматического добавления токена
  */
+
 async function interceptedFetch(
   input: RequestInfo | URL,
   init: RequestInit = {}

@@ -141,20 +141,9 @@ export default function ScenePage() {
   );
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const controllerRef = useRef<any>(null);
-
   const { data: scene, isLoading: sceneLoading } = useSceneGetById({
     id: sceneId,
   });
-
-  // const {
-  //   pendingFileIds,
-  //   setPendingFileIds,
-  //   fileGenerationStartTimes,
-  //   setFileGenerationStartTimes,
-  // } = useFilePolling(projectId, sceneId);
-
-  // ---------- Handlers ----------
 
   const handleChangeTool = (tool: ToolType | null) => setActiveTool(tool);
   const togglePlay = () => setIsPlaying(!isPlaying);
@@ -163,7 +152,6 @@ export default function ScenePage() {
     setActiveTool("mediaList");
   };
 
-  // ---------- Render ----------
   return (
     <div className="flex-1 flex gap-4 overflow-hidden rounded-xl border bg-card p-4">
       {/* Left: scene preview & content */}

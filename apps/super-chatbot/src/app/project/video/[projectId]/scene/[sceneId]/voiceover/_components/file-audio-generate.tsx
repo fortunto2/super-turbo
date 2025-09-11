@@ -34,7 +34,7 @@ export const FileAudioGenerate = ({
   type: AudioTypeEnum;
 }) => {
   const { data: scene } = useSceneGetById({ id: sceneId });
-  const { mutateAsync, isPending } = useFileGenerateAudio();
+  const { mutateAsync: generateAudio, isPending } = useFileGenerateAudio();
 
   const initialValue = useMemo(() => {
     return scene?.voiceover?.audio_generation ?? undefined;
@@ -54,12 +54,12 @@ export const FileAudioGenerate = ({
     duration?: number;
   }) => {
     try {
-      const file: IFileRead = await mutateAsync({
+      const file = await generateAudio({
         requestBody: {
           project_id: projectId,
           scene_id: sceneId,
           config: {
-            ...(initialValue ?? {}),
+            ...initialValue,
             type,
             prompt: params.prompt ?? initialValue?.prompt ?? "",
             voice_name: params.voice_name ?? initialValue?.voice_name ?? null,
@@ -67,7 +67,9 @@ export const FileAudioGenerate = ({
           },
         },
       });
-      if (file) await onComplete(file);
+      if (file) {
+        await onComplete(file);
+      }
     } catch (err) {
       console.log(err);
     }
