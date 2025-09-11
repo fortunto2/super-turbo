@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { DocumentCard } from "./document-card";
 import { GallerySkeleton } from "./gallery-skeleton";
-import { Button } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
 import type { DocumentFilters } from "../page";
-import type { ArtifactKind } from "@/components/artifact";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
 
 interface Document {
   id: string;

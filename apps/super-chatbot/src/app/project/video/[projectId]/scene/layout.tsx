@@ -1,5 +1,4 @@
-import { BackButton } from "@/components/back-button";
-import { Scenes } from "@/components/scenes";
+import { BackButton, Scenes } from "@/components";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";

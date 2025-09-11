@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { MarkdownEditor } from "@/components/markdown-editor";
+import { MarkdownEditor } from "@/components/editors/markdown-editor";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { jsPDF } from "jspdf";
 import { marked } from "marked";
@@ -10,7 +10,7 @@ import {
   TrashIcon,
   InfoIcon,
   FileIcon,
-} from "@/components/icons";
+} from "@/components/common/icons";
 import {
   Tooltip,
   TooltipTrigger,
@@ -23,7 +23,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from '@turbo-super/ui';
+} from "@turbo-super/ui";
 
 interface ScriptGenerationResultProps {
   script: string;

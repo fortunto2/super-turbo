@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { signIn } from "next-auth/react";
 
-import { Button } from '@turbo-super/ui';
-import { LoaderIcon } from "@/components/icons";
+import { Button } from "@turbo-super/ui";
+import { LoaderIcon } from "@/components/common/icons";
 
 export default function Page() {
   const router = useRouter();

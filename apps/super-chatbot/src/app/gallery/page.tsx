@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, } from "react";
+import { useState } from "react";
 import { DocumentGallery } from "./components/document-gallery";
 import { GalleryFilters } from "./components/gallery-filters";
 import { GallerySearch } from "./components/gallery-search";
-import type { ArtifactKind } from "@/components/artifact";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
 import { useSession } from "next-auth/react";
 
 export interface DocumentFilters {

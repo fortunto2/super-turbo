@@ -1,7 +1,7 @@
 "use client";
-import { Artifact } from "@/components/create-artifact";
-import { Markdown } from "@/components/markdown";
-import { CopyIcon, ShareIcon } from "@/components/icons";
+import { Artifact } from "@/components/artifacts/create-artifact";
+import { Markdown } from "@/components/common/markdown";
+import { CopyIcon, ShareIcon } from "@/components/common/icons";
 import { toast } from "sonner";
 
 export const scriptArtifact = new Artifact<"script">({

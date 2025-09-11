@@ -7,8 +7,8 @@ import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import type { DBMessage } from "@/lib/db/schema";
 import type { Attachment, UIMessage } from "ai";
 import * as Sentry from "@sentry/nextjs";
-import { ChatPageWrapper } from "@/components/chat-page-wrapper";
-import { AppSidebar } from "@/components/app-sidebar";
+import { ChatPageWrapper } from "@/components/chat/chat-page-wrapper";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 import Script from "next/script";
 

@@ -1,4 +1,4 @@
-import { CopyIcon } from "@/components/icons";
+import { CopyIcon } from "@/components/common/icons";
 import { VideoEditor } from "./video-editor";
 import { useArtifactSSE } from "@/hooks/use-artifact-sse";
 import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";

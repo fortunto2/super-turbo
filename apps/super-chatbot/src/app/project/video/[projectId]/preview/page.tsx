@@ -23,8 +23,7 @@ import {
   type IProjectVideoRead,
 } from "@turbo-super/api";
 import { useMemo, useState } from "react";
-import { ShareDialog } from "@/components/share-dialog";
-import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
+import { ShareDialog, ProjectVideoExportDialog } from "@/components";
 import {
   useProjectGetById,
   useProjectStoryboard2Video,
@@ -82,7 +81,7 @@ export default function PreviewPage() {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
-  const music = useMemo(() => project?.music ?? null, [project?.music]);
+  const music = useMemo(() => project?.music ?? null, [project]);
 
   const scenesMedia = useMemo(
     () => sceneToMediaFormatting((scenes?.items as any) ?? []),
@@ -99,7 +98,7 @@ export default function PreviewPage() {
     const value = videoProject.config.aspect_ratio ?? "16:9";
     const [numerator, denominator] = value.split(":").map(Number);
     return numerator / denominator;
-  }, [project?.config?.aspect_ratio]);
+  }, [project]);
 
   // Function for exporting video
   const handleExport = () => {

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { CopyIcon } from "@/components/icons";
-import { DebugParameters } from "@/components/debug-parameters";
+import { CopyIcon } from "@/components/common/icons";
+import { DebugParameters } from "@/components/debug/debug-parameters";
 import { toast } from "sonner";
 import type { UseChatHelpers } from "@ai-sdk/react";
 

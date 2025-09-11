@@ -19,7 +19,7 @@ function getThumbnailUrl(content: string): string | null {
 import { sheetDocumentHandler } from "@/artifacts/sheet/server";
 import { textDocumentHandler } from "@/artifacts/text/server";
 import { videoDocumentHandler } from "@/artifacts/video/server";
-import type { ArtifactKind } from "@/components/artifact";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
 import type { DataStreamWriter } from "ai";
 import type { Document } from "../db/schema";
 import { saveDocument } from "../db/queries";

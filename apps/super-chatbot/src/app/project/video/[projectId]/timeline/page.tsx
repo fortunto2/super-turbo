@@ -12,7 +12,7 @@ import {
   useTaskStatus,
 } from "@turbo-super/api";
 import { useState } from "react";
-import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
+import { ProjectVideoExportDialog } from "@/components";
 import {
   useDataUpdate,
   useProjectGetById,

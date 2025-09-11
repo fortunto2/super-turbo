@@ -9,7 +9,7 @@ import {
   CardTitle,
   Button,
 } from "@turbo-super/ui";
-import { CopyIcon } from "@/components/icons";
+import { CopyIcon } from "@/components/common/icons";
 import { useImageGeneration } from "../hooks/use-image-generation";
 import { useImageEffects } from "../hooks/use-image-effects";
 import {
@@ -21,7 +21,7 @@ import {
   type ImageState,
 } from "../utils/image-utils";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { DebugParameters } from "@/components/debug-parameters";
+import { DebugParameters } from "@/components/debug/debug-parameters";
 import { FileService, FileTypeEnum } from "@turbo-super/api";
 
 interface ImageEditorProps {

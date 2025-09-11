@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { signIn, useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LoaderIcon } from "@/components/icons";
-import { Button } from '@turbo-super/ui';
+import { LoaderIcon } from "@/components/common/icons";
+import { Button } from "@turbo-super/ui";
 
 function AutoLoginContent() {
   const { status } = useSession();

@@ -31,10 +31,10 @@ import {
   type Chat,
   stream,
 } from "./schema";
-import type { ArtifactKind } from "@/components/artifact";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
 import { generateUUID } from "../utils";
 import { generateHashedPassword } from "./utils";
-import type { VisibilityType } from "@/components/visibility-selector";
+import type { VisibilityType } from "@/components/shared/visibility-selector";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -46,13 +46,14 @@ let __client: any | null = null;
 function __ensureDb() {
   if (!__db) {
     let url = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-    
+
     // Fallback для разработки - используем хардкодированный URL если переменные не загружены
     if (!url || url.length === 0) {
-      url = "postgresql://neondb_owner:npg_u78sbCLzfEoe@ep-green-glade-a49gpc57-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require";
+      url =
+        "postgresql://neondb_owner:npg_u78sbCLzfEoe@ep-green-glade-a49gpc57-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require";
       console.warn("Using fallback database URL for development");
     }
-    
+
     __client = postgres(url, { ssl: "require" });
     __db = drizzle(__client);
   }

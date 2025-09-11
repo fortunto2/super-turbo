@@ -3,8 +3,8 @@ import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { generateUUID } from "@/lib/utils";
 import { auth } from "./(auth)/auth";
 import { redirect } from "next/navigation";
-import { ChatPageWrapper } from "@/components/chat-page-wrapper";
-import { AppSidebar } from "@/components/app-sidebar";
+import { ChatPageWrapper } from "@/components/chat/chat-page-wrapper";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 import Script from "next/script";
 

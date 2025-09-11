@@ -1,11 +1,11 @@
-import { Artifact } from "@/components/create-artifact";
+import { Artifact } from "@/components/artifacts/create-artifact";
 import {
   CopyIcon,
   RedoIcon,
   UndoIcon,
   ShareIcon,
   PencilEditIcon,
-} from "@/components/icons";
+} from "@/components/common/icons";
 import { toast } from "sonner";
 import "@/lib/utils/console-helpers";
 import { ImageArtifactWrapper } from "@/artifacts/image";

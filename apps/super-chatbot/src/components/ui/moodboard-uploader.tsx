@@ -2,12 +2,12 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { Tag, Eye, Sliders, X } from "lucide-react";
-import { ImageUploader } from "@/components/ui/image-uploader";
-import { Switch } from "@/components/ui/switch";
-import { Label } from '@turbo-super/ui';
-import { Input } from '@turbo-super/ui';
-import { Badge } from '@turbo-super/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { ImageUploader } from "./image-uploader";
+import { Switch } from "./switch";
+import { Label } from "@turbo-super/ui";
+import { Input } from "@turbo-super/ui";
+import { Badge } from "@turbo-super/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 
 interface MoodboardImage {
   id: string;

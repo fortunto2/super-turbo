@@ -1,4 +1,4 @@
-import { ToolsNavigation } from "@/components/tools-navigation";
+import { ToolsNavigation } from "@/components/tools/tools-navigation";
 import type { ReactNode } from "react";
 
 const TOOL_TITLES: Record<string, { title: string; description: string }> = {

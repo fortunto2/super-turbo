@@ -1,4 +1,4 @@
-import { Artifact } from "@/components/create-artifact";
+import { Artifact } from "@/components/artifacts/create-artifact";
 import {
   CopyIcon,
   LineChartIcon,
@@ -6,8 +6,8 @@ import {
   SparklesIcon,
   UndoIcon,
   ShareIcon,
-} from "@/components/icons";
-import { SpreadsheetEditor } from "@/components/sheet-editor";
+} from "@/components/common/icons";
+import { SpreadsheetEditor } from "@/components/editors/sheet-editor";
 import { parse, unparse } from "papaparse";
 import { toast } from "sonner";
 
