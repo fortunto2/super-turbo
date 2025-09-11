@@ -57,6 +57,14 @@ export const ProjectVideoExportDialog: React.FC<
     onClose();
   }, [result]);
 
+  useEffect(() => {
+    return () => {
+      if (progress !== null) {
+        setState({ progress: null });
+      }
+    };
+  }, []);
+
   const handleExport = () => {
     onExport();
     setState({ result: null });

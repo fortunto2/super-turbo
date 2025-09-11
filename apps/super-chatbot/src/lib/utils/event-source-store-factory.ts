@@ -45,19 +45,27 @@ export const createEventSourceStore = (name: string) =>
 
       eventSource.onopen = () => {
         addHandlers(handlers);
-        console.log(`${name} SSE connected. Channel: ${channel}`);
+        console.log(`✅ ${name} SSE connected. Channel: ${channel}`);
       };
 
-      eventSource.onerror = () => {
-        console.log(`${name} SSE error. Channel: ${channel}`);
+      eventSource.onerror = (error) => {
+        console.error(`❌ ${name} SSE error. Channel: ${channel}`, error);
+        console.error(`❌ ${name} SSE readyState:`, eventSource.readyState);
       };
 
       eventSource.onmessage = (event) => {
         const { handlers } = get();
-        const eventData = JSON.parse(event.data as string) as WSMessage;
-        handlers.forEach((h) => {
-          h(eventData);
-        });
+        console.log(`📨 ${name} SSE message received:`, event.data);
+        try {
+          const eventData = JSON.parse(event.data as string) as WSMessage;
+          console.log(`📨 ${name} SSE parsed event:`, eventData);
+          handlers.forEach((h) => {
+            h(eventData);
+          });
+        } catch (error) {
+          console.error(`❌ ${name} SSE JSON parse error:`, error);
+          console.error(`❌ ${name} SSE raw data:`, event.data);
+        }
       };
 
       eventSource.addEventListener("error", () => {

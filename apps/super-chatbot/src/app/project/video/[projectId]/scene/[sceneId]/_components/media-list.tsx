@@ -1,15 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
+import { FileTypeEnum } from "@turbo-super/api";
 
 import { MediaFile } from "./media-file";
-import {
-  useFileDelete,
-  useFileList,
-  useSceneGetById,
-  useSceneUpdate,
-} from "@/lib/api/superduperai";
+import { useFileList, useSceneGetById } from "@/lib/api/superduperai";
 import { QueryState } from "@/components/ui/query-state";
 import { Skeleton } from "@turbo-super/ui";
 import { ScrollArea } from "@/components/ui";
@@ -21,7 +15,6 @@ export function MediaList({
   projectId: string;
   sceneId: string;
 }) {
-  const [selectingFileId, setSelectingFileId] = useState<string | null>(null);
   const { data: scene, isLoading: isSceneLoading } = useSceneGetById({
     id: sceneId,
   });
@@ -31,31 +24,6 @@ export function MediaList({
     sceneId,
     types: [FileTypeEnum.IMAGE, FileTypeEnum.VIDEO],
   });
-
-  const { mutate: update } = useSceneUpdate();
-
-  const { mutate: deleteFile } = useFileDelete();
-
-  const handleDelete = async (id: string) => {
-    await deleteFile({ id });
-  };
-
-  const handleSelect = async (file: IFileRead) => {
-    if (!scene) return;
-
-    setSelectingFileId(file.id);
-    try {
-      await update({
-        id: scene.id,
-        requestBody: {
-          ...scene,
-          file_id: file.id,
-        },
-      });
-    } finally {
-      setSelectingFileId(null);
-    }
-  };
 
   const isLoading = isSceneLoading || isFilesLoading;
   const isError = !scene || !files;
@@ -95,10 +63,8 @@ export function MediaList({
             {files?.items?.map((file) => (
               <MediaFile
                 isActive={file.id === scene?.file_id}
-                isSelecting={selectingFileId === file.id}
                 file={file}
-                onDelete={handleDelete}
-                onSelect={handleSelect}
+                scene={scene}
                 key={file.id}
               />
             ))}

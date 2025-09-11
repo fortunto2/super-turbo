@@ -1,43 +1,56 @@
-import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
+import { FileTypeEnum, ISceneRead, type IFileRead } from "@turbo-super/api";
 import { FileGenerationStatus } from "./helper";
 import { FileMetadataModal } from "./file-metadata-modal";
 import { hasMetadata } from "./file-metadata-utils";
 import { useState } from "react";
 import Image from "next/image";
 import { Play, Trash2, Info } from "lucide-react";
+import { useFileDelete, useSceneUpdate } from "@/lib/api";
 
 export function MediaFile({
   file,
-  onDelete,
-  onSelect,
   isActive,
-  isSelecting,
+  scene,
 }: {
   file: IFileRead;
-  onSelect: (file: IFileRead) => void;
-  onDelete: (id: string) => void;
   isActive?: boolean;
-  isSelecting?: boolean;
+  scene?: ISceneRead;
 }) {
+  const { mutate: deleteFile, isPending: isDeleting } = useFileDelete();
+
+  const { mutate: update, isPending: isSelecting } = useSceneUpdate();
+
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
-  const [deletingFile, setDeletingFile] = useState<string | null>(null);
+
   const [showMetadata, setShowMetadata] = useState(false);
 
   const handleDelete = async (fileId: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Предотвращаем выбор файла при клике на удаление
-    setDeletingFile(fileId);
+    event.stopPropagation();
 
     try {
-      await onDelete(fileId);
+      await deleteFile({ id: fileId });
     } catch (error) {
       console.error("Error deleting file:", error);
-    } finally {
-      setDeletingFile(null);
+    }
+  };
+
+  const handleSelect = async () => {
+    if (!scene) return;
+    try {
+      await update({
+        id: scene.id,
+        requestBody: {
+          ...scene,
+          file_id: file.id,
+        },
+      });
+    } catch (error) {
+      console.error("Error selecting file:", error);
     }
   };
 
   const handleInfoClick = (event: React.MouseEvent) => {
-    event.stopPropagation(); // Предотвращаем выбор файла при клике на информацию
+    event.stopPropagation();
     setShowMetadata(true);
   };
 
@@ -55,7 +68,7 @@ export function MediaFile({
         />
       ) : (
         <button
-          onClick={() => onSelect(file)}
+          onClick={handleSelect}
           disabled={isSelecting}
           className={`relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
             isActive
@@ -112,11 +125,11 @@ export function MediaFile({
 
           <button
             onClick={(e) => handleDelete(file.id, e)}
-            disabled={deletingFile === file.id}
+            disabled={isDeleting}
             className="p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Delete file"
           >
-            {deletingFile === file.id ? (
+            {isDeleting ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <Trash2 className="w-4 h-4" />

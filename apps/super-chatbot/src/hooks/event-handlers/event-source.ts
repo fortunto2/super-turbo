@@ -17,8 +17,9 @@ export const useProjectEvents = ({ projectId, eventHandlers }: Props) => {
   const { initConnection, removeHandlers } = useProjectEventSourceStore();
 
   useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    const url = `${baseUrl}/api/v1/events/project.${projectId}`;
+    // Используем относительный URL для SSE через Next.js прокси
+    const url = `/api/events/project.${projectId}`;
+    console.log("🔌 SSE: Connecting to:", url);
 
     initConnection(url, eventHandlers);
 
