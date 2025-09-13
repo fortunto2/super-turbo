@@ -1,10 +1,10 @@
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
-import { tool } from "ai";
+import { tool, generateText } from "ai";
 import { z } from "zod";
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
 } from "@/lib/utils/ai-tools-balance";
+import { myProvider } from "@/lib/ai/providers";
 import type { Session } from "next-auth";
 
 interface CreateScriptDocumentParams {
@@ -57,30 +57,32 @@ export const configureScriptGeneration = (
       }
 
       try {
-        // 1. Generate script content via API
-        const scriptRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}${API_NEXT_ROUTES.GENERATE_SCRIPT}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt }),
-          }
-        );
+        // 1. Generate script content directly using AI SDK
+        const systemPrompt = `
+You are a professional scriptwriter AI. Generate a detailed scenario in Markdown format based on the user's prompt. 
+- Structure the script with headings (scenes, acts, etc.)
+- Use lists for actions or dialogues
+- Make the script clear, creative, and easy to edit
+- Output only valid Markdown
+`;
 
-        if (!scriptRes.ok) {
-          throw new Error(
-            `Script generation API failed with status ${scriptRes.status}`
-          );
-        }
+        const userPrompt = `PROMPT: ${prompt}\n\nWrite a full scenario in Markdown.`;
 
-        const data = await scriptRes.json();
-        const script = data?.script || "";
+        const generationResult = await generateText({
+          model: myProvider.languageModel("artifact-model"),
+          system: systemPrompt,
+          prompt: userPrompt,
+          temperature: 0.7,
+          maxTokens: 1200,
+        });
+
+        const script = generationResult.text;
         if (!script) {
           throw new Error("Script generation failed: Empty script returned.");
         }
 
         // 2. Create document artifact using the provided function
-        const result = await params.createDocument.execute({
+        const documentResult = await params.createDocument.execute({
           title: prompt,
           kind: "script",
           content: script,
@@ -88,7 +90,7 @@ export const configureScriptGeneration = (
 
         // 3. Return the result which will be sent to the client
         return {
-          id: result.id,
+          id: documentResult.id,
           title: "📝 Script created!",
           kind: "script",
         };

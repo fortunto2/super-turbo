@@ -42,12 +42,16 @@ function PureMultimodalInput({
   handleSubmit,
   className,
   selectedVisibilityType,
+  isSubmitting,
+  isSubmittingRef,
 }: {
   chatId: string;
   input: UseChatHelpers["input"];
   setInput: UseChatHelpers["setInput"];
   status: UseChatHelpers["status"];
   stop: () => void;
+  isSubmitting?: boolean;
+  isSubmittingRef?: React.MutableRefObject<boolean>;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
@@ -101,7 +105,7 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInput = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
     adjustHeight();
   };
@@ -110,6 +114,23 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
+    // Проверяем блокировку
+    if (
+      status !== "ready" ||
+      isSubmitting ||
+      isSubmittingRef?.current === true
+    ) {
+      console.log(
+        "🔍 submitForm blocked - status:",
+        status,
+        "isSubmitting:",
+        isSubmitting,
+        "isSubmittingRef:",
+        isSubmittingRef?.current
+      );
+      return;
+    }
+
     if (!input.trim() && attachments.length === 0) {
       return;
     }
@@ -135,6 +156,9 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     input,
+    status,
+    isSubmitting,
+    isSubmittingRef,
   ]);
 
   const uploadFile = async (file: File) => {
@@ -357,6 +381,9 @@ function PureMultimodalInput({
             input={input}
             submitForm={submitForm}
             uploadQueue={uploadQueue}
+            status={status}
+            isSubmitting={isSubmitting}
+            isSubmittingRef={isSubmittingRef}
           />
         )}
       </div>
@@ -430,11 +457,24 @@ function PureSendButton({
   submitForm,
   input,
   uploadQueue,
+  status,
+  isSubmitting,
+  isSubmittingRef,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
+  status: UseChatHelpers["status"];
+  isSubmitting?: boolean;
+  isSubmittingRef?: React.MutableRefObject<boolean>;
 }) {
+  const isDisabled =
+    input.length === 0 ||
+    uploadQueue.length > 0 ||
+    status !== "ready" ||
+    isSubmitting ||
+    isSubmittingRef?.current === true;
+
   return (
     <Button
       data-testid="send-button"
@@ -443,7 +483,11 @@ function PureSendButton({
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.length === 0 || uploadQueue.length > 0}
+      disabled={isDisabled}
+      style={{
+        opacity: isDisabled ? 0.5 : 1,
+        cursor: isDisabled ? "not-allowed" : "pointer",
+      }}
     >
       <ArrowUpIcon size={14} />
     </Button>
@@ -454,6 +498,10 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false;
   if (prevProps.input !== nextProps.input) return false;
+  if (prevProps.status !== nextProps.status) return false;
+  if (prevProps.isSubmitting !== nextProps.isSubmitting) return false;
+  if (prevProps.isSubmittingRef?.current !== nextProps.isSubmittingRef?.current)
+    return false;
   return true;
 });
 

@@ -144,7 +144,11 @@ export const userProject = pgTable("UserProject", {
     .notNull()
     .references(() => user.id),
   projectId: text("projectId").notNull(), // ID проекта из SuperDuperAI
+  // status: varchar("status", { length: 20 }).default("pending"), // pending, processing, completed, failed - временно отключено
+  // creditsUsed: integer("creditsUsed").default(0), // Количество использованных кредитов - временно отключено
+  // errorMessage: text("errorMessage"), // Сообщение об ошибке, если статус failed - временно отключено
   createdAt: timestamp("createdAt").notNull().defaultNow(),
+  // updatedAt: timestamp("updatedAt").defaultNow(), // временно отключено
 });
 
 export type UserProject = InferSelectModel<typeof userProject>;

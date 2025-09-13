@@ -2,7 +2,7 @@
 
 import type { Attachment, UIMessage } from "ai";
 import { useChat } from "@ai-sdk/react";
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { ChatHeader } from "./chat-header";
 import type { Vote } from "@/lib/db/schema";
@@ -101,6 +101,10 @@ function ChatContent({
     initialVisibilityType,
   });
 
+  // Состояние для блокировки кнопки отправки
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+
   const {
     messages,
     setMessages,
@@ -116,35 +120,21 @@ function ChatContent({
   } = useChat({
     id,
     initialMessages,
+    api: "/api/chat",
+    body: {
+      id,
+      selectedChatModel: initialChatModel,
+      selectedVisibilityType: visibilityType,
+    },
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    experimental_prepareRequestBody: (body) => {
-      const lastMessage = body.messages.at(-1);
-      if (!lastMessage || !lastMessage.content || !lastMessage.content.trim())
-        return null;
-
-      const messageId = lastMessage.id || generateUUID();
-
-      return {
-        id: id,
-        message: {
-          id: messageId,
-          createdAt: new Date(),
-          role: "user",
-          content: lastMessage.content.trim(),
-          parts: lastMessage.parts || [
-            { type: "text", text: lastMessage.content.trim() },
-          ],
-          experimental_attachments: lastMessage.experimental_attachments || [],
-        },
-        selectedChatModel: initialChatModel,
-        selectedVisibilityType: visibilityType,
-      };
-    },
     onFinish: () => {
       console.log("🔍 useChat onFinish called - НЕ обновляем URL");
       console.log("🔍 Chat ID in onFinish:", id);
+      // Сбрасываем состояние блокировки
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
       // НЕ обновляем URL здесь - ждем команду от сервера
       // URL будет обновлен только после успешного создания чата
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -152,6 +142,10 @@ function ChatContent({
     onError: (error) => {
       // При ошибке не обновляем URL, чтобы избежать 404
       console.error("Chat error:", error);
+
+      // Сбрасываем состояние блокировки
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
 
       // Передаем ошибку в родительский компонент
       if (onError) {
@@ -294,6 +288,16 @@ function ChatContent({
         event.preventDefault();
       }
 
+      // Проверяем и устанавливаем блокировку
+      if (isSubmittingRef.current || status !== "ready" || isSubmitting) {
+        console.log("🔍 handleFormSubmit blocked - already submitting");
+        return;
+      }
+
+      // Устанавливаем блокировку
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
+
       console.log("🔍 handleFormSubmit called - НЕ обновляем URL");
       console.log("🔍 Chat ID:", id);
       console.log("🔍 Chat request options:", chatRequestOptions);
@@ -303,7 +307,7 @@ function ChatContent({
 
       handleSubmit(event, chatRequestOptions);
     },
-    [handleSubmit, id]
+    [handleSubmit, id, status, isSubmitting]
   );
 
   return (
@@ -340,6 +344,8 @@ function ChatContent({
               handleSubmit={handleFormSubmit}
               status={status}
               stop={stop}
+              isSubmitting={isSubmitting}
+              isSubmittingRef={isSubmittingRef}
               attachments={attachments}
               setAttachments={setAttachments}
               messages={messages}
