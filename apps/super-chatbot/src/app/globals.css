@@ -22,7 +22,57 @@
     .text-balance {
         text-wrap: balance;
     }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    /* ScrollArea custom scrollbar hiding */
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Chrome, Safari and Opera */
+    }
+
+    /* Fix Radix ScrollArea internal div height inheritance */
+    [data-radix-scroll-area-viewport] > div {
+        height: 100% !important;
+        min-height: 100% !important;
+    }
+
+    /* For horizontal scroll areas - prevent vertical scrolling */
+    .scroll-horizontal [data-radix-scroll-area-viewport] > div {
+        height: fit-content !important;
+        min-height: auto !important;
+    }
+
+    /* For vertical scroll areas - ensure full height */
+    .scroll-vertical [data-radix-scroll-area-viewport] > div {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        min-height: 100% !important;
+    }
+
+    .scroll-vertical [data-radix-scroll-area-viewport] > div > * {
+        flex: 1 !important;
+    }
+
 }
+
+
+* {
+    scrollbar-width: thin;
+}
+
 
 @layer base {
     :root {

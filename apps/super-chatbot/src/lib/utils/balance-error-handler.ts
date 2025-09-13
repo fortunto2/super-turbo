@@ -15,7 +15,7 @@ export interface BalanceError {
 export function handleBalanceError(
   error: BalanceError,
   dataStream: DataStreamWriter,
-  operationType: string = "operation"
+  operationType = "operation"
 ): string {
   const errorMessage = formatBalanceErrorMessage(error, operationType);
 
@@ -99,7 +99,7 @@ export function createBalanceError(
  */
 export function createBalanceErrorResponse(
   balanceValidation: { valid: boolean; error?: string; cost?: number },
-  operationType: string = "operation"
+  operationType = "operation"
 ) {
   const balanceError = createBalanceError(balanceValidation);
   const errorMessage = formatBalanceErrorMessage(balanceError, operationType);

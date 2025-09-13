@@ -1,13 +1,14 @@
 import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { QueryProvider } from "@/components/shared/query-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -97,7 +98,9 @@ export default async function RootLayout({
             }}
           >
             <Toaster position="top-center" />
-            <SessionProvider>{children}</SessionProvider>
+            <SessionProvider>
+              <QueryProvider>{children}</QueryProvider>
+            </SessionProvider>
             <Analytics />
           </SidebarProvider>
         </ThemeProvider>

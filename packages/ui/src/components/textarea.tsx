@@ -13,6 +13,7 @@ const textareaVariants = cva(
           "border-input bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         accent:
           "border-input bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+        none: "",
       },
     },
     defaultVariants: {

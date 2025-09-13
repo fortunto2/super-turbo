@@ -11,6 +11,8 @@ export interface VideoGenerationParams {
   negativePrompt?: string;
   seed?: number;
   generationType?: string;
+  projectId?: string;
+  sceneId?: string;
 }
 
 export interface ImageToVideoParams extends VideoGenerationParams {

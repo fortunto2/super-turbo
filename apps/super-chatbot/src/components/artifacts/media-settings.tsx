@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Button, Input } from "@turbo-super/ui";
-import { EnhancedTextarea } from "@/components/ui/enhanced-textarea";
+import { EnhancedTextarea } from "../ui/enhanced-textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../ui/select";
 import type {
   ImageGenerationConfig,
   ImageSettings,

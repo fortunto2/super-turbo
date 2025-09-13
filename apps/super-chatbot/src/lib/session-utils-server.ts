@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { generateGuestSessionId } from "./session-utils";
 
 const GUEST_SESSION_COOKIE = "superduperai_guest_session";
 

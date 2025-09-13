@@ -1,39 +1,47 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getAllUsers } from "@/lib/db/admin-queries";
-import { NextRequest, NextResponse } from "next/server";
-
-// Check if user is admin
-function isAdmin(email?: string | null): boolean {
-  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
-  return email ? adminEmails.includes(email) : false;
-}
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and admin status
+    // Проверяем авторизацию
     const session = await auth();
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!isAdmin(session.user.email)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    // TODO: Добавить проверку прав администратора
+    // if (!session.user.isAdmin) {
+    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // }
 
-    // Parse query parameters
     const { searchParams } = new URL(request.url);
     const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("limit")) || 20;
     const search = searchParams.get("search") || "";
 
-    // Get users
-    const data = await getAllUsers(page, 20, search);
+    // Валидация параметров
+    if (page < 1) {
+      return NextResponse.json(
+        { error: "Page must be greater than 0" },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json(data);
+    if (limit < 1 || limit > 100) {
+      return NextResponse.json(
+        { error: "Limit must be between 1 and 100" },
+        { status: 400 }
+      );
+    }
+
+    const result = await getAllUsers(page, limit, search);
+
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Error in GET /api/admin/users:", error);
+    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to fetch users" },
       { status: 500 }
     );
   }

@@ -1,5 +1,10 @@
-import { Artifact } from "@/components/create-artifact";
-import { CopyIcon, ShareIcon, UndoIcon, RedoIcon } from "@/components/icons";
+import { Artifact } from "@/components/artifacts/create-artifact";
+import {
+  CopyIcon,
+  ShareIcon,
+  UndoIcon,
+  RedoIcon,
+} from "@/components/common/icons";
 import { toast } from "sonner";
 
 // Import console helpers for debugging (auto-exposes in browser)

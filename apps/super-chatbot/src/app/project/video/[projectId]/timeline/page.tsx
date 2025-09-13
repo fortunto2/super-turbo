@@ -1,89 +1,67 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ProjectTimeline } from "@turbo-super/features";
-import { ArrowLeft, Clock, Play, Eye } from "lucide-react";
-import Link from "next/link";
+import { ProjectTimeline, useGenerateTimeline } from "@turbo-super/features";
+import { ArrowLeft, Eye } from "lucide-react";
 import {
   DataTypeEnum,
-  IDataUpdate,
-  IProjectRead,
+  type IDataUpdate,
+  type IFileRead,
+  TaskTypeEnum,
   useProjectData,
+  useTaskStatus,
 } from "@turbo-super/api";
-import { useEffect, useState } from "react";
-import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import type { IFileRead } from "@/lib/api";
+import { useState } from "react";
+import { ProjectVideoExportDialog } from "@/components";
+import {
+  useDataUpdate,
+  useProjectGetById,
+  useProjectTimeline2Video,
+} from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
 
 export default function VideoPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.projectId as string;
 
-  const [project, setProject] = useState<IProjectRead | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
-  const getProject = async () => {
-    try {
-      const response = await fetch(
-        `/api/story-editor/project?projectId=${projectId}`
-      );
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      return { success: false, project: null };
-    }
+  // Используем React Query для загрузки данных
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error,
+  } = useProjectGetById({
+    id: projectId,
+  });
+
+  const { mutate: generateTimeline } = useGenerateTimeline();
+
+  const { mutate: timeline2video, isPending } = useProjectTimeline2Video();
+
+  const { mutate: updateTimeline } = useDataUpdate(false);
+
+  const handleTimeline2Video = () => {
+    timeline2video({ id: projectId });
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getProject();
-        if (data.success) {
-          setProject(data.project);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleGenerateTimeline = () => {
+    generateTimeline({ id: projectId });
+  };
 
-    fetchData();
-  }, [projectId]);
+  const handleUpdateTimeline = (payload: IDataUpdate) => {
+    updateTimeline(payload);
+  };
 
   const timeline = useProjectData(project, DataTypeEnum.TIMELINE);
 
-  // Function for exporting timeline to video
-  const handleExport = async (projectId: string) => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/timeline2storyboard",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        }
-      );
+  const { isPending: isRendering } = useTaskStatus(
+    TaskTypeEnum.TIMELINE2VIDEO_FLOW,
+    project?.tasks
+  );
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error exporting timeline to video");
-      }
-
-      console.log("🎬 Timeline to video export started successfully:", result);
-    } catch (error) {
-      console.error("❌ Error exporting timeline to storyboard:", error);
-      throw error;
-    }
-  };
-
-  // Function for downloading file
   const handleDownload = (file: IFileRead) => {
     if (!file.url) {
       console.error("❌ No download URL available");
@@ -97,58 +75,6 @@ export default function VideoPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const handleUpdateTimeline = async (payload: IDataUpdate) => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/update-timeline",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error updating timeline");
-      }
-
-      console.log("🎬 Timeline updated successfully:", result);
-    } catch (error) {
-      console.error("❌ Error updating timeline:", error);
-      throw error;
-    }
-  };
-
-  const handleRegenerateTimeline = async () => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/regenerate-timeline",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error regenerating timeline");
-      }
-
-      console.log("🎬 Timeline regenerated successfully:", result);
-    } catch (error) {
-      console.error("❌ Error regenerating timeline:", error);
-      throw error;
-    }
   };
 
   if (!projectId) {
@@ -174,55 +100,37 @@ export default function VideoPage() {
   }
 
   return (
-    <>
-      {isLoading ? (
-        <div className="min-h-screen size-full text-center space-y-4 items-center justify-center flex flex-col bg-background">
-          <div className="relative">
-            <div className="size-16 border-4 border-muted rounded-full animate-spin"></div>
-            <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-lg font-medium text-foreground">
-              Loading project...
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Preparing Timeline Editor
-            </p>
-          </div>
-        </div>
-      ) : !project ? (
-        <div className="size-full text-center space-y-4 bg-background">
-          <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-            <Eye className="size-8 text-red-600 dark:text-red-400" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-xl font-medium text-red-600 dark:text-red-400">
-              Loading Error
-            </p>
-            <p className="text-muted-foreground">Failed to load project data</p>
-          </div>
-        </div>
-      ) : (
+    <div className="w-full min-h-screen">
+      <QueryState
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        isEmpty={!project}
+        emptyMessage="Project not found"
+        loadingMessage="Loading project..."
+        errorMessage="Failed to load project"
+      >
         <ProjectTimeline
           timeline={timeline}
-          project={project}
+          project={project!}
           onBack={() => router.back()}
           onExport={() => setIsExportDialogOpen(true)}
           onUpdateTimeline={handleUpdateTimeline}
-          onRegenerateTimeline={handleRegenerateTimeline}
+          onRegenerateTimeline={handleGenerateTimeline}
         />
-      )}
+      </QueryState>
 
       {/* Export Dialog */}
       <ProjectVideoExportDialog
         isOpen={isExportDialogOpen}
         onClose={() => setIsExportDialogOpen(false)}
-        onExport={handleExport}
+        onExport={handleTimeline2Video}
         onDownload={handleDownload}
         title="Export Timeline to Video"
         description="Confirm timeline export to video for further processing"
-        exportType="timeline2video"
+        isRendering={isRendering}
+        isPending={isPending}
       />
-    </>
+    </div>
   );
 }

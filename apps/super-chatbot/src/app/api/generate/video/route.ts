@@ -1,9 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import {
-  getSuperduperAIConfigWithUserToken,
-  getSuperduperAIConfig,
-} from "@/lib/config/superduperai";
+import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
 import { generateVideoWithStrategy } from "@turbo-super/api";
 import {
   validateOperationBalance,
@@ -122,13 +119,13 @@ export async function POST(request: NextRequest) {
         : body?.shotSize?.id) || "medium_shot";
 
     // Parse resolution "WxH" or default
-    let width = 1280;
-    let height = 720;
+    let width = 1920;
+    let height = 1080;
     if (typeof body.resolution === "string") {
       const m = body.resolution.match(/(\d+)x(\d+)/);
       if (m) {
-        width = parseInt(m[1]);
-        height = parseInt(m[2]);
+        width = Number.parseInt(m[1]);
+        height = Number.parseInt(m[2]);
       }
     }
 
@@ -154,6 +151,8 @@ export async function POST(request: NextRequest) {
           frameRate: Number(body.frameRate) || 30,
           negativePrompt: body.negativePrompt || "",
           seed: body.seed ? Number(body.seed) : undefined,
+          projectId: body?.projectId,
+          sceneId: body?.sceneId,
         },
         config
       );
@@ -176,6 +175,8 @@ export async function POST(request: NextRequest) {
           frameRate: Number(body.frameRate) || 30,
           negativePrompt: body.negativePrompt || "",
           seed: body.seed ? Number(body.seed) : undefined,
+          projectId: body?.projectId,
+          sceneId: body?.sceneId,
         },
         config
       );

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import {
   Veo3PromptGenerator,
-  PromptDataType,
-  MoodboardImageType,
+  type PromptDataType,
+  type MoodboardImageType,
 } from "@turbo-super/features";
 import { enhancePromptVeo3 } from "@/lib/ai/api/enhance-prompt-veo3";
 

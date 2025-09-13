@@ -16,7 +16,7 @@ export const Inpainting = ({
   initialPrompt?: string;
   isGenerating?: boolean;
 }) => {
-  const [activeTool, setActiveTool] = useState<string>("");
+  const [activeTool, setActiveTool] = useState<string | null>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,12 +38,13 @@ export const Inpainting = ({
   }) => {
     setIsLoading(false);
     onComplete?.(result);
+    canvas?.clear();
   };
 
   // Use external isGenerating or internal isLoading
   const currentLoading = isGenerating || isLoading;
 
-  const handleActiveToolChange = (tool: string) => {
+  const handleActiveToolChange = (tool: string | null) => {
     setActiveTool(tool);
   };
 

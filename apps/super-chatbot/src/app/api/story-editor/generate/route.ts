@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
   getSuperduperAIConfig,
@@ -10,9 +10,14 @@ import {
   deductOperationBalance,
 } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
-import { userProject } from "@/lib/db/schema";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import {
+  createUserProject,
+  updateProjectStatus,
+} from "@/lib/db/project-queries";
+import {
+  handlePrefectError,
+  shouldRollbackProject,
+} from "@/lib/utils/project-error-handler";
 
 interface ProjectVideoCreate {
   template_name: string;
@@ -28,6 +33,10 @@ interface ProjectVideoCreate {
 }
 
 export async function POST(request: NextRequest) {
+  let projectId: string | null = null;
+  let userId: string | null = null;
+  let creditsUsed = 0;
+
   try {
     // Authentication check
     const session = await auth();
@@ -36,7 +45,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body: ProjectVideoCreate = await request.json();
+    userId = session.user.id;
 
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    console.log("🔍 Story Editor API: Processing request:", body);
     // Input validation
     if (!body.config.prompt || !body.config.image_generation_config_name) {
       return NextResponse.json(
@@ -48,22 +63,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check user balance
-    const userId = session.user.id;
-
-    // Define quality multipliers for cost calculation
+    // Calculate quality multipliers for balance validation
     const qualityMultipliers = [];
-    switch (body.config.quality) {
-      case "hd":
-        qualityMultipliers.push("hd-quality");
-        break;
-      case "4k":
-        qualityMultipliers.push("4k-quality");
-        break;
-      default:
-        qualityMultipliers.push("standard-quality");
+    if (body.config.quality === "4k") {
+      qualityMultipliers.push("4k");
+    } else if (body.config.quality === "hd") {
+      qualityMultipliers.push("hd");
     }
 
+    // Validate balance before proceeding
     const balanceValidation = await validateOperationBalance(
       userId,
       "story-editor",
@@ -72,29 +80,21 @@ export async function POST(request: NextRequest) {
     );
 
     if (!balanceValidation.valid) {
-      const errorResponse = createBalanceErrorResponse(
-        balanceValidation,
-        "project-video"
+      return NextResponse.json(
+        createBalanceErrorResponse(balanceValidation, "story editor project"),
+        { status: 402 }
       );
-      return NextResponse.json(errorResponse, { status: 402 });
     }
 
+    creditsUsed = balanceValidation.cost || 0;
     console.log(
-      `💳 Balance validated: ${balanceValidation.cost} credits required for story editor project`
+      `💳 Balance validated: ${creditsUsed} credits required for story editor project`
     );
 
-    // Getting SuperDuperAI configuration
+    // Configure SuperDuperAI API
     const superduperaiConfig = getSuperduperAIConfig();
-
-    if (!superduperaiConfig.token) {
-      return NextResponse.json(
-        { error: "SuperDuperAI API token not configured" },
-        { status: 500 }
-      );
-    }
-
-    // Setup and call SuperDuperAI API
     const { OpenAPI } = await import("@turbo-super/api");
+
     OpenAPI.BASE = superduperaiConfig.url;
     OpenAPI.TOKEN = superduperaiConfig.token;
 
@@ -124,19 +124,38 @@ export async function POST(request: NextRequest) {
 
     console.log("payload", payload);
 
+    // Create project in SuperDuperAI
     const result = await ProjectService.projectVideo({ requestBody: payload });
-
-    // Extract project ID from response
-    const projectId = result.id;
+    projectId = result.id;
 
     if (!projectId) {
-      return NextResponse.json(
-        { error: "No project ID returned from SuperDuperAI API" },
-        { status: 500 }
-      );
+      throw new Error("No project ID returned from SuperDuperAI API");
     }
 
-    // Deduct balance after successful project creation
+    // Save project to database with pending status
+    try {
+      await createUserProject(userId, projectId, creditsUsed);
+      console.log(
+        `💾 Project ${projectId} created in database with status: pending`
+      );
+    } catch (dbError: any) {
+      console.error("Database error creating project:", dbError);
+      throw new Error(`Failed to save project to database: ${dbError.message}`);
+    }
+
+    // Update project status to processing
+    // Временно отключено - требуется миграция для добавления колонки status
+    try {
+      // await updateProjectStatus(projectId, "processing");
+      console.log(
+        `📊 Project ${projectId} status update skipped (migration needed)`
+      );
+    } catch (statusError) {
+      console.error("Error updating project status:", statusError);
+      // Continue execution even if status update fails
+    }
+
+    // Deduct balance AFTER successful project creation and database save
     try {
       await deductOperationBalance(
         userId,
@@ -145,49 +164,18 @@ export async function POST(request: NextRequest) {
         qualityMultipliers,
         {
           projectId: projectId,
-          operationType: "project-video",
-          quality: body.config.quality,
-          aspectRatio: body.config.aspect_ratio,
+          operation: "story-editor-project",
           timestamp: new Date().toISOString(),
         }
       );
       console.log(
-        `💳 Balance deducted for user ${userId} after successful story editor project creation: ${balanceValidation.cost} credits`
+        `💳 Balance deducted for user ${userId} after successful story editor project creation: ${creditsUsed} credits`
       );
-    } catch (balanceError) {
-      console.error(
-        "⚠️ Failed to deduct balance after story editor project creation:",
-        balanceError
-      );
-      // Continue with response - project was created successfully
-    }
-
-    // Save project to user database
-    try {
-      // Create direct database connection
-      const databaseUrl =
-        process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
-      const client = postgres(databaseUrl, { ssl: "require" });
-      const db = drizzle(client);
-
-      const newProject = await db
-        .insert(userProject)
-        .values({
-          userId: userId,
-          projectId: projectId,
-        })
-        .returning();
-
-      if (newProject.length > 0) {
-        console.log(
-          `💾 Project ${projectId} saved to user database for user ${userId}`
-        );
-      } else {
-        console.warn(`⚠️ Failed to save project ${projectId} to user database`);
-      }
-    } catch (saveError) {
-      console.error("⚠️ Error saving project to user database:", saveError);
-      // Continue with response - project was created successfully
+    } catch (balanceError: any) {
+      console.error("Balance deduction error:", balanceError);
+      // If balance deduction fails, we need to rollback the project
+      await handlePrefectError(projectId, userId, 0, balanceError);
+      throw new Error(`Failed to deduct balance: ${balanceError.message}`);
     }
 
     return NextResponse.json({
@@ -195,13 +183,26 @@ export async function POST(request: NextRequest) {
       projectId,
       message: "Video generation started successfully",
       data: result.data,
-      creditsUsed: balanceValidation.cost,
+      creditsUsed,
     });
   } catch (error: any) {
     console.error("Story Editor API Error:", error);
 
+    // Handle project rollback if needed
+    if (projectId && userId && shouldRollbackProject(error)) {
+      console.log(`🔄 Rolling back project ${projectId} due to error`);
+      try {
+        await handlePrefectError(projectId, userId, creditsUsed, error);
+      } catch (rollbackError) {
+        console.error("Failed to rollback project:", rollbackError);
+      }
+    }
+
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      {
+        error: error.message || "Internal server error",
+        projectId: projectId || null,
+      },
       { status: 500 }
     );
   }

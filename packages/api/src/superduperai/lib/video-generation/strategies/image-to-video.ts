@@ -38,14 +38,14 @@ function parseResolution(resolution: any): {
 
   // Handle object format
   if (resolution && typeof resolution === "object") {
-    const width = resolution.width || 1280;
-    const height = resolution.height || 720;
+    const width = resolution.width || 1920;
+    const height = resolution.height || 1080;
     const aspectRatio = resolution.aspectRatio || "16:9";
     return { width, height, aspectRatio };
   }
 
   // Default values
-  return { width: 1280, height: 720, aspectRatio: "16:9" };
+  return { width: 1920, height: 1080, aspectRatio: "16:9" };
 }
 
 export class ImageToVideoStrategy implements VideoGenerationStrategy {
@@ -163,6 +163,8 @@ export class ImageToVideoStrategy implements VideoGenerationStrategy {
         : params.model?.name || "azure-openai/sora";
 
     const payload: any = {
+      project_id: params?.projectId,
+      scene_id: params?.sceneId,
       config: {
         prompt: params.prompt || "animate this image naturally", // Default for image-to-video
         generation_config_name: modelName,

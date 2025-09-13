@@ -1,6 +1,5 @@
 import { Button } from "@turbo-super/ui";
-import { GeneratedImage } from "../hooks/use-image-generator";
-import NextImage from "next/image";
+import type { GeneratedImage } from "../hooks/use-image-generator";
 import { formatTimestamp } from "@/lib/utils/format";
 import { X } from "lucide-react";
 import { Inpainting } from "@turbo-super/features";
@@ -106,7 +105,7 @@ export const ImagePreviewModal = ({
           </p>
           {isInpainting && (
             <div className="mt-2 flex items-center space-x-2 text-blue-300">
-              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
               <span className="text-xs">Starting inpainting...</span>
             </div>
           )}

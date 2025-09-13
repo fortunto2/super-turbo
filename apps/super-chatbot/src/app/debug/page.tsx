@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageReasoningDebug } from "@/components/message-reasoning-debug";
+import { MessageReasoningDebug } from "@/components/messages/message-reasoning-debug";
 
 export default function DebugPage() {
   const [exampleText, setExampleText] = useState(`<think>

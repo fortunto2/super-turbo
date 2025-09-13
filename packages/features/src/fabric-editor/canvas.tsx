@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import { useEffect, useRef, useState } from "react";
-import { Canvas, Textbox } from "fabric";
+import { Canvas, FabricObject, Textbox } from "fabric";
 import {
   AlignGuidelines,
   CenteringGuidelines,
@@ -66,7 +66,7 @@ export const FabricCanvas: FC<Props> = ({
           font.family === objectFont || font.postScriptName === objectFont
       );
       return {
-        name: defaultFont?.fullName ?? objectFont,
+        name: defaultFont?.postScriptName ?? objectFont,
         url: defaultFont?.url ?? "",
       };
     });
@@ -78,6 +78,8 @@ export const FabricCanvas: FC<Props> = ({
         .map((f) => document.fonts.load(`1em "${f.name}"`))
     );
     await document.fonts.ready;
+
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
 
     const canvasObjects = initialObjects.map((object) => {
       const { text, type, left, top, width, height, fontSize, ...objectData } =
@@ -107,6 +109,7 @@ export const FabricCanvas: FC<Props> = ({
     });
 
     canvas.add(...canvasObjects);
+
     canvas.requestRenderAll();
   };
 
@@ -135,13 +138,12 @@ export const FabricCanvas: FC<Props> = ({
     canvas.renderAll();
   };
   useEffect(() => {
-    if (!canvas || !initialObjects || canvas.getActiveObject()) return;
+    if (!canvas || !initialObjects) return;
     void loadObjects(canvas);
   }, [initialObjects, canvas]);
 
   useEffect(() => {
     if (!canvas) return;
-
     setGuidelines(canvas);
 
     if (onReady) {

@@ -2,7 +2,7 @@
  * Adapters for converting OpenAPI models to UI format
  */
 
-import type { IGenerationConfigRead } from "@/lib/api/models/IGenerationConfigRead";
+import type { IGenerationConfigRead } from "@turbo-super/core";
 
 // UI adapted model type
 export interface AdaptedModel extends IGenerationConfigRead {
@@ -21,7 +21,7 @@ export function adaptOpenAPIModel(model: IGenerationConfigRead): AdaptedModel {
   return {
     ...model,
     id: model.name,
-    label: model.label || model.name,
+    label: model.name,
     description: `${model.type} - ${model.source}`,
     value: model.name,
     workflowPath: model.params?.workflow_path || "",

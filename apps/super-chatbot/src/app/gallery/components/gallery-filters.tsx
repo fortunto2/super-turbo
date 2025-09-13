@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from '@turbo-super/ui';
-import { Label } from '@turbo-super/ui';
-import { Separator } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
+import { Label } from "@turbo-super/ui";
+import { Separator } from "@turbo-super/ui";
 import {
   Select,
   SelectContent,
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { DocumentFilters } from "../page";
-import type { ArtifactKind } from "@/components/artifact";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
 
 interface GalleryFiltersProps {
   filters: DocumentFilters;

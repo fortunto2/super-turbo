@@ -4,8 +4,8 @@
  * Скрипт для диагностики проблем с middleware в турборепозитории
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 console.log('🔍 Диагностика проблем с middleware в турборепозитории...\n');
 

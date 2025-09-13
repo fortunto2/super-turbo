@@ -9,7 +9,7 @@ import { useEffect, useState, type FC } from "react";
 type Props = {
   canvas?: Canvas | null;
   active?: boolean;
-  onActiveChange: (value: string) => void;
+  onActiveChange: (value: string | null) => void;
   isCombined?: boolean;
   onClose: () => void;
 };
@@ -83,7 +83,7 @@ export const InpaintingTools: FC<Props> = ({
     if (!canvas) return;
 
     if (active) {
-      onActiveChange("");
+      onActiveChange(null);
       if (isCombined) {
         onClose();
       }

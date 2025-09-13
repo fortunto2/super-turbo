@@ -1,6 +1,6 @@
 import { memo, Fragment, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, CardTitle, CardContent, Label, Textarea, Badge } from '@turbo-super/ui';
-import { BookOpen, ArrowLeft, Download, Trash2, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown, X, Palette, Circle as Circle$1 } from 'lucide-react';
+import { BookOpen, X, Trash2, ArrowLeft, Download, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown, Palette, Circle as Circle$1 } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
 import { StripePaymentButton } from '@turbo-super/payment';
 import { FileTypeEnum, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
@@ -8,7 +8,7 @@ import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audi
 import { Player } from '@remotion/player';
 import { Canvas, Textbox, Circle, PencilBrush } from 'fabric';
 import { AlignGuidelines, CenteringGuidelines } from '@superduperai/fabric-guideline-plugin';
-import { StateManager, FONTS, loadFonts, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, HistoryButtons, MenuList, MenuItem, ControlList, ControlItem, TimelineComponent, Composition } from 'super-timeline';
+import { StateManager, FONTS, loadFonts, ScrollArea, FontFamily, FontStyle, FontSize, FontColor, Alignment, TextDecoration, Opacity, BackgroundColor, useStore, eventBus, SCENE_LOAD, useTimelineEvents, useTimelineHotkeys, useItemsHotkeys, HistoryButtons, MenuList, MenuItem, ControlList, ControlItem, TimelineComponent, getCompactFontData, Composition } from 'super-timeline';
 import { fade } from '@remotion/transitions/fade';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
 import { isEqual } from 'lodash';
@@ -2528,7 +2528,7 @@ var FabricCanvas = ({
         (font) => font.family === objectFont || font.postScriptName === objectFont
       );
       return {
-        name: defaultFont?.fullName ?? objectFont,
+        name: defaultFont?.postScriptName ?? objectFont,
         url: defaultFont?.url ?? ""
       };
     });
@@ -2537,6 +2537,7 @@ var FabricCanvas = ({
       fontsData.filter((f) => f.name).map((f) => document.fonts.load(`1em "${f.name}"`))
     );
     await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
     const canvasObjects = initialObjects.map((object) => {
       const { text, type, left, top, width, height, fontSize, ...objectData } = object;
       const relativeData = {
@@ -2581,7 +2582,7 @@ var FabricCanvas = ({
     canvas2.renderAll();
   };
   useEffect(() => {
-    if (!canvas || !initialObjects || canvas.getActiveObject()) return;
+    if (!canvas || !initialObjects) return;
     void loadObjects(canvas);
   }, [initialObjects, canvas]);
   useEffect(() => {
@@ -2644,6 +2645,559 @@ var FabricCanvas = ({
         height: initialHeight ? `${initialHeight}px` : void 0
       },
       children: /* @__PURE__ */ jsx("canvas", { ref: canvasRef })
+    }
+  );
+};
+var FabricController = class {
+  constructor(canvas) {
+    this.listeners = /* @__PURE__ */ new Set();
+    this.canvas = canvas;
+    this.bindEvents();
+  }
+  bindEvents() {
+    const emit = (event) => {
+      this.listeners.forEach((l) => l(event));
+    };
+    this.canvas.on(
+      "selection:cleared",
+      () => emit({ type: "selection:changed" })
+    );
+    this.canvas.on(
+      "selection:created",
+      () => emit({ type: "selection:changed" })
+    );
+    this.canvas.on(
+      "selection:updated",
+      () => emit({ type: "selection:changed" })
+    );
+    this.canvas.on(
+      "object:added",
+      (e) => emit({ type: "object:added", target: e.target })
+    );
+    this.canvas.on(
+      "object:removed",
+      (e) => emit({ type: "object:removed", target: e.target })
+    );
+    this.canvas.on(
+      "object:modified",
+      (e) => emit({ type: "object:modified", target: e.target })
+    );
+    this.canvas.on(
+      "text:changed",
+      (e) => emit({ type: "text:changed", target: e.target })
+    );
+    this.canvas.on(
+      "mouse:over",
+      (e) => emit({ type: "object:hover", target: e.target })
+    );
+    this.canvas.on("mouse:out", () => emit({ type: "object:hover:out" }));
+    this.canvas.on("mouse:down", (e) => {
+      if (e && e.target) {
+        emit({ type: "object:clicked", target: e.target });
+      } else {
+        emit({ type: "canvas:clicked" });
+      }
+    });
+  }
+  getCanvasElement() {
+    return this.canvas.getElement();
+  }
+  on(listener) {
+    this.listeners.add(listener);
+    return () => this.off(listener);
+  }
+  off(listener) {
+    this.listeners.delete(listener);
+  }
+  async importObjects(objects, replace = true) {
+    if (!objects) return;
+    await this.loadFontsForObjects(objects);
+    if (replace) {
+      this.canvas.remove(...this.canvas.getObjects());
+    }
+    const canvasWidth = this.canvas.getWidth();
+    const canvasHeight = this.canvas.getHeight();
+    const canvasSquare = canvasWidth * canvasHeight;
+    const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
+    const canvasObjects = objects.map((object) => {
+      const { text, type, left, top, width, height, fontSize, ...objectData } = object;
+      const relativeData = {
+        left: left * canvasWidth,
+        top: top * canvasHeight,
+        width: width * canvasWidth,
+        height: height * canvasHeight,
+        fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
+      };
+      if (type === "Textbox") {
+        const textbox = new Textbox(text, {
+          ...objectData,
+          ...relativeData,
+          fontFamily: object.fontFamily
+        });
+        textbox.setControlsVisibility({ mt: false, mb: false });
+        return textbox;
+      }
+      throw new Error(`Unsupported object type: ${object.type}`);
+    });
+    this.canvas.add(...canvasObjects);
+    this.canvas.requestRenderAll();
+  }
+  async loadFontsForObjects(objects) {
+    const objectsFonts = [];
+    objects.forEach((object) => {
+      if (object.fontFamily && !objectsFonts.includes(object.fontFamily)) {
+        objectsFonts.push(object.fontFamily);
+      }
+    });
+    const fontsData = objectsFonts.map((objectFont) => {
+      const obj = objects.find((obj2) => obj2.fontFamily === objectFont);
+      if (obj) {
+        return { name: obj.fontFamily, url: obj.fontUrl };
+      }
+      const defaultFont = FONTS.find(
+        (font) => font.family === objectFont || font.postScriptName === objectFont
+      );
+      console.log(defaultFont);
+      return {
+        name: defaultFont?.postScriptName ?? objectFont,
+        url: defaultFont?.url ?? ""
+      };
+    });
+    await loadFonts(fontsData);
+    await Promise.all(
+      fontsData.filter((f) => f.name).map((f) => document.fonts.load(`1em "${f.name}"`))
+    );
+    await document.fonts.ready;
+  }
+  exportObjects() {
+    const canvasJSON = this.canvas.toJSON();
+    const canvasWidth = this.canvas.getWidth();
+    const canvasHeight = this.canvas.getHeight();
+    const canvasSquare = canvasWidth * canvasHeight;
+    const canvasSqrt = Math.round(Math.sqrt(canvasSquare) * 100) / 100;
+    return canvasJSON.objects.map((object) => {
+      const { left, top, width, height, fontSize } = object;
+      return {
+        ...object,
+        left: left / canvasWidth,
+        top: top / canvasHeight,
+        width: width / canvasWidth,
+        height: height / canvasHeight,
+        fontSize: fontSize ? Math.round(canvasSqrt / fontSize * 100) / 100 : void 0
+      };
+    });
+  }
+  addText(text, options) {
+    const textObject = new Textbox(text, options);
+    this.canvas.add(textObject);
+    this.canvas.setActiveObject(textObject);
+    this.canvas.renderAll();
+  }
+  removeSelected() {
+    const activeObject = this.canvas.getActiveObject();
+    if (activeObject) {
+      this.canvas.remove(activeObject);
+      this.canvas.renderAll();
+    }
+  }
+  getActiveText() {
+    const object = this.canvas.getActiveObject();
+    if (object instanceof Textbox) {
+      return object;
+    }
+  }
+  setStyle(style) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return false;
+    const currentValue = activeObject.get(
+      styleMap[style]
+    );
+    if (style === "bold") {
+      const newValue = currentValue === "bold" ? "normal" : "bold";
+      this.updateText(activeObject, { fontWeight: newValue });
+    } else if (style === "italic") {
+      const newValue = currentValue === "italic" ? "normal" : "italic";
+      this.updateText(activeObject, { fontStyle: newValue });
+    } else if (style === "uppercase") {
+      const newText = isUppercase(activeObject.text);
+      this.updateText(activeObject, { text: newText });
+    } else {
+      this.updateText(activeObject, {
+        [styleMap[style]]: !currentValue
+      });
+    }
+  }
+  setFontFamily(fontFamily) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return;
+    this.updateText(activeObject, { fontFamily });
+  }
+  setProperty(properties) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return;
+    this.updateText(activeObject, { ...properties });
+  }
+  setFontSize(fontSize) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return;
+    this.updateText(activeObject, { fontSize });
+  }
+  setFill(color) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return;
+    this.updateText(activeObject, { fill: color });
+  }
+  setTextAlign(align) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return;
+    this.updateText(activeObject, { textAlign: align });
+  }
+  setText(text) {
+    const activeObject = this.getActiveText();
+    if (!activeObject) return;
+    this.updateText(activeObject, { text });
+  }
+  updateText(object, options) {
+    object.set(options);
+    this.canvas.fire("text:changed", { target: object });
+    this.canvas.renderAll();
+  }
+};
+var buildFabricController = (canvas) => new FabricController(canvas);
+var isUppercase = (text) => {
+  const isUpper = text === text.toUpperCase();
+  const newText = isUpper ? text.toLowerCase() : text.toUpperCase();
+  return newText;
+};
+var styleMap = {
+  bold: "fontWeight",
+  italic: "fontStyle",
+  underline: "underline",
+  linethrough: "linethrough",
+  overline: "overline"
+};
+
+// src/fabric-editor/hook.ts
+var useFabricEditor = ({ onChange }) => {
+  const [canvas, setCanvas] = useState(null);
+  const isInitializing = useRef(true);
+  const [selectedObjects, setSelectedObject] = useState([]);
+  useEffect(() => {
+    const onSelectionCleared = () => {
+      setSelectedObject([]);
+    };
+    const onSelectionCreated = (event) => {
+      setSelectedObject(event.selected);
+    };
+    const onSelectionUpdated = (event) => {
+      setSelectedObject(event.selected);
+    };
+    const onObjectAdded = (event) => {
+      if (!isInitializing.current) {
+        onChange?.(event.target);
+      }
+    };
+    const onObjectRemoved = (event) => {
+      onChange?.(event.target);
+    };
+    const onObjectModified = (event) => {
+      onChange?.(event.target);
+    };
+    const onTextChange = (event) => {
+      onChange?.(event.target);
+    };
+    const bindEvents = (canvas2) => {
+      canvas2.on("selection:cleared", onSelectionCleared);
+      canvas2.on("selection:created", onSelectionCreated);
+      canvas2.on("selection:updated", onSelectionUpdated);
+      canvas2.on("object:added", onObjectAdded);
+      canvas2.on("object:removed", onObjectRemoved);
+      canvas2.on("object:modified", onObjectModified);
+      canvas2.on("text:changed", onTextChange);
+    };
+    if (canvas) {
+      bindEvents(canvas);
+      setTimeout(() => {
+        isInitializing.current = false;
+      }, 0);
+    }
+    return () => {
+      if (!canvas) return;
+      canvas.off("selection:cleared", onSelectionCleared);
+      canvas.off("selection:created", onSelectionCreated);
+      canvas.off("selection:updated", onSelectionUpdated);
+      canvas.off("object:added", onObjectAdded);
+      canvas.off("object:removed", onObjectRemoved);
+      canvas.off("object:modified", onObjectModified);
+      canvas.off("text:changed", onTextChange);
+    };
+  }, [canvas, onChange]);
+  const controller = useMemo(
+    () => canvas ? buildFabricController(canvas) : void 0,
+    [canvas]
+  );
+  const handleReady = (canvas2) => {
+    console.log("Fabric canvas ready");
+    setCanvas(canvas2);
+  };
+  return {
+    selectedObjects,
+    handleReady,
+    controller
+  };
+};
+var TextToolbar = ({ controller, visible, onClose }) => {
+  const [properties, setProperties] = useState({
+    color: "#ffffff",
+    colorDisplay: "#ffffff",
+    fontSize: 40,
+    fontSizeDisplay: "40px",
+    fontFamily: "Open Sans",
+    fontFamilyDisplay: "Open Sans",
+    opacity: 100,
+    opacityDisplay: "100%",
+    textAlign: "left",
+    textDecoration: "none",
+    borderWidth: 0,
+    borderColor: "#000000",
+    backgroundColor: "#00000000"
+  });
+  const [selectedFont, setSelectedFont] = useState({
+    family: "Open Sans",
+    styles: [],
+    // @ts-expect-error default is required by ICompactFont at runtime; we only need shape
+    default: {
+      family: "Open Sans",
+      postScriptName: "OpenSans-Regular",
+      url: ""
+    },
+    name: "Regular"
+  });
+  useEffect(() => {
+    import('super-timeline/style.css');
+  }, []);
+  const handleSetProperties = () => {
+    const active = controller.getActiveText();
+    if (active) {
+      const activeFontFamily = active.get("fontFamily") || "Open Sans";
+      const activeFontSize = active.get("fontSize") || 40;
+      const activeFill = active.get("fill") || "#ffffff";
+      const activeAlign = active.get("textAlign") || "left";
+      const activeBackground = active.get("backgroundColor") || "#00000000";
+      const activeOpacity = active.get("opacity") ?? 1;
+      const activeDecoration = (active.get("underline") ? "underline " : "") + (active.get("linethrough") ? "line-through " : "") + (active.get("overline") ? "overline" : "");
+      const compactFonts = getCompactFontData(FONTS);
+      const found = compactFonts.find((f) => f.family === activeFontFamily);
+      setSelectedFont(
+        found ? {
+          ...found,
+          name: found.default?.postScriptName?.split("-")?.slice(-1)[0] || "Regular"
+        } : selectedFont
+      );
+      setProperties((prev) => ({
+        ...prev,
+        fontFamily: activeFontFamily,
+        fontFamilyDisplay: activeFontFamily,
+        fontSize: activeFontSize,
+        fontSizeDisplay: `${activeFontSize}px`,
+        color: activeFill,
+        colorDisplay: activeFill,
+        textAlign: activeAlign,
+        backgroundColor: activeBackground,
+        opacity: Math.round(activeOpacity * 100),
+        opacityDisplay: `${Math.round(activeOpacity * 100)}%`,
+        textDecoration: activeDecoration.trim() || "none"
+      }));
+    }
+  };
+  useEffect(() => {
+    const handler = (evt) => {
+      if (evt.type !== "selection:changed") return;
+      if (!visible) return;
+      const active = controller.getActiveText();
+      if (active) {
+        handleSetProperties();
+      }
+    };
+    controller.on(handler);
+    return () => {
+      controller.off(handler);
+    };
+  }, [visible, controller]);
+  useEffect(() => {
+    if (visible) {
+      handleSetProperties();
+    }
+  }, [visible]);
+  const handleChangeFont = async (font) => {
+    const fontName = font.default.postScriptName;
+    const fontUrl = font.default.url;
+    await loadFonts([{ name: fontName, url: fontUrl }]).then(() => {
+      controller.setFontFamily(fontName);
+    });
+    setSelectedFont({
+      ...font,
+      name: fontName.split("-").slice(-1)[0] || "Regular"
+    });
+    setProperties((prev) => ({
+      ...prev,
+      fontFamily: font.default.family,
+      fontFamilyDisplay: font.default.family
+    }));
+  };
+  const handleChangeFontStyle = async (font) => {
+    const fontName = font.postScriptName;
+    const fontUrl = font.url;
+    await loadFonts([{ name: fontName, url: fontUrl }]).then(() => {
+      controller.setFontFamily(fontName);
+    });
+    setSelectedFont((prev) => ({
+      ...prev,
+      name: fontName.split("-").slice(-1)[0] || prev.name
+    }));
+  };
+  const handleChangeFontSize = (v) => {
+    setProperties((prev) => ({
+      ...prev,
+      fontSize: v,
+      fontSizeDisplay: `${v}px`
+    }));
+    controller.setFontSize(v);
+  };
+  const handleColorChange = (color) => {
+    setProperties((prev) => ({ ...prev, color, colorDisplay: color }));
+    controller.setProperty({ fill: color });
+  };
+  const handleChangeTextAlign = (v) => {
+    const textAlign = v;
+    setProperties((prev) => ({ ...prev, textAlign }));
+    controller.setProperty({ textAlign });
+  };
+  const handleChangeTextDecoration = (v) => {
+    const properties2 = {
+      underline: v.includes("underline"),
+      linethrough: v.includes("line-through"),
+      overline: v.includes("overline")
+    };
+    setProperties((prev) => ({ ...prev, textDecoration: v }));
+    controller.setProperty(properties2);
+  };
+  const handleChangeOpacity = (v) => {
+    setProperties((prev) => ({ ...prev, opacity: v, opacityDisplay: `${v}%` }));
+    controller.setProperty({ opacity: v / 100 });
+  };
+  const handleBackgroundChange = (backgroundColor) => {
+    setProperties((prev) => ({ ...prev, backgroundColor }));
+    controller.setProperty({ backgroundColor });
+  };
+  const handleRemoveSelected = () => {
+    controller.removeSelected();
+  };
+  if (!visible) return null;
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      style: {
+        position: "absolute",
+        left: 0,
+        top: "50%",
+        transform: "translate(0, -50%)",
+        // zIndex: 2,
+        height: "300px",
+        // overflow: "hidden",
+        // overflowY: "scroll",
+        maxWidth: "250px"
+      },
+      className: "flex flex-1 flex-col pointer-events-auto rounded-lg border border-border bg-background/95 p-2 shadow-2xl backdrop-blur-md",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-2 pb-2 px-1", children: [
+          /* @__PURE__ */ jsx("div", { className: "text-xs text-muted-foreground", children: "Text" }),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              "aria-label": "Close",
+              className: "inline-flex h-6 w-6 items-center justify-center rounded hover:bg-muted/50",
+              onClick: onClose,
+              children: /* @__PURE__ */ jsx(X, { size: 14 })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx(ScrollArea, { className: "h-full", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2 px-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2", children: [
+            /* @__PURE__ */ jsx(
+              FontFamily,
+              {
+                handleChangeFont,
+                fontFamilyDisplay: properties.fontFamilyDisplay
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+              /* @__PURE__ */ jsx(
+                FontStyle,
+                {
+                  selectedFont,
+                  handleChangeFontStyle
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                FontSize,
+                {
+                  value: properties.fontSize,
+                  onChange: handleChangeFontSize
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx(
+              FontColor,
+              {
+                value: properties.color,
+                handleColorChange
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-2", children: [
+              /* @__PURE__ */ jsx(
+                Alignment,
+                {
+                  value: properties.textAlign,
+                  onChange: handleChangeTextAlign
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                TextDecoration,
+                {
+                  value: properties.textDecoration,
+                  onChange: handleChangeTextDecoration
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(
+            Opacity,
+            {
+              onChange: (v) => handleChangeOpacity(v),
+              value: properties.opacity
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            BackgroundColor,
+            {
+              value: properties.backgroundColor || "#ffffff",
+              handleBackgroundChange
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "flex justify-center pt-2", children: /* @__PURE__ */ jsxs(
+            "button",
+            {
+              onClick: handleRemoveSelected,
+              className: "w-full flex items-center justify-center gap-2 rounded-md bg-red-500/90 text-white text-sm py-2 transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400",
+              children: [
+                /* @__PURE__ */ jsx(Trash2, { size: "17px" }),
+                "Remove"
+              ]
+            }
+          ) })
+        ] }) })
+      ]
     }
   );
 };
@@ -2907,9 +3461,6 @@ function convertSceneToTimeline(scene) {
 function convertScenesToTimeline(scenes) {
   return scenes.sort((a, b) => a.order - b.order).map(convertSceneToTimeline);
 }
-function isProjectReadyForVideo(project) {
-  return project.status === "completed" && project.scenes && project.scenes.length > 0;
-}
 function getTimelineDuration(timeline) {
   return timeline.reduce((acc, item) => acc + (item.duration || 5), 0);
 }
@@ -2995,8 +3546,8 @@ var createVideoTrackItem = ({ duration, file, from }) => {
     },
     isMain: false,
     details: {
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       duration: fileDurationMs,
       src: file.url,
       volume: 100,
@@ -3455,7 +4006,7 @@ var InpaintingTools = ({
     e.stopPropagation();
     if (!canvas) return;
     if (active) {
-      onActiveChange("");
+      onActiveChange(null);
       if (isCombined) {
         onClose();
       }
@@ -3706,7 +4257,7 @@ var Inpainting = ({
   initialPrompt = "",
   isGenerating = false
 }) => {
-  const [activeTool, setActiveTool] = useState("");
+  const [activeTool, setActiveTool] = useState(null);
   const [canvas, setCanvas] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
@@ -3721,6 +4272,7 @@ var Inpainting = ({
   const handleComplete = (result) => {
     setIsLoading(false);
     onComplete?.(result);
+    canvas?.clear();
   };
   const currentLoading = isGenerating || isLoading;
   const handleActiveToolChange = (tool) => {
@@ -3763,6 +4315,6 @@ var Inpainting = ({
   ] });
 };
 
-export { CharacterType, EnhancementInfoType, HistoryItemType, Inpainting, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, Veo3PromptGenerator, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isProjectReadyForVideo, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
+export { CharacterType, Control, EnhancementInfoType, FabricCanvas, FabricController, HistoryItemType, Inpainting, Layer, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, TextToolbar, Veo3PromptGenerator, buildFabricController, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useFabricEditor, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

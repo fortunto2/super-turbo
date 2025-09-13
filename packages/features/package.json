@@ -49,7 +49,7 @@
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "remotion": "4.0.229",
-    "super-timeline": "https://github.com/PranovAdilet/super-timeline-vite2.git#811149d",
+    "super-timeline": "https://github.com/PranovAdilet/super-timeline-vite2.git#6992427",
     "zod": "^3.22.4",
     "zustand": "^4.5.4"
   },

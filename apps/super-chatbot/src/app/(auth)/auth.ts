@@ -8,7 +8,6 @@ import { DUMMY_PASSWORD } from "@/lib/constants";
 import type { DefaultJWT } from "next-auth/jwt";
 import { nanoid } from "nanoid";
 import * as Sentry from "@sentry/nextjs";
-import { cookies } from "next/headers";
 
 export type UserType = "guest" | "regular";
 
@@ -172,8 +171,8 @@ export const {
 
         console.log(`Generated browser ID: ${browserId} from fingerprint:`, {
           ip,
-          userAgent: userAgent.substring(0, 50) + "...",
-          fingerprint: fingerprint.substring(0, 100) + "...",
+          userAgent: `${userAgent.substring(0, 50)}...`,
+          fingerprint: `${fingerprint.substring(0, 100)}...`,
           hash: Math.abs(hash),
         });
 
@@ -259,9 +258,7 @@ export const {
             const jsonPayload = decodeURIComponent(
               atob(base64)
                 .split("")
-                .map(function (c) {
-                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-                })
+                .map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`)
                 .join("")
             );
 

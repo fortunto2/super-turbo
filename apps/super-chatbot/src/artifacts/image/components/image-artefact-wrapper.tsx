@@ -53,8 +53,8 @@ export const ImageArtifactWrapper = memo(
       if (status === "completed" && imageUrl) {
         console.log("🖼️ ImageArtifactWrapper - parsed content:", {
           status,
-          imageUrl: imageUrl?.substring(0, 50) + "...",
-          prompt: prompt?.substring(0, 50) + "...",
+          imageUrl: `${imageUrl?.substring(0, 50)}...`,
+          prompt: `${prompt?.substring(0, 50)}...`,
           projectId,
           fileId,
           requestId,

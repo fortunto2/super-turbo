@@ -215,6 +215,8 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     // Примечание: загрузку выполним в generate() уровне выше, где доступен config.
     if (isGPTImage) {
       return {
+        project_id: params?.projectId,
+        scene_id: params?.sceneId,
         config: {
           prompt: params.prompt,
           negative_prompt: params.negativePrompt || "",
@@ -232,6 +234,8 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     const requestedSteps = (params as any)?.steps;
 
     const payload = {
+      project_id: params?.projectId,
+      scene_id: params?.sceneId,
       config: {
         prompt: params.prompt,
         negative_prompt: params.negativePrompt || "",

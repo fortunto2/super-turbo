@@ -1,19 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-
-import { Badge } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
-import { Input } from '@turbo-super/ui';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Badge, Button, Input, cn } from "@turbo-super/ui";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,20 +18,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { 
-  Search, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+} from "../ui/dropdown-menu";
+import {
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   CreditCard,
   ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-import { EditUserDialog } from './edit-user-dialog';
-import { DeleteUserDialog } from './delete-user-dialog';
-import { cn } from '@turbo-super/ui';
-import React from 'react';
+  ChevronRight,
+} from "lucide-react";
+import { EditUserDialog } from "./edit-user-dialog";
+import { DeleteUserDialog } from "./delete-user-dialog";
 
 interface UsersTableProps {
   page: number;
@@ -45,7 +40,7 @@ interface User {
   id: string;
   email: string;
   balance: number;
-  type: 'guest' | 'regular';
+  type: "guest" | "regular";
 }
 
 export function UsersTable({ page, search }: UsersTableProps) {
@@ -58,7 +53,7 @@ export function UsersTable({ page, search }: UsersTableProps) {
     total: 0,
     totalPages: 0,
     hasNext: false,
-    hasPrev: false
+    hasPrev: false,
   });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(search);
@@ -66,28 +61,28 @@ export function UsersTable({ page, search }: UsersTableProps) {
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   // Load data
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadUsers() {
       try {
         setLoading(true);
-        
+
         const params = new URLSearchParams();
-        params.set('page', page.toString());
+        params.set("page", page.toString());
         if (search) {
-          params.set('search', search);
+          params.set("search", search);
         }
 
         const response = await fetch(`/api/admin/users?${params.toString()}`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch users');
+          throw new Error("Failed to fetch users");
         }
 
         const data = await response.json();
         setUsers(data.users as User[]);
         setPagination(data.pagination);
       } catch (error) {
-        console.error('Failed to load users:', error);
+        console.error("Failed to load users:", error);
       } finally {
         setLoading(false);
       }
@@ -101,30 +96,30 @@ export function UsersTable({ page, search }: UsersTableProps) {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (searchQuery) {
-      params.set('search', searchQuery);
+      params.set("search", searchQuery);
     } else {
-      params.delete('search');
+      params.delete("search");
     }
-    params.delete('page'); // Reset to first page
+    params.delete("page"); // Reset to first page
     router.push(`/admin/users?${params.toString()}`);
   };
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set('page', newPage.toString());
+    params.set("page", newPage.toString());
     router.push(`/admin/users?${params.toString()}`);
   };
 
   // Handle user update
   const handleUserUpdate = (updatedUser: User) => {
-    setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+    setUsers(users.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
     setEditingUser(null);
   };
 
   // Handle user deletion
   const handleUserDelete = (deletedUserId: string) => {
-    setUsers(users.filter(u => u.id !== deletedUserId));
+    setUsers(users.filter((u) => u.id !== deletedUserId));
     setDeletingUser(null);
   };
 
@@ -135,7 +130,10 @@ export function UsersTable({ page, search }: UsersTableProps) {
   return (
     <div className="space-y-4">
       {/* Search */}
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form
+        onSubmit={handleSearch}
+        className="flex gap-2"
+      >
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -192,24 +190,27 @@ export function UsersTable({ page, search }: UsersTableProps) {
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">
-                  {user.email}
-                </TableCell>
+                <TableCell className="font-medium">{user.email}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={user.type === 'regular' ? 'default' : 'secondary'}
+                    variant={user.type === "regular" ? "default" : "secondary"}
                   >
-                    {user.type === 'regular' ? 'Registered' : 'Guest'}
+                    {user.type === "regular" ? "Registered" : "Guest"}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
-                    <span className={cn(
-                      "font-medium",
-                      user.balance <= 10 ? "text-red-500" : 
-                      user.balance <= 50 ? "text-yellow-500" : "text-green-500"
-                    )}>
+                    <span
+                      className={cn(
+                        "font-medium",
+                        user.balance <= 10
+                          ? "text-red-500"
+                          : user.balance <= 50
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                      )}
+                    >
                       {user.balance}
                     </span>
                   </div>
@@ -217,7 +218,10 @@ export function UsersTable({ page, search }: UsersTableProps) {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -228,7 +232,7 @@ export function UsersTable({ page, search }: UsersTableProps) {
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Balance
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => setDeletingUser(user)}
                         className="text-destructive"
                       >
@@ -263,4 +267,4 @@ export function UsersTable({ page, search }: UsersTableProps) {
       )}
     </div>
   );
-} 
+}

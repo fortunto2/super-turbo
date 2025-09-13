@@ -12,16 +12,24 @@ import {
   Download,
   Share2,
   Eye,
-  Clock,
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { IProjectRead, IProjectVideoRead, ISceneRead } from "@turbo-super/api";
-import { useEffect, useMemo, useState } from "react";
-import { ShareDialog } from "@/components/share-dialog";
-import { ProjectVideoExportDialog } from "@/components/project-video-export-dialog";
-import type { IFileRead } from "@/lib/api";
+import {
+  TaskTypeEnum,
+  useTaskStatus,
+  type IFileRead,
+  type IProjectVideoRead,
+} from "@turbo-super/api";
+import { useMemo, useState } from "react";
+import { ShareDialog, ProjectVideoExportDialog } from "@/components";
+import {
+  useProjectGetById,
+  useProjectStoryboard2Video,
+  useSceneList,
+} from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
 
 // CSS for custom scrollbar
 const customScrollbarStyles = `
@@ -51,16 +59,34 @@ export default function PreviewPage() {
   const router = useRouter();
   const projectId = params.projectId as string;
 
-  const [project, setProject] = useState<IProjectRead | null>(null);
-  const [scenes, setScenes] = useState<ISceneRead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+  } = useProjectGetById({ id: projectId });
+  const {
+    data: scenes,
+    isLoading: isScenesLoading,
+    isError: isScenesError,
+  } = useSceneList({ projectId });
+
+  const { mutate: projectStoryboard2Video, isPending } =
+    useProjectStoryboard2Video();
+
+  const { isPending: isRendering } = useTaskStatus(
+    TaskTypeEnum.STORYBOARD2VIDEO_FLOW,
+    project?.tasks
+  );
+
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
-  const music = useMemo(() => project?.music ?? null, [project?.music]);
+  const music = useMemo(() => project?.music ?? null, [project]);
 
-  const scenesMedia = useMemo(() => sceneToMediaFormatting(scenes), [scenes]);
+  const scenesMedia = useMemo(
+    () => sceneToMediaFormatting((scenes?.items as any) ?? []),
+    [scenes?.items]
+  );
 
   const files = useMemo(() => [...scenesMedia], [scenesMedia]);
 
@@ -72,102 +98,11 @@ export default function PreviewPage() {
     const value = videoProject.config.aspect_ratio ?? "16:9";
     const [numerator, denominator] = value.split(":").map(Number);
     return numerator / denominator;
-  }, [project?.config?.aspect_ratio]);
-
-  useEffect(() => {
-    const fetchData = async (retryCount = 0) => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const [projectData, scenesData] = await Promise.all([
-          getProject(),
-          getScenes(),
-        ]);
-
-        if (projectData.success) {
-          setProject(projectData.project);
-        } else {
-          console.error("Failed to fetch project:", projectData.error);
-          setError("Failed to load project");
-        }
-
-        if (scenesData.success) {
-          setScenes(scenesData.scenes);
-        } else {
-          console.error("Failed to fetch scenes:", scenesData.error);
-          setError("Failed to load scenes");
-          setScenes([]);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-
-        if (retryCount < 3) {
-          console.log(`Retrying... Attempt ${retryCount + 1}`);
-          setTimeout(() => fetchData(retryCount + 1), 1000 * (retryCount + 1));
-          return;
-        }
-
-        setError("Data loading error");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const getProject = async () => {
-      try {
-        const response = await fetch(
-          `/api/story-editor/project?projectId=${projectId}`
-        );
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching project:", error);
-        return { success: false, project: null };
-      }
-    };
-
-    const getScenes = async () => {
-      try {
-        const response = await fetch(
-          `/api/story-editor/scenes?projectId=${projectId}`
-        );
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching scenes:", error);
-        return { success: false, scenes: [] };
-      }
-    };
-
-    fetchData();
-  }, [projectId]);
+  }, [project]);
 
   // Function for exporting video
-  const handleExport = async (projectId: string) => {
-    try {
-      const response = await fetch(
-        "/api/story-editor/project/storyboard2video",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Error exporting video");
-      }
-
-      console.log("🎬 Video export started successfully:", result);
-    } catch (error) {
-      console.error("❌ Error exporting video:", error);
-      throw error;
-    }
+  const handleExport = () => {
+    projectStoryboard2Video({ id: projectId });
   };
 
   // Function for downloading file
@@ -185,6 +120,14 @@ export default function PreviewPage() {
     link.click();
     document.body.removeChild(link);
   };
+
+  const isLoading = isProjectLoading || isScenesLoading;
+  const isError = isProjectError || isScenesError;
+  const error = isProjectError
+    ? "Failed to load project"
+    : isScenesError
+      ? "Failed to load scenes"
+      : null;
 
   if (!projectId) {
     return (
@@ -211,8 +154,8 @@ export default function PreviewPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: customScrollbarStyles }} />
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+      <div className="w-full min-h-screen bg-background">
+        <div className="size-full mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <button
@@ -237,7 +180,7 @@ export default function PreviewPage() {
           </div>
 
           {/* Main Content */}
-          <div className="max-w-6xl mx-auto">
+          <div className="w-full max-w-6xl mx-auto">
             {/* Page Title */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
@@ -249,80 +192,65 @@ export default function PreviewPage() {
             </div>
 
             {/* Video Player Section */}
-            <div className="max-w-6xl mx-auto mb-8">
-              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-6xl mx-auto mb-8">
+              <div className="w-full bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
                 {/* Fixed height for all states */}
-                <div className="h-[500px] flex items-center justify-center">
-                  {isLoading ? (
-                    <div className="w-screen text-center space-y-4 size-full items-center justify-center flex flex-col">
-                      <div className="relative">
-                        <div className="size-16 border-4 border-muted rounded-full animate-spin"></div>
-                        <div className="absolute top-0 left-0 size-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-lg font-medium text-foreground">
-                          Loading project and scenes...
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Preparing your video player
-                        </p>
-                      </div>
-                    </div>
-                  ) : error ? (
-                    <div className="size-full text-center space-y-4 flex flex-col items-center justify-center">
-                      <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-                        <Eye className="size-8 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xl font-medium text-red-600 dark:text-red-400">
-                          Loading Error
-                        </p>
-                        <p className="text-muted-foreground">{error}</p>
-                      </div>
-                    </div>
-                  ) : project && scenes.length > 0 ? (
-                    <div className="size-full p-6">
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-foreground">
-                          Video Player
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm text-muted-foreground">
-                            {scenes.length} scenes
-                          </span>
-                          <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                <div className="w-full h-[500px] flex items-center justify-center">
+                  <QueryState
+                    isLoading={isLoading}
+                    isError={isError}
+                    error={error as any}
+                    isEmpty={!project || !scenes?.items}
+                    emptyMessage="No data to display"
+                    loadingMessage="Loading project and scenes..."
+                    errorMessage="Failed to load data"
+                  >
+                    {project && !!scenes?.items ? (
+                      <div className="size-full p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-foreground">
+                            Video Player
+                          </h3>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-muted-foreground">
+                              {scenes.items?.length} scenes
+                            </span>
+                            <div className="size-2 bg-primary rounded-full animate-pulse" />
+                          </div>
+                        </div>
+                        <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
+                          <RemotionPlayer
+                            scenes={scenes?.items as any}
+                            music={music}
+                            isLoading={!isLoaded}
+                            aspectRatio={aspectRatio}
+                          />
                         </div>
                       </div>
-                      <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
-                        <RemotionPlayer
-                          scenes={scenes}
-                          music={music}
-                          isLoading={!isLoaded}
-                          aspectRatio={aspectRatio}
-                        />
+                    ) : (
+                      <div className="text-center space-y-4">
+                        <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                          <Eye className="size-8 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-xl font-medium text-muted-foreground">
+                            No data to display
+                          </p>
+                          <p className="text-muted-foreground">
+                            {!project
+                              ? "Project not found"
+                              : "Scenes not found"}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-4">
-                      <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                        <Eye className="size-8 text-muted-foreground" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xl font-medium text-muted-foreground">
-                          No data to display
-                        </p>
-                        <p className="text-muted-foreground">
-                          {!project ? "Project not found" : "Scenes not found"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </QueryState>
                 </div>
               </div>
             </div>
 
             {/* Project Info Cards */}
-            {project && scenes.length > 0 && (
+            {project && !!scenes?.items && (
               <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {/* Project Details */}
                 <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
@@ -344,7 +272,7 @@ export default function PreviewPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Scenes:</span>
                       <span className="font-semibold text-foreground">
-                        {scenes.length}
+                        {scenes.items.length}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -365,11 +293,11 @@ export default function PreviewPage() {
                       <Play className="size-5 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">
-                      Scenes ({scenes.length})
+                      Scenes ({scenes.items.length})
                     </h3>
                   </div>
                   <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                    {scenes.map((scene, index) => (
+                    {scenes?.items?.map((scene, index) => (
                       <Link
                         key={scene.id}
                         href={`/project/video/${projectId}/scene/${scene.id}`}
@@ -425,7 +353,7 @@ export default function PreviewPage() {
             {/* Footer */}
             <div className="text-center">
               <div className="inline-flex items-center space-x-2 bg-card border border-border px-6 py-3 rounded-full shadow-lg">
-                <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                <div className="size-2 bg-primary rounded-full animate-pulse" />
                 <span className="text-sm text-muted-foreground">
                   Powered by{" "}
                   <strong className="text-foreground">SuperDuperAI</strong>
@@ -447,7 +375,8 @@ export default function PreviewPage() {
             onClose={() => setIsExportDialogOpen(false)}
             onExport={handleExport}
             onDownload={handleDownload}
-            exportType="storyboard2video"
+            isRendering={isRendering}
+            isPending={isPending}
           />
         </div>
       </div>

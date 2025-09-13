@@ -1,8 +1,7 @@
-import { Artifact } from "@/components/create-artifact";
-import { DiffView } from "@/components/diffview";
-import { DocumentSkeleton } from "@/components/document-skeleton";
-import { Editor } from "@/components/text-editor";
-import { Markdown } from "@/components/markdown";
+import { Artifact } from "@/components/artifacts/create-artifact";
+import { DiffView, DocumentSkeleton } from "@/components";
+import { Editor } from "@/components/editors/text-editor";
+import { Markdown } from "@/components/common/markdown";
 import {
   ClockRewind,
   CopyIcon,
@@ -11,11 +10,11 @@ import {
   RedoIcon,
   UndoIcon,
   ShareIcon,
-} from "@/components/icons";
+} from "@/components/common/icons";
 import type { Suggestion } from "@/lib/db/schema";
 import { toast } from "sonner";
 import { getSuggestions } from "../actions";
-import { TextArtifactMetadata } from "@/types/artifact-types";
+import type { TextArtifactMetadata } from "@/types/artifact-types";
 
 export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   kind: "text",

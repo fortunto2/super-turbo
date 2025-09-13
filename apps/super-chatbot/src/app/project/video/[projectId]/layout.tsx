@@ -1,0 +1,40 @@
+"use client";
+
+import {
+  useProjectEventHandler,
+  useProjectEvents,
+  useFileEventHandler,
+  useSceneEventHandler,
+  useProjectVideoEventHandler,
+} from "@/hooks/event-handlers";
+
+import type { ReactNode } from "react";
+import { use } from "react";
+
+type Params = {
+  projectId: string;
+};
+
+type Props = {
+  children: ReactNode;
+  params: Promise<Params>;
+};
+
+const Layout = ({ children, params }: Props) => {
+  const { projectId } = use(params);
+
+  useProjectEvents({
+    projectId,
+    eventHandlers: [
+      useProjectEventHandler(projectId),
+      // useEntityEventHandler(projectId),
+      useSceneEventHandler(projectId),
+      useProjectVideoEventHandler(),
+      useFileEventHandler(),
+    ],
+  });
+
+  return children;
+};
+
+export default Layout;

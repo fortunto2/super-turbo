@@ -1,3 +1,4 @@
+import { IGenerationConfigRead } from "@turbo-super/api";
 import {
   getAvailableVideoModels,
   getAvailableImageModels,
@@ -7,7 +8,6 @@ import type {
   ImageGenerationConfig,
   VideoGenerationConfig,
 } from "../lib/types/media-settings";
-import type { IGenerationConfigRead } from "../lib/api/models/IGenerationConfigRead";
 
 // Adapter function to convert OpenAPI model to MediaSettings format
 function adaptModelForMediaSettings(

@@ -15,7 +15,6 @@ import type { ImageGenerationFormData } from "../components/image-generator-form
 import type { GenerationStatus } from "../components/generation-progress";
 import {
   generateImageApi,
-  type ImageGenerationApiResult,
 } from "../api/image-generation";
 
 // Legacy interfaces - MUST remain exactly the same for compatibility

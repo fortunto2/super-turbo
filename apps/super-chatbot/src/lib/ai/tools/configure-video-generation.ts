@@ -5,7 +5,6 @@ import type {
   VideoGenerationConfig,
   AdaptedModel,
 } from "@/lib/types/media-settings";
-import type { VideoModel } from "@/lib/config/superduperai";
 import { getStyles } from "../api/get-styles";
 import { findStyle } from "./configure-image-generation";
 import { createVideoMediaSettings } from "@/lib/config/media-settings-factory";
@@ -18,12 +17,12 @@ import {
   getModelCompatibleResolutions,
   getDefaultResolutionForModel,
 } from "@/lib/config/video-constants";
-import { GenerationTypeEnum, GenerationSourceEnum } from "@/lib/api";
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
 } from "@/lib/utils/ai-tools-balance";
 import type { Session } from "next-auth";
+import { GenerationSourceEnum, GenerationTypeEnum } from "@turbo-super/api";
 
 interface CreateVideoDocumentParams {
   createDocument: any;

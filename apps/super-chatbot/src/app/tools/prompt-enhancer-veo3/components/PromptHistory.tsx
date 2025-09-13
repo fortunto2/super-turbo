@@ -77,7 +77,7 @@ export function PromptHistory({
                   <p className="text-sm mb-3 line-clamp-3">
                     {historyItem.basicPrompt &&
                     historyItem.basicPrompt.length > 120
-                      ? historyItem.basicPrompt.substring(0, 120) + "..."
+                      ? `${historyItem.basicPrompt.substring(0, 120)}...`
                       : historyItem.basicPrompt}
                   </p>
                   <Button

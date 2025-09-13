@@ -1,16 +1,14 @@
-'use client';
+"use client";
 
 export const dynamic = "force-dynamic";
 
-
-
-import { useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { artifactDefinitions } from '@/components/artifact';
-import type { Document } from '@/lib/db/schema';
-import { Button } from '@turbo-super/ui';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { artifactDefinitions } from "@/components/artifacts/artifact";
+import type { Document } from "@/lib/db/schema";
+import { Button } from "@turbo-super/ui";
+import Link from "next/link";
+import { toast } from "sonner";
 
 export default function ArtifactPage() {
   const [document, setDocument] = useState<Document | null>(null);
@@ -19,65 +17,73 @@ export default function ArtifactPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  const fromChat = searchParams?.get('from') === 'chat';
-  const backHref = fromChat ? '/' : '/gallery';
+  const fromChat = searchParams?.get("from") === "chat";
+  const backHref = fromChat ? "/" : "/gallery";
 
   useEffect(() => {
     const loadDocument = async () => {
       try {
         const id = params.id as string;
-        
+
         if (!id) {
-          setError('Invalid artifact ID');
+          setError("Invalid artifact ID");
           return;
         }
-        
-        console.log('Loading artifact with ID:', id);
-        
+
+        console.log("Loading artifact with ID:", id);
+
         // Fetch document from API
         const response = await fetch(`/api/document?id=${id}`);
-        
-        console.log('API Response status:', response.status);
-        
+
+        console.log("API Response status:", response.status);
+
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('API Error:', response.status, errorText);
-          
+          console.error("API Error:", response.status, errorText);
+
           if (response.status === 404) {
-            setError('Artifact not found');
+            setError("Artifact not found");
           } else if (response.status === 401) {
-            setError('Please login to view this artifact');
-            router.push('/login');
+            setError("Please login to view this artifact");
+            router.push("/login");
           } else if (response.status === 403) {
             setError("You don't have permission to view this artifact");
           } else {
-            setError(`Failed to load artifact: ${response.status} ${errorText}`);
+            setError(
+              `Failed to load artifact: ${response.status} ${errorText}`
+            );
           }
           return;
         }
-        
+
         const documents = await response.json();
-        console.log('Documents received:', documents?.length || 0);
-        
+        console.log("Documents received:", documents?.length || 0);
+
         if (documents && documents.length > 0) {
           const document = documents[documents.length - 1];
-          console.log('Document kind:', document.kind);
-          console.log('Document title:', document.title?.substring(0, 100));
-          console.log('Document content length:', document.content?.length || 0);
-          console.log('Document content preview:', document.content?.substring(0, 200));
-          
+          console.log("Document kind:", document.kind);
+          console.log("Document title:", document.title?.substring(0, 100));
+          console.log(
+            "Document content length:",
+            document.content?.length || 0
+          );
+          console.log(
+            "Document content preview:",
+            document.content?.substring(0, 200)
+          );
+
           setDocument(document); // Get latest version
         } else {
-          setError('No artifact content found');
+          setError("No artifact content found");
         }
       } catch (err) {
-        console.error('Failed to load artifact:', err);
-        setError('Failed to load artifact');
+        console.error("Failed to load artifact:", err);
+        setError("Failed to load artifact");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     loadDocument();
   }, [params, router]);
 
@@ -111,7 +117,9 @@ export default function ArtifactPage() {
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Artifact Not Found</h1>
-          <p className="text-muted-foreground mb-4">This artifact doesn&apos;t exist.</p>
+          <p className="text-muted-foreground mb-4">
+            This artifact doesn&apos;t exist.
+          </p>
           <Link href={backHref}>
             <Button variant="outline">Back</Button>
           </Link>
@@ -144,22 +152,36 @@ export default function ArtifactPage() {
   // Render the artifact content using the existing component
   const ArtifactContent = artifactDefinition.content as any;
 
-  console.log('Rendering artifact:', {
+  console.log("Rendering artifact:", {
     kind: document.kind,
     titleLength: document.title?.length || 0,
     contentLength: document.content?.length || 0,
-    hasArtifactDefinition: !!artifactDefinition
+    hasArtifactDefinition: !!artifactDefinition,
   });
 
-  const StandaloneArtifact = ({ title, content }: { title: string; content: string }) => {
-    return <ArtifactContent title={title} content={content} />;
-  }
+  const StandaloneArtifact = ({
+    title,
+    content,
+  }: {
+    title: string;
+    content: string;
+  }) => {
+    return (
+      <ArtifactContent
+        title={title}
+        content={content}
+      />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Simple header */}
       <div className="border-b px-4 py-2 flex items-center justify-between">
-        <Link href={backHref} className="text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          href={backHref}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           ← Back
         </Link>
         <Button
@@ -168,7 +190,7 @@ export default function ArtifactPage() {
           onClick={() => {
             const shareUrl = `${window.location.origin}/artifact/${document.id}`;
             navigator.clipboard.writeText(shareUrl);
-            toast.success('Share link copied to clipboard');
+            toast.success("Share link copied to clipboard");
           }}
         >
           Copy Link
@@ -179,9 +201,9 @@ export default function ArtifactPage() {
       <div className="h-[calc(100vh-60px)]">
         <StandaloneArtifact
           title={document.title}
-          content={document.content || ''}
+          content={document.content || ""}
         />
       </div>
     </div>
   );
-} 
+}

@@ -6,10 +6,10 @@ import {
   ImageIcon,
   PlayIcon,
   LineChartIcon,
-} from "@/components/icons";
+} from "@/components/common/icons";
 import { formatDistance } from "date-fns";
 import { useRouter } from "next/navigation";
-import type { ArtifactKind } from "@/components/artifact";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
 
 interface DocumentCardProps {
   document: {

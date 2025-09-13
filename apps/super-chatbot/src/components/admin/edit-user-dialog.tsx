@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from '@turbo-super/ui';
-import { Input } from '@turbo-super/ui';
-import { Label } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
+import { Input } from "@turbo-super/ui";
+import { Label } from "@turbo-super/ui";
 
 import { CreditCard, Plus, Minus } from "lucide-react";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@turbo-super/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@turbo-super/ui";
 interface User {
   id: string;
   email: string;
@@ -35,7 +42,7 @@ export function EditUserDialog({
     setError("");
 
     const newBalance = Number(balance);
-    if (isNaN(newBalance) || newBalance < 0) {
+    if (Number.isNaN(newBalance) || newBalance < 0) {
       setError("Please enter a valid balance (0 or greater)");
       return;
     }
@@ -44,7 +51,7 @@ export function EditUserDialog({
       setLoading(true);
 
       const response = await fetch(`/api/admin/users/${user.id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },

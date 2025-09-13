@@ -1,76 +1,81 @@
-# Инструкция по применению миграции для гостевых сессий
+# Инструкция по применению миграции базы данных
 
-## Описание изменений
+## Проблема
 
-Добавлено поле `sessionId` в таблицу `User` для связывания гостевых аккаунтов с уникальными идентификаторами сессий.
+Нужно применить миграцию для добавления полей статуса в таблицу UserProject.
 
-## Файлы миграции
+## Решение
 
-- `src/lib/db/migrations/0001_add_session_id.sql` - SQL миграция
-- `src/lib/db/schema.ts` - обновленная схема
-- `src/lib/session-utils.ts` - утилиты для работы с сессиями
-- `src/app/(auth)/auth.ts` - обновленная логика NextAuth
-- `src/app/(auth)/api/auth/guest/route.ts` - обновленный API endpoint
+### Вариант 1: Через переменные окружения (рекомендуется)
 
-## Применение миграции
+1. **Создайте файл `.env` в папке `apps/super-chatbot/`**:
 
-### 1. Выполните SQL миграцию в базе данных:
-
-```sql
--- Добавить поле sessionId в таблицу User
-ALTER TABLE "User" ADD COLUMN "sessionId" varchar(64);
-
--- Создать индекс для быстрого поиска
-CREATE INDEX IF NOT EXISTS "User_sessionId_idx" ON "User"("sessionId");
-
--- Добавить уникальное ограничение
-CREATE UNIQUE INDEX IF NOT EXISTS "User_sessionId_unique_idx" ON "User"("sessionId") WHERE "sessionId" IS NOT NULL;
+```bash
+DATABASE_URL=postgresql://username:password@host:port/database_name
 ```
 
-### 2. Перезапустите приложение
+2. **Запустите миграцию**:
 
-После применения миграции перезапустите приложение для применения изменений.
-
-## Как это работает
-
-### До миграции:
-
-- Каждый вход в гостевой режим создавал новый аккаунт
-- При очистке куки сессия терялась навсегда
-
-### После миграции:
-
-- Гостевые аккаунты связываются с уникальным `sessionId`
-- `sessionId` сохраняется в localStorage как fallback
-- Даже при очистке куки система может восстановить гостевую сессию
-- В базе данных не накапливаются лишние гостевые аккаунты
-
-## Тестирование
-
-1. Войдите в гостевой режим
-2. Создайте чат
-3. Очистите куки браузера
-4. Перезагрузите страницу
-5. Войдите снова в гостевой режим
-6. Проверьте, что ваш чат восстановился
-
-## Откат изменений
-
-Если нужно откатить изменения:
-
-```sql
--- Удалить индексы
-DROP INDEX IF EXISTS "User_sessionId_idx";
-DROP INDEX IF EXISTS "User_sessionId_unique_idx";
-
--- Удалить поле
-ALTER TABLE "User" DROP COLUMN "sessionId";
+```bash
+cd apps/super-chatbot
+node scripts/run-migration.js
 ```
 
-## Примечания
+### Вариант 2: Вручную через SQL
 
-- Поле `sessionId` может быть `NULL` для существующих пользователей
-- Новые гостевые пользователи будут автоматически получать `sessionId`
-- Система обратно совместима с существующими данными
+Выполните следующие SQL команды в вашей PostgreSQL базе данных:
 
+```sql
+-- Add status and error handling fields to UserProject table
+ALTER TABLE "UserProject"
+ADD COLUMN IF NOT EXISTS "status" varchar(20) NOT NULL DEFAULT 'pending',
+ADD COLUMN IF NOT EXISTS "creditsUsed" integer DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "errorMessage" text,
+ADD COLUMN IF NOT EXISTS "updatedAt" timestamp NOT NULL DEFAULT now();
 
+-- Update existing projects to have 'completed' status (assuming they were successful)
+UPDATE "UserProject" SET "status" = 'completed' WHERE "status" = 'pending';
+
+-- Create index for faster status lookups
+CREATE INDEX IF NOT EXISTS "UserProject_status_idx" ON "UserProject"("status");
+CREATE INDEX IF NOT EXISTS "UserProject_userId_status_idx" ON "UserProject"("userId", "status");
+```
+
+### Вариант 3: Через Drizzle (если есть DATABASE_URL)
+
+```bash
+cd apps/super-chatbot
+npx drizzle-kit push
+```
+
+## Проверка
+
+После применения миграции проверьте, что таблица обновилась:
+
+```sql
+\d "UserProject"
+```
+
+Должны появиться новые колонки:
+
+- `status` (varchar(20), default: 'pending')
+- `creditsUsed` (integer, default: 0)
+- `errorMessage` (text)
+- `updatedAt` (timestamp, default: now())
+
+## Что изменилось
+
+1. **Добавлены статусы проектов**: pending, processing, completed, failed
+2. **Отслеживание кредитов**: сколько кредитов использовал проект
+3. **Обработка ошибок**: сохранение сообщений об ошибках
+4. **Временные метки**: когда проект был обновлен
+5. **Индексы**: для быстрого поиска по статусу
+
+## После миграции
+
+Система будет:
+
+- ✅ Автоматически возвращать кредиты при ошибках Prefect
+- ✅ Отслеживать статус каждого проекта
+- ✅ Логировать все ошибки
+- ✅ Предоставлять историю проектов пользователя

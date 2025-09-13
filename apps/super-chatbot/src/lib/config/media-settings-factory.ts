@@ -9,10 +9,9 @@ import type {
   VideoGenerationConfig,
   MediaOption,
 } from "../types/media-settings";
-import type { IGenerationConfigRead } from "../api/models/IGenerationConfigRead";
-import { ShotSizeEnum } from "@/lib/api/models/ShotSizeEnum";
 import { getStyles } from "@/lib/ai/api/get-styles";
 import { API_NEXT_ROUTES } from "./next-api-routes";
+import { type IGenerationConfigRead, ShotSizeEnum } from "@turbo-super/api";
 
 // Adapter function to convert OpenAPI model to MediaSettings format
 function adaptModelForMediaSettings(

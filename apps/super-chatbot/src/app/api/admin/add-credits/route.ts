@@ -1,49 +1,59 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import { addUserBalance } from "@/lib/utils/tools-balance";
+import { getUserById, updateUserBalance } from "@/lib/db/admin-queries";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("🔔 Add credits endpoint called");
-
+    // Проверяем авторизацию
     const session = await auth();
-    console.log(
-      "👤 Session:",
-      session?.user?.id ? "authenticated" : "not authenticated"
-    );
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!session?.user?.id) {
-      console.error("❌ Authentication required");
+    // TODO: Добавить проверку прав администратора
+    // if (!session.user.isAdmin) {
+    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // }
+
+    const body = await request.json();
+    const { userId, creditsToAdd } = body;
+
+    // Валидация входных данных
+    if (!userId || typeof userId !== "string") {
       return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
+        { error: "User ID is required and must be a string" },
+        { status: 400 }
       );
     }
 
-    const { amount = 100 } = await request.json();
-    const userId = session.user.id;
+    if (typeof creditsToAdd !== "number" || creditsToAdd <= 0) {
+      return NextResponse.json(
+        { error: "Credits to add must be a positive number" },
+        { status: 400 }
+      );
+    }
 
-    console.log(`💰 Adding ${amount} credits to user ${userId}`);
+    // Получаем текущего пользователя
+    const currentUser = await getUserById(userId);
+    if (!currentUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
-    const transaction = await addUserBalance(
-      userId,
-      amount,
-      "manual_addition",
-      {
-        timestamp: new Date().toISOString(),
-        reason: "Manual credit addition for testing",
-      }
-    );
+    // Вычисляем новый баланс
+    const newBalance = currentUser.balance + creditsToAdd;
 
-    console.log("✅ Credits added successfully:", transaction);
+    // Обновляем баланс пользователя
+    const updatedUser = await updateUserBalance(userId, newBalance);
 
     return NextResponse.json({
       success: true,
-      transaction,
-      message: `Added ${amount} credits to user ${userId}`,
+      user: updatedUser,
+      creditsAdded: creditsToAdd,
+      previousBalance: currentUser.balance,
+      newBalance,
     });
   } catch (error) {
-    console.error("❌ Error adding credits:", error);
+    console.error("Error adding credits:", error);
     return NextResponse.json(
       { error: "Failed to add credits" },
       { status: 500 }

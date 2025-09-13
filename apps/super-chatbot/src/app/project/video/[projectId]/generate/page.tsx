@@ -17,8 +17,7 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import Link from "next/link";
-import { ProjectTaskList } from "@/components/project-task-list";
+import { ProjectTaskList } from "@/components/project/project-task-list";
 
 export default function GeneratePage() {
   const params = useParams();
