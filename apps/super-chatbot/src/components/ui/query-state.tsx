@@ -80,7 +80,12 @@ export function QueryState({
     if (emptyComponent) return <>{emptyComponent}</>;
 
     return (
-      <div className={cn("flex items-center justify-center py-8", className)}>
+      <div
+        className={cn(
+          "flex items-center justify-center py-8 size-full",
+          className
+        )}
+      >
         <div className="text-center space-y-4">
           <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto">
             <Eye className="size-8 text-muted-foreground" />

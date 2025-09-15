@@ -36,6 +36,11 @@ export async function GET(
       );
     }
 
+    // Skip processing if this is a special route like "enhanced"
+    if (id === "enhanced") {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    }
+
     const userData = await getUserById(id);
 
     if (!userData) {
@@ -76,6 +81,11 @@ export async function PUT(
         { error: "User ID is required" },
         { status: 400 }
       );
+    }
+
+    // Skip processing if this is a special route like "enhanced"
+    if (id === "enhanced") {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
     // Валидация входных данных
@@ -144,6 +154,11 @@ export async function DELETE(
         { error: "User ID is required" },
         { status: 400 }
       );
+    }
+
+    // Skip processing if this is a special route like "enhanced"
+    if (id === "enhanced") {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
     // Проверяем, существует ли пользователь

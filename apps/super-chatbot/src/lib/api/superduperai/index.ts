@@ -9,6 +9,7 @@ export * from "./file/delete/query";
 export * from "./file/generate-image/query";
 export * from "./file/generate-video/query";
 export * from "./voice/query";
+export * from "./project-video/script2entities";
 export * from "./project-video/script2storyboard";
 export * from "./project-video/storyboard2video";
 export * from "./project-video/timeline2video";

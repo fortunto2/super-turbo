@@ -60,8 +60,6 @@ export function VoiceoverList({
 
   const isLoading = isFilesLoading || isSceneLoading;
   const isError = !scene || !files;
-  const isEmpty =
-    !isLoading && !isError && (!files?.items || files.items.length === 0);
 
   return (
     <div className="flex size-full flex-col">
@@ -77,8 +75,6 @@ export function VoiceoverList({
           <QueryState
             isLoading={isLoading}
             isError={isError}
-            isEmpty={isEmpty}
-            emptyMessage="No voiceover files"
             loadingComponent={
               <div className="flex size-full gap-3">
                 {[...Array(4)].map((_, i) => (

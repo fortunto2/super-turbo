@@ -60,7 +60,7 @@ export async function getAdminOverviewStats() {
     const recentDocsResult = await db
       .select({ count: count() })
       .from(document)
-      .where(gte(document.createdAt, yesterday));
+      .where(gte(document.createdAt, yesterday.toISOString() as any));
     const recentTransactions = recentDocsResult[0]?.count || 0;
 
     // Get recent users (last 10)
@@ -213,6 +213,117 @@ export async function deleteUser(userId: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting user:", error);
+    throw error;
+  }
+}
+
+export async function getUserStats() {
+  try {
+    // Get total users count
+    const totalUsersResult = await db.select({ count: count() }).from(user);
+    const totalUsers = totalUsersResult[0]?.count || 0;
+
+    // Get guest vs regular users
+    const guestUsersResult = await db
+      .select({ count: count() })
+      .from(user)
+      .where(sql`${user.email} LIKE '%guest%'`);
+    const guestUsers = guestUsersResult[0]?.count || 0;
+    const regularUsers = totalUsers - guestUsers;
+
+    // Get balance statistics
+    const balanceStats = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${user.balance}), 0)`,
+        average: sql<number>`COALESCE(AVG(${user.balance}), 0)`,
+        max: sql<number>`COALESCE(MAX(${user.balance}), 0)`,
+        min: sql<number>`COALESCE(MIN(${user.balance}), 0)`,
+      })
+      .from(user);
+
+    const balanceData = balanceStats[0];
+
+    // Get users with zero balance
+    const zeroBalanceResult = await db
+      .select({ count: count() })
+      .from(user)
+      .where(eq(user.balance, 0));
+    const zeroBalanceUsers = zeroBalanceResult[0]?.count || 0;
+
+    // Get high balance users (>1000 credits)
+    const highBalanceResult = await db
+      .select({ count: count() })
+      .from(user)
+      .where(sql`${user.balance} > 1000`);
+    const highBalanceUsers = highBalanceResult[0]?.count || 0;
+
+    return {
+      totalUsers,
+      guestUsers,
+      regularUsers,
+      balanceStats: {
+        total: balanceData?.total || 0,
+        average: Math.round(balanceData?.average || 0),
+        max: balanceData?.max || 0,
+        min: balanceData?.min || 0,
+        zeroBalanceUsers,
+        highBalanceUsers,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching user stats:", error);
+    throw error;
+  }
+}
+
+export async function getUsersByType(userType: "guest" | "regular" | null) {
+  try {
+    let condition = sql`1=1`;
+
+    if (userType === "guest") {
+      condition = sql`${user.email} LIKE '%guest%'`;
+    } else if (userType === "regular") {
+      condition = sql`${user.email} NOT LIKE '%guest%'`;
+    }
+
+    const users = await db
+      .select({
+        id: user.id,
+        email: user.email,
+        balance: user.balance,
+      })
+      .from(user)
+      .where(condition)
+      .orderBy(desc(user.balance));
+
+    return users.map((u) => ({
+      ...u,
+      type: u.email.includes("guest") ? "guest" : "regular",
+    }));
+  } catch (error) {
+    console.error("Error fetching users by type:", error);
+    throw error;
+  }
+}
+
+export async function getRecentUsers(limit = 10) {
+  try {
+    const users = await db
+      .select({
+        id: user.id,
+        email: user.email,
+        balance: user.balance,
+      })
+      .from(user)
+      .orderBy(desc(user.id))
+      .limit(limit);
+
+    return users.map((u) => ({
+      ...u,
+      type: u.email.includes("guest") ? "guest" : "regular",
+    }));
+  } catch (error) {
+    console.error("Error fetching recent users:", error);
     throw error;
   }
 }

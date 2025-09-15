@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from '@turbo-super/ui';
+import { cn } from "@turbo-super/ui";
 import {
   Users,
   CreditCard,
@@ -12,6 +12,9 @@ import {
   Shield,
   Activity,
   FileText,
+  FolderOpen,
+  UserCog,
+  Monitor,
 } from "lucide-react";
 
 const navigationItems = [
@@ -26,6 +29,18 @@ const navigationItems = [
     href: "/admin/users",
     icon: Users,
     description: "Manage users and accounts",
+  },
+  {
+    title: "Enhanced Users",
+    href: "/admin/users/enhanced",
+    icon: UserCog,
+    description: "Advanced user management",
+  },
+  {
+    title: "Projects",
+    href: "/admin/projects",
+    icon: FolderOpen,
+    description: "Manage user projects",
   },
   {
     title: "Balances",
@@ -52,10 +67,10 @@ const navigationItems = [
     description: "Manage generated content",
   },
   {
-    title: "System",
+    title: "System Monitor",
     href: "/admin/system",
-    icon: Settings,
-    description: "System configuration",
+    icon: Monitor,
+    description: "System monitoring and health",
   },
 ];
 

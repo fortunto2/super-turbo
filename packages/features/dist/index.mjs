@@ -3387,11 +3387,11 @@ var VideoPlayer = ({
     }
     return null;
   }, [isLoading]);
-  return /* @__PURE__ */ jsx("div", { className: "grow p-3 pt-6 w-full h-full", children: /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsx("div", { className: "w-full h-full flex flex-col", children: /* @__PURE__ */ jsx(
     "div",
     {
       ref: containerRef,
-      className: "flex-1 flex justify-center items-center relative w-full h-full",
+      className: "flex-1 flex justify-center items-center relative w-full h-full min-h-0",
       children: metadata && /* @__PURE__ */ jsx(
         Player,
         {
