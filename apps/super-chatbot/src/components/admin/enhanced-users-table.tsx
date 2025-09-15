@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { Button, Input, Badge } from "@turbo-super/ui";
 // Using HTML table elements since Table components are not available in UI library
 import {
   Search,
@@ -76,7 +74,7 @@ export function EnhancedUsersTable() {
       const data: UsersResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch users");
+        throw new Error("Failed to fetch users");
       }
 
       setUsers(data.users);
@@ -376,18 +374,20 @@ export function EnhancedUsersTable() {
       )}
 
       {/* Dialogs */}
-      <EditUserDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        user={selectedUser}
-        onSuccess={handleUserUpdate}
-      />
-      <DeleteUserDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        user={selectedUser}
-        onSuccess={handleUserDelete}
-      />
+      {editDialogOpen && selectedUser && (
+        <EditUserDialog
+          user={selectedUser}
+          onClose={() => setEditDialogOpen(false)}
+          onUpdate={handleUserUpdate}
+        />
+      )}
+      {deleteDialogOpen && selectedUser && (
+        <DeleteUserDialog
+          user={selectedUser}
+          onClose={() => setDeleteDialogOpen(false)}
+          onDelete={handleUserDelete}
+        />
+      )}
     </div>
   );
 }

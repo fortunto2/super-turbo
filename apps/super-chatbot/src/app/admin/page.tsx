@@ -117,7 +117,9 @@ export default async function AdminPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Created{" "}
-                      {new Date(user.createdAt || "").toLocaleDateString()}
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "Unknown"}
                     </p>
                   </div>
                 </div>

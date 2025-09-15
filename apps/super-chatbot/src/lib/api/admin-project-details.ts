@@ -1,7 +1,10 @@
 import "server-only";
 
-import { ProjectService, type IProjectRead } from "@turbo-super/api";
-import { getSuperduperAIConfig } from "./server-openapi";
+import {
+  getSuperduperAIConfig,
+  ProjectService,
+  type IProjectRead,
+} from "@turbo-super/api";
 
 /**
  * Получает детали проекта с задачами из SuperDuperAI API

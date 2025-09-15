@@ -60,7 +60,7 @@ export async function getAdminOverviewStats() {
     const recentDocsResult = await db
       .select({ count: count() })
       .from(document)
-      .where(gte(document.createdAt, yesterday.toISOString() as any));
+      .where(gte(document.createdAt, yesterday));
     const recentTransactions = recentDocsResult[0]?.count || 0;
 
     // Get recent users (last 10)
@@ -69,7 +69,7 @@ export async function getAdminOverviewStats() {
         id: user.id,
         email: user.email,
         balance: user.balance,
-        createdAt: sql<string>`'2025-01-01'`, // Placeholder since createdAt doesn't exist in schema
+        createdAt: sql<string>`NOW()::text`, // Use current timestamp as string since createdAt doesn't exist in schema
       })
       .from(user)
       .orderBy(desc(user.id))

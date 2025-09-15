@@ -86,9 +86,9 @@ export async function PUT(request: NextRequest) {
     const result = await updateUserBalance(userId, balance);
 
     return NextResponse.json({
-      success: true,
       message: "User balance updated successfully",
       ...result,
+      success: true,
     });
   } catch (error: any) {
     console.error("Admin user update error:", error);
@@ -120,9 +120,9 @@ export async function DELETE(request: NextRequest) {
     const result = await deleteUser(userId);
 
     return NextResponse.json({
-      success: true,
       message: "User deleted successfully",
       ...result,
+      success: true,
     });
   } catch (error: any) {
     console.error("Admin user delete error:", error);

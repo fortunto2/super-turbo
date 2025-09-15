@@ -29,7 +29,7 @@ const Layout = ({ children, params }: Props) => {
       useProjectEventHandler(projectId),
       // useEntityEventHandler(projectId),
       useSceneEventHandler(projectId),
-      useProjectVideoEventHandler(),
+      useProjectVideoEventHandler(projectId),
       useFileEventHandler(),
     ],
   });

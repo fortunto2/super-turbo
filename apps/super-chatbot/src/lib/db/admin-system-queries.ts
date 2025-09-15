@@ -1,6 +1,14 @@
-import { db } from "./index";
-import { user, document, userProject } from "./schema";
+import "server-only";
+
 import { count, sql, gte } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { user, document, userProject } from "./schema";
+
+// Create database connection
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
+const client = postgres(databaseUrl, { ssl: "require" });
+const db = drizzle(client);
 
 export interface SystemStats {
   overview: {
@@ -85,7 +93,7 @@ export async function getSystemStats(): Promise<SystemStats> {
     const recentDocuments = await db
       .select({ count: count() })
       .from(document)
-      .where(gte(document.createdAt, last24h.toISOString()));
+      .where(gte(document.createdAt, last24h));
 
     const recentProjects = await db
       .select({ count: count() })
@@ -111,7 +119,7 @@ export async function getSystemStats(): Promise<SystemStats> {
         extract(epoch from now() - pg_postmaster_start_time()) as uptime
     `);
 
-    const systemData = systemInfo.rows[0] as any;
+    const systemData = systemInfo[0] as any;
 
     return {
       overview: {
