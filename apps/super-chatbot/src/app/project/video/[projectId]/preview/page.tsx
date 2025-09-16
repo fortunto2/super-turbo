@@ -15,6 +15,7 @@ import {
   ArrowRight,
   FileText,
   Settings,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { BackButton } from "@/components/shared/back-button";
@@ -157,6 +158,16 @@ export default function PreviewPage() {
             <BackButton href="/project/video/projects" />
 
             <div className="flex items-center space-x-4">
+              <Link
+                href={`/project/video/${projectId}/entities`}
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <Users className="size-4" />
+                </div>
+                <span className="font-medium">Entities</span>
+              </Link>
+
               <Link
                 href={`/project/video/${projectId}/script`}
                 className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
@@ -324,6 +335,13 @@ export default function PreviewPage() {
                     </h3>
                   </div>
                   <div className="space-y-2">
+                    <Link
+                      href={`/project/video/${projectId}/entities`}
+                      className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-all duration-300 hover:scale-105 shadow-md text-sm"
+                    >
+                      <Users className="size-3" />
+                      <span>Manage Entities</span>
+                    </Link>
                     <button
                       onClick={() => setIsExportDialogOpen(true)}
                       className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-md text-sm"

@@ -4,8 +4,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@turbo-super/ui";
-import { FileText, Save, ArrowRight } from "lucide-react";
+import { FileText, Save, ArrowRight, Users } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
+import Link from "next/link";
 import { MarkdownEditor } from "@/components/editors/markdown-editor";
 import { useProjectGetById, projectKeys, useDataUpdate } from "@/lib/api";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
@@ -132,7 +133,17 @@ export default function ScriptPage() {
             Back to Preview
           </BackButton>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
+            <Link
+              href={`/project/video/${projectId}/entities`}
+              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
+            >
+              <div className="size-8 bg-card border border-border rounded-full flex items-center justify-center mr-2 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <Users className="size-3" />
+              </div>
+              <span className="font-medium text-sm">Entities</span>
+            </Link>
+
             <Button
               onClick={handleSave}
               disabled={!hasChanges || isSaving || isUpdating}

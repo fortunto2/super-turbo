@@ -6,6 +6,7 @@ import {
   useFileEventHandler,
   useSceneEventHandler,
   useProjectVideoEventHandler,
+  useEntityEventHandler,
 } from "@/hooks/event-handlers";
 
 import type { ReactNode } from "react";
@@ -27,7 +28,7 @@ const Layout = ({ children, params }: Props) => {
     projectId,
     eventHandlers: [
       useProjectEventHandler(projectId),
-      // useEntityEventHandler(projectId),
+      useEntityEventHandler(projectId),
       useSceneEventHandler(projectId),
       useProjectVideoEventHandler(projectId),
       useFileEventHandler(),

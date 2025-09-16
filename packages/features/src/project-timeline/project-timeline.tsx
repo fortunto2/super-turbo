@@ -3,8 +3,9 @@ import { IDataUpdate, IProjectRead } from "@turbo-super/api";
 
 import type { FC } from "react";
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Users } from "lucide-react";
 import { Button } from "@turbo-super/ui";
+import Link from "next/link";
 import {
   eventBus,
   SCENE_LOAD,
@@ -170,6 +171,16 @@ export const ProjectTimeline: FC<Props> = ({
             >
               <ArrowLeft /> Back
             </Button>
+          </div>
+
+          <div className="flex h-12 items-center bg-background px-1.5">
+            <Link
+              href={`/project/video/${project.id}/entities`}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Users className="size-4" />
+              <span className="text-sm">Entities</span>
+            </Link>
           </div>
 
           <HistoryButtons />
