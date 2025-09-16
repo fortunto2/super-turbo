@@ -62,7 +62,11 @@ export function MediaSettings({
     isVideoConfig ? videoConfig?.defaultSettings.frameRate || 30 : 30
   );
   const [duration, setDuration] = useState<number>(
-    isVideoConfig ? videoConfig?.defaultSettings.duration || 10 : 10
+    isVideoConfig
+      ? typeof videoConfig?.defaultSettings.duration === "number"
+        ? videoConfig.defaultSettings.duration
+        : 10
+      : 10
   );
   const [negativePrompt, setNegativePrompt] = useState<string>(
     isVideoConfig ? videoConfig?.defaultSettings.negativePrompt || "" : ""
@@ -84,7 +88,7 @@ export function MediaSettings({
           frameRate: selectedFrameRate,
           duration: duration,
           negativePrompt: negativePrompt,
-        } as VideoSettings)
+        } as unknown as VideoSettings)
       : (baseSettings as ImageSettings);
 
     // Create user message for the selection

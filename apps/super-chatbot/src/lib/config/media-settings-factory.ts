@@ -690,7 +690,9 @@ export async function getAudioGenerationConfig(): Promise<AudioGenerationConfig>
       voice: { id: "alloy", label: "Alloy", description: "Neutral voice" },
       language: { id: "en", label: "English", description: "English language" },
       duration: { id: "10s", label: "10 seconds", value: 10 },
-      model: adaptedAudioModels.find((m) => m.type === "text_to_speech") ||
+      model: adaptedAudioModels.find(
+        (m) => m.type === ("text_to_speech" as any)
+      ) ||
         adaptedAudioModels[0] || {
           name: "tts-1",
           label: "TTS-1",

@@ -143,6 +143,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
         id: currentMedia.id,
         role: "user",
         timestamp: new Date(),
+        messageIndex: 0, // Current message index
         mediaType: this.mediaType,
         metadata: this.extractMetadata(currentMedia),
       };
