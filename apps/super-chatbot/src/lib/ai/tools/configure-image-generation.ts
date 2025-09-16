@@ -7,11 +7,15 @@ import {
   getOperationDisplayName,
 } from "@/lib/utils/ai-tools-balance";
 import type { Session } from "next-auth";
+import { analyzeImageContext } from "@/lib/ai/context";
 
 interface CreateImageDocumentParams {
   createDocument: any;
   session?: Session | null;
   defaultSourceImageUrl?: string;
+  chatId?: string;
+  userMessage?: string;
+  currentAttachments?: any[];
 }
 
 export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
@@ -158,30 +162,65 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             ) || config.defaultSettings.model
           : config.defaultSettings.model;
 
-        // Always prioritize defaultSourceImageUrl if provided, as it comes from our smart context analysis
+        // Используем новую систему анализа контекста
         let normalizedSourceUrl = sourceImageUrl;
 
         console.log("🔍 configureImageGeneration sourceImageUrl resolution:", {
           sourceImageUrl,
           defaultSourceImageUrl: params?.defaultSourceImageUrl,
-          normalizedSourceUrl,
+          chatId: params?.chatId,
+          userMessage: params?.userMessage,
         });
 
-        // If we have a valid defaultSourceImageUrl from our context analysis, use it instead of AI-provided sourceImageUrl
+        // Приоритет 1: defaultSourceImageUrl (legacy поддержка)
         if (
           params?.defaultSourceImageUrl &&
           /^https?:\/\//.test(params.defaultSourceImageUrl)
         ) {
           console.log(
-            "🔍 Using defaultSourceImageUrl from smart context analysis:",
+            "🔍 Using defaultSourceImageUrl from legacy context analysis:",
             params.defaultSourceImageUrl
           );
           normalizedSourceUrl = params.defaultSourceImageUrl;
-        } else if (
-          !normalizedSourceUrl ||
-          !/^https?:\/\//.test(normalizedSourceUrl) ||
-          normalizedSourceUrl.startsWith("attachment://")
+        }
+        // Приоритет 2: новая система анализа контекста
+        else if (params?.chatId && params?.userMessage) {
+          try {
+            console.log("🔍 Analyzing image context with new system...");
+            const contextResult = await analyzeImageContext(
+              params.userMessage,
+              params.chatId,
+              params.currentAttachments
+            );
+
+            console.log("🔍 Context analysis result:", contextResult);
+
+            if (contextResult.sourceUrl && contextResult.confidence !== "low") {
+              console.log(
+                "🔍 Using sourceUrl from new context analysis:",
+                contextResult.sourceUrl,
+                "confidence:",
+                contextResult.confidence
+              );
+              normalizedSourceUrl = contextResult.sourceUrl;
+            }
+          } catch (error) {
+            console.warn("🔍 Error in context analysis, falling back:", error);
+          }
+        }
+        // Приоритет 3: AI-provided sourceImageUrl
+        else if (
+          normalizedSourceUrl &&
+          /^https?:\/\//.test(normalizedSourceUrl) &&
+          !normalizedSourceUrl.startsWith("attachment://")
         ) {
+          console.log(
+            "🔍 Using AI-provided sourceImageUrl:",
+            normalizedSourceUrl
+          );
+        }
+        // Fallback: text-to-image
+        else {
           console.log(
             "🔍 No valid source image URL available, will be text-to-image"
           );

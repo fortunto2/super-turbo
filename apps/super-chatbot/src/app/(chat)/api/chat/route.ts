@@ -39,6 +39,7 @@ import { differenceInSeconds } from "date-fns";
 import * as Sentry from "@sentry/nextjs";
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
 import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
+import { configureAudioGeneration } from "@/lib/ai/tools/configure-audio-generation";
 import {
   listVideoModels,
   findBestVideoModel,
@@ -663,6 +664,34 @@ export async function POST(request: Request) {
           }
         }
 
+        // Анализ видео контекста для defaultSourceVideoUrl
+        let defaultSourceVideoUrl: string | undefined;
+        try {
+          const { analyzeVideoContext } = await import("@/lib/ai/context");
+
+          const videoContext = await analyzeVideoContext(
+            messageToProcess.parts?.[0]?.text || "",
+            id,
+            (messageToProcess as any)?.experimental_attachments
+          );
+
+          console.log("🔍 Pre-analysis: Video context:", {
+            confidence: videoContext.confidence,
+            reasoning: videoContext.reasoning,
+            sourceUrl: videoContext.sourceUrl,
+          });
+
+          defaultSourceVideoUrl = videoContext.sourceUrl;
+
+          console.log(
+            "🔍 defaultSourceVideoUrl set to:",
+            defaultSourceVideoUrl
+          );
+        } catch (error) {
+          console.error("🔍 Video context analysis error:", error);
+          defaultSourceVideoUrl = undefined;
+        }
+
         const tools = {
           createDocument: createDocument({
             session,
@@ -759,6 +788,17 @@ export async function POST(request: Request) {
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
               session,
+              defaultSourceVideoUrl: defaultSourceVideoUrl,
+              chatId: id,
+              userMessage: message?.content || "",
+              currentAttachments: message?.experimental_attachments || [],
+            }),
+            configureAudioGeneration: configureAudioGeneration({
+              createDocument: tools.createDocument,
+              session,
+              chatId: id,
+              userMessage: message?.content || "",
+              currentAttachments: message?.experimental_attachments || [],
             }),
             configureScriptGeneration: configureScriptGeneration({
               createDocument: tools.createDocument,

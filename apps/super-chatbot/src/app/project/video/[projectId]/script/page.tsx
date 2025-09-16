@@ -167,7 +167,7 @@ export default function ScriptPage() {
             </p>
           </div>
 
-          <div className="border border-border rounded-lg overflow-hidden">
+          <div className="border border-border rounded-lg ">
             <MarkdownEditor
               editorRef={editorRef}
               markdown={scriptText}

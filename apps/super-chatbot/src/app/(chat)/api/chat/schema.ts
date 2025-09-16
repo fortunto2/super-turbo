@@ -30,6 +30,14 @@ const messageSchema = z
             "image/jpg",
             "image/jpeg",
             "image/webp", // Добавим поддержку webp
+            "video/mp4",
+            "video/webm",
+            "video/avi",
+            "video/mov",
+            "audio/mp3",
+            "audio/wav",
+            "audio/ogg",
+            "audio/m4a",
             "text/markdown",
           ]),
         })
