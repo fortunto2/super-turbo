@@ -99,7 +99,7 @@ export function DocumentGallery({
 
   if (documents.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 min-h-[400px] flex flex-col justify-center">
         <p className="text-muted-foreground mb-4">No artifacts found</p>
         <p className="text-sm text-muted-foreground">
           Try adjusting your filters or search query

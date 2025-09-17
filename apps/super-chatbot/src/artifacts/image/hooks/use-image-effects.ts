@@ -95,7 +95,9 @@ export function useImageEffects({
       Object.values(saveConditions).every(Boolean)
     );
 
-    // Only save if all conditions are met AND image hasn't been saved before
+    // AICODE-FIX: Remove duplicate saveMediaToChat call
+    // The saveMediaToChat is now handled in the artifact wrapper component
+    // This prevents double saving to chat history
     if (
       imageUrl &&
       status === "completed" &&
@@ -105,32 +107,9 @@ export function useImageEffects({
       savedImageUrlRef.current !== imageUrl // Prevent duplicate saves
     ) {
       console.log(
-        "💾 🎨 Image generation completed, auto-saving to chat history..."
+        "💾 🎨 Image generation completed, skipping auto-save to chat (handled by wrapper)"
       );
       savedImageUrlRef.current = imageUrl;
-
-      // Small delay to ensure artifact is updated first
-      setTimeout(() => {
-        // AICODE-DEBUG: Логирование перед вызовом saveMediaToChat
-        console.log("🔍 useImageEffects: Calling saveMediaToChat with:", {
-          chatId: chatId || "none",
-          imageUrl: imageUrl ? `${imageUrl.substring(0, 50)}...` : "none",
-          prompt: prompt ? `${prompt.substring(0, 30)}...` : "none",
-          fileId: fileId || "none",
-          fileIdType: typeof fileId,
-          willUseFileId: fileId || "none",
-        });
-
-        saveMediaToChat(
-          chatId,
-          imageUrl,
-          prompt,
-          setMessages,
-          "image",
-          undefined,
-          fileId
-        );
-      }, 100);
     }
   }, [imageUrl, status, hasInitialized, chatId, setMessages, prompt]);
 

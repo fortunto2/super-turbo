@@ -74,17 +74,22 @@ export const ImageArtifactWrapper = memo(
           status: "idle",
         }));
 
-        // AICODE-FIX: Include thumbnail in main save to avoid duplication
-        const thumbnailUrl =
-          newContent.thumbnailUrl ||
-          (newContent.status === "completed" ? newContent.imageUrl : undefined);
-        saveArtifactToDatabase(
-          documentId,
-          title,
-          finalContent,
-          "image",
-          thumbnailUrl
-        );
+        // AICODE-FIX: Remove duplicate save - database save is now handled in server.ts
+        // Only save to database when generation is completed
+        if (newContent.status === "completed" && newContent.imageUrl) {
+          const thumbnailUrl =
+            newContent.thumbnailUrl ||
+            (newContent.status === "completed"
+              ? newContent.imageUrl
+              : undefined);
+          saveArtifactToDatabase(
+            documentId,
+            title,
+            finalContent,
+            "image",
+            thumbnailUrl
+          );
+        }
 
         // AICODE-FIX: Debug thumbnail save conditions
         console.log("🖼️ 🔍 updateContent called:", {

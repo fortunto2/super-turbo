@@ -279,19 +279,13 @@ export const VideoArtifactWrapper = memo(
             });
           }
 
-          // Auto-save video to chat history if we have required data
+          // AICODE-FIX: Remove duplicate saveMediaToChat call
+          // The saveMediaToChat is now handled in the artifact wrapper component
+          // This prevents double saving to chat history
           if (props.setMessages && props.chatId && parsedContent?.prompt) {
-            console.log("🎬 Video completed via SSE, auto-saving to chat...");
-            setTimeout(() => {
-              saveMediaToChat(
-                props.chatId,
-                videoUrl,
-                parsedContent.prompt,
-                props.setMessages,
-                "video",
-                thumbnailUrl
-              );
-            }, 500);
+            console.log(
+              "🎬 Video completed via SSE, skipping auto-save to chat (handled by wrapper)"
+            );
           }
         }
       },

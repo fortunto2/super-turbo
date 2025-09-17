@@ -43,9 +43,9 @@ export default function GalleryPage() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Header with search */}
-        <div className="border-b p-4">
+        <div className="border-b p-4 flex-shrink-0">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">Artifact Gallery</h1>
             <GallerySearch
@@ -58,9 +58,9 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {/* Gallery grid */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="max-w-6xl mx-auto">
+        {/* Gallery grid - фиксированная высота для предотвращения прыжков */}
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="max-w-6xl mx-auto min-h-full">
             <DocumentGallery
               filters={filters}
               page={page}
