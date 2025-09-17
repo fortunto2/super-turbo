@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, Button, Card, CardHeader, Car
 import { BookOpen, X, Trash2, ArrowLeft, Download, Copy, Shuffle, Sparkles, Loader2, Settings, ChevronUp, ChevronDown, Palette, Circle as Circle$1 } from 'lucide-react';
 import { jsx, jsxs, Fragment as Fragment$1 } from 'react/jsx-runtime';
 import { StripePaymentButton } from '@turbo-super/payment';
-import { FileTypeEnum, ProjectService, getClientSuperduperAIConfig, OpenAPI } from '@turbo-super/api';
+import { FileTypeEnum, ProjectService } from '@turbo-super/api';
 import { OffthreadVideo, Img, useVideoConfig, AbsoluteFill, Easing, Series, Audio, prefetch } from 'remotion';
 import { Player } from '@remotion/player';
 import { Canvas, Textbox, Circle, PencilBrush } from 'fabric';
@@ -2221,107 +2221,6 @@ var CharacterType = {};
 var EnhancementInfoType = {};
 var PresetOptionsType = {};
 var HistoryItemType = {};
-function useVideoScenes(projectId) {
-  const [scenes, setScenes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [projectStatus, setProjectStatus] = useState("unknown");
-  const [projectProgress, setProjectProgress] = useState(0);
-  useEffect(() => {
-    if (!projectId) return;
-    const fetchProjectData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const statusResponse = await fetch(
-          `/api/story-editor/status?projectId=${projectId}`
-        );
-        const statusResult = await statusResponse.json();
-        if (statusResult.success) {
-          setProjectStatus(statusResult.status);
-          setProjectProgress(statusResult.progress || 0);
-          if (statusResult.status === "completed" && statusResult.project?.scenes) {
-            setScenes(statusResult.project.scenes);
-          } else if (statusResult.status === "completed") {
-            const scenesResponse = await fetch(
-              `/api/story-editor/scenes?projectId=${projectId}`
-            );
-            const scenesResult = await scenesResponse.json();
-            if (scenesResult.success && scenesResult.scenes) {
-              const fullScenes = scenesResult.scenes.filter(
-                (scene) => scene.visual_description || scene.action_description
-              );
-              setScenes(fullScenes);
-            } else {
-              setError("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0441\u0446\u0435\u043D\u044B");
-            }
-          }
-        } else {
-          setError("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441 \u043F\u0440\u043E\u0435\u043A\u0442\u0430");
-        }
-      } catch (err) {
-        setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0434\u0430\u043D\u043D\u044B\u0445 \u043F\u0440\u043E\u0435\u043A\u0442\u0430");
-        console.error("Error fetching project data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProjectData();
-    if (projectStatus !== "completed") {
-      const interval = setInterval(fetchProjectData, 5e3);
-      return () => clearInterval(interval);
-    }
-  }, [projectId, projectStatus]);
-  return {
-    scenes,
-    isLoading,
-    error,
-    projectStatus,
-    projectProgress
-  };
-}
-function useProject(projectId) {
-  const [project, setProject] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  useEffect(() => {
-    if (!projectId) {
-      setError("Project ID is required");
-      setIsLoading(false);
-      return;
-    }
-    const fetchProject = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const config = await getClientSuperduperAIConfig();
-        if (config.token) {
-          OpenAPI.TOKEN = config.token;
-        }
-        if (config.url) {
-          OpenAPI.BASE = config.url;
-        }
-        const projectData = await ProjectService.projectGetById({
-          id: projectId
-        });
-        setProject(projectData);
-      } catch (err) {
-        console.error("Error fetching project:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch project"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProject();
-  }, [projectId]);
-  return {
-    project,
-    isLoading,
-    error
-  };
-}
 var useMediaPrefetch = ({ files, cleanable = false }) => {
   const [loaded, setLoaded] = useState(false);
   const [progress, setProgress] = useState({ totalBytes: 0, loadedBytes: 0 });
@@ -4327,6 +4226,6 @@ var Inpainting = ({
   ] });
 };
 
-export { CharacterType, Control, EnhancementInfoType, FabricCanvas, FabricController, HistoryItemType, Inpainting, Layer, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, TextToolbar, Veo3PromptGenerator, buildFabricController, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useFabricEditor, useGenerateTimeline, useMediaPrefetch, useProject, useTranslation, useVideoScenes };
+export { CharacterType, Control, EnhancementInfoType, FabricCanvas, FabricController, HistoryItemType, Inpainting, Layer, MoodboardImageType, PresetOptionsType, ProjectTimeline, PromptDataType, RemotionPlayer, TextToolbar, Veo3PromptGenerator, buildFabricController, calculatePlaybackProgress, calculateTotalDuration, convertSceneToTimeline, convertScenesToTimeline, createTrack, createTrackDetailsMap, createTrackItemMap, createVideoTimeline, defaultLocale, en_default as en, es_default as es, formatTime, getScenePreview, getTimelineDuration, getVideoConfig, hi_default as hi, isSceneReady, locales, mediaTypeMap2 as mediaTypeMap, projectQueryKeys, ru_default as ru, sceneToMediaFormatting, tr_default as tr, useFabricEditor, useGenerateTimeline, useMediaPrefetch, useTranslation };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

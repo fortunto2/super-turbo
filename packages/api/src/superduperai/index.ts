@@ -1,10 +1,3 @@
-// @ts-nocheck
-// SuperDuperAI API
-export * from "./client";
-export * from "./types";
-export * from "./endpoints";
-export * from "./config";
-
 // Image generation
 export * from "./lib/image-generation";
 
@@ -20,3 +13,5 @@ export * from "./api";
 
 // Re-export specific functions for easier usage
 export * from "./lib/project-video/helpers";
+
+export * from "./config";

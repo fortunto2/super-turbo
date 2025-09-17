@@ -1,5 +1,3 @@
-export { useVideoScenes } from "./hooks/useVideoScenes";
-export { useProject } from "./hooks/useProject";
 export {
   useMediaPrefetch,
   sceneToMediaFormatting,
