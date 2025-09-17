@@ -89,20 +89,20 @@ export const ImageArtifactWrapper = memo(
             "image",
             thumbnailUrl
           );
-        }
 
-        // AICODE-FIX: Debug thumbnail save conditions
-        console.log("🖼️ 🔍 updateContent called:", {
-          status: newContent.status,
-          hasImageUrl: !!newContent.imageUrl,
-          hasThumbnailUrl: !!newContent.thumbnailUrl,
-          documentId,
-          documentIdValid: documentId && documentId !== "undefined",
-          thumbnailUrl: newContent.thumbnailUrl,
-          finalThumbnailUrl: thumbnailUrl,
-          fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
-          projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
-        });
+          // AICODE-FIX: Debug thumbnail save conditions
+          console.log("🖼️ 🔍 updateContent called:", {
+            status: newContent.status,
+            hasImageUrl: !!newContent.imageUrl,
+            hasThumbnailUrl: !!newContent.thumbnailUrl,
+            documentId,
+            documentIdValid: documentId && documentId !== "undefined",
+            thumbnailUrl: newContent.thumbnailUrl,
+            finalThumbnailUrl: thumbnailUrl,
+            fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
+            projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
+          });
+        }
 
         console.log("🖼️ 🔍 About to check saveMediaToChat conditions...");
 
@@ -171,6 +171,12 @@ export const ImageArtifactWrapper = memo(
             projectId: newContent.projectId || "none",
             projectIdType: typeof newContent.projectId,
           });
+
+          const thumbnailUrl =
+            newContent.thumbnailUrl ||
+            (newContent.status === "completed"
+              ? newContent.imageUrl
+              : undefined);
 
           saveMediaToChat(
             chatId,
