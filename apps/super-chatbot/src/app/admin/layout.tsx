@@ -4,7 +4,12 @@ import { AdminNavigation } from "@/components/admin/admin-navigation";
 
 // Check if user is admin
 function isAdmin(email?: string | null): boolean {
-  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [
+    "pranov.adiletqwe@gmail.com",
+    "admin@superduperai.com",
+    "support@superduperai.com",
+    "dev@superduperai.com",
+  ];
   return email ? adminEmails.includes(email) : false;
 }
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
@@ -20,7 +19,6 @@ export function VoiceoverList({
   sceneId: string;
   onCreateAudio?: () => void;
 }) {
-  const [selectingFileId, setSelectingFileId] = useState<string | null>(null);
   const { data: scene, isLoading: isSceneLoading } = useSceneGetById({
     id: sceneId,
   });
@@ -31,37 +29,28 @@ export function VoiceoverList({
     types: [FileTypeEnum.VOICEOVER],
   });
 
-  const { mutate: update } = useSceneUpdate();
+  const { mutate: update, isPending } = useSceneUpdate();
 
-  const handleSelect = async (
-    file: IFileRead | null,
-    isPlaceholder?: boolean
-  ) => {
+  const handleSelectPlaceholder = async () => {
     if (!scene) return;
     if (!scene.file_id) return;
 
-    const id = isPlaceholder ? null : file?.id;
-    const fileId = file?.id || "placeholder";
-
-    setSelectingFileId(fileId);
     try {
       await update({
         id: scene.id,
         requestBody: {
           ...scene,
           file_id: scene.file_id,
-          voiceover_id: id,
+          voiceover_id: null,
         },
       });
-    } finally {
-      setSelectingFileId(null);
+    } catch (error) {
+      console.error("Error selecting file:", error);
     }
   };
 
   const isLoading = isFilesLoading || isSceneLoading;
   const isError = !scene || !files;
-  const isEmpty =
-    !isLoading && !isError && (!files?.items || files.items.length === 0);
 
   return (
     <div className="flex size-full flex-col">
@@ -77,8 +66,6 @@ export function VoiceoverList({
           <QueryState
             isLoading={isLoading}
             isError={isError}
-            isEmpty={isEmpty}
-            emptyMessage="No voiceover files"
             loadingComponent={
               <div className="flex size-full gap-3">
                 {[...Array(4)].map((_, i) => (
@@ -93,26 +80,10 @@ export function VoiceoverList({
             <>
               {/* Пустая карточка для сброса выбора */}
               <EmptyAudioFile
-                onSelect={() => {
-                  // Создаем placeholder объект для voiceover
-                  const placeholderFile: IFileRead = {
-                    id: "placeholder-voiceover",
-                    url: null,
-                    thumbnail_url: null,
-                    type: FileTypeEnum.VOICEOVER,
-                    image_generation_id: null,
-                    image_generation: null,
-                    video_generation_id: null,
-                    video_generation: null,
-                    audio_generation_id: null,
-                    audio_generation: null,
-                    duration: null,
-                    tasks: [],
-                  };
-                  handleSelect(placeholderFile, true);
-                }}
+                onSelect={handleSelectPlaceholder}
                 isActive={!scene?.voiceover_id}
                 onCreateAudio={onCreateAudio}
+                isPending={isPending}
               />
 
               {/* Файлы */}
@@ -120,10 +91,8 @@ export function VoiceoverList({
                 <AudioFile
                   key={file.id}
                   file={file}
-                  onSelect={handleSelect}
-                  type="voiceover"
                   isActive={scene?.voiceover_id === file.id}
-                  isSelecting={selectingFileId === file.id}
+                  scene={scene}
                 />
               ))}
             </>

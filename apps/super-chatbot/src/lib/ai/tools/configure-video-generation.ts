@@ -1,72 +1,27 @@
 import { tool } from "ai";
 import { z } from "zod";
-import type {
-  MediaOption,
-  VideoGenerationConfig,
-  AdaptedModel,
-} from "@/lib/types/media-settings";
-import { getStyles } from "../api/get-styles";
-import { findStyle } from "./configure-image-generation";
-import { createVideoMediaSettings } from "@/lib/config/media-settings-factory";
-import {
-  VIDEO_RESOLUTIONS,
-  SHOT_SIZES,
-  VIDEO_FRAME_RATES,
-  DEFAULT_VIDEO_RESOLUTION,
-  DEFAULT_VIDEO_DURATION,
-  getModelCompatibleResolutions,
-  getDefaultResolutionForModel,
-} from "@/lib/config/video-constants";
+import type { MediaOption } from "@/lib/types/media-settings";
+import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
 } from "@/lib/utils/ai-tools-balance";
 import type { Session } from "next-auth";
-import { GenerationSourceEnum, GenerationTypeEnum } from "@turbo-super/api";
+import { analyzeVideoContext } from "@/lib/ai/context";
 
 interface CreateVideoDocumentParams {
   createDocument: any;
   session?: Session | null;
-}
-
-// Helper function to convert string source to enum
-function convertSourceToEnum(source: string): GenerationSourceEnum {
-  switch (source) {
-    case "local":
-      return GenerationSourceEnum.LOCAL;
-    case "fal_ai":
-      return GenerationSourceEnum.FAL_AI;
-    case "google_cloud":
-      return GenerationSourceEnum.GOOGLE_CLOUD;
-    case "azure_openai_sora":
-      return GenerationSourceEnum.AZURE_OPENAI_SORA;
-    case "azure_openai_image":
-      return GenerationSourceEnum.AZURE_OPENAI_IMAGE;
-    default:
-      return GenerationSourceEnum.LOCAL;
-  }
-}
-
-// Helper function to convert string type to enum
-function convertTypeToEnum(type: string): GenerationTypeEnum {
-  switch (type) {
-    case "text_to_video":
-      return GenerationTypeEnum.TEXT_TO_VIDEO;
-    case "image_to_video":
-      return GenerationTypeEnum.IMAGE_TO_VIDEO;
-    case "text_to_image":
-      return GenerationTypeEnum.TEXT_TO_IMAGE;
-    case "image_to_image":
-      return GenerationTypeEnum.IMAGE_TO_IMAGE;
-    default:
-      return GenerationTypeEnum.TEXT_TO_VIDEO;
-  }
+  defaultSourceVideoUrl?: string;
+  chatId?: string;
+  userMessage?: string;
+  currentAttachments?: any[];
 }
 
 export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
   tool({
     description:
-      "Configure video generation settings or generate a video directly if prompt is provided. When prompt is provided, this will create a video artifact that shows generation progress in real-time. Available models are loaded dynamically from SuperDuperAI API.",
+      "Configure video generation settings or generate a video directly if prompt is provided. Supports text-to-video by default, video-to-video when a video sourceVideoUrl is provided, and image-to-video when an image sourceVideoUrl is provided. When triggered, creates a video artifact that shows generation progress in real-time.",
     parameters: z.object({
       prompt: z
         .string()
@@ -74,454 +29,228 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         .describe(
           "Detailed description of the video to generate. If provided, will immediately create video artifact and start generation"
         ),
-      negativePrompt: z
+      sourceVideoUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe(
+          "Optional source URL for video generation. Can be a video URL for video-to-video generation, or an image URL for image-to-video generation (e.g., when the user uploaded media in chat). If provided, the system will run the appropriate generation type."
+        ),
+      style: z
         .string()
         .optional()
-        .describe("What to avoid in the video generation"),
-      style: z.string().optional().describe("Style of the video"),
+        .describe(
+          'Style of the video. Supports many formats: "realistic", "cinematic", "anime", "cartoon", "documentary", "vlog", "tutorial", "promotional", "artistic", "minimalist", "abstract", and many more available styles'
+        ),
       resolution: z
         .string()
         .optional()
         .describe(
-          'Video resolution (e.g., "1344x768", "1024x1024"). Default is HD 1344x768 for cost efficiency.'
+          'Video resolution. Accepts various formats: "1920x1080", "1920×1080", "1920 x 1080", "full hd", "fhd", "1080p", "4k", "square", "vertical", "horizontal", etc.'
         ),
-      shotSize: z
+      duration: z
         .string()
         .optional()
         .describe(
-          "Shot size for the video (extreme-long-shot, long-shot, medium-shot, medium-close-up, close-up, extreme-close-up, two-shot, detail-shot)"
+          'Video duration. Accepts: "5s", "10s", "30s", "1m", "2m", "short", "medium", "long", etc.'
         ),
       model: z
         .string()
         .optional()
         .describe(
-          'AI model to use. Models are loaded dynamically from SuperDuperAI API. Use model name like "LTX" or full model ID. For image-to-video models (VEO, KLING), a source image is required.'
+          'AI model to use. Models are loaded dynamically from SuperDuperAI API. Use model name like "VEO3" or full model ID.'
         ),
-      frameRate: z
+      seed: z.number().optional().describe("Seed for reproducible results"),
+      batchSize: z
         .number()
-        .optional()
-        .describe("Frame rate in FPS (24, 30, 60, 120)"),
-      duration: z
-        .number()
+        .min(1)
+        .max(2)
         .optional()
         .describe(
-          "Video duration in seconds. Default is 5 seconds for cost efficiency."
-        ),
-      sourceImageId: z
-        .string()
-        .optional()
-        .describe(
-          "ID of source image for image-to-video models (VEO, KLING). Required for image-to-video generation."
-        ),
-      sourceImageUrl: z
-        .string()
-        .optional()
-        .describe(
-          "URL of source image for image-to-video models. Alternative to sourceImageId."
-        ),
-      generationType: z
-        .enum(["text-to-video", "image-to-video"])
-        .optional()
-        .describe(
-          'Generation mode: "text-to-video" for text prompts only, "image-to-video" when using source image'
+          "Number of videos to generate simultaneously (1-2). Higher batch sizes generate multiple variations at once."
         ),
     }),
     execute: async ({
       prompt,
-      negativePrompt,
+      sourceVideoUrl,
       style,
       resolution,
-      shotSize,
-      model,
-      frameRate,
       duration,
-      sourceImageId,
-      sourceImageUrl,
-      generationType,
+      model,
+      seed,
+      batchSize,
     }) => {
-      console.log("🔧 configureVideoGeneration called with:", {
+      console.log("🎬 configureVideoGeneration called with:", {
         prompt,
-        negativePrompt,
         style,
         resolution,
-        shotSize,
-        model,
-        frameRate,
         duration,
+        model,
+        seed,
+        batchSize,
       });
-      console.log("🔧 createDocument available:", !!params?.createDocument);
 
-      // AICODE-NOTE: Use economical defaults
-      const defaultResolution = DEFAULT_VIDEO_RESOLUTION;
-      const defaultStyle: MediaOption = {
-        id: "flux_steampunk",
-        label: "Steampunk",
-        description: "Steampunk style",
-      };
-      const defaultShotSize =
-        SHOT_SIZES.find((s) => s.id === "long-shot") || SHOT_SIZES[0];
+      // AICODE-NOTE: Use new factory to get configuration with OpenAPI models
+      console.log("🎬 Loading video configuration from OpenAPI factory...");
+      const config = await getVideoGenerationConfig();
 
-      // AICODE-NOTE: Load models using new factory pattern
-      console.log(
-        "🎬 Loading video models from SuperDuperAI API via factory..."
-      );
-      const videoSettings = await createVideoMediaSettings();
-      const availableModels = videoSettings.availableModels;
-
-      console.log(
-        "🎬 ✅ Loaded video models:",
-        availableModels.map((m) => m.id)
-      );
-
-      // AICODE-NOTE: Use smart model selection that prioritizes text_to_video models like Sora!
-      const { getBestVideoModel } = await import("@/lib/ai/api/config-cache");
-      const bestModel = await getBestVideoModel({
-        vipAllowed: true,
-        requireTextToVideo: true, // Prioritize text_to_video for tools
-      }); // Allow VIP models for better defaults
-
-      const defaultModel: AdaptedModel = bestModel
-        ? {
-            ...bestModel,
-            id: bestModel.name,
-            label: bestModel.label || bestModel.name,
-            description: `${bestModel.label || bestModel.name} - ${bestModel.type}`,
-            value: bestModel.name,
-            workflowPath: bestModel.params?.workflow_path || "",
-            price: bestModel.params?.price_per_second || bestModel.price || 0,
-            type: convertTypeToEnum(bestModel.type as string),
-            source: convertSourceToEnum(bestModel.source as string),
-          }
-        : ((availableModels.find((m) => m.name === "azure-openai/sora") ||
-            availableModels[0]) as AdaptedModel);
-
-      console.log(
-        "🎯 Smart default model selected:",
-        defaultModel.label,
-        "(type:",
-        defaultModel.type,
-        ")"
-      );
-
-      let styles: MediaOption[] = [];
-
-      try {
-        const response = await getStyles();
-        if ("error" in response) {
-          console.error(response.error);
-        } else {
-          styles = response.items.map((style) => ({
-            id: style.name,
-            label: style.title ?? style.name,
-            description: style.title ?? style.name,
-          }));
-        }
-      } catch (err) {
-        console.log(err);
-      }
+      console.log("🎬 ✅ Loaded video config:", {
+        modelsCount: config.availableModels.length,
+        resolutionsCount: config.availableResolutions.length,
+        stylesCount: config.availableStyles.length,
+      });
 
       // If no prompt provided, return configuration panel
       if (!prompt) {
         console.log(
-          "🔧 No prompt provided, returning video configuration panel"
+          "🎬 No prompt provided, returning video configuration panel"
         );
-        const config: VideoGenerationConfig = {
-          type: "video-generation-settings",
-          availableResolutions: getModelCompatibleResolutions(
-            defaultModel.name || defaultModel.id || ""
-          ),
-          availableStyles: styles,
-          availableShotSizes: SHOT_SIZES,
-          availableModels: availableModels,
-          availableFrameRates: VIDEO_FRAME_RATES,
-          defaultSettings: {
-            resolution: getDefaultResolutionForModel(
-              defaultModel.name || defaultModel.id || ""
-            ),
-            style: defaultStyle,
-            shotSize: defaultShotSize,
-            model: defaultModel,
-            frameRate: 30,
-            duration: DEFAULT_VIDEO_DURATION, // 5 seconds for economy
-            negativePrompt: "",
-            seed: undefined,
-          },
-        };
         return config;
       }
 
-      console.log("🔧 ✅ PROMPT PROVIDED, CREATING VIDEO DOCUMENT:", prompt);
-      console.log("🔧 ✅ PARAMS OBJECT:", !!params);
-      console.log("🔧 ✅ CREATE DOCUMENT AVAILABLE:", !!params?.createDocument);
+      console.log("🎬 ✅ PROMPT PROVIDED, CREATING VIDEO DOCUMENT:", prompt);
 
       if (!params?.createDocument) {
         console.log(
-          "🔧 ❌ createDocument not available, returning basic config"
+          "🎬 ❌ createDocument not available, returning basic config"
         );
-        const config: VideoGenerationConfig = {
-          type: "video-generation-settings",
-          availableResolutions: getModelCompatibleResolutions(
-            defaultModel.name || defaultModel.id || ""
-          ),
-          availableStyles: styles,
-          availableShotSizes: SHOT_SIZES,
-          availableModels: availableModels,
-          availableFrameRates: VIDEO_FRAME_RATES,
-          defaultSettings: {
-            resolution: getDefaultResolutionForModel(
-              defaultModel.name || defaultModel.id || ""
-            ),
-            style: defaultStyle,
-            shotSize: defaultShotSize,
-            model: defaultModel,
-            frameRate: frameRate || 30,
-            duration: duration || DEFAULT_VIDEO_DURATION,
-            negativePrompt: negativePrompt || "",
-            seed: undefined,
-          },
-        };
         return config;
       }
 
+      // Check style for quality multipliers
+      const multipliers: string[] = [];
+      if (style?.includes("high-quality")) multipliers.push("high-quality");
+      if (style?.includes("ultra-quality")) multipliers.push("ultra-quality");
+
       try {
-        // Find the selected model first (for resolution compatibility check)
-        const selectedModel = model
-          ? availableModels.find(
-              (m) =>
-                m.label === model ||
-                m.id === model ||
-                (m as any).apiName === model
-            ) || defaultModel
-          : defaultModel;
+        // Find the selected options or use defaults from factory
+        const selectedResolution = resolution
+          ? config.availableResolutions.find((r) => r.label === resolution) ||
+            config.defaultSettings.resolution
+          : config.defaultSettings.resolution;
 
-        // Get model-compatible resolutions
-        const compatibleResolutions = getModelCompatibleResolutions(
-          selectedModel.name || selectedModel.id || ""
-        );
-
-        // Find the selected resolution, but ensure it's compatible with the model
-        let selectedResolution = defaultResolution;
-        if (resolution) {
-          const requestedResolution = VIDEO_RESOLUTIONS.find(
-            (r) => r.label === resolution
-          );
-          if (requestedResolution) {
-            // Check if requested resolution is compatible with the model
-            const isCompatible = compatibleResolutions.some(
-              (r) => r.label === requestedResolution.label
-            );
-            if (isCompatible) {
-              selectedResolution = requestedResolution;
-            } else {
-              // Use model-compatible default instead
-              selectedResolution = getDefaultResolutionForModel(
-                selectedModel.name || selectedModel.id || ""
-              );
-              console.log(
-                `🔧 ⚠️ Resolution ${resolution} not compatible with model ${selectedModel.name}, using ${selectedResolution.label} instead`
-              );
-            }
-          }
-        } else {
-          // No resolution specified, use model-compatible default
-          selectedResolution = getDefaultResolutionForModel(
-            selectedModel.name || selectedModel.id || ""
-          );
-        }
-
-        let selectedStyle: MediaOption = defaultStyle;
+        let selectedStyle: MediaOption = config.defaultSettings.style;
         if (style) {
-          const foundStyle = findStyle(style, styles);
+          const foundStyle = findVideoStyle(style, config.availableStyles);
           if (foundStyle) {
             selectedStyle = foundStyle;
             console.log(
-              "🔧 ✅ STYLE MATCHED:",
+              "🎬 ✅ STYLE MATCHED:",
               style,
               "->",
               selectedStyle.label
             );
           } else {
             console.log(
-              "🔧 ⚠️ STYLE NOT FOUND:",
+              "🎬 ⚠️ STYLE NOT FOUND:",
               style,
               "using default:",
-              defaultStyle.label
-            );
-            console.log(
-              "🔧 📋 Available styles:",
-              styles
-                .map((s) => s.label)
-                .slice(0, 5)
-                .join(", "),
-              "..."
-            );
-
-            // Additional fallback: try to find the most common style types
-            const commonStyleFallbacks = [
-              "flux_steampunk",
-              "steampunk",
-              "flux_realistic",
-              "realistic",
-              "flux_cinematic",
-              "cinematic",
-              "flux_anime",
-              "anime",
-              "flux_fantasy",
-              "fantasy",
-              "default",
-            ];
-
-            for (const fallbackId of commonStyleFallbacks) {
-              const fallbackStyle = styles.find(
-                (s) =>
-                  s.id.toLowerCase().includes(fallbackId.toLowerCase()) ||
-                  s.label.toLowerCase().includes(fallbackId.toLowerCase())
-              );
-              if (fallbackStyle) {
-                selectedStyle = fallbackStyle;
-                console.log(
-                  "🔧 🔄 FALLBACK STYLE FOUND:",
-                  fallbackId,
-                  "->",
-                  selectedStyle.label
-                );
-                break;
-              }
-            }
-
-            // If still no style found, use the first available one
-            if (selectedStyle === defaultStyle && styles.length > 0) {
-              selectedStyle = styles[0];
-              console.log(
-                "🔧 🔄 USING FIRST AVAILABLE STYLE:",
-                selectedStyle.label
-              );
-            }
-          }
-        } else {
-          // No style specified, try to find a good default from available styles
-          const preferredDefaults = [
-            "flux_steampunk",
-            "steampunk",
-            "flux_realistic",
-            "realistic",
-          ];
-          for (const preferredId of preferredDefaults) {
-            const preferredStyle = styles.find(
-              (s) =>
-                s.id.toLowerCase().includes(preferredId.toLowerCase()) ||
-                s.label.toLowerCase().includes(preferredId.toLowerCase())
-            );
-            if (preferredStyle) {
-              selectedStyle = preferredStyle;
-              console.log(
-                "🔧 🎯 USING PREFERRED DEFAULT STYLE:",
-                selectedStyle.label
-              );
-              break;
-            }
-          }
-
-          // If no preferred default found, use first available
-          if (selectedStyle === defaultStyle && styles.length > 0) {
-            selectedStyle = styles[0];
-            console.log(
-              "🔧 🎯 USING FIRST AVAILABLE AS DEFAULT:",
               selectedStyle.label
             );
           }
         }
 
-        const selectedShotSize = shotSize
-          ? SHOT_SIZES.find((s) => s.label === shotSize || s.id === shotSize) ||
-            defaultShotSize
-          : defaultShotSize;
+        const selectedDuration = duration
+          ? config.availableDurations.find(
+              (d) => d.label === duration || d.id === duration
+            ) || config.defaultSettings.duration
+          : config.defaultSettings.duration;
 
-        // AICODE-NOTE: Check if selected model is image-to-video based on actual type field from API
-        const isImageToVideoModel = selectedModel.type === "image_to_video";
+        const selectedModel = model
+          ? config.availableModels.find(
+              (m) => m.name === model || (m as any).id === model
+            ) || config.defaultSettings.model
+          : config.defaultSettings.model;
 
-        console.log("🔧 🎯 Model type check:", {
-          modelId: selectedModel.id,
-          modelName: selectedModel.label,
-          apiType: selectedModel.type,
-          isImageToVideo: isImageToVideoModel,
+        // Используем новую систему анализа контекста
+        let normalizedSourceUrl = sourceVideoUrl;
+
+        console.log("🔍 configureVideoGeneration sourceVideoUrl resolution:", {
+          sourceVideoUrl,
+          defaultSourceVideoUrl: params?.defaultSourceVideoUrl,
+          chatId: params?.chatId,
+          userMessage: params?.userMessage,
         });
 
-        // AICODE-NOTE: Validate source image for image-to-video models
-        if (isImageToVideoModel && !sourceImageId && !sourceImageUrl) {
-          return {
-            error: `The selected model "${selectedModel.label}" is an image-to-video model and requires a source image. Please provide either sourceImageId or sourceImageUrl parameter, or select a text-to-video model.`,
-            suggestion:
-              "You can use a recently generated image from this chat as the source, or upload a new image first.",
-            availableTextToVideoModels: availableModels
-              .filter(
-                (m) => m.type === "text_to_video" || m.type !== "image_to_video"
-              )
-              .map((m) => `${m.label} (${m.id})`),
-          };
-        }
-
-        // AICODE-NOTE: Auto-determine generation type for dual-mode compatibility
-        const autoGenerationType =
-          sourceImageId || sourceImageUrl ? "image-to-video" : "text-to-video";
-        const finalGenerationType = generationType || autoGenerationType;
-
-        console.log("🔧 🎯 Generation type determination:", {
-          provided: generationType,
-          autoDetected: autoGenerationType,
-          final: finalGenerationType,
-          hasSourceImage: !!(sourceImageId || sourceImageUrl),
-        });
-
-        // Create the video document with all parameters
-        const videoParams = {
-          prompt,
-          negativePrompt: negativePrompt || "",
-          style: selectedStyle,
-          resolution: selectedResolution,
-          shotSize: selectedShotSize,
-          model: selectedModel,
-          frameRate: frameRate || 30,
-          duration: duration || DEFAULT_VIDEO_DURATION, // Use economical default
-          sourceImageId: sourceImageId || undefined,
-          sourceImageUrl: sourceImageUrl || undefined,
-          generationType: finalGenerationType,
-        };
-
-        console.log("🔧 ✅ CREATING VIDEO DOCUMENT WITH PARAMS:", videoParams);
-
-        // Check balance before creating artifact
-        const operationType =
-          finalGenerationType === "image-to-video"
-            ? "image-to-video"
-            : "text-to-video";
-        const multipliers: string[] = [];
-
-        // Add duration multipliers
-        if (duration) {
-          if (duration <= 5) multipliers.push("duration-5s");
-          else if (duration <= 10) multipliers.push("duration-10s");
-          else if (duration <= 15) multipliers.push("duration-15s");
-          else if (duration <= 30) multipliers.push("duration-30s");
-        } else {
-          multipliers.push("duration-5s");
-        }
-
-        // Add quality multipliers
+        // Приоритет 1: defaultSourceVideoUrl (legacy поддержка)
         if (
-          selectedResolution.label.includes("HD") ||
-          selectedResolution.label.includes("720")
+          params?.defaultSourceVideoUrl &&
+          /^https?:\/\//.test(params.defaultSourceVideoUrl)
         ) {
-          multipliers.push("hd-quality");
-        } else if (
-          selectedResolution.label.includes("4K") ||
-          selectedResolution.label.includes("2160")
+          console.log(
+            "🔍 Using defaultSourceVideoUrl from legacy context analysis:",
+            params.defaultSourceVideoUrl
+          );
+          normalizedSourceUrl = params.defaultSourceVideoUrl;
+        }
+        // Приоритет 2: новая система анализа контекста
+        else if (params?.chatId && params?.userMessage) {
+          try {
+            console.log("🔍 Analyzing video context with new system...");
+            const contextResult = await analyzeVideoContext(
+              params.userMessage,
+              params.chatId,
+              params.currentAttachments
+            );
+
+            console.log("🔍 Context analysis result:", contextResult);
+
+            if (contextResult.sourceUrl && contextResult.confidence !== "low") {
+              console.log(
+                "🔍 Using sourceUrl from new context analysis:",
+                contextResult.sourceUrl,
+                "confidence:",
+                contextResult.confidence
+              );
+              normalizedSourceUrl = contextResult.sourceUrl;
+            }
+          } catch (error) {
+            console.warn("🔍 Error in context analysis, falling back:", error);
+          }
+        }
+        // Приоритет 3: AI-provided sourceVideoUrl
+        else if (
+          normalizedSourceUrl &&
+          /^https?:\/\//.test(normalizedSourceUrl) &&
+          !normalizedSourceUrl.startsWith("attachment://")
         ) {
-          multipliers.push("4k-quality");
+          console.log(
+            "🔍 Using AI-provided sourceVideoUrl:",
+            normalizedSourceUrl
+          );
+        }
+        // Fallback: text-to-video
+        else {
+          console.log(
+            "🔍 No valid source video URL available, will be text-to-video"
+          );
+          normalizedSourceUrl = undefined;
+        }
+
+        // Determine operation type and check balance
+        let operationType = "text-to-video";
+        if (normalizedSourceUrl) {
+          // Проверяем, является ли источник изображением или видео
+          const isImageSource =
+            /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(normalizedSourceUrl) ||
+            normalizedSourceUrl.includes("image/") ||
+            params?.currentAttachments?.some(
+              (att) =>
+                att.url === normalizedSourceUrl &&
+                String(att.contentType || "").startsWith("image/")
+            );
+
+          operationType = isImageSource ? "image-to-video" : "video-to-video";
+
+          console.log("🔍 Operation type determined:", {
+            sourceUrl: normalizedSourceUrl,
+            isImageSource,
+            operationType,
+          });
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
-          params?.session || null,
+          params.session || null,
           "video-generation",
           operationType,
           multipliers,
@@ -529,7 +258,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         );
 
         if (!balanceCheck.valid) {
-          console.log("🔧 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+          console.log("🎬 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
           return {
             error:
               balanceCheck.userMessage ||
@@ -539,69 +268,101 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           };
         }
 
-        if (params?.createDocument) {
-          console.log("🔧 ✅ CALLING CREATE DOCUMENT WITH KIND: video");
-          try {
-            // Call createDocument with title that contains params for server parsing but shows only prompt to user
-            const readableTitle = `Video: "${prompt}" ${JSON.stringify(videoParams)}`;
-            const result = await params.createDocument.execute({
-              title: readableTitle,
-              kind: "video",
-            });
+        // Create the video document with all parameters
+        const videoParams = {
+          prompt,
+          style: selectedStyle,
+          resolution: selectedResolution,
+          duration: selectedDuration.value || selectedDuration, // Извлекаем value для API
+          model: selectedModel,
+          seed: seed || undefined,
+          batchSize: batchSize || 1,
+          ...(normalizedSourceUrl
+            ? { sourceVideoUrl: normalizedSourceUrl }
+            : {}),
+        };
 
-            console.log("🔧 ✅ CREATE DOCUMENT RESULT:", result);
+        console.log("🎬 ✅ CREATING VIDEO DOCUMENT WITH PARAMS:", videoParams);
+        console.log("🔍 Final sourceVideoUrl used:", normalizedSourceUrl);
 
-            return {
-              ...result,
-              message: `I'm creating a video with description: "${prompt}". Using economical HD settings (${selectedResolution.label}, ${duration || DEFAULT_VIDEO_DURATION}s) for cost efficiency. Artifact created and generation started.`,
-            };
-          } catch (error) {
-            console.error("🔧 ❌ CREATE DOCUMENT ERROR:", error);
-            console.error(
-              "🔧 ❌ ERROR STACK:",
-              error instanceof Error ? error.stack : "No stack"
-            );
-            throw error;
-          }
-        }
-
-        console.log("🔧 ❌ CREATE DOCUMENT NOT AVAILABLE, RETURNING FALLBACK");
-        // Fallback to simple message
-        const readableTitle = `Video: "${prompt}" ${JSON.stringify(videoParams)}`;
-        return {
-          message: `I'll create a video with description: "${prompt}". However, artifact cannot be created - createDocument unavailable.`,
-          parameters: {
-            title: readableTitle,
+        try {
+          // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
+          // TODO: Refactor to use proper parameter passing mechanism
+          const result = await params.createDocument.execute({
+            title: JSON.stringify(videoParams),
             kind: "video",
-          },
-        };
-      } catch (error: any) {
-        console.error("🔧 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
-        return {
-          error: `Failed to create video document: ${error.message}`,
-          fallbackConfig: {
-            type: "video-generation-settings",
-            availableResolutions: getModelCompatibleResolutions(
-              defaultModel.name || defaultModel.id || ""
-            ),
-            availableStyles: styles,
-            availableShotSizes: SHOT_SIZES,
-            availableModels: availableModels,
-            availableFrameRates: VIDEO_FRAME_RATES,
-            defaultSettings: {
-              resolution: getDefaultResolutionForModel(
-                defaultModel.name || defaultModel.id || ""
-              ),
-              style: defaultStyle,
-              shotSize: defaultShotSize,
-              model: defaultModel,
-              frameRate: frameRate || 30,
-              duration: duration || DEFAULT_VIDEO_DURATION,
-              negativePrompt: negativePrompt || "",
-              seed: undefined,
-            },
-          },
-        };
-      }
+          });
+
+          console.log("🎬 ✅ CREATE DOCUMENT RESULT:", result);
+
+          return {
+            ...result,
+            message: `I'm creating ${operationType.replace("-", " ")} with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution and ${selectedDuration.label} duration. Artifact created and generation started.`,
+          };
+        } catch (error) {
+          console.error("🎬 ❌ CREATE DOCUMENT ERROR:", error);
+          throw error;
+        }
+        } catch (error: any) {
+          console.error("🎬 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
+          
+          // Create error artifact for better user feedback
+          if (params?.createDocument) {
+            try {
+              const errorResult = await params.createDocument.execute({
+                title: JSON.stringify({
+                  prompt,
+                  status: "error",
+                  error: error.message || "Failed to create video document",
+                  timestamp: Date.now(),
+                  message: "Ошибка при создании видео",
+                }),
+                kind: "video",
+              });
+              
+              return {
+                ...errorResult,
+                error: `Ошибка создания видео: ${error.message}`,
+                message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
+              };
+            } catch (artifactError) {
+              console.error("🎬 ❌ Failed to create error artifact:", artifactError);
+            }
+          }
+          
+          return {
+            error: `Ошибка создания видео: ${error.message}`,
+            message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
+            fallbackConfig: config,
+          };
+        }
     },
   });
+
+// Helper function to find video style (similar to image style finder)
+export function findVideoStyle(
+  styleName: string,
+  availableStyles: MediaOption[]
+): MediaOption | null {
+  const normalizedStyleName = styleName.toLowerCase().trim();
+
+  // Direct match by label or id
+  let foundStyle = availableStyles.find(
+    (style) =>
+      style.label.toLowerCase() === normalizedStyleName ||
+      style.id.toLowerCase() === normalizedStyleName
+  );
+
+  if (foundStyle) return foundStyle;
+
+  // Partial match
+  foundStyle = availableStyles.find(
+    (style) =>
+      style.label.toLowerCase().includes(normalizedStyleName) ||
+      style.id.toLowerCase().includes(normalizedStyleName) ||
+      normalizedStyleName.includes(style.label.toLowerCase()) ||
+      normalizedStyleName.includes(style.id.toLowerCase())
+  );
+
+  return foundStyle || null;
+}

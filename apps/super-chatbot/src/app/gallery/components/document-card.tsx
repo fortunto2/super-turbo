@@ -85,8 +85,8 @@ export function DocumentCard({ document }: DocumentCardProps) {
       {/* Thumbnail */}
       {getThumbnail()}
 
-      {/* Content */}
-      <div className="p-4 space-y-3">
+      {/* Content - фиксированная высота для консистентности */}
+      <div className="p-4 space-y-3 min-h-[140px] flex flex-col">
         {/* Title and type */}
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-medium line-clamp-2 flex-1">{document.title}</h3>
@@ -95,34 +95,38 @@ export function DocumentCard({ document }: DocumentCardProps) {
           </span>
         </div>
 
-        {/* Model badge */}
-        {document.model && (
-          <span className="inline-block px-2 py-1 text-xs border rounded">
-            {document.model}
-          </span>
-        )}
+        {/* Model badge - всегда резервируем место */}
+        <div className="h-6">
+          {document.model && (
+            <span className="inline-block px-2 py-1 text-xs border rounded">
+              {document.model}
+            </span>
+          )}
+        </div>
 
-        {/* Tags */}
-        {document.tags && document.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {document.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 text-xs border rounded"
-              >
-                {tag}
-              </span>
-            ))}
-            {document.tags.length > 3 && (
-              <span className="px-2 py-1 text-xs border rounded">
-                +{document.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
+        {/* Tags - всегда резервируем место */}
+        <div className="h-6">
+          {document.tags && document.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {document.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 text-xs border rounded"
+                >
+                  {tag}
+                </span>
+              ))}
+              {document.tags.length > 3 && (
+                <span className="px-2 py-1 text-xs border rounded">
+                  +{document.tags.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        {/* Footer - всегда внизу */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto">
           <span>
             {formatDistance(new Date(document.createdAt), new Date(), {
               addSuffix: true,

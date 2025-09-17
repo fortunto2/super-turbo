@@ -18,76 +18,53 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { QueryState, } from "@/components/ui/query-state";
-import { useProjectList } from "@/lib/api/superduperai";
+import { QueryState } from "@/components/ui/query-state";
+// import { useProjectList } from "@/lib/api/superduperai";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getStatusIcon,
+  getStatusColor,
+  getStatusText,
+} from "@/lib/utils/project-status";
 
 interface UserProject {
   id: string;
+  userId: string;
   projectId: string;
+  status?: "pending" | "processing" | "completed" | "failed";
+  errorStage?: "script" | "entities" | "storyboard";
+  errorMessage?: string;
+  completedStages?: string[];
+  failedStages?: string[];
+  tasks?: any[];
+  creditsUsed?: number;
   createdAt: string;
-}
-
-interface ProjectDetails {
-  id: string;
-  status: string;
-  progress: number;
-  completedTasks: number;
-  totalTasks: number;
+  updatedAt?: string;
 }
 
 export default function ProjectsPage() {
   const router = useRouter();
 
-  // Используем React Query для загрузки проектов
+  // Используем локальный API для загрузки проектов пользователя
   const {
     data: projectsData,
     isLoading,
     isError,
     error,
-  } = useProjectList({
-    limit: 100,
+  } = useQuery({
+    queryKey: ["user-projects"],
+    queryFn: async () => {
+      const response = await fetch("/api/user/projects");
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
+      }
+      return response.json();
+    },
   });
 
-  const projects = projectsData?.items || [];
+  const projects = projectsData?.projects || [];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "failed":
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case "processing":
-        return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
-      default:
-        return <Clock className="h-5 w-5 text-muted-foreground" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "Completed";
-      case "failed":
-        return "Error";
-      case "processing":
-        return "Processing";
-      default:
-        return "Pending";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "text-green-600 dark:text-green-400";
-      case "failed":
-        return "text-red-600 dark:text-red-400";
-      case "processing":
-        return "text-blue-600 dark:text-blue-400";
-      default:
-        return "text-muted-foreground";
-    }
-  };
+  // Используем утилиты из project-status.ts
 
   return (
     <div className="w-full min-h-screen bg-background">
@@ -157,8 +134,8 @@ export default function ProjectsPage() {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {projects.map((project) => {
-                  const status = "pending"; // TODO: Получить статус из API
+                {projects.map((project: UserProject) => {
+                  const status = project.status || "pending"; // TODO: Получить статус из API
 
                   return (
                     <Card
@@ -168,15 +145,22 @@ export default function ProjectsPage() {
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg truncate text-foreground">
-                            Project {project.id.slice(-8)}
+                            Project {project.projectId.slice(-8)}
                           </CardTitle>
-                          {getStatusIcon(status)}
+                          <span className="text-lg">
+                            {getStatusIcon(status)}
+                          </span>
                         </div>
                         <CardDescription className="text-muted-foreground">
                           Created{" "}
-                          {new Date(
-                            project.created_at || Date.now()
-                          ).toLocaleDateString("en-US")}
+                          {new Date(project.createdAt).toLocaleDateString(
+                            "en-US"
+                          )}
+                          {project.creditsUsed && (
+                            <span className="block text-xs">
+                              Credits used: {project.creditsUsed}
+                            </span>
+                          )}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="pt-0">
@@ -192,9 +176,25 @@ export default function ProjectsPage() {
                             </span>
                           </div>
 
+                          {project.errorStage && (
+                            <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <span className="text-sm text-red-600 dark:text-red-400">
+                                Error in {project.errorStage} stage
+                              </span>
+                            </div>
+                          )}
+
+                          {project.completedStages &&
+                            project.completedStages.length > 0 && (
+                              <div className="text-xs text-muted-foreground">
+                                Completed: {project.completedStages.join(", ")}
+                              </div>
+                            )}
+
                           <div className="pt-2">
                             <Link
-                              href={`/project/video/${project.id}/generate`}
+                              href={`/project/video/${project.projectId}/generate`}
                             >
                               <Button
                                 className="w-full hover:scale-105 transition-all duration-300"

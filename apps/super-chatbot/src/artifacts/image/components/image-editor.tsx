@@ -10,6 +10,7 @@ import {
   Button,
 } from "@turbo-super/ui";
 import { CopyIcon } from "@/components/common/icons";
+import { ImageErrorDisplay } from "@/components/chat/error-display";
 import { useImageGeneration } from "../hooks/use-image-generation";
 import { useImageEffects } from "../hooks/use-image-effects";
 import {
@@ -23,6 +24,7 @@ import {
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { DebugParameters } from "@/components/debug/debug-parameters";
 import { FileService, FileTypeEnum } from "@turbo-super/api";
+import { toast } from "sonner";
 
 interface ImageEditorProps {
   chatId?: string;
@@ -392,6 +394,13 @@ export function ImageEditor({
     setPrompt("");
   };
 
+  const handleRetry = () => {
+    // Clear error and reset state for retry
+    imageGeneration.resetState();
+    // TODO: Implement actual retry logic
+    toast.info("Функция повтора будет добавлена в следующей версии");
+  };
+
   const handleForceCheck = async () => {
     setIsForceChecking(true);
     try {
@@ -545,9 +554,11 @@ export function ImageEditor({
       </CardHeader>
       <CardContent className="space-y-6">
         {imageGeneration.error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="text-red-800 text-sm">{imageGeneration.error}</div>
-          </div>
+          <ImageErrorDisplay
+            error={imageGeneration.error}
+            prompt={initialState?.prompt}
+            onRetry={handleRetry}
+          />
         )}
 
         {showSkeleton && (

@@ -20,6 +20,33 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
+  // Логируем структуру сообщения для отладки
+  console.log("🔍 generateTitleFromUserMessage - message structure:", {
+    hasMessage: !!message,
+    messageKeys: message ? Object.keys(message) : [],
+    hasContent: !!(message as any)?.content,
+    hasParts: !!(message as any)?.parts,
+    partsLength: (message as any)?.parts?.length || 0,
+  });
+
+  // Безопасно извлекаем текст сообщения
+  const messageText =
+    (message as any)?.content || (message as any)?.parts?.[0]?.text || "";
+
+  // Если нет текста, но есть изображения, создаем заголовок на основе этого
+  const hasImages = (message as any)?.experimental_attachments?.some(
+    (att: any) => att.contentType?.startsWith("image/")
+  );
+
+  if (!messageText && hasImages) {
+    return "Image Chat";
+  }
+
+  if (!messageText) {
+    console.warn("⚠️ No text found in message for title generation");
+    return "New Chat";
+  }
+
   const { text: title } = await generateText({
     model: myProvider.languageModel("title-model"),
     system: `\n
@@ -27,7 +54,7 @@ export async function generateTitleFromUserMessage({
     - ensure it is not more than 80 characters long
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
+    prompt: messageText,
   });
 
   return title;

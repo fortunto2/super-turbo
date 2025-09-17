@@ -2223,107 +2223,6 @@ var CharacterType = {};
 var EnhancementInfoType = {};
 var PresetOptionsType = {};
 var HistoryItemType = {};
-function useVideoScenes(projectId) {
-  const [scenes, setScenes] = react.useState([]);
-  const [isLoading, setIsLoading] = react.useState(true);
-  const [error, setError] = react.useState(null);
-  const [projectStatus, setProjectStatus] = react.useState("unknown");
-  const [projectProgress, setProjectProgress] = react.useState(0);
-  react.useEffect(() => {
-    if (!projectId) return;
-    const fetchProjectData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const statusResponse = await fetch(
-          `/api/story-editor/status?projectId=${projectId}`
-        );
-        const statusResult = await statusResponse.json();
-        if (statusResult.success) {
-          setProjectStatus(statusResult.status);
-          setProjectProgress(statusResult.progress || 0);
-          if (statusResult.status === "completed" && statusResult.project?.scenes) {
-            setScenes(statusResult.project.scenes);
-          } else if (statusResult.status === "completed") {
-            const scenesResponse = await fetch(
-              `/api/story-editor/scenes?projectId=${projectId}`
-            );
-            const scenesResult = await scenesResponse.json();
-            if (scenesResult.success && scenesResult.scenes) {
-              const fullScenes = scenesResult.scenes.filter(
-                (scene) => scene.visual_description || scene.action_description
-              );
-              setScenes(fullScenes);
-            } else {
-              setError("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0441\u0446\u0435\u043D\u044B");
-            }
-          }
-        } else {
-          setError("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441 \u043F\u0440\u043E\u0435\u043A\u0442\u0430");
-        }
-      } catch (err) {
-        setError("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0434\u0430\u043D\u043D\u044B\u0445 \u043F\u0440\u043E\u0435\u043A\u0442\u0430");
-        console.error("Error fetching project data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProjectData();
-    if (projectStatus !== "completed") {
-      const interval = setInterval(fetchProjectData, 5e3);
-      return () => clearInterval(interval);
-    }
-  }, [projectId, projectStatus]);
-  return {
-    scenes,
-    isLoading,
-    error,
-    projectStatus,
-    projectProgress
-  };
-}
-function useProject(projectId) {
-  const [project, setProject] = react.useState(null);
-  const [isLoading, setIsLoading] = react.useState(true);
-  const [error, setError] = react.useState(null);
-  react.useEffect(() => {
-    if (!projectId) {
-      setError("Project ID is required");
-      setIsLoading(false);
-      return;
-    }
-    const fetchProject = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const config = await api.getClientSuperduperAIConfig();
-        if (config.token) {
-          api.OpenAPI.TOKEN = config.token;
-        }
-        if (config.url) {
-          api.OpenAPI.BASE = config.url;
-        }
-        const projectData = await api.ProjectService.projectGetById({
-          id: projectId
-        });
-        setProject(projectData);
-      } catch (err) {
-        console.error("Error fetching project:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch project"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProject();
-  }, [projectId]);
-  return {
-    project,
-    isLoading,
-    error
-  };
-}
 var useMediaPrefetch = ({ files, cleanable = false }) => {
   const [loaded, setLoaded] = react.useState(false);
   const [progress, setProgress] = react.useState({ totalBytes: 0, loadedBytes: 0 });
@@ -3389,11 +3288,11 @@ var VideoPlayer = ({
     }
     return null;
   }, [isLoading]);
-  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grow p-3 pt-6 w-full h-full", children: /* @__PURE__ */ jsxRuntime.jsx(
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "w-full h-full flex flex-col", children: /* @__PURE__ */ jsxRuntime.jsx(
     "div",
     {
       ref: containerRef,
-      className: "flex-1 flex justify-center items-center relative w-full h-full",
+      className: "flex-1 flex justify-center items-center relative w-full h-full min-h-0",
       children: metadata && /* @__PURE__ */ jsxRuntime.jsx(
         player.Player,
         {
@@ -3718,7 +3617,8 @@ var ProjectTimeline = ({
   onBack,
   onExport,
   onUpdateTimeline,
-  onRegenerateTimeline
+  onRegenerateTimeline,
+  isGenerating
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = react.useState(false);
   const [isClient, setIsClient] = react.useState(false);
@@ -3802,7 +3702,7 @@ var ProjectTimeline = ({
   if (!isComponentsLoaded || !isClient) {
     return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex min-h-screen size-full items-center justify-center", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
       /* @__PURE__ */ jsxRuntime.jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
-      /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432..." })
+      /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: "Loading timeline components..." })
     ] }) });
   }
   return /* @__PURE__ */ jsxRuntime.jsxs(TimelineWrapper, { children: [
@@ -3828,19 +3728,30 @@ var ProjectTimeline = ({
                 ]
               }
             ) }),
+            /* @__PURE__ */ jsxRuntime.jsx("div", {}),
             /* @__PURE__ */ jsxRuntime.jsx(superTimeline.HistoryButtons, {})
           ] }),
           /* @__PURE__ */ jsxRuntime.jsx("div", {}),
-          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "pointer-events-auto flex h-14 items-center justify-end gap-2", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex h-12 items-center gap-2 rounded-md bg-background px-2.5", children: /* @__PURE__ */ jsxRuntime.jsx(
-            ui.Button,
-            {
-              className: "flex size-9 gap-1 border border-border",
-              size: "icon",
-              variant: "secondary",
-              onClick: onExport,
-              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Download, { width: 18 })
-            }
-          ) }) })
+          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "pointer-events-auto flex h-14 items-center justify-end gap-2", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex h-12 items-center gap-2 rounded-md bg-background px-2.5", children: [
+            /* @__PURE__ */ jsxRuntime.jsx(
+              ui.Button,
+              {
+                onClick: onRegenerateTimeline,
+                className: "min-w-[166px] bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+                children: isGenerating ? /* @__PURE__ */ jsxRuntime.jsx("div", { className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto mb-2" }) : "Regenerate Timeline"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntime.jsx(
+              ui.Button,
+              {
+                className: "flex size-9 gap-1 border border-border",
+                size: "icon",
+                variant: "secondary",
+                onClick: onExport,
+                children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Download, { width: 18 })
+              }
+            )
+          ] }) })
         ]
       }
     ),
@@ -3863,7 +3774,7 @@ var ProjectTimeline = ({
           /* @__PURE__ */ jsxRuntime.jsx(superTimeline.ControlItem, {}),
           stableData && stableData.id ? /* @__PURE__ */ jsxRuntime.jsx(Scene2, {}) : /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "text-center", children: [
             /* @__PURE__ */ jsxRuntime.jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2" }),
-            /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 timeline \u0434\u0430\u043D\u043D\u044B\u0445..." : "\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u043B\u0435\u0435\u0440\u0430..." })
+            /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-600", children: !stableData || !stableData.id ? "Loading timeline data..." : "Initializing player..." })
           ] }) }) })
         ]
       }
@@ -4359,8 +4270,6 @@ exports.tr = tr_default;
 exports.useFabricEditor = useFabricEditor;
 exports.useGenerateTimeline = useGenerateTimeline;
 exports.useMediaPrefetch = useMediaPrefetch;
-exports.useProject = useProject;
 exports.useTranslation = useTranslation;
-exports.useVideoScenes = useVideoScenes;
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

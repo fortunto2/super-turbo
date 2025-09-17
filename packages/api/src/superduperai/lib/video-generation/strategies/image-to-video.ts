@@ -72,13 +72,13 @@ export class ImageToVideoStrategy implements VideoGenerationStrategy {
   ): Promise<{
     imageId?: string;
     imageUrl?: string;
-    method: "upload";
+    method: "upload" | "url";
     error?: string;
   }> {
     console.log("🔍 handleImageUpload called with:", {
       hasFile: !!params.file,
-      fileType: params.file?.type,
-      fileSize: params.file?.size,
+      fileType: typeof params.file === "string" ? "URL" : params.file?.type,
+      fileSize: typeof params.file === "string" ? "N/A" : params.file?.size,
       uploadUrl: `${config.url}/api/v1/file/upload`,
     });
 
@@ -90,9 +90,37 @@ export class ImageToVideoStrategy implements VideoGenerationStrategy {
       };
     }
 
+    // ✅ Если file это URL строка, создаем File объект
+    let fileToUpload: File;
+    if (typeof params.file === "string") {
+      try {
+        console.log("📤 Converting URL to File object:", params.file);
+        const resp = await fetch(params.file);
+        if (!resp.ok) {
+          throw new Error(`Failed to fetch source image: ${resp.status}`);
+        }
+        const blob = await resp.blob();
+        const filename = params.file.split("/").pop() || "source-image.jpg";
+        fileToUpload = new File([blob], filename, { type: blob.type });
+        console.log("✅ Created File object from URL:", {
+          filename,
+          size: fileToUpload.size,
+          type: fileToUpload.type,
+        });
+      } catch (error) {
+        console.error("❌ Failed to create File from URL:", error);
+        return {
+          error: `Failed to fetch image from URL: ${error}`,
+          method: "upload",
+        };
+      }
+    } else {
+      fileToUpload = params.file;
+    }
+
     try {
       const formData = new FormData();
-      formData.append("payload", params.file);
+      formData.append("payload", fileToUpload);
       formData.append("type", "image");
 
       console.log(
@@ -122,7 +150,7 @@ export class ImageToVideoStrategy implements VideoGenerationStrategy {
       return {
         imageId: uploadResult?.id,
         imageUrl: uploadResult?.url || undefined,
-        method: "upload",
+        method: typeof params.file === "string" ? "url" : "upload",
       };
     } catch (error) {
       console.error("Error uploading file", error);

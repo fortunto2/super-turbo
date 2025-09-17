@@ -1,9 +1,8 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-import { FileTypeEnum, type ITaskRead, TaskStatusEnum } from "@turbo-super/api";
 import { Toolbar, type ToolType } from "./_components/toolbar";
 
 import { ScenePreview } from "./_components/scene-preview";
@@ -15,120 +14,6 @@ import { VoiceoverList } from "./_components/voiceover-list";
 import { SoundEffectList } from "./_components/soundeffect-list";
 import { AnimatingTool } from "./_components/animating-tool";
 
-// ---------- Custom hooks (replaced by React Query hooks) ----------
-
-// function useFilePolling(projectId: string, sceneId: string) {
-//   const [pendingFileIds, setPendingFileIds] = useState<string[]>([]);
-//   const [fileGenerationStartTimes, setFileGenerationStartTimes] = useState<
-//     Record<string, number>
-//   >({});
-//   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-//   // Polling logic here...
-//   useEffect(() => {
-//     const TIMEOUT_MS = 8 * 60 * 1000; // 8 минут
-//     const POLL_INTERVAL_MS = 10000; // 10 секунд
-
-//     const checkPending = async () => {
-//       let remaining: string[] = [];
-//       const currentTime = Date.now();
-
-//       const currentPendingFileIds = pendingFileIds;
-//       const currentStartTimes = fileGenerationStartTimes;
-
-//       for (const id of currentPendingFileIds) {
-//         const startTime = currentStartTimes[id];
-
-//         if (startTime && currentTime - startTime > TIMEOUT_MS) {
-//           console.warn(
-//             `File generation timeout for ${id} after ${TIMEOUT_MS}ms`
-//           );
-//           continue;
-//         }
-
-//         try {
-//           const res = await fetch(`/api/file/${id}`);
-
-//           if (!res.ok) {
-//             remaining.push(id);
-//             continue;
-//           }
-//           const json = await res.json();
-//           if (!json?.url) {
-//             remaining.push(id);
-//           }
-//           if (
-//             json.tasks.some(
-//               (task: ITaskRead) => task.status === TaskStatusEnum.ERROR
-//             )
-//           ) {
-//             remaining = remaining.filter((pendingId) => pendingId !== id);
-
-//             setFileGenerationStartTimes((prev) => {
-//               const updated = { ...prev };
-//               delete updated[id];
-//               return updated;
-//             });
-//           }
-//         } catch {
-//           remaining.push(id);
-//         }
-//       }
-
-//       setPendingFileIds(remaining);
-
-//       const finishedFileIds = currentPendingFileIds.filter(
-//         (id) => !remaining.includes(id)
-//       );
-//       if (finishedFileIds.length > 0) {
-//         setFileGenerationStartTimes((prev) => {
-//           const updated = { ...prev };
-//           finishedFileIds.forEach((id) => delete updated[id]);
-//           return updated;
-//         });
-//       }
-
-//       if (remaining.length < currentPendingFileIds.length) {
-//         try {
-//           const res = await fetch(
-//             `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`
-//           );
-//           if (res.ok) {
-//             const json = await res.json();
-//             // This will be handled by the parent component
-//           }
-//         } catch {
-//           // ignore
-//         }
-//       }
-//     };
-
-//     if (pollingIntervalRef.current) {
-//       clearInterval(pollingIntervalRef.current);
-//     }
-
-//     if (pendingFileIds.length > 0) {
-//       pollingIntervalRef.current = setInterval(checkPending, POLL_INTERVAL_MS);
-//       void checkPending();
-//     }
-
-//     return () => {
-//       if (pollingIntervalRef.current) {
-//         clearInterval(pollingIntervalRef.current);
-//         pollingIntervalRef.current = null;
-//       }
-//     };
-//   }, [pendingFileIds, projectId, sceneId, fileGenerationStartTimes]);
-
-//   return {
-//     pendingFileIds,
-//     setPendingFileIds,
-//     fileGenerationStartTimes,
-//     setFileGenerationStartTimes,
-//   };
-// }
-
-// ---------- Main component ----------
 export default function ScenePage() {
   const params = useParams();
   const router = useRouter();

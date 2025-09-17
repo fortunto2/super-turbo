@@ -229,6 +229,10 @@
     background: #212225 !important;
     color: #fff !important;
     border-bottom: 1px solid #333 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    flex-shrink: 0 !important;
   }
   
   .mdxeditor-toolbar button {
@@ -257,6 +261,18 @@
   .mdxeditor-content {
     background: #f3f4f6 !important;
     color: #181a20 !important;
+  }
+
+  .mdxeditor {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+
+  .mdxeditor-root-contenteditable {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
   }
 
 /* Super Chatbot специальные стили для UI компонентов */

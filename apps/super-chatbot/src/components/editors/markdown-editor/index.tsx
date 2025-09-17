@@ -22,55 +22,57 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import styles from "./styles.module.scss";
-import { cn } from '@turbo-super/ui';
+import { cn } from "@turbo-super/ui";
 
 export const MarkdownEditor = ({
   editorRef,
+  className,
   ...props
-}: { editorRef: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps) => {
+}: {
+  editorRef: ForwardedRef<MDXEditorMethods> | null;
+  className?: string;
+} & MDXEditorProps) => {
   return (
-    <div className="w-full">
-      <MDXEditor
-        {...props}
-        ref={editorRef}
-        contentEditableClassName={cn("prose ", styles.editor)}
-        plugins={[
-          toolbarPlugin({
-            toolbarContents: () => (
-              <>
-                <InsertCodeBlock />
-                <UndoRedo />
-                <Separator />
-                <BoldItalicUnderlineToggles />
-                <ListsToggle />
-                <Separator />
-                <BlockTypeSelect />
+    <MDXEditor
+      {...props}
+      ref={editorRef}
+      contentEditableClassName={cn("prose", styles.editor)}
+      plugins={[
+        toolbarPlugin({
+          toolbarContents: () => (
+            <>
+              <InsertCodeBlock />
+              <UndoRedo />
+              <Separator />
+              <BoldItalicUnderlineToggles />
+              <ListsToggle />
+              <Separator />
+              <BlockTypeSelect />
 
-                {/* <CreateLink />
+              {/* <CreateLink />
                 <InsertImage /> */}
-              </>
-            ),
-          }),
+            </>
+          ),
+        }),
 
-          headingsPlugin(),
-          listsPlugin(),
-          quotePlugin(),
-          // linkDialogPlugin(),
-          // linkPlugin(),
-          thematicBreakPlugin(),
+        headingsPlugin(),
+        listsPlugin(),
+        quotePlugin(),
+        // linkDialogPlugin(),
+        // linkPlugin(),
+        thematicBreakPlugin(),
 
-          codeBlockPlugin({
-            defaultCodeBlockLanguage: "txt",
-          }),
-          codeMirrorPlugin({
-            codeBlockLanguages: {
-              json: "json",
-              txt: "text",
-            },
-          }),
-          markdownShortcutPlugin(),
-        ]}
-      />
-    </div>
+        codeBlockPlugin({
+          defaultCodeBlockLanguage: "txt",
+        }),
+        codeMirrorPlugin({
+          codeBlockLanguages: {
+            json: "json",
+            txt: "text",
+          },
+        }),
+        markdownShortcutPlugin(),
+      ]}
+    />
   );
 };

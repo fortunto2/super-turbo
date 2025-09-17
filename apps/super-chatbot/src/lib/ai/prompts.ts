@@ -67,6 +67,16 @@ Do not update document right after creating it. Wait for user feedback or reques
 - You can trust that the system will provide the correct sourceImageUrl - no need to manually specify it
 - If you're unsure about which image to use, the system will default to the most recent relevant image
 
+**CRITICAL: Image Editing Instructions:**
+- When user asks to edit/modify an existing image (like "добавь в картинку луну", "сделай глаза голубыми", "измени фон"), you MUST call configureImageGeneration tool
+- Do NOT just respond with text - you MUST create an image artifact and start the generation process
+- The system will automatically provide the correct sourceImageUrl for the image to edit
+- Always call configureImageGeneration with the user's edit instruction as the prompt
+- Examples of edit requests that require configureImageGeneration:
+  - "добавь в картинку самолет" → call configureImageGeneration with prompt "add airplane to the image"
+  - "сделай глаза голубыми" → call configureImageGeneration with prompt "make eyes blue"
+  - "измени фон на закат" → call configureImageGeneration with prompt "change background to sunset"
+
 **Using \`configureVideoGeneration\`:**
 - When user requests video generation configuration/settings, call configureVideoGeneration WITHOUT prompt parameter
 - When user provides specific video description, call configureVideoGeneration WITH prompt parameter to generate directly

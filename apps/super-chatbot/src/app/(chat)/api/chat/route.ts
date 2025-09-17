@@ -39,6 +39,7 @@ import { differenceInSeconds } from "date-fns";
 import * as Sentry from "@sentry/nextjs";
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
 import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
+import { configureAudioGeneration } from "@/lib/ai/tools/configure-audio-generation";
 import {
   listVideoModels,
   findBestVideoModel,
@@ -51,6 +52,21 @@ import { isProductionEnvironment } from "@/lib/constants";
 export const maxDuration = 60;
 
 let globalStreamContext: ResumableStreamContext | null = null;
+
+/**
+ * Нормализует сообщение для совместимости с UIMessage
+ */
+function normalizeMessage(message: any) {
+  return {
+    ...message,
+    content: message.content || message.parts?.[0]?.text || "",
+    parts:
+      message.parts?.map((part: any) => ({
+        ...part,
+        text: part.text || "",
+      })) || [],
+  };
+}
 
 /**
  * Formats error response based on environment
@@ -118,6 +134,19 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
+
+    // Логируем входящий запрос для отладки
+    console.log("🔍 Incoming chat request:", {
+      hasMessage: !!json.message,
+      hasMessages: !!json.messages,
+      messagesLength: json.messages ? json.messages.length : 0,
+      messageKeys: json.message ? Object.keys(json.message) : [],
+      hasId: !!json.id,
+      hasSelectedChatModel: !!json.selectedChatModel,
+      hasSelectedVisibilityType: !!json.selectedVisibilityType,
+      fullKeys: Object.keys(json),
+    });
+
     requestBody = postRequestBodySchema.parse(json);
   } catch (error) {
     console.error("Invalid request body:", error);
@@ -146,8 +175,41 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, selectedChatModel, selectedVisibilityType } =
-      requestBody;
+    const {
+      id,
+      message,
+      messages: requestMessages,
+      selectedChatModel,
+      selectedVisibilityType,
+    } = requestBody;
+
+    // Определяем сообщение для обработки
+    const messageToProcess =
+      message ||
+      (requestMessages && requestMessages.length > 0
+        ? requestMessages[requestMessages.length - 1]
+        : null);
+
+    if (!messageToProcess) {
+      console.error("No message found in request body");
+      return new Response(
+        JSON.stringify(
+          {
+            error: "Invalid request data",
+            details: "No valid message found in request",
+            timestamp: new Date().toISOString(),
+          },
+          null,
+          2
+        ),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
 
     const session = await auth();
 
@@ -243,7 +305,7 @@ export async function POST(request: Request) {
 
     if (!chat) {
       const title = await generateTitleFromUserMessage({
-        message,
+        message: normalizeMessage(messageToProcess),
       });
 
       let savedChat = false;
@@ -416,7 +478,7 @@ export async function POST(request: Request) {
 
     const messages = appendClientMessage({
       messages: convertDBMessagesToUIMessages(previousMessages),
-      message,
+      message: normalizeMessage(messageToProcess),
     });
 
     const { longitude, latitude, city, country } = geolocation(request);
@@ -433,10 +495,10 @@ export async function POST(request: Request) {
         messages: [
           {
             chatId: id,
-            id: message.id,
+            id: messageToProcess.id,
             role: "user",
-            parts: message.parts,
-            attachments: message.experimental_attachments ?? [],
+            parts: messageToProcess.parts,
+            attachments: messageToProcess.experimental_attachments ?? [],
             createdAt: new Date(),
           },
         ],
@@ -461,7 +523,7 @@ export async function POST(request: Request) {
 
           // Try to recreate the chat
           const title = await generateTitleFromUserMessage({
-            message,
+            message: normalizeMessage(messageToProcess),
           });
 
           await saveChat({
@@ -476,10 +538,10 @@ export async function POST(request: Request) {
             messages: [
               {
                 chatId: id,
-                id: message.id,
+                id: messageToProcess.id,
                 role: "user",
-                parts: message.parts,
-                attachments: message.experimental_attachments ?? [],
+                parts: messageToProcess.parts,
+                attachments: messageToProcess.experimental_attachments ?? [],
                 createdAt: new Date(),
               },
             ],
@@ -518,7 +580,7 @@ export async function POST(request: Request) {
 
           // Try to recreate the chat
           const title = await generateTitleFromUserMessage({
-            message,
+            message: normalizeMessage(messageToProcess),
           });
 
           await saveChat({
@@ -562,9 +624,9 @@ export async function POST(request: Request) {
           console.log("🔍 Pre-analysis: Chat images found:", chatImages.length);
 
           const imageContext = await analyzeImageContext(
-            message.parts?.[0]?.text || "",
+            messageToProcess.parts?.[0]?.text || "",
             chatImages,
-            (message as any)?.experimental_attachments
+            (messageToProcess as any)?.experimental_attachments
           );
 
           console.log("🔍 Pre-analysis: Image context:", {
@@ -583,7 +645,8 @@ export async function POST(request: Request) {
           console.error("🔍 Pre-analysis error:", error);
           // Fallback к старой логике
           try {
-            const atts = (message as any)?.experimental_attachments || [];
+            const atts =
+              (messageToProcess as any)?.experimental_attachments || [];
             const img = atts.find(
               (a: any) =>
                 typeof a?.url === "string" &&
@@ -599,6 +662,34 @@ export async function POST(request: Request) {
             console.error("Fallback error:", fallbackError);
             defaultSourceImageUrl = undefined;
           }
+        }
+
+        // Анализ видео контекста для defaultSourceVideoUrl
+        let defaultSourceVideoUrl: string | undefined;
+        try {
+          const { analyzeVideoContext } = await import("@/lib/ai/context");
+
+          const videoContext = await analyzeVideoContext(
+            messageToProcess.parts?.[0]?.text || "",
+            id,
+            (messageToProcess as any)?.experimental_attachments
+          );
+
+          console.log("🔍 Pre-analysis: Video context:", {
+            confidence: videoContext.confidence,
+            reasoning: videoContext.reasoning,
+            sourceUrl: videoContext.sourceUrl,
+          });
+
+          defaultSourceVideoUrl = videoContext.sourceUrl;
+
+          console.log(
+            "🔍 defaultSourceVideoUrl set to:",
+            defaultSourceVideoUrl
+          );
+        } catch (error) {
+          console.error("🔍 Video context analysis error:", error);
+          defaultSourceVideoUrl = undefined;
         }
 
         const tools = {
@@ -619,10 +710,11 @@ export async function POST(request: Request) {
         // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
 
         console.log("🔍 Message structure for configureImageGeneration:", {
-          hasMessage: !!message,
-          messageKeys: message ? Object.keys(message) : [],
-          experimentalAttachments: (message as any)?.experimental_attachments,
-          attachments: (message as any)?.attachments,
+          hasMessage: !!messageToProcess,
+          messageKeys: messageToProcess ? Object.keys(messageToProcess) : [],
+          experimentalAttachments: (messageToProcess as any)
+            ?.experimental_attachments,
+          attachments: (messageToProcess as any)?.attachments,
         });
 
         console.log(
@@ -630,10 +722,44 @@ export async function POST(request: Request) {
           defaultSourceImageUrl
         );
 
+        // Если есть изображение для редактирования, добавляем явную инструкцию
+        let enhancedMessages = messages;
+        if (defaultSourceImageUrl && messageToProcess.parts?.[0]?.text) {
+          const userText = messageToProcess.parts[0].text;
+          const editKeywords = [
+            "добавь",
+            "сделай",
+            "измени",
+            "подправь",
+            "замени",
+            "исправь",
+            "улучши",
+          ];
+          const hasEditIntent = editKeywords.some((keyword) =>
+            userText.toLowerCase().includes(keyword)
+          );
+
+          if (hasEditIntent) {
+            console.log(
+              "🔍 Edit intent detected, adding explicit instruction to call configureImageGeneration"
+            );
+            enhancedMessages = [
+              ...messages,
+              {
+                id: generateUUID(),
+                role: "system" as const,
+                content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt. The system has already identified the source image URL: ${defaultSourceImageUrl}. Do not just respond with text - create an image artifact and start generation.`,
+                createdAt: new Date(),
+                parts: [],
+              },
+            ];
+          }
+        }
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages,
+          messages: enhancedMessages,
           maxSteps: 5,
           experimental_activeTools:
             selectedChatModel === "chat-model-reasoning"
@@ -662,6 +788,17 @@ export async function POST(request: Request) {
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
               session,
+              defaultSourceVideoUrl: defaultSourceVideoUrl,
+              chatId: id,
+              userMessage: message?.content || "",
+              currentAttachments: message?.experimental_attachments || [],
+            }),
+            configureAudioGeneration: configureAudioGeneration({
+              createDocument: tools.createDocument,
+              session,
+              chatId: id,
+              userMessage: message?.content || "",
+              currentAttachments: message?.experimental_attachments || [],
             }),
             configureScriptGeneration: configureScriptGeneration({
               createDocument: tools.createDocument,
@@ -702,7 +839,7 @@ export async function POST(request: Request) {
                 }
 
                 const [, assistantMessage] = appendResponseMessages({
-                  messages: [message as any],
+                  messages: [messageToProcess as any],
                   responseMessages: response.messages,
                 });
 

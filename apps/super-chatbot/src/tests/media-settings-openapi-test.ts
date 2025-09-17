@@ -117,6 +117,10 @@ async function testMediaSettingsWithOpenAPI() {
     const videoConfig: VideoGenerationConfig = {
       type: "video-generation-settings",
       availableModels: adaptedVideoModels,
+      availableDurations: [
+        { value: 10, label: "10 seconds", id: "10s" },
+        { value: 20, label: "20 seconds", id: "20s" },
+      ],
       availableResolutions: [
         {
           width: 1280,
@@ -185,7 +189,7 @@ async function testMediaSettingsWithOpenAPI() {
           price: 0,
         },
         frameRate: 30,
-        duration: 10,
+        duration: { value: 10, label: "10 seconds", id: "10s" },
         negativePrompt: "",
       },
     };

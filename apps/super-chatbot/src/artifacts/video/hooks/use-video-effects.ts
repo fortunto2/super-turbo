@@ -62,7 +62,9 @@ export function useVideoEffects({
       ),
     });
 
-    // Only save if all conditions are met AND video hasn't been saved before
+    // AICODE-FIX: Remove duplicate saveMediaToChat call
+    // The saveMediaToChat is now handled in the artifact wrapper component
+    // This prevents double saving to chat history
     if (
       videoUrl &&
       status === "completed" &&
@@ -73,50 +75,9 @@ export function useVideoEffects({
       savedVideoUrlRef.current !== videoUrl // Prevent duplicate saves
     ) {
       console.log(
-        "💾 🎬 Video generation completed, auto-saving to chat history..."
+        "💾 🎬 Video generation completed, skipping auto-save to chat (handled by wrapper)"
       );
       savedVideoUrlRef.current = videoUrl;
-
-      // AICODE-NOTE: Skip database save for tool chatId, only save to local chat
-      const isToolChat =
-        chatId === "video-generator-tool" || chatId === "image-generator-tool";
-      if (isToolChat) {
-        console.log(
-          "💾 🔧 Tool chat detected, skipping database save but adding to local chat"
-        );
-
-        // Create video attachment for local chat display only
-        const videoAttachment = {
-          name: prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt,
-          url: videoUrl,
-          contentType: "video/mp4",
-        };
-
-        // Create message with video attachment and temporary UUID for local display
-        const videoMessage = {
-          id: generateUUID(),
-          role: "assistant" as const,
-          content: `Generated video: "${prompt}"`,
-          parts: [
-            {
-              type: "text" as const,
-              text: `Generated video: "${prompt}"`,
-            },
-          ],
-          experimental_attachments: [videoAttachment],
-          createdAt: new Date(),
-        };
-
-        // Add message to local chat history only
-        setMessages((prevMessages) => [...prevMessages, videoMessage]);
-        console.log("💾 ✅ Video added to local chat history (tool mode)!");
-        return;
-      }
-
-      // Small delay to ensure artifact is updated first
-      setTimeout(() => {
-        saveMediaToChat(chatId, videoUrl, prompt, setMessages, "video");
-      }, 100);
     }
   }, [videoUrl, status, hasInitialized, chatId, setMessages, prompt]);
 

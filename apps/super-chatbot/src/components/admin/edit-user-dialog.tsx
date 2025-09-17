@@ -33,7 +33,7 @@ export function EditUserDialog({
   onClose,
   onUpdate,
 }: EditUserDialogProps) {
-  const [balance, setBalance] = useState(user.balance.toString());
+  const [balance, setBalance] = useState(user?.balance?.toString());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,7 +50,7 @@ export function EditUserDialog({
     try {
       setLoading(true);
 
-      const response = await fetch(`/api/admin/users/${user.id}`, {
+      const response = await fetch(`/api/admin/users/${user?.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ export function EditUserDialog({
             Edit User Balance
           </DialogTitle>
           <DialogDescription>
-            Update the credit balance for <strong>{user.email}</strong>
+            Update the credit balance for <strong>{user?.email}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +157,7 @@ export function EditUserDialog({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Previous balance: {user.balance} credits
+              Previous balance: {user?.balance} credits
             </p>
           </div>
 

@@ -85,7 +85,20 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         content: draftContent,
       });
 
-      if (args.session?.user?.id) {
+      // AICODE-FIX: Only save to database if we have meaningful content
+      // For image/video artifacts, only save when generation is completed
+      const shouldSaveToDatabase =
+        args.session?.user?.id &&
+        (config.kind === "text" || // Text artifacts can be saved immediately
+          config.kind === "sheet" || // Sheet artifacts can be saved immediately
+          (config.kind === "image" &&
+            draftContent &&
+            JSON.parse(draftContent || "{}").status === "completed") ||
+          (config.kind === "video" &&
+            draftContent &&
+            JSON.parse(draftContent || "{}").status === "completed"));
+
+      if (shouldSaveToDatabase) {
         // AICODE-FIX: Extract human-readable title from JSON if needed
         let readableTitle = args.title;
         try {
@@ -109,14 +122,6 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           console.log("📄 Could not parse title, using as-is");
         }
 
-        // AICODE-NOTE: Truncate title to 255 characters for database storage - this is not a database requirement, text column has no limit
-        /*
-        if (readableTitle.length > 255) {
-          readableTitle = readableTitle.substring(0, 252) + '...';
-          console.log('📄 Title truncated to 255 characters');
-        }
-        */
-
         await saveDocument({
           id: args.id,
           title: readableTitle,
@@ -127,6 +132,15 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         });
 
         console.log("📄 Document saved to database with title:", readableTitle);
+      } else if (
+        args.session?.user?.id &&
+        (config.kind === "image" || config.kind === "video")
+      ) {
+        console.log(
+          "📄 Skipping database save for",
+          config.kind,
+          "artifact - waiting for completion"
+        );
       }
 
       return;
@@ -152,7 +166,20 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         content: draftContent,
       });
 
-      if (args.session?.user?.id) {
+      // AICODE-FIX: Only save to database if we have meaningful content
+      // For image/video artifacts, only save when generation is completed
+      const shouldSaveToDatabase =
+        args.session?.user?.id &&
+        (config.kind === "text" || // Text artifacts can be saved immediately
+          config.kind === "sheet" || // Sheet artifacts can be saved immediately
+          (config.kind === "image" &&
+            draftContent &&
+            JSON.parse(draftContent || "{}").status === "completed") ||
+          (config.kind === "video" &&
+            draftContent &&
+            JSON.parse(draftContent || "{}").status === "completed"));
+
+      if (shouldSaveToDatabase) {
         // AICODE-FIX: Use document's existing title for updates
         // Title is already set when document was created, no need to re-parse
         await saveDocument({
@@ -165,6 +192,15 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         });
 
         console.log("📄 Document updated in database");
+      } else if (
+        args.session?.user?.id &&
+        (config.kind === "image" || config.kind === "video")
+      ) {
+        console.log(
+          "📄 Skipping database update for",
+          config.kind,
+          "artifact - waiting for completion"
+        );
       }
 
       return;

@@ -15,6 +15,7 @@ export interface MediaOption {
   label: string;
   description?: string;
   thumbnail?: string | null;
+  value?: any;
 }
 
 export interface MediaResolution {
@@ -51,9 +52,10 @@ export interface VideoSettings {
   shotSize: MediaOption;
   model: AdaptedModel;
   frameRate: number;
-  duration: number;
+  duration: MediaOption;
   negativePrompt?: string;
   seed?: number;
+  batchSize?: number;
 }
 
 export interface VideoGenerationConfig {
@@ -63,22 +65,28 @@ export interface VideoGenerationConfig {
   availableShotSizes: MediaOption[];
   availableModels: AdaptedModel[];
   availableFrameRates: { value: number; label: string }[];
+  availableDurations: MediaOption[];
   defaultSettings: VideoSettings;
 }
 
-// Audio-specific types (for future use)
+// Audio-specific types
 export interface AudioSettings {
-  format: MediaOption;
-  quality: MediaOption;
-  duration: number;
-  style: MediaOption;
+  audioType: MediaOption;
+  voice: MediaOption;
+  language: MediaOption;
+  duration: MediaOption;
+  model: AdaptedModel;
+  seed?: number;
+  batchSize?: number;
 }
 
 export interface AudioGenerationConfig {
   type: "audio-generation-settings";
-  availableFormats: MediaOption[];
-  availableQualities: MediaOption[];
-  availableStyles: MediaOption[];
+  availableModels: AdaptedModel[];
+  availableVoices: MediaOption[];
+  availableLanguages: MediaOption[];
+  availableAudioTypes: MediaOption[];
+  availableDurations: MediaOption[];
   defaultSettings: AudioSettings;
 }
 

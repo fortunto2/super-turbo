@@ -7,15 +7,18 @@ import {
   useMediaPrefetch,
 } from "@turbo-super/features";
 import {
-  ArrowLeft,
   Play,
   Download,
   Share2,
   Eye,
   CheckCircle,
   ArrowRight,
+  FileText,
+  Settings,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
+import { BackButton } from "@/components/shared/back-button";
 import {
   TaskTypeEnum,
   useTaskStatus,
@@ -139,13 +142,7 @@ export default function PreviewPage() {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
             Project ID not found
           </h1>
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            <ArrowLeft className="size-4 mr-2" />
-            Go Back
-          </button>
+          <BackButton href="/project/video/projects" />
         </div>
       </div>
     );
@@ -154,48 +151,62 @@ export default function PreviewPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: customScrollbarStyles }} />
-      <div className="w-full min-h-screen bg-background">
-        <div className="size-full mx-auto px-4 py-8">
+      <div className="w-full h-screen bg-background flex flex-col">
+        <div className="size-full mx-auto px-4 py-4 flex-1 flex flex-col">
           {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
-            <button
-              onClick={() => router.back()}
-              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
-            >
-              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <ArrowLeft className="size-4" />
-              </div>
-              <span className="font-medium">Go Back</span>
-            </button>
+          <div className="mb-6 flex items-center justify-between">
+            <BackButton href="/project/video/projects" />
 
-            <Link
-              href={`/project/video/${projectId}/timeline`}
-              className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
-            >
-              <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <ArrowRight className="size-4" />
-              </div>
-              <span className="font-medium">Go to Timeline Editor</span>
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link
+                href={`/project/video/${projectId}/entities`}
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <Users className="size-4" />
+                </div>
+                <span className="font-medium">Entities</span>
+              </Link>
+
+              <Link
+                href={`/project/video/${projectId}/script`}
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <FileText className="size-4" />
+                </div>
+                <span className="font-medium">Edit Script</span>
+              </Link>
+
+              <Link
+                href={`/project/video/${projectId}/timeline`}
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="size-10 bg-card border border-border rounded-full flex items-center justify-center mr-3 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <Settings className="size-4" />
+                </div>
+                <span className="font-medium">Timeline Editor</span>
+              </Link>
+            </div>
           </div>
 
           {/* Main Content */}
-          <div className="w-full max-w-6xl mx-auto">
+          <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col">
             {/* Page Title */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-4">
-                Preview
+            <div className="text-center mb-4 flex-shrink-0">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-2">
+                Video Preview
               </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm text-muted-foreground">
                 Preview your finished video before final processing
               </p>
             </div>
 
             {/* Video Player Section */}
-            <div className="w-full max-w-6xl mx-auto mb-8">
-              <div className="w-full bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-                {/* Fixed height for all states */}
-                <div className="w-full h-[500px] flex items-center justify-center">
+            <div className="w-full max-w-6xl mx-auto mb-4 flex-1 flex flex-col">
+              <div className="w-full bg-card border border-border rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col">
+                {/* Flexible height for all states */}
+                <div className="w-full flex-1 flex items-center justify-center">
                   <QueryState
                     isLoading={isLoading}
                     isError={isError}
@@ -206,19 +217,8 @@ export default function PreviewPage() {
                     errorMessage="Failed to load data"
                   >
                     {project && !!scenes?.items ? (
-                      <div className="size-full p-6">
-                        <div className="mb-4 flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-foreground">
-                            Video Player
-                          </h3>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-muted-foreground">
-                              {scenes.items?.length} scenes
-                            </span>
-                            <div className="size-2 bg-primary rounded-full animate-pulse" />
-                          </div>
-                        </div>
-                        <div className="bg-black rounded-xl overflow-hidden shadow-2xl h-[400px]">
+                      <div className="size-full p-4 flex flex-col">
+                        <div className="bg-black rounded-lg overflow-hidden shadow-lg flex-1 min-h-[280px] flex">
                           <RemotionPlayer
                             scenes={scenes?.items as any}
                             music={music}
@@ -251,35 +251,39 @@ export default function PreviewPage() {
 
             {/* Project Info Cards */}
             {project && !!scenes?.items && (
-              <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 flex-shrink-0">
                 {/* Project Details */}
-                <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="size-10 bg-muted rounded-lg flex items-center justify-center">
-                      <CheckCircle className="size-5 text-primary" />
+                <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="size-8 bg-muted rounded-lg flex items-center justify-center">
+                      <CheckCircle className="size-4 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="text-base font-semibold text-foreground">
                       Project
                     </h3>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Status:</span>
-                      <span className="px-3 py-1 bg-muted text-foreground rounded-full text-sm font-medium">
+                      <span className="text-xs text-muted-foreground">
+                        Status:
+                      </span>
+                      <span className="px-2 py-1 bg-muted text-foreground rounded-full text-xs font-medium">
                         Completed
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Scenes:</span>
-                      <span className="font-semibold text-foreground">
+                      <span className="text-xs text-muted-foreground">
+                        Scenes:
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">
                         {scenes.items.length}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         Aspect Ratio:
                       </span>
-                      <span className="font-semibold text-foreground">
+                      <span className="text-sm font-semibold text-foreground">
                         {project.config?.aspect_ratio || "16:9"}
                       </span>
                     </div>
@@ -287,32 +291,32 @@ export default function PreviewPage() {
                 </div>
 
                 {/* Scenes Overview */}
-                <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="size-10 bg-muted rounded-lg flex items-center justify-center">
-                      <Play className="size-5 text-primary" />
+                <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="size-8 bg-muted rounded-lg flex items-center justify-center">
+                      <Play className="size-4 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="text-base font-semibold text-foreground">
                       Scenes ({scenes.items.length})
                     </h3>
                   </div>
-                  <div className="max-h-48 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                  <div className="max-h-32 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                     {scenes?.items?.map((scene, index) => (
                       <Link
                         key={scene.id}
                         href={`/project/video/${projectId}/scene/${scene.id}`}
                         className="block"
                       >
-                        <div className="flex space-x-3 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer group">
-                          <div className="size-6 bg-muted rounded-full flex items-center justify-center text-xs font-medium text-foreground shrink-0 group-hover:bg-muted/80">
+                        <div className="flex space-x-2 p-2 rounded-md hover:bg-muted transition-colors cursor-pointer group">
+                          <div className="size-5 bg-muted rounded-full flex items-center justify-center text-xs font-medium text-foreground shrink-0 group-hover:bg-muted/80">
                             {index + 1}
                           </div>
-                          <span className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground">
+                          <span className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground line-clamp-2">
                             {scene.visual_description ||
                               "Scene description unavailable"}
                           </span>
                           <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ArrowRight className="size-4 text-primary" />
+                            <ArrowRight className="size-3 text-primary" />
                           </div>
                         </div>
                       </Link>
@@ -321,28 +325,35 @@ export default function PreviewPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="bg-card border border-border rounded-xl p-6 shadow-xl">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="size-10 bg-muted rounded-lg flex items-center justify-center">
-                      <Share2 className="size-5 text-primary" />
+                <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="size-8 bg-muted rounded-lg flex items-center justify-center">
+                      <Share2 className="size-4 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="text-base font-semibold text-foreground">
                       Actions
                     </h3>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Link
+                      href={`/project/video/${projectId}/entities`}
+                      className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-all duration-300 hover:scale-105 shadow-md text-sm"
+                    >
+                      <Users className="size-3" />
+                      <span>Manage Entities</span>
+                    </Link>
                     <button
                       onClick={() => setIsExportDialogOpen(true)}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg"
+                      className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-md text-sm"
                     >
-                      <Download className="size-4" />
+                      <Download className="size-3" />
                       <span>Export Video</span>
                     </button>
                     <button
                       onClick={() => setIsShareDialogOpen(true)}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all duration-300 hover:scale-105 shadow-lg"
+                      className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-all duration-300 hover:scale-105 shadow-md text-sm"
                     >
-                      <Share2 className="size-4" />
+                      <Share2 className="size-3" />
                       <span>Share</span>
                     </button>
                   </div>
@@ -351,10 +362,10 @@ export default function PreviewPage() {
             )}
 
             {/* Footer */}
-            <div className="text-center">
-              <div className="inline-flex items-center space-x-2 bg-card border border-border px-6 py-3 rounded-full shadow-lg">
+            <div className="text-center mt-4 flex-shrink-0">
+              <div className="inline-flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-md">
                 <div className="size-2 bg-primary rounded-full animate-pulse" />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   Powered by{" "}
                   <strong className="text-foreground">SuperDuperAI</strong>
                 </span>

@@ -56,8 +56,12 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
         seed,
         sourceImageId,
         sourceImageUrl,
+        sourceVideoUrl, // ✅ Добавлено для поддержки image-to-video
         generationType = "text-to-video",
       } = params;
+
+      // ✅ Используем sourceVideoUrl как sourceImageUrl для image-to-video
+      const actualSourceImageUrl = sourceImageUrl || sourceVideoUrl;
 
       // Check user balance before proceeding
       if (session?.user?.id) {
@@ -79,10 +83,9 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
           multipliers.push("hd-quality"); // HD is default
         }
 
-        const operationType =
-          generationType === "image-to-video"
-            ? "image-to-video"
-            : "text-to-video";
+        const operationType = actualSourceImageUrl
+          ? "image-to-video"
+          : "text-to-video";
 
         // Balance check is now done in AI tools before artifact creation
         // No need for balance validation here as it's already checked
@@ -130,12 +133,27 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
         console.error("Error getting styles:", err);
       }
 
-      // Start video generation using new architecture (only text-to-video)
+      // Start video generation using new architecture
       const config = getSuperduperAIConfig();
-      const result = await generateVideoWithStrategy(
-        "text-to-video",
-        {
+
+      // Determine actual generation type based on actualSourceImageUrl (override param if needed)
+      const actualGenerationType = actualSourceImageUrl
+        ? "image-to-video"
+        : generationType;
+
+      console.log("🎬 Video generation type determined:", {
+        paramGenerationType: generationType,
+        actualGenerationType,
+        sourceImageUrl: actualSourceImageUrl,
+        hasSourceImage: !!actualSourceImageUrl,
+      });
+
+      let result;
+      if (actualGenerationType === "image-to-video" && actualSourceImageUrl) {
+        // Image-to-video generation - переключаем модель на image_to_video тип
+        let videoParams = {
           prompt,
+          file: actualSourceImageUrl, // Pass the image URL as file parameter
           model,
           style,
           resolution,
@@ -144,9 +162,59 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
           duration,
           negativePrompt,
           seed,
-        },
-        config
-      );
+        };
+
+        try {
+          const { getAvailableVideoModels } = await import(
+            "@/lib/config/superduperai"
+          );
+          const { selectImageToVideoModel } = await import(
+            "@/lib/generation/model-utils"
+          );
+
+          const rawName =
+            typeof model === "string"
+              ? (model as string)
+              : String(model?.name || "");
+
+          const mapped = await selectImageToVideoModel(
+            rawName,
+            getAvailableVideoModels
+          );
+
+          if (mapped) {
+            console.log(
+              `🎯 Using image_to_video generation config: ${mapped} (was: ${rawName})`
+            );
+            videoParams.model = { name: mapped };
+          }
+        } catch (e) {
+          console.warn("⚠️ Failed to remap model for image_to_video:", e);
+        }
+
+        result = await generateVideoWithStrategy(
+          "image-to-video",
+          videoParams,
+          config
+        );
+      } else {
+        // Text-to-video generation
+        result = await generateVideoWithStrategy(
+          "text-to-video",
+          {
+            prompt,
+            model,
+            style,
+            resolution,
+            shotSize,
+            frameRate,
+            duration,
+            negativePrompt,
+            seed,
+          },
+          config
+        );
+      }
 
       console.log("result", result);
 
@@ -206,10 +274,9 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
             multipliers.push("hd-quality"); // HD is default
           }
 
-          const operationType =
-            generationType === "image-to-video"
-              ? "image-to-video"
-              : "text-to-video";
+          const operationType = sourceImageUrl
+            ? "image-to-video"
+            : "text-to-video";
 
           await deductOperationBalance(
             session.user.id,
@@ -280,12 +347,25 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
         frameRate = 30,
         duration = DEFAULT_VIDEO_DURATION,
         seed,
+        sourceImageUrl,
+        sourceVideoUrl, // ✅ Добавлено для поддержки image-to-video
       } = params;
       const config = getSuperduperAIConfig();
-      const result = await generateVideoWithStrategy(
-        "text-to-video",
-        {
+
+      // ✅ Используем sourceVideoUrl как sourceImageUrl для image-to-video
+      const actualSourceImageUrl = sourceImageUrl || sourceVideoUrl;
+
+      // Determine generation type based on actualSourceImageUrl
+      const actualGenerationType = actualSourceImageUrl
+        ? "image-to-video"
+        : "text-to-video";
+
+      let result;
+      if (actualGenerationType === "image-to-video" && actualSourceImageUrl) {
+        // Image-to-video generation - переключаем модель на image_to_video тип
+        let videoParams = {
           prompt,
+          file: actualSourceImageUrl, // Pass the image URL as file parameter
           model,
           style,
           resolution,
@@ -294,9 +374,59 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
           duration,
           negativePrompt,
           seed,
-        },
-        config
-      ); // NOTE: onUpdateDocument doesn't have access to session, using system token fallback
+        };
+
+        try {
+          const { getAvailableVideoModels } = await import(
+            "@/lib/config/superduperai"
+          );
+          const { selectImageToVideoModel } = await import(
+            "@/lib/generation/model-utils"
+          );
+
+          const rawName =
+            typeof model === "string"
+              ? (model as string)
+              : String(model?.name || "");
+
+          const mapped = await selectImageToVideoModel(
+            rawName,
+            getAvailableVideoModels
+          );
+
+          if (mapped) {
+            console.log(
+              `🎯 Using image_to_video generation config: ${mapped} (was: ${rawName})`
+            );
+            videoParams.model = { name: mapped };
+          }
+        } catch (e) {
+          console.warn("⚠️ Failed to remap model for image_to_video:", e);
+        }
+
+        result = await generateVideoWithStrategy(
+          "image-to-video",
+          videoParams,
+          config
+        );
+      } else {
+        // Text-to-video generation
+        result = await generateVideoWithStrategy(
+          "text-to-video",
+          {
+            prompt,
+            model,
+            style,
+            resolution,
+            shotSize,
+            frameRate,
+            duration,
+            negativePrompt,
+            seed,
+          },
+          config
+        );
+      } // NOTE: onUpdateDocument doesn't have access to session, using system token fallback
       if (!result.success) {
         draftContent = JSON.stringify({
           status: "failed",

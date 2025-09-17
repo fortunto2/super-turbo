@@ -1,39 +1,53 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@turbo-super/ui';
-import { getAdminOverviewStats } from '@/lib/db/admin-queries';
-import { Users, CreditCard, Activity, FileText } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@turbo-super/ui";
+import { getAdminOverviewStats } from "@/lib/db/admin-queries";
+import {
+  Users,
+  CreditCard,
+  Activity,
+  FileText,
+  UserCog,
+  FolderOpen,
+  Monitor,
+} from "lucide-react";
 
 export default async function AdminPage() {
   const stats = await getAdminOverviewStats();
 
   const statCards = [
     {
-      title: 'Total Users',
+      title: "Total Users",
       value: stats.totalUsers,
       description: `${stats.guestUsers} guests, ${stats.regularUsers} registered`,
       icon: Users,
-      color: 'text-blue-500'
+      color: "text-blue-500",
     },
     {
-      title: 'Total Credits',
+      title: "Total Credits",
       value: stats.totalCredits,
       description: `Average: ${stats.averageCredits} per user`,
       icon: CreditCard,
-      color: 'text-green-500'
+      color: "text-green-500",
     },
     {
-      title: 'Documents Created',
+      title: "Documents Created",
       value: stats.totalDocuments,
       description: `${stats.imagesCount} images, ${stats.videosCount} videos`,
       icon: FileText,
-      color: 'text-purple-500'
+      color: "text-purple-500",
     },
     {
-      title: 'Recent Activity',
+      title: "Recent Activity",
       value: stats.recentTransactions,
-      description: 'Transactions in last 24h',
+      description: "Transactions in last 24h",
       icon: Activity,
-      color: 'text-orange-500'
-    }
+      color: "text-orange-500",
+    },
   ];
 
   return (
@@ -80,7 +94,10 @@ export default async function AdminPage() {
           <CardContent>
             <div className="space-y-3">
               {stats.recentUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between">
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                       <Users className="h-4 w-4" />
@@ -88,14 +105,21 @@ export default async function AdminPage() {
                     <div>
                       <p className="text-sm font-medium">{user.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        {user.type === 'guest' ? 'Guest User' : 'Registered User'}
+                        {user.type === "guest"
+                          ? "Guest User"
+                          : "Registered User"}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">{user.balance} credits</p>
+                    <p className="text-sm font-medium">
+                      {user.balance} credits
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(user.createdAt || '').toLocaleDateString()}
+                      Created{" "}
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "Unknown"}
                     </p>
                   </div>
                 </div>
@@ -107,9 +131,7 @@ export default async function AdminPage() {
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Common admin tasks
-            </CardDescription>
+            <CardDescription>Common admin tasks</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <a
@@ -119,10 +141,38 @@ export default async function AdminPage() {
               <Users className="h-5 w-5 mr-3 text-blue-500" />
               <div>
                 <p className="text-sm font-medium">Manage Users</p>
-                <p className="text-xs text-muted-foreground">View and edit user accounts</p>
+                <p className="text-xs text-muted-foreground">
+                  View and edit user accounts
+                </p>
               </div>
             </a>
-            
+
+            <a
+              href="/admin/users/enhanced"
+              className="flex items-center p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+            >
+              <UserCog className="h-5 w-5 mr-3 text-indigo-500" />
+              <div>
+                <p className="text-sm font-medium">Enhanced Users</p>
+                <p className="text-xs text-muted-foreground">
+                  Advanced user analytics
+                </p>
+              </div>
+            </a>
+
+            <a
+              href="/admin/projects"
+              className="flex items-center p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+            >
+              <FolderOpen className="h-5 w-5 mr-3 text-orange-500" />
+              <div>
+                <p className="text-sm font-medium">Manage Projects</p>
+                <p className="text-xs text-muted-foreground">
+                  View and delete user projects
+                </p>
+              </div>
+            </a>
+
             <a
               href="/admin/balances"
               className="flex items-center p-3 rounded-lg border border-border hover:bg-accent transition-colors"
@@ -130,10 +180,25 @@ export default async function AdminPage() {
               <CreditCard className="h-5 w-5 mr-3 text-green-500" />
               <div>
                 <p className="text-sm font-medium">Manage Balances</p>
-                <p className="text-xs text-muted-foreground">Add or adjust user credits</p>
+                <p className="text-xs text-muted-foreground">
+                  Add or adjust user credits
+                </p>
               </div>
             </a>
-            
+
+            <a
+              href="/admin/system"
+              className="flex items-center p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+            >
+              <Monitor className="h-5 w-5 mr-3 text-cyan-500" />
+              <div>
+                <p className="text-sm font-medium">System Monitor</p>
+                <p className="text-xs text-muted-foreground">
+                  System health and statistics
+                </p>
+              </div>
+            </a>
+
             <a
               href="/admin/documents"
               className="flex items-center p-3 rounded-lg border border-border hover:bg-accent transition-colors"
@@ -141,7 +206,9 @@ export default async function AdminPage() {
               <FileText className="h-5 w-5 mr-3 text-purple-500" />
               <div>
                 <p className="text-sm font-medium">View Documents</p>
-                <p className="text-xs text-muted-foreground">Browse generated content</p>
+                <p className="text-xs text-muted-foreground">
+                  Browse generated content
+                </p>
               </div>
             </a>
           </CardContent>
@@ -149,4 +216,4 @@ export default async function AdminPage() {
       </div>
     </div>
   );
-} 
+}

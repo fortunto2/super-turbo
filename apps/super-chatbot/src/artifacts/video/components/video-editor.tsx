@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { CopyIcon } from "@/components/common/icons";
 import { DebugParameters } from "@/components/debug/debug-parameters";
+import { VideoErrorDisplay } from "@/components/chat/error-display";
 import { toast } from "sonner";
 import type { UseChatHelpers } from "@ai-sdk/react";
 
@@ -17,6 +18,7 @@ interface VideoState {
   status?: string;
   timestamp?: number;
   message?: string;
+  error?: string;
 }
 
 const copyVideoUrlToClipboard = async (url: string) => {
@@ -164,6 +166,7 @@ function ConnectionStatus({ isConnected }: { isConnected: boolean }) {
   );
 }
 
+
 export function VideoEditor({
   chatId: propChatId,
   append,
@@ -187,6 +190,7 @@ export function VideoEditor({
     initialState?.videoUrl
   );
   const [prompt, setPrompt] = useState(initialState?.prompt || "");
+  const [error, setError] = useState<string | undefined>(initialState?.error);
   const [hasInitialized, setHasInitialized] = useState(false);
 
   // Initialize component state
@@ -201,14 +205,19 @@ export function VideoEditor({
     if (initialState?.videoUrl && initialState.videoUrl !== videoUrl) {
       setVideoUrl(initialState.videoUrl);
     }
-  }, [initialState?.videoUrl, videoUrl]);
+    if (initialState?.error && initialState.error !== error) {
+      setError(initialState.error);
+    }
+  }, [initialState?.videoUrl, initialState?.error, videoUrl, error]);
 
   // Temporary implementation - we'll implement proper video generation hooks later
-  const status = isGenerating
-    ? "processing"
-    : videoUrl
-      ? "completed"
-      : "pending";
+  const status = error
+    ? "error"
+    : isGenerating
+      ? "processing"
+      : videoUrl
+        ? "completed"
+        : "pending";
 
   const handleCopyUrl = () => {
     if (videoUrl) {
@@ -218,6 +227,14 @@ export function VideoEditor({
 
   const handleGenerateNew = () => {
     // This will be implemented when we add the video generation panel
+  };
+
+  const handleRetry = () => {
+    // Clear error and reset state for retry
+    setError(undefined);
+    setIsGenerating(true);
+    // TODO: Implement actual retry logic
+    toast.info("Функция повтора будет добавлена в следующей версии");
   };
 
   // Get global WebSocket connection status
@@ -239,6 +256,16 @@ export function VideoEditor({
   const isConnected = getGlobalConnectionStatus();
 
   // Render based on status
+  if (status === "error" && error) {
+    return (
+      <VideoErrorDisplay 
+        error={error} 
+        prompt={prompt} 
+        onRetry={handleRetry}
+      />
+    );
+  }
+
   if (status === "processing" || (status === "pending" && prompt)) {
     return <GenerationSkeleton prompt={prompt} />;
   }

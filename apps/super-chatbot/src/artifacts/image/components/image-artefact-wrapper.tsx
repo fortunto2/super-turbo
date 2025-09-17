@@ -2,6 +2,8 @@ import { useImageSSE } from "../hooks/use-image-sse";
 import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { ImageErrorDisplay } from "@/components/chat/error-display";
+import { toast } from "sonner";
 
 import { Skeleton } from "@turbo-super/ui";
 import { ImageEditing } from "./editing";
@@ -45,7 +47,7 @@ export const ImageArtifactWrapper = memo(
       }
     }, [localContent]);
 
-    const { status, imageUrl, prompt, projectId, fileId, requestId } =
+    const { status, imageUrl, prompt, projectId, fileId, requestId, error } =
       parsedContent || {};
 
     // Logging for inpainting debugging
@@ -72,30 +74,35 @@ export const ImageArtifactWrapper = memo(
           status: "idle",
         }));
 
-        // AICODE-FIX: Include thumbnail in main save to avoid duplication
-        const thumbnailUrl =
-          newContent.thumbnailUrl ||
-          (newContent.status === "completed" ? newContent.imageUrl : undefined);
-        saveArtifactToDatabase(
-          documentId,
-          title,
-          finalContent,
-          "image",
-          thumbnailUrl
-        );
+        // AICODE-FIX: Remove duplicate save - database save is now handled in server.ts
+        // Only save to database when generation is completed
+        if (newContent.status === "completed" && newContent.imageUrl) {
+          const thumbnailUrl =
+            newContent.thumbnailUrl ||
+            (newContent.status === "completed"
+              ? newContent.imageUrl
+              : undefined);
+          saveArtifactToDatabase(
+            documentId,
+            title,
+            finalContent,
+            "image",
+            thumbnailUrl
+          );
 
-        // AICODE-FIX: Debug thumbnail save conditions
-        console.log("🖼️ 🔍 updateContent called:", {
-          status: newContent.status,
-          hasImageUrl: !!newContent.imageUrl,
-          hasThumbnailUrl: !!newContent.thumbnailUrl,
-          documentId,
-          documentIdValid: documentId && documentId !== "undefined",
-          thumbnailUrl: newContent.thumbnailUrl,
-          finalThumbnailUrl: thumbnailUrl,
-          fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
-          projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
-        });
+          // AICODE-FIX: Debug thumbnail save conditions
+          console.log("🖼️ 🔍 updateContent called:", {
+            status: newContent.status,
+            hasImageUrl: !!newContent.imageUrl,
+            hasThumbnailUrl: !!newContent.thumbnailUrl,
+            documentId,
+            documentIdValid: documentId && documentId !== "undefined",
+            thumbnailUrl: newContent.thumbnailUrl,
+            finalThumbnailUrl: thumbnailUrl,
+            fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
+            projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
+          });
+        }
 
         console.log("🖼️ 🔍 About to check saveMediaToChat conditions...");
 
@@ -164,6 +171,12 @@ export const ImageArtifactWrapper = memo(
             projectId: newContent.projectId || "none",
             projectIdType: typeof newContent.projectId,
           });
+
+          const thumbnailUrl =
+            newContent.thumbnailUrl ||
+            (newContent.status === "completed"
+              ? newContent.imageUrl
+              : undefined);
 
           saveMediaToChat(
             chatId,
@@ -284,6 +297,24 @@ export const ImageArtifactWrapper = memo(
                 prompt: parsedContent?.prompt,
                 progress: 100,
               });
+            } else if (
+              message.type === "error" ||
+              message.type === "image_error"
+            ) {
+              console.error("🖼️ ❌ Image generation error via SSE:", message);
+
+              updateContent({
+                ...parsedContent,
+                status: "error",
+                error:
+                  message.error || message.message || "Image generation failed",
+                timestamp: Date.now(),
+              });
+
+              // Show error toast
+              toast.error(
+                `Ошибка генерации изображения: ${message.error || message.message || "Неизвестная ошибка"}`
+              );
             }
           },
         ],
@@ -299,6 +330,27 @@ export const ImageArtifactWrapper = memo(
           <Skeleton className="w-full h-[400px] rounded-lg" />
           <Skeleton className="w-3/4 h-4 rounded-lg" />
         </div>
+      );
+    }
+
+    // Show error state
+    if (status === "failed" || status === "error" || error) {
+      const handleRetry = () => {
+        // Clear error and reset state for retry
+        updateContent({
+          ...parsedContent,
+          status: "idle",
+          error: undefined,
+        });
+        toast.info("Функция повтора будет добавлена в следующей версии");
+      };
+
+      return (
+        <ImageErrorDisplay
+          error={error || "Ошибка генерации изображения"}
+          prompt={prompt}
+          onRetry={handleRetry}
+        />
       );
     }
 

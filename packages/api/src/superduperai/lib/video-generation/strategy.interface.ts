@@ -16,7 +16,7 @@ export interface VideoGenerationParams {
 }
 
 export interface ImageToVideoParams extends VideoGenerationParams {
-  file: File;
+  file: File | string; // ✅ Поддержка как File, так и URL строки
 }
 
 export interface VideoGenerationResult {

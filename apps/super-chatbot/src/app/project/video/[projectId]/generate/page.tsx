@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Card,
@@ -18,117 +18,117 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { ProjectTaskList } from "@/components/project/project-task-list";
+import { useProjectTasks } from "@turbo-super/api";
+import {
+  useProjectGetById,
+  useProjectScript2Storyboard,
+  useProjectTxt2Script,
+  useProjectVideoScript2Entities,
+} from "@/lib/api";
+import { getProjectStatus } from "@/lib/utils/project-status";
+import { useProjectEvents } from "@/hooks/event-handlers/event-source";
+import { useProjectEventHandler } from "@/hooks/event-handlers/event-handler";
+import { useProjectVideoEventHandler } from "@/hooks/event-handlers/use-project-video-event-handler";
 
 export default function GeneratePage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.projectId as string;
 
-  const [projectStatus, setProjectStatus] = useState<string>("unknown");
-  const [projectProgress, setProjectProgress] = useState<number>(0);
-  const [projectTasks, setProjectTasks] = useState<any[]>([]);
-  const [completedTasks, setCompletedTasks] = useState<number>(0);
-  const [totalTasks, setTotalTasks] = useState<number>(0);
-  const [errorTasks, setErrorTasks] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Убираем локальные состояния, используем данные из хуков
 
-  // Project status tracking
-  useEffect(() => {
-    if (!projectId) return;
+  const { mutate: regenerateStoryboard, isPending: isStoryboardRegenerating } =
+    useProjectScript2Storyboard();
 
-    const checkStatus = async () => {
-      try {
-        setIsLoading(false);
-        const response = await fetch(
-          `/api/story-editor/status?projectId=${projectId}`
-        );
-        const result = await response.json();
+  const { mutate: regenerateEntities, isPending: isEntitiesRegenerating } =
+    useProjectVideoScript2Entities();
 
-        if (result.success) {
-          setProjectStatus(result.status);
-          setProjectProgress(result.progress || 0);
-          setProjectTasks(result.project?.tasks || []);
-          setCompletedTasks(result.completedTasks || 0);
-          setTotalTasks(result.totalTasks || 0);
-          setErrorTasks(result.errorTasks || []);
+  const { mutate: regenerateTxt, isPending: isTxtRegenerating } =
+    useProjectTxt2Script();
 
-          // If project is completed, show message
-          if (result.status === "completed") {
-            // Can add notification or automatic redirect
-          } else if (result.status === "failed") {
-            setError("Video generation failed");
-          }
-        } else {
-          setError("Error getting project status");
-        }
-      } catch (err) {
-        console.error("Error checking project status:", err);
-        setError("Status check error");
-      }
-    };
+  const { data: project } = useProjectGetById({ id: projectId });
 
-    // Check status every 5 seconds
-    const interval = setInterval(checkStatus, 5000);
-    checkStatus(); // First check immediately
+  // Настраиваем обработчики событий для real-time обновлений
+  const projectEventHandler = useProjectEventHandler(projectId);
+  const projectVideoEventHandler = useProjectVideoEventHandler(projectId);
 
-    return () => clearInterval(interval);
-  }, [projectId]);
+  useProjectEvents({
+    projectId,
+    eventHandlers: [projectEventHandler, projectVideoEventHandler],
+  });
 
-  const handleRegenerate = async () => {
-    if (!projectId) return;
+  const {
+    isEntityError,
+    isStoryboardError,
+    errorTasks,
+    completedTasks,
+    isEntityCompleted,
+    isStoryboardCompleted,
+    isTxtCompleted,
+    isTxtError,
+  } = useProjectTasks(project?.tasks);
 
-    try {
-      setError(null);
-      setProjectStatus("pending");
-      setProjectProgress(0);
-      setProjectTasks([]);
-      setCompletedTasks(0);
-      setTotalTasks(0);
-      setErrorTasks([]);
+  // Определяем статус проекта на основе задач
+  const projectStatusInfo = project?.tasks
+    ? getProjectStatus(project.tasks)
+    : null;
+  const projectStatus = projectStatusInfo?.status || "pending";
+  const hasErrors = errorTasks.length > 0;
+  const isCompleted =
+    isStoryboardCompleted && isEntityCompleted && isTxtCompleted;
 
-      // Here you can add logic for regenerating specific tasks
-      // For now, just restart the entire project
-      const response = await fetch("/api/story-editor/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          template_name: "story",
-          config: {
-            prompt: "Project regeneration", // Can add field for prompt
-            aspect_ratio: "16:9",
-            image_generation_config_name: "default",
-            auto_mode: true,
-            seed: Math.floor(Math.random() * 1000000),
-            quality: "sd",
-            entity_ids: [],
-            dynamic: 1,
-            voiceover_volume: 0.5,
-            music_volume: 0.5,
-            sound_effect_volume: 0.5,
-            watermark: false,
-            subtitles: false,
-            voiceover: false,
-          },
-        }),
+  const handleRegenerate = () => {
+    if (isTxtError) {
+      regenerateTxt({
+        id: projectId,
+        requestBody: project?.config?.prompt,
       });
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Update projectId if a new project was created
-        if (result.projectId !== projectId) {
-          router.push(`/project/video/${result.projectId}/generate`);
-        }
-      } else {
-        throw new Error(result.error || "Regeneration error");
-      }
-    } catch (err: any) {
-      setError(err.message || "Regeneration error");
+      return;
+    }
+    if (isEntityError) {
+      regenerateEntities({ id: projectId });
+      return;
+    }
+    if (isStoryboardError) {
+      regenerateStoryboard({ id: projectId });
+      return;
     }
   };
+
+  // Автоматический запуск следующего этапа после успешного завершения предыдущего
+  const handleAutoNextStage = useCallback(() => {
+    if (isTxtCompleted && !isEntityCompleted && !isEntityError) {
+      console.log("🚀 Auto-starting entities generation...");
+      regenerateEntities({ id: projectId });
+    } else if (
+      isEntityCompleted &&
+      !isStoryboardCompleted &&
+      !isStoryboardError
+    ) {
+      console.log("🚀 Auto-starting storyboard generation...");
+      regenerateStoryboard({ id: projectId });
+    }
+  }, [
+    isTxtCompleted,
+    isEntityCompleted,
+    isEntityError,
+    isStoryboardCompleted,
+    isStoryboardError,
+    regenerateEntities,
+    regenerateStoryboard,
+    projectId,
+  ]);
+
+  useEffect(() => {
+    if (isCompleted) {
+      router.replace(`/project/video/${projectId}/preview`);
+    }
+  }, [isCompleted, projectId, router]);
+
+  // Автоматический запуск следующего этапа
+  useEffect(() => {
+    handleAutoNextStage();
+  }, [handleAutoNextStage]);
 
   if (!projectId) {
     return (
@@ -192,14 +192,12 @@ export default function GeneratePage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>Progress:</span>
-                    <span>
-                      {completedTasks}/{totalTasks} steps
-                    </span>
+                    <span>{completedTasks.length}/3 steps</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${projectProgress}%` }}
+                      style={{ width: `${(completedTasks.length / 3) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -220,19 +218,23 @@ export default function GeneratePage() {
                     {projectStatus === "failed" && "Generation error"}
                     {projectStatus === "processing" && "Video generating..."}
                     {projectStatus === "pending" && "Waiting to start..."}
-                    {projectStatus === "unknown" && "Checking status..."}
                   </span>
                 </div>
 
-                <p className="text-sm text-muted-foreground">
-                  Status updates automatically every 5 seconds
-                </p>
+                {/* Main status message */}
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm">
+                    {hasErrors
+                      ? "An error occurred. Please try regenerating the project."
+                      : "Auto mode is active. Please wait while your project is being prepared."}
+                  </p>
+                </div>
 
-                {/* Error display */}
-                {error && (
+                {/* Error details */}
+                {projectStatusInfo?.errorStage && (
                   <div className="flex items-center space-x-2 text-red-600 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">
                     <AlertCircle className="size-5" />
-                    <span>{error}</span>
+                    <span>Error in {projectStatusInfo.errorStage} stage</span>
                   </div>
                 )}
 
@@ -253,19 +255,40 @@ export default function GeneratePage() {
                   )}
 
                   {/* Regenerate button for failed projects */}
-                  {projectStatus === "failed" && (
+                  {hasErrors && (
                     <Button
                       onClick={handleRegenerate}
                       className="w-full"
                       variant="outline"
+                      disabled={
+                        isEntitiesRegenerating ||
+                        isStoryboardRegenerating ||
+                        isTxtRegenerating
+                      }
                     >
-                      Regenerate Project
+                      {isEntitiesRegenerating ||
+                      isStoryboardRegenerating ||
+                      isTxtRegenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Regenerating...
+                        </>
+                      ) : (
+                        "Regenerate Project"
+                      )}
                     </Button>
                   )}
                 </div>
 
                 {/* Task details using the new component */}
-                <ProjectTaskList tasks={projectTasks} />
+                <ProjectTaskList
+                  tasks={
+                    project?.tasks?.map((task) => ({
+                      ...task,
+                      status: task.status || "pending",
+                    })) || []
+                  }
+                />
               </div>
             </CardContent>
           </Card>

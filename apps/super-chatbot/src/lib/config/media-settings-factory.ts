@@ -7,6 +7,7 @@ import {
 import type {
   ImageGenerationConfig,
   VideoGenerationConfig,
+  AudioGenerationConfig,
   MediaOption,
 } from "../types/media-settings";
 import { getStyles } from "@/lib/ai/api/get-styles";
@@ -38,6 +39,7 @@ function adaptModelForMediaSettings(
 // Cache for configurations
 let imageConfigCache: ImageGenerationConfig | null = null;
 let videoConfigCache: VideoGenerationConfig | null = null;
+let audioConfigCache: AudioGenerationConfig | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
@@ -488,6 +490,13 @@ export async function getVideoGenerationConfig(): Promise<VideoGenerationConfig>
       { value: 30, label: "30 FPS (Standard)" },
       { value: 60, label: "60 FPS (Smooth)" },
     ],
+    availableDurations: [
+      { id: "5s", label: "5 seconds", value: 5 },
+      { id: "10s", label: "10 seconds", value: 10 },
+      { id: "30s", label: "30 seconds", value: 30 },
+      { id: "1m", label: "1 minute", value: 60 },
+      { id: "2m", label: "2 minutes", value: 120 },
+    ],
     defaultSettings: {
       resolution: {
         width: 1280,
@@ -520,7 +529,7 @@ export async function getVideoGenerationConfig(): Promise<VideoGenerationConfig>
           price: 0,
         },
       frameRate: 30,
-      duration: 10,
+      duration: { id: "10s", label: "10 seconds", value: 10 },
       negativePrompt: "",
     },
   };
@@ -533,6 +542,7 @@ export async function getVideoGenerationConfig(): Promise<VideoGenerationConfig>
 export function clearMediaSettingsCache(): void {
   imageConfigCache = null;
   videoConfigCache = null;
+  audioConfigCache = null;
   cacheTimestamp = 0;
 }
 
@@ -546,6 +556,164 @@ export async function createImageMediaSettings() {
 
 export async function createVideoMediaSettings() {
   const config = await getVideoGenerationConfig();
+  return {
+    availableModels: config.availableModels,
+  };
+}
+
+export async function getAudioGenerationConfig(): Promise<AudioGenerationConfig> {
+  const now = Date.now();
+
+  // Return cached config if still valid
+  if (audioConfigCache && now - cacheTimestamp < CACHE_DURATION) {
+    return audioConfigCache;
+  }
+
+  // Get models from API endpoint (works on both client and server)
+  let audioModels: IGenerationConfigRead[] = [];
+
+  try {
+    if (typeof window !== "undefined") {
+      // Client-side: fetch from API endpoint
+      const response = await fetch(API_NEXT_ROUTES.MODELS);
+      const data = await response.json();
+      audioModels = data?.data?.audioModels || [];
+    } else {
+      // Server-side: direct function call
+      configureSuperduperAI();
+      // For now, we'll use a fallback since audio models might not be available yet
+      audioModels = [];
+    }
+  } catch (error) {
+    console.error("Failed to load audio models:", error);
+    audioModels = [];
+  }
+
+  const adaptedAudioModels = audioModels.map(adaptModelForMediaSettings);
+
+  // Create configuration
+  audioConfigCache = {
+    type: "audio-generation-settings",
+    availableModels:
+      adaptedAudioModels.length > 0
+        ? adaptedAudioModels
+        : [
+            {
+              name: "tts-1",
+              label: "TTS-1",
+              type: "text_to_speech" as any,
+              source: "openai" as any,
+              params: {},
+              id: "tts-1",
+              description: "Text-to-Speech model",
+              value: "tts-1",
+              workflowPath: "",
+              price: 0,
+            },
+            {
+              name: "musicgen",
+              label: "MusicGen",
+              type: "text_to_music" as any,
+              source: "huggingface" as any,
+              params: {},
+              id: "musicgen",
+              description: "Music generation model",
+              value: "musicgen",
+              workflowPath: "",
+              price: 0,
+            },
+          ],
+    availableVoices: [
+      { id: "alloy", label: "Alloy", description: "Neutral voice" },
+      { id: "echo", label: "Echo", description: "Male voice" },
+      { id: "fable", label: "Fable", description: "British accent" },
+      { id: "onyx", label: "Onyx", description: "Deep male voice" },
+      { id: "nova", label: "Nova", description: "Young female voice" },
+      { id: "shimmer", label: "Shimmer", description: "Soft female voice" },
+    ],
+    availableLanguages: [
+      { id: "en", label: "English", description: "English language" },
+      { id: "ru", label: "Russian", description: "Russian language" },
+      { id: "es", label: "Spanish", description: "Spanish language" },
+      { id: "fr", label: "French", description: "French language" },
+      { id: "de", label: "German", description: "German language" },
+      { id: "it", label: "Italian", description: "Italian language" },
+      { id: "pt", label: "Portuguese", description: "Portuguese language" },
+      { id: "ja", label: "Japanese", description: "Japanese language" },
+      { id: "ko", label: "Korean", description: "Korean language" },
+      { id: "zh", label: "Chinese", description: "Chinese language" },
+    ],
+    availableAudioTypes: [
+      {
+        id: "speech",
+        label: "Speech",
+        description: "Text-to-speech generation",
+      },
+      { id: "music", label: "Music", description: "Music generation" },
+      {
+        id: "sound_effect",
+        label: "Sound Effect",
+        description: "Sound effect generation",
+      },
+      {
+        id: "voiceover",
+        label: "Voiceover",
+        description: "Voiceover generation",
+      },
+      {
+        id: "narration",
+        label: "Narration",
+        description: "Narration generation",
+      },
+      { id: "podcast", label: "Podcast", description: "Podcast-style audio" },
+      { id: "ambient", label: "Ambient", description: "Ambient sound" },
+      {
+        id: "instrumental",
+        label: "Instrumental",
+        description: "Instrumental music",
+      },
+    ],
+    availableDurations: [
+      { id: "5s", label: "5 seconds", value: 5 },
+      { id: "10s", label: "10 seconds", value: 10 },
+      { id: "30s", label: "30 seconds", value: 30 },
+      { id: "1m", label: "1 minute", value: 60 },
+      { id: "2m", label: "2 minutes", value: 120 },
+      { id: "5m", label: "5 minutes", value: 300 },
+    ],
+    defaultSettings: {
+      audioType: {
+        id: "speech",
+        label: "Speech",
+        description: "Text-to-speech generation",
+      },
+      voice: { id: "alloy", label: "Alloy", description: "Neutral voice" },
+      language: { id: "en", label: "English", description: "English language" },
+      duration: { id: "10s", label: "10 seconds", value: 10 },
+      model: adaptedAudioModels.find(
+        (m) => m.type === ("text_to_speech" as any)
+      ) ||
+        adaptedAudioModels[0] || {
+          name: "tts-1",
+          label: "TTS-1",
+          type: "text_to_speech" as any,
+          source: "openai" as any,
+          params: {},
+          id: "tts-1",
+          description: "Text-to-Speech model",
+          value: "tts-1",
+          workflowPath: "",
+          price: 0,
+        },
+    },
+  };
+
+  cacheTimestamp = now;
+  return audioConfigCache;
+}
+
+export async function createAudioMediaSettings() {
+  const config = await getAudioGenerationConfig();
   return {
     availableModels: config.availableModels,
   };

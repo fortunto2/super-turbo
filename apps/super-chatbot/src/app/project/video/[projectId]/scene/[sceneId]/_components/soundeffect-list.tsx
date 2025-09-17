@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
+import { FileTypeEnum } from "@turbo-super/api";
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
 import {
@@ -20,7 +19,6 @@ export function SoundEffectList({
   sceneId: string;
   onCreateAudio?: () => void;
 }) {
-  const [selectingFileId, setSelectingFileId] = useState<string | null>(null);
   const { data: scene, isLoading: isSceneLoading } = useSceneGetById({
     id: sceneId,
   });
@@ -31,37 +29,28 @@ export function SoundEffectList({
     types: [FileTypeEnum.SOUND_EFFECT],
   });
 
-  const { mutate: update } = useSceneUpdate();
+  const { mutate: update, isPending } = useSceneUpdate();
 
-  const handleSelect = async (
-    file: IFileRead | null,
-    isPlaceholder?: boolean
-  ) => {
+  const handleSelect = async () => {
     if (!scene) return;
     if (!scene.file_id) return;
 
-    const id = isPlaceholder ? null : file?.id;
-    const fileId = file?.id || "placeholder";
-
-    setSelectingFileId(fileId);
     try {
       await update({
         id: scene.id,
         requestBody: {
           ...scene,
           file_id: scene.file_id,
-          sound_effect_id: id,
+          sound_effect_id: null,
         },
       });
-    } finally {
-      setSelectingFileId(null);
+    } catch (error) {
+      console.error("Error selecting file:", error);
     }
   };
 
   const isLoading = isFilesLoading || isSceneLoading;
   const isError = !scene || !files;
-  const isEmpty =
-    !isLoading && !isError && (!files?.items || files.items.length === 0);
 
   return (
     <div className="flex h-full flex-col">
@@ -77,8 +66,6 @@ export function SoundEffectList({
           <QueryState
             isLoading={isLoading}
             isError={isError}
-            isEmpty={isEmpty}
-            emptyMessage="No sound effect files"
             loadingComponent={
               <div className="flex size-full gap-3">
                 {[...Array(4)].map((_, i) => (
@@ -93,26 +80,10 @@ export function SoundEffectList({
             <>
               {/* Пустая карточка для сброса выбора */}
               <EmptyAudioFile
-                onSelect={() => {
-                  // Создаем placeholder объект для sound effect
-                  const placeholderFile: IFileRead = {
-                    id: "placeholder-soundeffect",
-                    url: null,
-                    thumbnail_url: null,
-                    type: FileTypeEnum.SOUND_EFFECT,
-                    image_generation_id: null,
-                    image_generation: null,
-                    video_generation_id: null,
-                    video_generation: null,
-                    audio_generation_id: null,
-                    audio_generation: null,
-                    duration: null,
-                    tasks: [],
-                  };
-                  handleSelect(placeholderFile, true);
-                }}
+                onSelect={handleSelect}
                 onCreateAudio={onCreateAudio}
                 isActive={!scene?.sound_effect_id}
+                isPending={isPending}
               />
 
               {/* Файлы */}
@@ -120,10 +91,8 @@ export function SoundEffectList({
                 <AudioFile
                   key={file.id}
                   file={file}
-                  onSelect={handleSelect}
-                  type="soundeffect"
                   isActive={scene?.sound_effect_id === file.id}
-                  isSelecting={selectingFileId === file.id}
+                  scene={scene}
                 />
               ))}
             </>

@@ -51,13 +51,20 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
 
     try {
       const formData = new FormData();
-      formData.append("payload", params.file);
+      formData.append("payload", params.file, params.file.name);
       formData.append("type", "image");
 
       console.log(
         "📤 Sending upload request to:",
         `${config.url}/api/v1/file/upload`
       );
+      console.log("📤 FormData contents:", {
+        hasPayload: formData.has("payload"),
+        hasType: formData.has("type"),
+        fileName: params.file.name,
+        fileSize: params.file.size,
+        fileType: params.file.type,
+      });
 
       const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
         method: "POST",
@@ -119,13 +126,20 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
 
     try {
       const formData = new FormData();
-      formData.append("payload", params.mask);
+      formData.append("payload", params.mask, params.mask.name);
       formData.append("type", "image");
 
       console.log(
-        "📤 Sending upload request to:",
+        "📤 Sending mask upload request to:",
         `${config.url}/api/v1/file/upload`
       );
+      console.log("📤 Mask FormData contents:", {
+        hasPayload: formData.has("payload"),
+        hasType: formData.has("type"),
+        fileName: params.mask.name,
+        fileSize: params.mask.size,
+        fileType: params.mask.type,
+      });
 
       const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
         method: "POST",
@@ -195,21 +209,51 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
       maskUrl = uploadResult.maskUrl;
     }
 
+    // Функция для безопасного экранирования URL для JSON
+    const sanitizeUrl = (url: string | undefined): string | undefined => {
+      if (!url) return undefined;
+      const originalUrl = url;
+      // Заменяем обратные слеши на прямые и убираем другие проблемные символы
+      const sanitized = url.replace(/\\/g, "/").replace(/[\x00-\x1F\x7F]/g, "");
+      if (originalUrl !== sanitized) {
+        console.log("🔧 URL sanitized:", { original: originalUrl, sanitized });
+      }
+      return sanitized;
+    };
+
     let references = [];
     if (imageId) {
+      const sanitizedImageUrl = sanitizeUrl(imageUrl);
       references.push({
         type: "source",
         reference_id: imageId,
-        reference_url: imageUrl,
+        reference_url: sanitizedImageUrl,
+      });
+      console.log("🔍 Added source reference:", {
+        imageId,
+        imageUrl: sanitizedImageUrl,
       });
     }
     if (maskId) {
+      const sanitizedMaskUrl = sanitizeUrl(maskUrl);
       references.push({
         type: "mask",
         reference_id: maskId,
-        reference_url: maskUrl,
+        reference_url: sanitizedMaskUrl,
+      });
+      console.log("🔍 Added mask reference:", {
+        maskId,
+        maskUrl: sanitizedMaskUrl,
       });
     }
+
+    // Санитизируем все URL в references перед использованием в payload
+    const sanitizedReferences = references.map((ref) => ({
+      ...ref,
+      reference_url: sanitizeUrl(ref.reference_url),
+    }));
+
+    console.log("🔍 Final references array:", sanitizedReferences);
 
     // Если передан файл, сначала загружаем его и используем reference_id
     // Примечание: загрузку выполним в generate() уровне выше, где доступен config.
@@ -224,7 +268,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
           height: params.resolution?.height || 1088,
           seed: params.seed || Math.floor(Math.random() * 1000000000000),
           generation_config_name: modelName,
-          references,
+          references: sanitizedReferences,
           entity_ids: [],
         },
         ...(imageId ? { file_ids: [imageId] } : {}),
@@ -246,18 +290,22 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
         seed: params.seed || Math.floor(Math.random() * 1000000000000),
         generation_config_name: modelName,
         style_name: null,
-        references,
+        references: sanitizedReferences,
         entity_ids: [],
       },
       ...(imageId ? { file_ids: [imageId] } : {}),
     };
 
-    console.log("🔍 ImageToImageStrategy: generated payload:", {
-      modelName,
-      imageId,
-      resolution: params.resolution,
-      payload,
-    });
+    console.log(
+      "🔍 ImageToImageStrategy: generated payload:",
+      {
+        modelName,
+        imageId,
+        resolution: params.resolution,
+        payload,
+      },
+      references
+    );
 
     return payload;
   }

@@ -90,10 +90,10 @@ const VideoPlayer: FC<Props> = ({
   }, [isLoading]);
 
   return (
-    <div className="grow p-3 pt-6 w-full h-full">
+    <div className="w-full h-full flex flex-col">
       <div
         ref={containerRef}
-        className="flex-1 flex justify-center items-center relative w-full h-full"
+        className="flex-1 flex justify-center items-center relative w-full h-full min-h-0"
       >
         {metadata && (
           <Player

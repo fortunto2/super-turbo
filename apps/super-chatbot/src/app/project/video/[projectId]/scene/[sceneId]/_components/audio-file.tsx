@@ -1,24 +1,52 @@
-import type { IFileRead } from "@turbo-super/api";
+import {
+  FileTypeEnum,
+  type IFileRead,
+  type ISceneRead,
+} from "@turbo-super/api";
 import { FileMetadataModal } from "./file-metadata-modal";
 import { hasMetadata } from "./file-metadata-utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Play, Download, Info, MicVocal, AudioLines } from "lucide-react";
+import { useSceneUpdate } from "@/lib/api";
 
 interface AudioFileProps {
   file: IFileRead;
-  onSelect: (file: IFileRead) => void;
-  type: "voiceover" | "soundeffect";
   isActive: boolean;
-  isSelecting?: boolean;
+  scene?: ISceneRead;
 }
 
-export function AudioFile({
-  file,
-  onSelect,
-  type,
-  isActive,
-  isSelecting,
-}: AudioFileProps) {
+export function AudioFile({ file, isActive, scene }: AudioFileProps) {
+  const { mutate: update, isPending: isSelecting } = useSceneUpdate();
+
+  const type = useMemo(() => {
+    return file.type === FileTypeEnum.VOICEOVER ? "voiceover" : "soundeffect";
+  }, [file.type]);
+
+  const handleSelect = async () => {
+    if (!scene) return;
+    if (!scene.file_id) return;
+
+    let id;
+    if (type === "voiceover") {
+      id = { voiceover_id: file?.id ?? null };
+    } else if (type === "soundeffect") {
+      id = { sound_effect_id: file?.id ?? null };
+    }
+
+    try {
+      await update({
+        id: scene.id,
+        requestBody: {
+          ...scene,
+          file_id: scene.file_id,
+          ...id,
+        },
+      });
+    } catch (error) {
+      console.error("Error selecting file:", error);
+    }
+  };
+
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
   const [showMetadata, setShowMetadata] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -135,7 +163,7 @@ export function AudioFile({
       {/* Кнопка выбора - только если не активен */}
       {!isActive && (
         <button
-          onClick={() => onSelect(file)}
+          onClick={handleSelect}
           disabled={isSelecting}
           className={`absolute inset-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200 z-0 ${isSelecting ? "opacity-50 cursor-not-allowed" : ""}`}
           title="Select this file"
