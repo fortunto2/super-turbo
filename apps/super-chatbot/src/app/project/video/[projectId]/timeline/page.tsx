@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ProjectTimeline, useGenerateTimeline } from "@turbo-super/features";
+import { ProjectTimeline } from "@turbo-super/features";
 import { ArrowLeft, Eye } from "lucide-react";
 import {
   DataTypeEnum,
@@ -15,6 +15,7 @@ import { useState } from "react";
 import { ProjectVideoExportDialog } from "@/components";
 import {
   useDataUpdate,
+  useGenerateTimeline,
   useProjectGetById,
   useProjectTimeline2Video,
 } from "@/lib/api/superduperai";
@@ -37,7 +38,8 @@ export default function VideoPage() {
     id: projectId,
   });
 
-  const { mutate: generateTimeline } = useGenerateTimeline();
+  const { mutate: generateTimeline, isPending: isGenerating } =
+    useGenerateTimeline();
 
   const { mutate: timeline2video, isPending } = useProjectTimeline2Video();
 
@@ -100,7 +102,7 @@ export default function VideoPage() {
   }
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full h-screen">
       <QueryState
         isLoading={isLoading}
         isError={isError}
@@ -109,6 +111,7 @@ export default function VideoPage() {
         emptyMessage="Project not found"
         loadingMessage="Loading project..."
         errorMessage="Failed to load project"
+        className="size-full"
       >
         <ProjectTimeline
           timeline={timeline}
@@ -117,6 +120,7 @@ export default function VideoPage() {
           onExport={() => setIsExportDialogOpen(true)}
           onUpdateTimeline={handleUpdateTimeline}
           onRegenerateTimeline={handleGenerateTimeline}
+          isGenerating={isGenerating}
         />
       </QueryState>
 

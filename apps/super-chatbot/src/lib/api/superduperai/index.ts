@@ -17,3 +17,4 @@ export * from "./project-video/txt2script";
 export * from "./data/update/query";
 export * from "./entity/query";
 export * from "./entity/update/query";
+export * from "./project/generate-timeline/query";

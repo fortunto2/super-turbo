@@ -32,7 +32,6 @@ export default function AddEntityPage() {
       {
         ...data,
         type: selectedType,
-        project_id: projectId,
       } as IEntityCreate,
       {
         onSuccess: () => {

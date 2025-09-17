@@ -253,7 +253,7 @@ export default function EntityPage() {
 
           {/* Content */}
           <div className="w-full flex-1 flex flex-col">
-            <div className="w-full bg-card border border-border rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col">
+            <div className="size-full bg-card border border-border rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col">
               <QueryState
                 isLoading={isLoading}
                 isError={isError}
@@ -262,6 +262,7 @@ export default function EntityPage() {
                 emptyMessage="Entity not found"
                 loadingMessage="Loading entity..."
                 errorMessage="Failed to load entity"
+                className="size-full"
               >
                 {entity && (
                   <div className="p-6 flex-1 flex flex-col">

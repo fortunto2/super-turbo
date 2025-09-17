@@ -33,6 +33,7 @@ type Props = {
   onExport?: () => void;
   onUpdateTimeline?: (payload: IDataUpdate) => void;
   onRegenerateTimeline?: () => void;
+  isGenerating?: boolean;
 };
 
 const stateManager = new StateManager();
@@ -44,6 +45,7 @@ export const ProjectTimeline: FC<Props> = ({
   onExport,
   onUpdateTimeline,
   onRegenerateTimeline,
+  isGenerating,
 }) => {
   const [isComponentsLoaded, setIsComponentsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -146,7 +148,7 @@ export const ProjectTimeline: FC<Props> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">
-            Загрузка timeline компонентов...
+            Loading timeline components...
           </p>
         </div>
       </div>
@@ -173,21 +175,22 @@ export const ProjectTimeline: FC<Props> = ({
             </Button>
           </div>
 
-          <div className="flex h-12 items-center bg-background px-1.5">
-            <Link
-              href={`/project/video/${project.id}/entities`}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Users className="size-4" />
-              <span className="text-sm">Entities</span>
-            </Link>
-          </div>
-
+          <div></div>
           <HistoryButtons />
         </div>
         <div></div>
         <div className="pointer-events-auto flex h-14 items-center justify-end gap-2">
           <div className="flex h-12 items-center gap-2 rounded-md bg-background px-2.5">
+            <Button
+              onClick={onRegenerateTimeline}
+              className="min-w-[166px] bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80"
+            >
+              {isGenerating ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto mb-2"></div>
+              ) : (
+                "Regenerate Timeline"
+              )}
+            </Button>
             <Button
               className="flex size-9 gap-1 border border-border"
               size="icon"
@@ -224,8 +227,8 @@ export const ProjectTimeline: FC<Props> = ({
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
                 <p className="text-sm text-gray-600">
                   {!stableData || !stableData.id
-                    ? "Загрузка timeline данных..."
-                    : "Инициализация плеера..."}
+                    ? "Loading timeline data..."
+                    : "Initializing player..."}
                 </p>
               </div>
             </div>

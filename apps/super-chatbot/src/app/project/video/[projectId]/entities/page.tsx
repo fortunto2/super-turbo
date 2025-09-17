@@ -80,7 +80,7 @@ export default function EntitiesPage() {
         <div className="mb-6 flex items-center justify-between">
           <BackButton href={backRoute} />
 
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
             <Link
               href={`/project/video/${projectId}/entity/add`}
               className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
@@ -90,7 +90,7 @@ export default function EntitiesPage() {
               </div>
               <span className="font-medium">Add Entity</span>
             </Link>
-          </div>
+          </div> */}
         </div>
 
         {/* Main Content */}
@@ -107,7 +107,7 @@ export default function EntitiesPage() {
 
           {/* Content */}
           <div className="w-full flex-1 flex flex-col">
-            <div className="w-full bg-card border border-border rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col">
+            <div className="size-full bg-card border border-border rounded-xl shadow-lg overflow-hidden flex-1 flex flex-col">
               <QueryState
                 isLoading={isLoading}
                 isError={isError}
@@ -116,6 +116,7 @@ export default function EntitiesPage() {
                 emptyMessage="No entities found"
                 loadingMessage="Loading entities..."
                 errorMessage="Failed to load entities"
+                className="size-full"
               >
                 {entities?.items && entities.items.length > 0 && (
                   <div className="p-6 flex-1">
