@@ -303,13 +303,39 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           console.error("🎬 ❌ CREATE DOCUMENT ERROR:", error);
           throw error;
         }
-      } catch (error: any) {
-        console.error("🎬 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
-        return {
-          error: `Failed to create video document: ${error.message}`,
-          fallbackConfig: config,
-        };
-      }
+        } catch (error: any) {
+          console.error("🎬 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
+          
+          // Create error artifact for better user feedback
+          if (params?.createDocument) {
+            try {
+              const errorResult = await params.createDocument.execute({
+                title: JSON.stringify({
+                  prompt,
+                  status: "error",
+                  error: error.message || "Failed to create video document",
+                  timestamp: Date.now(),
+                  message: "Ошибка при создании видео",
+                }),
+                kind: "video",
+              });
+              
+              return {
+                ...errorResult,
+                error: `Ошибка создания видео: ${error.message}`,
+                message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
+              };
+            } catch (artifactError) {
+              console.error("🎬 ❌ Failed to create error artifact:", artifactError);
+            }
+          }
+          
+          return {
+            error: `Ошибка создания видео: ${error.message}`,
+            message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
+            fallbackConfig: config,
+          };
+        }
     },
   });
 

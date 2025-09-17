@@ -105,6 +105,20 @@ export const videoArtifact = new Artifact({
           // Try to parse content and add completion status
           const parsedContent = JSON.parse(draftArtifact.content || "{}");
 
+          // Check for error status
+          if (parsedContent.status === "error" || parsedContent.error) {
+            console.error("🎬 ❌ Video generation error in artifact:", parsedContent.error);
+            return {
+              ...draftArtifact,
+              content: JSON.stringify({
+                ...parsedContent,
+                status: "error",
+                timestamp: Date.now(),
+              }),
+              status: "idle",
+            };
+          }
+
           // If the parsed content has videoUrl, mark as completed with videoUrl
           if (parsedContent.videoUrl || parsedContent.status === "completed") {
             const updatedContent = {
@@ -125,9 +139,15 @@ export const videoArtifact = new Artifact({
             status: "idle",
           };
         } catch (error) {
-          // If content is not JSON, just mark as idle
+          console.error("🎬 ❌ Error parsing video artifact content:", error);
+          // If content is not JSON, mark as error
           return {
             ...draftArtifact,
+            content: JSON.stringify({
+              status: "error",
+              error: "Failed to parse video generation result",
+              timestamp: Date.now(),
+            }),
             status: "idle",
           };
         }

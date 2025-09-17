@@ -35,6 +35,7 @@ export const VideoArtifactWrapper = memo(
         timestamp: parsedContent.timestamp,
         message: parsedContent.message,
         videoUrl: parsedContent.videoUrl,
+        error: parsedContent.error,
       };
     }, [parsedContent]);
 
@@ -176,6 +177,40 @@ export const VideoArtifactWrapper = memo(
       (message: any) => {
         console.log("🎬 Artifact SSE message:", message);
 
+        // Handle error events
+        if (message.type === "error") {
+          console.error("🎬 ❌ Video generation error via SSE:", message);
+
+          if (setArtifact) {
+            setArtifact((current: any) => {
+              const currentContent =
+                typeof current.content === "string"
+                  ? JSON.parse(current.content || "{}")
+                  : current.content;
+
+              const updatedContent = {
+                ...currentContent,
+                status: "error",
+                error:
+                  message.error || message.message || "Video generation failed",
+                timestamp: Date.now(),
+              };
+
+              return {
+                ...current,
+                content: JSON.stringify(updatedContent),
+                status: "idle" as const,
+              };
+            });
+          }
+
+          // Show error toast
+          toast.error(
+            `Video generation error: ${message.error || message.message || "Unknown error"}`
+          );
+          return;
+        }
+
         // Handle video completion events
         if (
           message.type === "file" &&
@@ -204,7 +239,7 @@ export const VideoArtifactWrapper = memo(
                 videoUrl: videoUrl,
                 thumbnailUrl: thumbnailUrl,
                 timestamp: Date.now(),
-                message: "Video generation completed!",
+                message: "Video generation completed",
               };
 
               // AICODE-FIX: Update thumbnail in database when video completes
