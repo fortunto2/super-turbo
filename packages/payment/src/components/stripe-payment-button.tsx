@@ -152,6 +152,9 @@ export function StripePaymentButton({
       if (toolTitle) {
         formData.append("toolTitle", toolTitle);
       }
+      if (creditAmount && variant === "credits") {
+        formData.append("creditAmount", creditAmount.toString());
+      }
       formData.append("cancelUrl", currentUrl);
       formData.append("generationType", generationType);
       if (modelName) {
@@ -167,6 +170,7 @@ export function StripePaymentButton({
         prompt: prompt?.trim(),
         toolSlug,
         toolTitle,
+        creditAmount: variant === "credits" ? creditAmount : undefined,
         cancelUrl: currentUrl,
         generationType,
         modelName,
