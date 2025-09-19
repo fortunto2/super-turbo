@@ -5,6 +5,15 @@ import {
   convertToGeminiMessages,
 } from "@/lib/ai/gemini-direct";
 import {
+  bananaInferenceTool,
+  listBananaModelsTool,
+} from "@/lib/ai/tools/banana-inference";
+import {
+  createVeo3VideoTool,
+  checkVeo3VideoStatusTool,
+  generateVeo3IdeasTool,
+} from "@/lib/ai/tools/veo3-video";
+import {
   getChatById,
   getMessagesByChatId,
   saveChat,
