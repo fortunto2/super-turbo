@@ -74,7 +74,7 @@ export const myProvider = isTestEnvironment
           model: o3ProModel,
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "gemini-2.5-flash-lite": geminiModel,
+        "gemini-2.5-flash-lite": geminiModel as any,
         "title-model": mainModel,
         "artifact-model": mainModel,
       },

@@ -204,7 +204,7 @@ export default function BananaVeo3AdvancedPage() {
           {messages.length > 0 && (
             <Button
               type="button"
-              onClick={reload}
+              onClick={() => reload()}
               variant="outline"
             >
               Перезапустить

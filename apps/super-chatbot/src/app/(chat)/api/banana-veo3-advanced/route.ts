@@ -102,7 +102,12 @@ export async function POST(request: NextRequest) {
       id: message.id || generateUUID(),
       role: "user",
       content: message.content || message.parts?.[0]?.text || "",
-      parts: [{ text: message.content || message.parts?.[0]?.text || "" }],
+      parts: [
+        {
+          text: message.content || message.parts?.[0]?.text || "",
+          type: "text",
+        },
+      ],
       createdAt: new Date(),
     });
 
@@ -142,9 +147,9 @@ export async function POST(request: NextRequest) {
                     chatId: id,
                     id: assistantMessage.id,
                     role: "assistant",
-                    parts: assistantMessage.parts,
+                    parts: (assistantMessage as any)?.parts,
                     attachments:
-                      assistantMessage.experimental_attachments ?? [],
+                      (assistantMessage as any)?.experimental_attachments ?? [],
                     createdAt: new Date(),
                   },
                 ],
