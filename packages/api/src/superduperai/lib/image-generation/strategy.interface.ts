@@ -15,6 +15,9 @@ export interface ImageToImageParams extends ImageGenerationParams {
   file: File;
   sourceImageId?: string;
   sourceImageUrl?: string;
+  projectId?: string;
+  sceneId?: string;
+  mask?: File;
 }
 
 export interface ImageGenerationResult {
