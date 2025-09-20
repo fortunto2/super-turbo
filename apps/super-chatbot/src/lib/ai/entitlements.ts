@@ -17,6 +17,7 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
       "chat-model-reasoning",
       "o3-reasoning",
       "o3-pro-reasoning",
+      "gemini-2.5-flash-lite",
     ],
   },
 
@@ -30,6 +31,7 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
       "chat-model-reasoning",
       "o3-reasoning",
       "o3-pro-reasoning",
+      "gemini-2.5-flash-lite",
     ],
   },
 

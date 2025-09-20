@@ -75,6 +75,7 @@ export const postRequestBodySchema = z
       "chat-model-reasoning",
       "o3-reasoning",
       "o3-pro-reasoning",
+      "gemini-2.5-flash-lite",
     ]),
     selectedVisibilityType: z.enum(["public", "private"]),
   })
