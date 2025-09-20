@@ -80,9 +80,6 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               <SidebarMenuItem>
                 <BananaVeo3Button />
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <GeminiChatButton />
-              </SidebarMenuItem>
               {TOOLS_CONFIG.map((tool) => (
                 <SidebarMenuItem key={tool.id}>
                   <SidebarMenuButton asChild>

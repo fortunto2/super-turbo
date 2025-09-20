@@ -70,20 +70,39 @@ async function handleProxyRequest(
 
     // Получаем тело запроса
     let body: any = undefined;
-    let bodyString: string | undefined = undefined;
+    let isFormData = false;
 
     if (method !== "GET") {
-      try {
-        // Сначала получаем тело как текст
-        bodyString = await request.text();
+      const contentType = request.headers.get("content-type") || "";
 
-        // Пытаемся распарсить как JSON
-        if (bodyString.trim()) {
-          body = JSON.parse(bodyString);
+      // Проверяем, является ли запрос FormData (загрузка файлов)
+      if (contentType.includes("multipart/form-data")) {
+        console.log("📤 Proxy: Detected FormData request for file upload");
+        const formData = await request.formData();
+
+        console.log("📤 Proxy: FormData fields:");
+        for (const [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(
+              `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+            );
+          } else {
+            console.log(`  ${key}: ${value}`);
+          }
         }
-      } catch {
-        // Если не удается распарсить как JSON, используем как есть
-        body = bodyString;
+
+        body = formData;
+        isFormData = true;
+      } else {
+        try {
+          const bodyString = await request.text();
+          if (bodyString.trim()) {
+            body = JSON.parse(bodyString);
+          }
+        } catch {
+          const bodyString = await request.text();
+          body = bodyString;
+        }
       }
     }
 
@@ -93,33 +112,55 @@ async function handleProxyRequest(
       "User-Agent": `SuperChatbot/3.0.22 (NextJS/${process.env.NODE_ENV || "development"})`,
     };
 
-    // Добавляем Content-Type только если есть body
-    if (bodyString) {
+    // Для FormData НЕ добавляем Content-Type - браузер сам установит с boundary
+    // Для JSON добавляем Content-Type
+    if (!isFormData && body) {
       headers["Content-Type"] = "application/json";
     }
+
+    console.log(`📤 Proxy: Sending ${method} request to:`, fullUrl);
+    console.log(`📤 Proxy: Headers:`, headers);
 
     // Выполняем запрос к SuperDuperAI API
     const response = await fetch(fullUrl, {
       method,
       headers,
-      body: bodyString || undefined,
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
     });
-
-    const responseData = await response.json();
 
     console.log(
       `✅ Proxy: Response ${response.status} for ${method} ${apiPath}`
     );
 
     if (!response.ok) {
-      console.log(`❌ Proxy: Error response:`, responseData);
+      let errorData: any;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: "API Error", message: await response.text() };
+      }
+
+      console.log(`❌ Proxy: Error response:`, errorData);
       return NextResponse.json(
-        { error: responseData.error || "API Error", details: responseData },
+        { error: errorData.error || "API Error", details: errorData },
         { status: response.status }
       );
     }
 
-    return NextResponse.json(responseData);
+    // Для успешных ответов пытаемся получить JSON
+    try {
+      const responseData = await response.json();
+      return NextResponse.json(responseData);
+    } catch {
+      // Если не JSON, возвращаем как текст
+      const responseText = await response.text();
+      return new NextResponse(responseText, {
+        status: response.status,
+        headers: {
+          "Content-Type": response.headers.get("content-type") || "text/plain",
+        },
+      });
+    }
   } catch (error: any) {
     console.error("Proxy API Error:", error);
 
