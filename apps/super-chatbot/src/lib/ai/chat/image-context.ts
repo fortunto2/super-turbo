@@ -1,5 +1,3 @@
-
-
 export interface ImageContext {
   sourceImageUrl?: string;
   sourceImageId?: string;
@@ -98,7 +96,11 @@ export async function analyzeImageContext(
     // Сортируем по релевантности
     imageReferences.sort((a, b) => b.relevance - a.relevance);
     const bestMatch = imageReferences[0];
-    console.log("🔍 analyzeImageContext: Best match:", bestMatch);
+    console.log("🔍 analyzeImageContext: Best match:", {
+      image: bestMatch.image,
+      relevance: bestMatch.relevance,
+      reasoning: bestMatch.reasoning,
+    });
 
     return {
       sourceImageUrl: bestMatch.image.url,
@@ -175,8 +177,8 @@ function analyzeImageReferences(
     },
     {
       pattern:
-        /(перв[а-я]+|втор[а-я]+|треть[а-я]+)\s+(изображение|картинка|фото)/,
-      weight: 0.6,
+        /(перв[а-я]+|втор[а-я]+|треть[а-я]+|четверт[а-я]+|пят[а-я]+)\s+(изображение|картинка|фото|picture)/,
+      weight: 0.8,
     },
     {
       pattern: /(загруженн[а-я]+|загруж[а-я]+)\s+(изображение|картинка|фото)/,
@@ -192,6 +194,34 @@ function analyzeImageReferences(
       pattern:
         /(сделай\s+глаза\s+голубыми|измени\s+цвет|подправь\s+фон|добавь\s+крылья)/,
       weight: 0.8,
+    },
+    // Новые паттерны для лучшего распознавания
+    {
+      pattern:
+        /(возьми|используй|работай\s+с)\s+(перв[а-я]+|втор[а-я]+|треть[а-я]+)\s+(изображение|картинка|фото|picture)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(take|use|work\s+with)\s+(the\s+)?(first|second|third)\s+(image|picture|photo)/,
+      weight: 0.9,
+    },
+    // Паттерны для распознавания по типу источника
+    {
+      pattern:
+        /(картинк[а-я]+\s+котор[а-я]+\s+(я|пользователь)\s+загрузил|загруженн[а-я]+\s+мною|мо[я-я]+\s+картинк[а-я]+)/,
+      weight: 0.8,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+котор[а-я]+\s+создал\s+(бот|ассистент|ии)|сгенерированн[а-я]+\s+ботом|созданн[а-я]+\s+ии)/,
+      weight: 0.8,
+    },
+    // Паттерны для работы с URL изображений
+    {
+      pattern:
+        /(изображение\s+с\s+ссылк[а-я]+|картинк[а-я]+\s+по\s+адресу|фото\s+по\s+url)/,
+      weight: 0.7,
     },
   ];
 
@@ -211,6 +241,23 @@ function analyzeImageReferences(
       pattern:
         /(make\s+eyes\s+blue|change\s+color|fix\s+background|add\s+wings)/,
       weight: 0.8,
+    },
+    // Паттерны для распознавания по типу источника (английские)
+    {
+      pattern:
+        /(image\s+(that\s+)?(i|user)\s+uploaded|uploaded\s+by\s+me|my\s+uploaded\s+image)/,
+      weight: 0.8,
+    },
+    {
+      pattern:
+        /(image\s+(that\s+)?(bot|assistant|ai)\s+created|generated\s+by\s+bot|created\s+by\s+ai)/,
+      weight: 0.8,
+    },
+    // Паттерны для работы с URL изображений (английские)
+    {
+      pattern:
+        /(image\s+from\s+url|picture\s+with\s+link|photo\s+by\s+address)/,
+      weight: 0.7,
     },
   ];
 
@@ -262,7 +309,7 @@ function findTargetImageByPattern(
 
   // Если паттерн указывает на порядковый номер
   const orderMatch = messageLower.match(
-    /(перв[а-я]+|втор[а-я]+|треть[а-я]+|first|second|third)/
+    /(перв[а-я]+|втор[а-я]+|треть[а-я]+|четверт[а-я]+|пят[а-я]+|first|second|third|fourth|fifth)/
   );
   if (orderMatch) {
     const order = orderMatch[0];
@@ -271,20 +318,39 @@ function findTargetImageByPattern(
     if (order.includes("перв") || order.includes("first")) index = 0;
     else if (order.includes("втор") || order.includes("second")) index = 1;
     else if (order.includes("треть") || order.includes("third")) index = 2;
+    else if (order.includes("четверт") || order.includes("fourth")) index = 3;
+    else if (order.includes("пят") || order.includes("fifth")) index = 4;
 
-    return chatImages[index] || null;
+    const targetImage = chatImages[index];
+    console.log("🔍 findTargetImageByPattern: Order pattern matched:", {
+      order,
+      index,
+      totalImages: chatImages.length,
+      targetImage: targetImage?.url,
+    });
+    return targetImage || null;
   }
 
   // Если паттерн указывает на "последнее" или "предыдущее"
   if (pattern.source.includes("последн") || pattern.source.includes("last")) {
-    return chatImages[chatImages.length - 1] || null;
+    const result = chatImages[chatImages.length - 1];
+    console.log(
+      "🔍 findTargetImageByPattern: 'Last' pattern, returning:",
+      result?.url
+    );
+    return result || null;
   }
 
   if (
     pattern.source.includes("предыдущ") ||
     pattern.source.includes("previous")
   ) {
-    return chatImages[chatImages.length - 2] || null;
+    const result = chatImages[chatImages.length - 2];
+    console.log(
+      "🔍 findTargetImageByPattern: 'Previous' pattern, returning:",
+      result?.url
+    );
+    return result || null;
   }
 
   // Если паттерн указывает на "сгенерированное" изображение
@@ -295,16 +361,81 @@ function findTargetImageByPattern(
     const generatedImages = chatImages.filter(
       (img) => img.role === "assistant"
     );
-    return generatedImages[generatedImages.length - 1] || null;
+    const result = generatedImages[generatedImages.length - 1];
+    console.log(
+      "🔍 findTargetImageByPattern: 'Generated' pattern, returning:",
+      result?.url
+    );
+    return result || null;
   }
 
   // Если паттерн указывает на "загруженное" изображение
   if (
     pattern.source.includes("загруженн") ||
-    pattern.source.includes("uploaded")
+    pattern.source.includes("uploaded") ||
+    messageLower.includes("загрузил") ||
+    messageLower.includes("uploaded")
   ) {
     const uploadedImages = chatImages.filter((img) => img.role === "user");
-    return uploadedImages[uploadedImages.length - 1] || null;
+    const result = uploadedImages[uploadedImages.length - 1];
+    console.log(
+      "🔍 findTargetImageByPattern: 'Uploaded' pattern, returning:",
+      result?.url
+    );
+    return result || null;
+  }
+
+  // Если паттерн указывает на изображение "которое я загрузил" или "мое"
+  if (
+    messageLower.includes("котор") &&
+    (messageLower.includes("загрузил") || messageLower.includes("я")) &&
+    messageLower.includes("картинк")
+  ) {
+    const uploadedImages = chatImages.filter((img) => img.role === "user");
+    const result = uploadedImages[uploadedImages.length - 1];
+    console.log(
+      "🔍 findTargetImageByPattern: 'My uploaded' pattern, returning:",
+      result?.url
+    );
+    return result || null;
+  }
+
+  // Если паттерн указывает на изображение "которое создал бот" или "сгенерированное"
+  if (
+    (messageLower.includes("создал") &&
+      (messageLower.includes("бот") || messageLower.includes("ии"))) ||
+    (messageLower.includes("сгенерирован") && messageLower.includes("бот")) ||
+    (messageLower.includes("created") &&
+      (messageLower.includes("bot") || messageLower.includes("ai"))) ||
+    (messageLower.includes("generated") && messageLower.includes("bot"))
+  ) {
+    const generatedImages = chatImages.filter(
+      (img) => img.role === "assistant"
+    );
+    const result = generatedImages[generatedImages.length - 1];
+    console.log(
+      "🔍 findTargetImageByPattern: 'Bot created' pattern, returning:",
+      result?.url
+    );
+    return result || null;
+  }
+
+  // Если паттерн указывает на изображение "по URL" или "с ссылкой"
+  if (
+    messageLower.includes("url") ||
+    messageLower.includes("ссылк") ||
+    messageLower.includes("адрес")
+  ) {
+    // Ищем последнее изображение с полным URL
+    const urlImages = chatImages.filter(
+      (img) => img.url && img.url.startsWith("http")
+    );
+    const result = urlImages[urlImages.length - 1];
+    console.log(
+      "🔍 findTargetImageByPattern: 'URL' pattern, returning:",
+      result?.url
+    );
+    return result || null;
   }
 
   return null;

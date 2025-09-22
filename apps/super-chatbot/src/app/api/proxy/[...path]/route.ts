@@ -68,6 +68,18 @@ async function handleProxyRequest(
       ? `${superduperaiUrl}?${queryString}`
       : superduperaiUrl;
 
+    // AICODE-NOTE: Для file upload НЕ добавляем query параметры - все должно быть в FormData
+    let finalUrl = fullUrl;
+    if (apiPath === "file/upload" && method === "POST") {
+      // Убираем query параметры для file upload - все должно быть в FormData
+      const baseUrl = `${process.env.SUPERDUPERAI_URL || "https://dev-editor.superduperai.co"}/api/v1/file/upload`;
+      finalUrl = baseUrl;
+      console.log(
+        "📤 Proxy: Using clean URL for file upload (no query params):",
+        finalUrl
+      );
+    }
+
     // Получаем тело запроса
     let body: any = undefined;
     let isFormData = false;
@@ -91,8 +103,26 @@ async function handleProxyRequest(
           }
         }
 
-        body = formData;
-        isFormData = true;
+        // AICODE-NOTE: Для file upload используем оригинальный FormData без конвертации
+        if (apiPath === "file/upload" && method === "POST") {
+          // Добавляем type если не передан
+          if (!formData.has("type")) {
+            const typeFromQuery =
+              new URL(request.url).searchParams.get("type") || "image";
+            formData.append("type", typeFromQuery);
+            console.log(
+              "📤 Proxy: Added type field to FormData:",
+              typeFromQuery
+            );
+          }
+
+          console.log("📤 Proxy: Using original FormData (no conversion)");
+          body = formData;
+          isFormData = true;
+        } else {
+          body = formData;
+          isFormData = true;
+        }
       } else {
         try {
           const bodyString = await request.text();
@@ -110,19 +140,21 @@ async function handleProxyRequest(
     const headers: Record<string, string> = {
       Authorization: `Bearer ${process.env.SUPERDUPERAI_TOKEN}`,
       "User-Agent": `SuperChatbot/3.0.22 (NextJS/${process.env.NODE_ENV || "development"})`,
+      Accept: "application/json",
     };
 
-    // Для FormData НЕ добавляем Content-Type - браузер сам установит с boundary
-    // Для JSON добавляем Content-Type
+    // AICODE-NOTE: Для браузерного FormData НЕ добавляем Content-Type - браузер сам установит с boundary
     if (!isFormData && body) {
+      // Для JSON добавляем Content-Type
       headers["Content-Type"] = "application/json";
     }
+    // Для FormData (браузерного) НЕ добавляем Content-Type - браузер сам установит с boundary
 
-    console.log(`📤 Proxy: Sending ${method} request to:`, fullUrl);
+    console.log(`📤 Proxy: Sending ${method} request to:`, finalUrl);
     console.log(`📤 Proxy: Headers:`, headers);
 
     // Выполняем запрос к SuperDuperAI API
-    const response = await fetch(fullUrl, {
+    const response = await fetch(finalUrl, {
       method,
       headers,
       body: isFormData ? body : body ? JSON.stringify(body) : undefined,

@@ -748,7 +748,7 @@ export async function POST(request: Request) {
               {
                 id: generateUUID(),
                 role: "system" as const,
-                content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt. The system has already identified the source image URL: ${defaultSourceImageUrl}. Do not just respond with text - create an image artifact and start generation.`,
+                content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
                 createdAt: new Date(),
                 parts: [],
               },

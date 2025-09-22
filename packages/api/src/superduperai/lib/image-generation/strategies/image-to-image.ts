@@ -34,15 +34,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     method: "upload";
     error?: string;
   }> {
-    console.log("🔍 handleImageUpload called with:", {
-      hasFile: !!params.file,
-      fileType: params.file?.type,
-      fileSize: params.file?.size,
-      uploadUrl: `${config.url}/api/v1/file/upload`,
-    });
-
     if (!params.file) {
-      console.log("❌ No file provided for upload");
       return {
         error: "No file provided for upload",
         method: "upload",
@@ -50,138 +42,22 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     }
 
     try {
-      // AICODE-NOTE: Проверяем тип файла и создаем правильный File объект
-      let fileToUpload = params.file;
-
-      // Если это не File объект, создаем его
-      if (fileToUpload && !(fileToUpload instanceof File)) {
-        console.log("⚠️ File is not a File instance, creating File object");
-        const fileAsBlob = fileToUpload as any;
-        if (fileAsBlob instanceof Blob) {
-          fileToUpload = new File(
-            [fileAsBlob],
-            params.file?.name || "uploaded-file",
-            {
-              type: params.file?.type || "image/jpeg",
-            }
-          );
-        } else {
-          throw new Error(`Invalid file type: ${typeof fileToUpload}`);
-        }
-      }
-
-      // AICODE-NOTE: Исправляем MIME тип на основе расширения файла
-      const fileName = fileToUpload.name;
-      const fileExtension = fileName.split(".").pop()?.toLowerCase();
-
-      let correctMimeType = fileToUpload.type;
-      if (fileExtension) {
-        switch (fileExtension) {
-          case "jpg":
-          case "jpeg":
-            correctMimeType = "image/jpeg";
-            break;
-          case "png":
-            correctMimeType = "image/png";
-            break;
-          case "webp":
-            correctMimeType = "image/webp";
-            break;
-          case "gif":
-            correctMimeType = "image/gif";
-            break;
-          default:
-            console.warn(
-              `⚠️ Unknown file extension: ${fileExtension}, keeping original MIME type: ${fileToUpload.type}`
-            );
-        }
-      }
-
-      // Если MIME тип не соответствует расширению, создаем новый File объект
-      if (correctMimeType !== fileToUpload.type) {
-        console.log(
-          `🔧 Fixing MIME type: ${fileToUpload.type} → ${correctMimeType}`
-        );
-        fileToUpload = new File([fileToUpload], fileName, {
-          type: correctMimeType,
-          lastModified: fileToUpload.lastModified,
-        });
-      }
-
-      // AICODE-NOTE: Проверяем валидность файла
-      if (fileToUpload.size === 0) {
+      // Проверяем валидность файла
+      if (params.file.size === 0) {
         throw new Error("File is empty");
       }
 
-      if (fileToUpload.size > 50 * 1024 * 1024) {
-        // 50MB limit
+      if (params.file.size > 50 * 1024 * 1024) {
         throw new Error("File is too large (max 50MB)");
       }
 
-      console.log("📁 File object details:", {
-        isFile: fileToUpload instanceof File,
-        isBlob: fileToUpload instanceof Blob,
-        name: fileToUpload.name,
-        size: fileToUpload.size,
-        type: fileToUpload.type,
-        constructor: fileToUpload.constructor.name,
-      });
+      console.log("📤 Starting image upload using direct fetch...");
 
-      // AICODE-NOTE: Создаем файл с правильным именем и расширением
-      const correctFileName = `${fileName.split(".")[0]}.${fileExtension}`;
-
-      // AICODE-NOTE: Попробуем создать файл с правильным MIME типом и именем
-      let finalFile: File;
-      try {
-        // Создаем новый File объект с правильными параметрами
-        finalFile = new File([fileToUpload], correctFileName, {
-          type: correctMimeType,
-          lastModified: fileToUpload.lastModified,
-        });
-
-        console.log("🔧 Created final file:", {
-          name: finalFile.name,
-          type: finalFile.type,
-          size: finalFile.size,
-          lastModified: finalFile.lastModified,
-        });
-      } catch (error) {
-        console.error("❌ Error creating final file:", error);
-        // Fallback: используем оригинальный файл
-        finalFile = fileToUpload;
-      }
-
-      console.log("📤 File details:", {
-        fileName: finalFile.name,
-        fileSize: finalFile.size,
-        fileType: finalFile.type,
-      });
-
-      // AICODE-NOTE: Попробуем создать файл заново с правильными данными
-      const fileBlob = await finalFile.arrayBuffer();
-      const newFile = new File([fileBlob], finalFile.name, {
-        type: finalFile.type,
-        lastModified: finalFile.lastModified,
-      });
-
-      console.log("🔧 Created new file from ArrayBuffer:", {
-        name: newFile.name,
-        type: newFile.type,
-        size: newFile.size,
-        lastModified: newFile.lastModified,
-      });
-
-      // AICODE-NOTE: Создаем FormData правильно для загрузки файла
+      // Создаем FormData для загрузки (только payload, type передается как query параметр)
       const formData = new FormData();
-      formData.append("payload", newFile, newFile.name);
-      formData.append("type", FileTypeEnum.IMAGE);
+      formData.append("payload", params.file);
 
-      console.log(
-        "📤 Sending upload request to:",
-        `${config.url}/api/v1/file/upload`
-      );
-
-      // AICODE-NOTE: Дополнительная отладка FormData
+      // Отладочная информация
       console.log("📤 FormData entries:");
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
@@ -193,12 +69,19 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
         }
       }
 
-      const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
+      // Строим URL с query параметрами
+      const queryParams = new URLSearchParams();
+      queryParams.set("type", FileTypeEnum.IMAGE);
+      if (params.projectId) queryParams.set("project_id", params.projectId);
+      if (params.sceneId) queryParams.set("scene_id", params.sceneId);
+
+      const apiUrl = `${config.url.replace(/\/+$/, "")}/api/v1/file/upload?${queryParams.toString()}`;
+
+      // Отправляем запрос к SuperDuperAI API
+      const uploadResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${config.token}`,
-          "User-Agent": "SuperDuperAI-Landing/1.0",
-          Accept: "application/json",
         },
         body: formData,
       });
@@ -211,12 +94,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
       }
 
       const uploadResult = await uploadResponse.json();
-      console.log("📤 Upload result:", {
-        id: uploadResult?.id,
-        url: uploadResult?.url,
-        type: uploadResult?.type,
-        fullResult: uploadResult,
-      });
+      console.log("📤 Image upload result:", uploadResult);
 
       return {
         imageId: uploadResult?.id,
@@ -240,133 +118,47 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     maskUrl?: string;
     error?: string;
   }> {
-    console.log("🔍 handleMaskUpload called with:", {
-      hasMask: !!params.mask,
-      maskType: params.mask?.type,
-      maskSize: params.mask?.size,
-      uploadUrl: `${config?.url}/api/v1/file/upload`,
-    });
-
     if (!params.mask) {
-      console.log("❌ No mask provided for upload");
       return {
         error: "No mask provided for upload",
       };
     }
 
-    let maskId: string | undefined;
-    let maskUrl: string | undefined;
+    if (!config) {
+      return {
+        error: "Config not provided for mask upload",
+      };
+    }
 
     try {
-      // AICODE-NOTE: Исправляем MIME тип маски на основе расширения файла
-      let maskToUpload = params.mask;
-      const maskFileName = maskToUpload.name;
-      const maskFileExtension = maskFileName.split(".").pop()?.toLowerCase();
-
-      let correctMaskMimeType = maskToUpload.type;
-      if (maskFileExtension) {
-        switch (maskFileExtension) {
-          case "jpg":
-          case "jpeg":
-            correctMaskMimeType = "image/jpeg";
-            break;
-          case "png":
-            correctMaskMimeType = "image/png";
-            break;
-          case "webp":
-            correctMaskMimeType = "image/webp";
-            break;
-          case "gif":
-            correctMaskMimeType = "image/gif";
-            break;
-          default:
-            console.warn(
-              `⚠️ Unknown mask file extension: ${maskFileExtension}, keeping original MIME type: ${maskToUpload.type}`
-            );
-        }
-      }
-
-      // Если MIME тип не соответствует расширению, создаем новый File объект
-      if (correctMaskMimeType !== maskToUpload.type) {
-        console.log(
-          `🔧 Fixing mask MIME type: ${maskToUpload.type} → ${correctMaskMimeType}`
-        );
-        maskToUpload = new File([maskToUpload], maskFileName, {
-          type: correctMaskMimeType,
-          lastModified: maskToUpload.lastModified,
-        });
-      }
-
-      // AICODE-NOTE: Проверяем валидность маски
-      if (maskToUpload.size === 0) {
+      // Проверяем валидность маски
+      if (params.mask.size === 0) {
         throw new Error("Mask file is empty");
       }
 
-      if (maskToUpload.size > 50 * 1024 * 1024) {
-        // 50MB limit
+      if (params.mask.size > 50 * 1024 * 1024) {
         throw new Error("Mask file is too large (max 50MB)");
       }
 
-      // AICODE-NOTE: Создаем маску с правильным именем и расширением
-      const correctMaskFileName = `${maskFileName.split(".")[0]}.${maskFileExtension}`;
+      console.log("📤 Starting mask upload using direct fetch...");
 
-      // AICODE-NOTE: Попробуем создать маску с правильным MIME типом и именем
-      let finalMaskFile: File;
-      try {
-        // Создаем новый File объект с правильными параметрами
-        finalMaskFile = new File([maskToUpload], correctMaskFileName, {
-          type: correctMaskMimeType,
-          lastModified: maskToUpload.lastModified,
-        });
-
-        console.log("🔧 Created final mask file:", {
-          name: finalMaskFile.name,
-          type: finalMaskFile.type,
-          size: finalMaskFile.size,
-          lastModified: finalMaskFile.lastModified,
-        });
-      } catch (error) {
-        console.error("❌ Error creating final mask file:", error);
-        // Fallback: используем оригинальную маску
-        finalMaskFile = maskToUpload;
-      }
-
-      console.log("📤 Mask file details:", {
-        fileName: finalMaskFile.name,
-        fileSize: finalMaskFile.size,
-        fileType: finalMaskFile.type,
-      });
-
-      // AICODE-NOTE: Попробуем создать маску заново с правильными данными
-      const maskBlob = await finalMaskFile.arrayBuffer();
-      const newMaskFile = new File([maskBlob], finalMaskFile.name, {
-        type: finalMaskFile.type,
-        lastModified: finalMaskFile.lastModified,
-      });
-
-      console.log("🔧 Created new mask file from ArrayBuffer:", {
-        name: newMaskFile.name,
-        type: newMaskFile.type,
-        size: newMaskFile.size,
-        lastModified: newMaskFile.lastModified,
-      });
-
-      // AICODE-NOTE: Создаем FormData для загрузки маски
+      // Создаем FormData для загрузки маски (только payload, type передается как query параметр)
       const formData = new FormData();
-      formData.append("payload", newMaskFile, newMaskFile.name);
-      formData.append("type", FileTypeEnum.IMAGE);
+      formData.append("payload", params.mask);
 
-      console.log(
-        "📤 Sending mask upload request to:",
-        `${config?.url}/api/v1/file/upload`
-      );
+      // Строим URL с query параметрами
+      const queryParams = new URLSearchParams();
+      queryParams.set("type", FileTypeEnum.IMAGE);
+      if (params.projectId) queryParams.set("project_id", params.projectId);
+      if (params.sceneId) queryParams.set("scene_id", params.sceneId);
 
-      const uploadResponse = await fetch(`${config?.url}/api/v1/file/upload`, {
+      const apiUrl = `${config.url.replace(/\/+$/, "")}/api/v1/file/upload?${queryParams.toString()}`;
+
+      // Отправляем запрос к SuperDuperAI API
+      const uploadResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${config?.token}`,
-          "User-Agent": "SuperDuperAI-Landing/1.0",
-          Accept: "application/json",
+          Authorization: `Bearer ${config.token}`,
         },
         body: formData,
       });
@@ -379,14 +171,11 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
       }
 
       const uploadResult = await uploadResponse.json();
-
-      console.log("uploadResult", uploadResult);
-      maskId = uploadResult?.id;
-      maskUrl = uploadResult?.url || undefined;
+      console.log("📤 Mask upload result:", uploadResult);
 
       return {
-        maskId,
-        maskUrl,
+        maskId: uploadResult?.id,
+        maskUrl: uploadResult?.url || undefined,
       };
     } catch (error) {
       console.error("Error uploading mask", error);

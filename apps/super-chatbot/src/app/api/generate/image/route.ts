@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import {
-  getSuperduperAIConfigWithUserToken,
-} from "@/lib/config/superduperai";
+import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
 import {
   generateImageWithStrategy,
   type ImageGenerationParams,

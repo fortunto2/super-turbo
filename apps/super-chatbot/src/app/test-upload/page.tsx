@@ -18,6 +18,7 @@ import {
   FileImage,
   Trash2,
 } from "lucide-react";
+import { FileService } from "@turbo-super/api";
 
 interface UploadedFile {
   id: string;
@@ -98,10 +99,10 @@ export default function TestUploadPage() {
         lastModified: uploadedFile.file.lastModified,
       });
 
-      // Создаем FormData как в рабочих примерах
+      // Создаем FormData для FileService (только payload)
       const formData = new FormData();
       formData.append("payload", uploadedFile.file);
-      formData.append("type", "image");
+      // type передается как query параметр в FileService
 
       console.log("📤 FormData created, making fetch request...");
 
@@ -117,8 +118,8 @@ export default function TestUploadPage() {
         }
       }
 
-      // Простой fetch запрос через proxy
-      const response = await fetch("/api/proxy/file/upload", {
+      // Используем FileService API endpoint (правильная структура)
+      const response = await fetch("/api/file/upload?type=image", {
         method: "POST",
         body: formData,
       });
@@ -349,11 +350,12 @@ export default function TestUploadPage() {
           <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <h3 className="text-lg font-medium mb-2">Отладочная информация:</h3>
             <div className="text-sm space-y-1">
-              <p>• Используется простой fetch запрос</p>
-              <p>• FormData содержит: payload (файл) + type (image)</p>
-              <p>• Запрос идет через /api/proxy/file/upload</p>
-              <p>• Proxy обрабатывает FormData правильно</p>
-              <p>• Подробное логирование FormData в консоли</p>
+              <p>• Используется FileService API endpoint</p>
+              <p>• FormData содержит: payload (файл)</p>
+              <p>• type передается как query параметр (?type=image)</p>
+              <p>• Использует FileService.fileUpload с правильной структурой</p>
+              <p>• Query параметры: project_id, entity_id, scene_id, type</p>
+              <p>• FormData: только payload (файл)</p>
             </div>
           </div>
         </CardContent>
