@@ -722,7 +722,7 @@ export async function POST(request: Request) {
           defaultSourceImageUrl
         );
 
-        // Если есть изображение для редактирования, добавляем явную инструкцию
+        // Если есть изображение для редактирования или анимации, добавляем явную инструкцию
         let enhancedMessages = messages;
         if (defaultSourceImageUrl && messageToProcess.parts?.[0]?.text) {
           const userText = messageToProcess.parts[0].text;
@@ -735,7 +735,21 @@ export async function POST(request: Request) {
             "исправь",
             "улучши",
           ];
+          const animationKeywords = [
+            "анимируй",
+            "animate",
+            "анимация",
+            "animation",
+            "видео",
+            "video",
+            "движение",
+            "motion",
+          ];
+
           const hasEditIntent = editKeywords.some((keyword) =>
+            userText.toLowerCase().includes(keyword)
+          );
+          const hasAnimationIntent = animationKeywords.some((keyword) =>
             userText.toLowerCase().includes(keyword)
           );
 
@@ -749,6 +763,20 @@ export async function POST(request: Request) {
                 id: generateUUID(),
                 role: "system" as const,
                 content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
+                createdAt: new Date(),
+                parts: [],
+              },
+            ];
+          } else if (hasAnimationIntent) {
+            console.log(
+              "🔍 Animation intent detected, adding explicit instruction to call configureVideoGeneration"
+            );
+            enhancedMessages = [
+              ...messages,
+              {
+                id: generateUUID(),
+                role: "system" as const,
+                content: `IMPORTANT: The user wants to animate an existing image. You MUST call the configureVideoGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
                 createdAt: new Date(),
                 parts: [],
               },
@@ -789,9 +817,11 @@ export async function POST(request: Request) {
               createDocument: tools.createDocument,
               session,
               defaultSourceVideoUrl: defaultSourceVideoUrl,
+              defaultSourceImageUrl: defaultSourceImageUrl,
               chatId: id,
-              userMessage: message?.content || "",
-              currentAttachments: message?.experimental_attachments || [],
+              userMessage: messageToProcess.parts?.[0]?.text || "",
+              currentAttachments:
+                messageToProcess.experimental_attachments || [],
             }),
             configureAudioGeneration: configureAudioGeneration({
               createDocument: tools.createDocument,

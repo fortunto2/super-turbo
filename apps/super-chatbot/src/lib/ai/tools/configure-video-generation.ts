@@ -13,6 +13,7 @@ interface CreateVideoDocumentParams {
   createDocument: any;
   session?: Session | null;
   defaultSourceVideoUrl?: string;
+  defaultSourceImageUrl?: string;
   chatId?: string;
   userMessage?: string;
   currentAttachments?: any[];
@@ -172,19 +173,8 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           userMessage: params?.userMessage,
         });
 
-        // Приоритет 1: defaultSourceVideoUrl (legacy поддержка)
-        if (
-          params?.defaultSourceVideoUrl &&
-          /^https?:\/\//.test(params.defaultSourceVideoUrl)
-        ) {
-          console.log(
-            "🔍 Using defaultSourceVideoUrl from legacy context analysis:",
-            params.defaultSourceVideoUrl
-          );
-          normalizedSourceUrl = params.defaultSourceVideoUrl;
-        }
-        // Приоритет 2: новая система анализа контекста
-        else if (params?.chatId && params?.userMessage) {
+        // Приоритет 1: новая система анализа контекста (семантический поиск)
+        if (params?.chatId && params?.userMessage) {
           try {
             console.log("🔍 Analyzing video context with new system...");
             const contextResult = await analyzeVideoContext(
@@ -208,23 +198,35 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
             console.warn("🔍 Error in context analysis, falling back:", error);
           }
         }
-        // Приоритет 3: AI-provided sourceVideoUrl
-        else if (
-          normalizedSourceUrl &&
-          /^https?:\/\//.test(normalizedSourceUrl) &&
-          !normalizedSourceUrl.startsWith("attachment://")
+
+        // Приоритет 2: defaultSourceVideoUrl (legacy поддержка) - только если семантический поиск не дал результата
+        if (
+          !normalizedSourceUrl &&
+          params?.defaultSourceVideoUrl &&
+          /^https?:\/\//.test(params.defaultSourceVideoUrl)
         ) {
           console.log(
-            "🔍 Using AI-provided sourceVideoUrl:",
-            normalizedSourceUrl
+            "🔍 Using defaultSourceVideoUrl from legacy context analysis:",
+            params.defaultSourceVideoUrl
           );
+          normalizedSourceUrl = params.defaultSourceVideoUrl;
+        }
+
+        // Приоритет 3: AI-provided sourceVideoUrl
+        if (
+          !normalizedSourceUrl &&
+          sourceVideoUrl &&
+          /^https?:\/\//.test(sourceVideoUrl) &&
+          !sourceVideoUrl.startsWith("attachment://")
+        ) {
+          console.log("🔍 Using AI-provided sourceVideoUrl:", sourceVideoUrl);
+          normalizedSourceUrl = sourceVideoUrl;
         }
         // Fallback: text-to-video
-        else {
+        if (!normalizedSourceUrl) {
           console.log(
             "🔍 No valid source video URL available, will be text-to-video"
           );
-          normalizedSourceUrl = undefined;
         }
 
         // Determine operation type and check balance
@@ -247,6 +249,56 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
             isImageSource,
             operationType,
           });
+        }
+
+        // Проверяем, был ли найден подходящий источник для семантического поиска
+        if (
+          params?.userMessage &&
+          normalizedSourceUrl &&
+          operationType === "image-to-video"
+        ) {
+          // Проверяем, содержит ли сообщение запрос на поиск по содержимому
+          const semanticSearchPatterns = [
+            /(картинк[а-я]+\s+с\s+|изображение\s+с\s+|фото\s+с\s+|image\s+with\s+|picture\s+with\s+|photo\s+with\s+)/i,
+            /(картинк[а-я]+\s+где\s+есть|изображение\s+где\s+есть|фото\s+где\s+есть|image\s+that\s+has|picture\s+that\s+contains|photo\s+that\s+shows)/i,
+          ];
+
+          const hasSemanticSearchRequest = semanticSearchPatterns.some(
+            (pattern) => pattern.test(params.userMessage || "")
+          );
+
+          if (hasSemanticSearchRequest) {
+            // Проверяем, был ли найден подходящий источник через семантический поиск
+            // Если источник был найден через fallback (последнее изображение), это означает, что семантический поиск не сработал
+            const isFallbackSource =
+              params.defaultSourceVideoUrl === normalizedSourceUrl ||
+              params.defaultSourceImageUrl === normalizedSourceUrl;
+
+            console.log("🔍 Fallback check:", {
+              normalizedSourceUrl,
+              defaultSourceVideoUrl: params.defaultSourceVideoUrl,
+              defaultSourceImageUrl: params.defaultSourceImageUrl,
+              isFallbackSource,
+              hasSemanticSearchRequest,
+            });
+
+            if (isFallbackSource) {
+              console.log(
+                "🔍 Semantic search failed, providing helpful message instead of balance error"
+              );
+              return {
+                error: "semantic_search_failed",
+                message:
+                  "К сожалению, я не смог найти изображение с нужным содержимым в истории чата. Попробуйте:\n\n• Загрузить новое изображение с нужным содержимым\n• Описать сцену для создания нового изображения\n• Использовать более конкретное описание (например, 'первое изображение' или 'последнее изображение')",
+                suggestions: [
+                  "Загрузить изображение с луной",
+                  "Создать новое изображение с луной",
+                  "Использовать последнее изображение",
+                  "Описать сцену для анимации",
+                ],
+              };
+            }
+          }
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
@@ -303,39 +355,42 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           console.error("🎬 ❌ CREATE DOCUMENT ERROR:", error);
           throw error;
         }
-        } catch (error: any) {
-          console.error("🎬 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
-          
-          // Create error artifact for better user feedback
-          if (params?.createDocument) {
-            try {
-              const errorResult = await params.createDocument.execute({
-                title: JSON.stringify({
-                  prompt,
-                  status: "error",
-                  error: error.message || "Failed to create video document",
-                  timestamp: Date.now(),
-                  message: "Ошибка при создании видео",
-                }),
-                kind: "video",
-              });
-              
-              return {
-                ...errorResult,
-                error: `Ошибка создания видео: ${error.message}`,
-                message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
-              };
-            } catch (artifactError) {
-              console.error("🎬 ❌ Failed to create error artifact:", artifactError);
-            }
+      } catch (error: any) {
+        console.error("🎬 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
+
+        // Create error artifact for better user feedback
+        if (params?.createDocument) {
+          try {
+            const errorResult = await params.createDocument.execute({
+              title: JSON.stringify({
+                prompt,
+                status: "error",
+                error: error.message || "Failed to create video document",
+                timestamp: Date.now(),
+                message: "Ошибка при создании видео",
+              }),
+              kind: "video",
+            });
+
+            return {
+              ...errorResult,
+              error: `Ошибка создания видео: ${error.message}`,
+              message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
+            };
+          } catch (artifactError) {
+            console.error(
+              "🎬 ❌ Failed to create error artifact:",
+              artifactError
+            );
           }
-          
-          return {
-            error: `Ошибка создания видео: ${error.message}`,
-            message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
-            fallbackConfig: config,
-          };
         }
+
+        return {
+          error: `Ошибка создания видео: ${error.message}`,
+          message: `К сожалению, не удалось создать видео: "${prompt}". Ошибка: ${error.message}`,
+          fallbackConfig: config,
+        };
+      }
     },
   });
 

@@ -223,6 +223,63 @@ function analyzeImageReferences(
         /(изображение\s+с\s+ссылк[а-я]+|картинк[а-я]+\s+по\s+адресу|фото\s+по\s+url)/,
       weight: 0.7,
     },
+
+    // Семантические паттерны для поиска по содержимому (русские)
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+луной|изображение\s+с\s+луной|фото\s+с\s+луной)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+самолетом|изображение\s+с\s+самолетом|фото\s+с\s+самолетом)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+девочкой|изображение\s+с\s+девочкой|фото\s+с\s+девочкой)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+мальчиком|изображение\s+с\s+мальчиком|фото\s+с\s+мальчиком)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+собакой|изображение\s+с\s+собакой|фото\s+с\s+собакой)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+кошкой|изображение\s+с\s+кошкой|фото\s+с\s+кошкой)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+машиной|изображение\s+с\s+машиной|фото\s+с\s+машиной)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+домом|изображение\s+с\s+домом|фото\s+с\s+домом)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+лесом|изображение\s+с\s+лесом|фото\s+с\s+лесом)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+с\s+морем|изображение\s+с\s+морем|фото\s+с\s+морем)/,
+      weight: 0.9,
+    },
+    {
+      pattern:
+        /(картинк[а-я]+\s+где\s+есть|изображение\s+где\s+есть|фото\s+где\s+есть)/,
+      weight: 0.8,
+    },
   ];
 
   // Английские ссылки на изображения
@@ -258,6 +315,52 @@ function analyzeImageReferences(
       pattern:
         /(image\s+from\s+url|picture\s+with\s+link|photo\s+by\s+address)/,
       weight: 0.7,
+    },
+
+    // Семантические паттерны для поиска по содержимому (английские)
+    {
+      pattern: /(image|picture|photo)\s+with\s+(moon|lunar)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(airplane|plane)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(girl|woman)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(boy|man)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(dog)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(cat)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(car|vehicle)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(house|building)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(forest|trees)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+with\s+(sea|ocean)/,
+      weight: 0.9,
+    },
+    {
+      pattern: /(image|picture|photo)\s+that\s+(has|contains|shows)/,
+      weight: 0.8,
     },
   ];
 
@@ -436,6 +539,14 @@ function findTargetImageByPattern(
       result?.url
     );
     return result || null;
+  }
+
+  // Семантический поиск по содержимому
+  if (isSemanticPattern(pattern)) {
+    console.log(
+      "🔍 findTargetImageByPattern: Semantic pattern detected, searching by content"
+    );
+    return findImageBySemanticContent(messageLower, chatImages);
   }
 
   return null;
@@ -670,4 +781,312 @@ export async function getChatImages(chatId: string): Promise<ChatImage[]> {
     console.error("Error getting chat images:", error);
     return [];
   }
+}
+
+/**
+ * Проверяет, является ли паттерн семантическим (для поиска по содержимому)
+ */
+function isSemanticPattern(pattern: RegExp): boolean {
+  const semanticKeywords = [
+    "луной",
+    "самолетом",
+    "девочкой",
+    "мальчиком",
+    "собакой",
+    "кошкой",
+    "машиной",
+    "домом",
+    "лесом",
+    "морем",
+    "где есть",
+    "moon",
+    "airplane",
+    "girl",
+    "boy",
+    "dog",
+    "cat",
+    "car",
+    "house",
+    "forest",
+    "sea",
+    "has",
+    "contains",
+    "shows",
+  ];
+
+  return semanticKeywords.some((keyword) => pattern.source.includes(keyword));
+}
+
+/**
+ * Находит изображение по семантическому содержимому
+ */
+function findImageBySemanticContent(
+  messageLower: string,
+  chatImages: ChatImage[]
+): ChatImage | null {
+  console.log(
+    "🔍 findImageBySemanticContent: Analyzing message:",
+    messageLower
+  );
+
+  // Извлекаем ключевые слова из сообщения
+  const keywords = extractKeywordsFromMessage(messageLower);
+  console.log("🔍 findImageBySemanticContent: Extracted keywords:", keywords);
+
+  if (keywords.length === 0) {
+    console.log(
+      "🔍 findImageBySemanticContent: No keywords found, returning null"
+    );
+    return null;
+  }
+
+  // Ищем изображения с промптами или именами файлов, содержащими ключевые слова
+  const matchingImages = chatImages.filter((img) => {
+    // Проверяем промпт
+    if (img.prompt) {
+      const promptLower = img.prompt.toLowerCase();
+      const hasKeywordInPrompt = keywords.some((keyword) =>
+        promptLower.includes(keyword.toLowerCase())
+      );
+
+      if (hasKeywordInPrompt) {
+        console.log(
+          "🔍 findImageBySemanticContent: Found matching image by prompt:",
+          {
+            url: img.url,
+            prompt: img.prompt,
+            matchedKeywords: keywords.filter((k) =>
+              promptLower.includes(k.toLowerCase())
+            ),
+          }
+        );
+        return true;
+      }
+    }
+
+    // Проверяем имя файла (из URL)
+    if (img.url) {
+      const fileName = img.url.split("/").pop() || "";
+      const fileNameLower = fileName.toLowerCase();
+
+      // Ищем частичные совпадения ключевых слов в имени файла
+      const hasKeywordInFileName = keywords.some((keyword) => {
+        const keywordLower = keyword.toLowerCase();
+        // Проверяем точное совпадение
+        if (fileNameLower.includes(keywordLower)) {
+          return true;
+        }
+        // Проверяем транслитерацию русских слов
+        const transliterated = transliterateRussian(keywordLower);
+        if (fileNameLower.includes(transliterated)) {
+          return true;
+        }
+        // Проверяем частичные совпадения для русских слов
+        if (keywordLower === "ночной" && fileNameLower.includes("nochnoj")) {
+          return true;
+        }
+        if (keywordLower === "ночь" && fileNameLower.includes("noch")) {
+          return true;
+        }
+        if (keywordLower === "луна" && fileNameLower.includes("luna")) {
+          return true;
+        }
+        if (keywordLower === "moon" && fileNameLower.includes("moon")) {
+          return true;
+        }
+        return false;
+      });
+
+      if (hasKeywordInFileName) {
+        console.log(
+          "🔍 findImageBySemanticContent: Found matching image by filename:",
+          {
+            url: img.url,
+            fileName: fileName,
+            matchedKeywords: keywords.filter((k) => {
+              const keywordLower = k.toLowerCase();
+              return (
+                fileNameLower.includes(keywordLower) ||
+                (keywordLower === "ночной" &&
+                  fileNameLower.includes("nochnoj")) ||
+                (keywordLower === "ночь" && fileNameLower.includes("noch")) ||
+                (keywordLower === "луна" && fileNameLower.includes("luna")) ||
+                (keywordLower === "moon" && fileNameLower.includes("moon"))
+              );
+            }),
+          }
+        );
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  // Возвращаем последнее найденное изображение (самое свежее)
+  const result = matchingImages[matchingImages.length - 1] || null;
+
+  console.log("🔍 findImageBySemanticContent: Result:", {
+    totalMatches: matchingImages.length,
+    selectedImage: result?.url,
+    selectedPrompt: result?.prompt,
+  });
+
+  return result;
+}
+
+/**
+ * Преобразует русские слова в латинские (транслитерация)
+ */
+function transliterateRussian(word: string): string {
+  const transliterationMap: Record<string, string> = {
+    а: "a",
+    б: "b",
+    в: "v",
+    г: "g",
+    д: "d",
+    е: "e",
+    ё: "yo",
+    ж: "zh",
+    з: "z",
+    и: "i",
+    й: "y",
+    к: "k",
+    л: "l",
+    м: "m",
+    н: "n",
+    о: "o",
+    п: "p",
+    р: "r",
+    с: "s",
+    т: "t",
+    у: "u",
+    ф: "f",
+    х: "h",
+    ц: "ts",
+    ч: "ch",
+    ш: "sh",
+    щ: "sch",
+    ъ: "",
+    ы: "y",
+    ь: "",
+    э: "e",
+    ю: "yu",
+    я: "ya",
+  };
+
+  return word
+    .toLowerCase()
+    .split("")
+    .map((char) => transliterationMap[char] || char)
+    .join("");
+}
+
+/**
+ * Извлекает ключевые слова из сообщения для семантического поиска
+ */
+function extractKeywordsFromMessage(message: string): string[] {
+  const messageLower = message.toLowerCase();
+  const keywords: string[] = [];
+
+  // Словарь ключевых слов для поиска
+  const keywordMap = {
+    // Природа
+    луна: [
+      "луна",
+      "moon",
+      "лунный",
+      "lunar",
+      "ночной",
+      "nocturnal",
+      "ночь",
+      "night",
+    ],
+    солнце: ["солнце", "sun", "солнечный", "sunny"],
+    звезды: ["звезды", "stars", "звездный", "stellar"],
+    небо: ["небо", "sky", "небесный", "celestial"],
+    облака: ["облака", "clouds", "облачный", "cloudy"],
+    дождь: ["дождь", "rain", "дождливый", "rainy"],
+    снег: ["снег", "snow", "снежный", "snowy"],
+    лес: ["лес", "forest", "деревья", "trees", "природа", "nature"],
+    море: ["море", "sea", "океан", "ocean", "вода", "water"],
+    горы: ["горы", "mountains", "горный", "mountainous"],
+    река: ["река", "river", "речной", "riverine"],
+    озеро: ["озеро", "lake", "озерный", "lacustrine"],
+
+    // Животные
+    собака: ["собака", "dog", "пес", "пёс", "собачка"],
+    кошка: ["кошка", "cat", "кот", "котик", "котенок"],
+    птица: ["птица", "bird", "птичий", "avian"],
+    рыба: ["рыба", "fish", "рыбный", "piscine"],
+    лошадь: ["лошадь", "horse", "лошадиный", "equine"],
+    корова: ["корова", "cow", "коровьий", "bovine"],
+    свинья: ["свинья", "pig", "свиной", "porcine"],
+
+    // Люди
+    девочка: ["девочка", "girl", "девушка", "woman", "женщина"],
+    мальчик: ["мальчик", "boy", "парень", "man", "мужчина"],
+    ребенок: ["ребенок", "child", "детский", "childish"],
+    семья: ["семья", "family", "семейный", "familial"],
+
+    // Транспорт
+    машина: ["машина", "car", "автомобиль", "авто", "vehicle"],
+    самолет: ["самолет", "airplane", "plane", "авиация", "aviation"],
+    поезд: ["поезд", "train", "железнодорожный", "railway"],
+    велосипед: ["велосипед", "bicycle", "bike", "велосипедный", "cycling"],
+    мотоцикл: ["мотоцикл", "motorcycle", "мотоциклетный", "motorcycling"],
+    корабль: ["корабль", "ship", "судно", "vessel", "морской", "marine"],
+
+    // Здания
+    дом: ["дом", "house", "здание", "building", "домой"],
+    замок: ["замок", "castle", "замковый", "castellated"],
+    церковь: [
+      "церковь",
+      "church",
+      "храм",
+      "temple",
+      "религиозный",
+      "religious",
+    ],
+    школа: ["школа", "school", "школьный", "scholastic"],
+    больница: ["больница", "hospital", "медицинский", "medical"],
+
+    // Еда
+    пицца: ["пицца", "pizza", "пиццерия", "pizzeria"],
+    торт: ["торт", "cake", "тортовый", "cakery"],
+    фрукты: ["фрукты", "fruits", "фруктовый", "fruity"],
+    овощи: ["овощи", "vegetables", "овощной", "vegetable"],
+
+    // Цвета
+    красный: ["красный", "red", "краснота", "redness"],
+    синий: ["синий", "blue", "синева", "blueness"],
+    зеленый: ["зеленый", "green", "зелень", "greenness"],
+    желтый: ["желтый", "yellow", "желтизна", "yellowness"],
+    черный: ["черный", "black", "чернота", "blackness"],
+    белый: ["белый", "white", "белизна", "whiteness"],
+
+    // Эмоции и состояния
+    счастливый: ["счастливый", "happy", "радостный", "joyful"],
+    грустный: ["грустный", "sad", "печальный", "melancholy"],
+    злой: ["злой", "angry", "сердитый", "mad"],
+    усталый: ["усталый", "tired", "утомленный", "exhausted"],
+  };
+
+  // Ищем ключевые слова в сообщении
+  Object.entries(keywordMap).forEach(([category, words]) => {
+    const hasCategory = words.some((word) => messageLower.includes(word));
+    if (hasCategory) {
+      keywords.push(...words);
+      console.log(
+        `🔍 extractKeywordsFromMessage: Found category "${category}" with words:`,
+        words
+      );
+    }
+  });
+
+  // Убираем дубликаты и возвращаем
+  const uniqueKeywords = [...new Set(keywords)];
+  console.log("🔍 extractKeywordsFromMessage: Final keywords:", uniqueKeywords);
+
+  return uniqueKeywords;
 }
