@@ -33,6 +33,7 @@ export function CanvasWrapper({
   const [initialObjects, setInitialObjects] = useState<SceneTextbox_Output[]>(
     []
   );
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (!scene || !scene.objects || isEqual(scene.objects, initialObjects))
@@ -42,8 +43,14 @@ export function CanvasWrapper({
 
   const handleSceneUpdate = useCallback(
     async (objects: any[]) => {
-      if (!scene || !scene.file_id) return;
+      if (!scene || !scene.file_id || isUpdating) return;
 
+      // Проверяем, действительно ли объекты изменились
+      if (isEqual(scene.objects, objects)) {
+        return;
+      }
+
+      setIsUpdating(true);
       try {
         // use react-query mutation instead of direct fetch
         await mutateAsync({
@@ -52,13 +59,15 @@ export function CanvasWrapper({
             ...scene,
             file_id: scene.file_id,
             objects: objects,
-          } as any,
+          },
         });
       } catch (e) {
         console.error("Scene update error", e);
+      } finally {
+        setIsUpdating(false);
       }
     },
-    [scene, mutateAsync]
+    [scene, mutateAsync, isUpdating]
   );
 
   const debouncedUpdate = useMemo(
@@ -66,8 +75,15 @@ export function CanvasWrapper({
     [handleSceneUpdate]
   );
 
+  // Отменяем debounce при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
+
   const handleChange = () => {
-    if (!scene || !scene.file_id) return;
+    if (!scene || !scene.file_id || isUpdating) return;
 
     const updatedObjects = controller?.exportObjects();
     if (updatedObjects) {
