@@ -394,11 +394,27 @@ export function ImageEditor({
     setPrompt("");
   };
 
-  const handleRetry = () => {
-    // Clear error and reset state for retry
-    imageGeneration.resetState();
-    // TODO: Implement actual retry logic
-    toast.info("Функция повтора будет добавлена в следующей версии");
+  const handleRetry = async () => {
+    try {
+      // Clear error and reset state for retry
+      imageGeneration.resetState();
+
+      // For now, we don't have lastGenerationParams in the hook
+      // This is a placeholder implementation
+      if (!prompt) {
+        toast.error("Нет промпта для повтора генерации");
+        return;
+      }
+
+      // TODO: Implement proper retry logic with stored parameters
+      // This would typically call imageGeneration.generateImageAsync with stored params
+      toast.info(
+        "Функция повтора изображения будет реализована в следующей версии"
+      );
+    } catch (error) {
+      console.error("Error during retry:", error);
+      toast.error("Ошибка при повторе генерации");
+    }
   };
 
   const handleForceCheck = async () => {

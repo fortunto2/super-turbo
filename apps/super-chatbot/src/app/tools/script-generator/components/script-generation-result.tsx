@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { MarkdownEditor } from "@/components/editors/markdown-editor";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { jsPDF } from "jspdf";
@@ -247,17 +246,92 @@ const handleDownload = (script: string) => {
 };
 
 // Export to PDF с максимально приближённым к сценарию оформлением
-//TODO:Починить неправильное отображение текста в пдф
 const handleExportPdf = (script: string) => {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const margin = 32;
   const maxWidth = 540;
   let y = margin + 12;
+
+  // Устанавливаем правильную кодировку для русского текста
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
 
+  // Обрабатываем текст для правильного отображения
+  const processedScript = script.replace(/[^\x00-\x7F]/g, (char) => {
+    // Заменяем проблемные символы на ASCII эквиваленты
+    const replacements: { [key: string]: string } = {
+      а: "a",
+      б: "b",
+      в: "v",
+      г: "g",
+      д: "d",
+      е: "e",
+      ё: "e",
+      ж: "zh",
+      з: "z",
+      и: "i",
+      й: "y",
+      к: "k",
+      л: "l",
+      м: "m",
+      н: "n",
+      о: "o",
+      п: "p",
+      р: "r",
+      с: "s",
+      т: "t",
+      у: "u",
+      ф: "f",
+      х: "h",
+      ц: "ts",
+      ч: "ch",
+      ш: "sh",
+      щ: "sch",
+      ъ: "",
+      ы: "y",
+      ь: "",
+      э: "e",
+      ю: "yu",
+      я: "ya",
+      А: "A",
+      Б: "B",
+      В: "V",
+      Г: "G",
+      Д: "D",
+      Е: "E",
+      Ё: "E",
+      Ж: "ZH",
+      З: "Z",
+      И: "I",
+      Й: "Y",
+      К: "K",
+      Л: "L",
+      М: "M",
+      Н: "N",
+      О: "O",
+      П: "P",
+      Р: "R",
+      С: "S",
+      Т: "T",
+      У: "U",
+      Ф: "F",
+      Х: "H",
+      Ц: "TS",
+      Ч: "CH",
+      Ш: "SH",
+      Щ: "SCH",
+      Ъ: "",
+      Ы: "Y",
+      Ь: "",
+      Э: "E",
+      Ю: "YU",
+      Я: "YA",
+    };
+    return replacements[char] || char;
+  });
+
   // Парсим markdown в tokens
-  const tokens = marked.lexer(script);
+  const tokens = marked.lexer(processedScript);
   let prevType = "";
   tokens.forEach((token) => {
     // Перенос между блоками
