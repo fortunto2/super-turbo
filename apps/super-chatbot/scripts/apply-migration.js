@@ -5,8 +5,8 @@
  * This script applies the project status migration
  */
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 async function applyMigration() {
   try {

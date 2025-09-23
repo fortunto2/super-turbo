@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { auth } from "@/app/(auth)/auth";
 
@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
       const formData = await request.formData();
       data = {
         priceId: formData.get("priceId"),
-        quantity: parseInt(formData.get("quantity") as string) || 1,
+        quantity: Number.parseInt(formData.get("quantity") as string) || 1,
         prompt: formData.get("prompt"),
         toolSlug: formData.get("toolSlug"),
         toolTitle: formData.get("toolTitle"),
         creditAmount: formData.get("creditAmount")
-          ? parseInt(formData.get("creditAmount") as string)
+          ? Number.parseInt(formData.get("creditAmount") as string)
           : undefined,
         cancelUrl: formData.get("cancelUrl"),
         generationType: formData.get("generationType"),
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
       // Try to detect the correct port from request headers
       const host = request.headers.get("host");
-      if (host && host.includes("localhost")) {
+      if (host?.includes("localhost")) {
         return `http://${host}`;
       }
 

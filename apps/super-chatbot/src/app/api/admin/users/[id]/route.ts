@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
-import { getUserById, updateUserBalance } from "@/lib/db/admin-queries";
+import { getUserById, } from "@/lib/db/admin-queries";
 import { requireAdmin } from "@/lib/auth/admin-utils";
 import { eq, inArray } from "drizzle-orm";
 import {

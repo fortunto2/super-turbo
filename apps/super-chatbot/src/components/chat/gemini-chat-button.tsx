@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@turbo-super/ui";
 import { Sparkles, Video, Image } from "lucide-react";
 
 export function GeminiChatButton() {

@@ -2,18 +2,13 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { Button, Input, Label, Textarea } from "@turbo-super/ui";
+import { Button, Label, Textarea } from "@turbo-super/ui";
 import {
-  Edit,
-  Save,
-  ArrowLeft,
   Image as ImageIcon,
   Wand2,
-  Plus,
   Trash2,
   Check,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import { BackButton } from "@/components/shared/back-button";
 import { QueryState } from "@/components/ui/query-state";

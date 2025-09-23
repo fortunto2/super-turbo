@@ -1,4 +1,4 @@
-import { IDataUpdate, DataService } from "@turbo-super/api";
+import { type IDataUpdate, DataService } from "@turbo-super/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectKeys } from "../../project/query";
 

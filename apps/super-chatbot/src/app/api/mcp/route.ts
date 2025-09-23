@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // AICODE-NOTE: Простой MCP сервер для демонстрации работы инструментов
 export async function GET(request: NextRequest) {

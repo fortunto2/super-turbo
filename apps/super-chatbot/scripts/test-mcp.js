@@ -5,7 +5,7 @@
  * Запуск: node scripts/test-mcp.js
  */
 
-const http = require('http');
+const http = require('node:http');
 
 const MCP_SERVER_URL = 'http://localhost:3000/api/mcp';
 

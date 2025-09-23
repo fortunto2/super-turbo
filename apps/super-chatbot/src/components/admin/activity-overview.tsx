@@ -14,8 +14,6 @@ import {
   FileText,
   Activity,
   TrendingUp,
-  User,
-  Calendar,
   Award,
   BarChart3,
 } from "lucide-react";

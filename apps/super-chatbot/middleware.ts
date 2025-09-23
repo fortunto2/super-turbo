@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { monitoringMiddleware } from "@/lib/monitoring/monitoring-middleware";
 
 export async function middleware(request: NextRequest) {
   // Простая проверка для ping endpoint (для тестов)
@@ -6,8 +7,11 @@ export async function middleware(request: NextRequest) {
     return new Response("pong", { status: 200 });
   }
 
-  // Пропускаем все остальные запросы без изменений
-  return NextResponse.next();
+  // Обрабатываем запрос через middleware мониторинга
+  return monitoringMiddleware.handleRequest(request, async () => {
+    // Пропускаем все остальные запросы без изменений
+    return NextResponse.next();
+  });
 }
 
 export const config = {

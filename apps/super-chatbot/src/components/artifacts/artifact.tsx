@@ -28,7 +28,7 @@ import { videoArtifact } from "@/artifacts/video/client";
 import { scriptArtifact } from "@/artifacts/script/client";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useSidebar, MultimodalInput, Toolbar, VersionFooter } from "../";
-import { VisibilityType } from "../shared/visibility-selector";
+import type { VisibilityType } from "../shared/visibility-selector";
 
 export const artifactDefinitions = [
   textArtifact,

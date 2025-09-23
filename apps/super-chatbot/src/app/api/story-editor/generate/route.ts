@@ -12,7 +12,6 @@ import {
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
 import {
   createUserProject,
-  updateProjectStatus,
 } from "@/lib/db/project-queries";
 import {
   handlePrefectError,

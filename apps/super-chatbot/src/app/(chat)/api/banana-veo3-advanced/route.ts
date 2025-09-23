@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { streamText } from "ai";
 import { myProvider } from "@/lib/ai/providers";
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Проверяем или создаем чат
-    let chat = await getChatById({ id });
+    const chat = await getChatById({ id });
     if (!chat) {
       const title = await generateTitleFromUserMessage({ message });
       await saveChat({

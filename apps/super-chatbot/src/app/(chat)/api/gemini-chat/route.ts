@@ -6,7 +6,7 @@ import {
   streamText,
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
-import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
+import type { RequestHints, } from "@/lib/ai/prompts";
 import {
   createStreamId,
   deleteChatById,
@@ -26,10 +26,6 @@ import { updateDocument } from "@/lib/ai/tools/update-document";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 
 import { myProvider } from "@/lib/ai/providers";
-import {
-  callGeminiDirect,
-  convertToGeminiMessages,
-} from "@/lib/ai/gemini-direct";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { postRequestBodySchema, type PostRequestBody } from "../chat/schema";
 import { geolocation } from "@vercel/functions";

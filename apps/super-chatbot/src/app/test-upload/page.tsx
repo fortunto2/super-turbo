@@ -18,7 +18,6 @@ import {
   FileImage,
   Trash2,
 } from "lucide-react";
-import { FileService } from "@turbo-super/api";
 
 interface UploadedFile {
   id: string;

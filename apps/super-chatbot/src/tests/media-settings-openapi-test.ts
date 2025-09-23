@@ -1,4 +1,4 @@
-import { IGenerationConfigRead } from "@turbo-super/api";
+import type { IGenerationConfigRead } from "@turbo-super/api";
 import {
   getAvailableVideoModels,
   getAvailableImageModels,

@@ -1,18 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
   callGeminiDirect,
   convertToGeminiMessages,
 } from "@/lib/ai/gemini-direct";
-import {
-  bananaInferenceTool,
-  listBananaModelsTool,
-} from "@/lib/ai/tools/banana-inference";
-import {
-  createVeo3VideoTool,
-  checkVeo3VideoStatusTool,
-  generateVeo3IdeasTool,
-} from "@/lib/ai/tools/veo3-video";
 import {
   getChatById,
   getMessagesByChatId,
@@ -94,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Проверяем или создаем чат
-    let chat = await getChatById({ id });
+    const chat = await getChatById({ id });
     if (!chat) {
       const title = await generateTitleFromUserMessage({ message });
       await saveChat({

@@ -46,26 +46,83 @@ const nextConfig: NextConfig = {
       },
     ];
 
+    // Исправляем проблему с 'self is not defined' в server-side рендеринге
+    if (isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        stream: false,
+        url: false,
+        zlib: false,
+        http: false,
+        https: false,
+        assert: false,
+        os: false,
+        path: false,
+      };
+    }
+
+    // Добавляем глобальные переменные для совместимости
+    const webpack = require("webpack");
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        global: "globalThis",
+      })
+    );
+
     // Оптимизации для production
     if (!dev) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: "all",
+          minSize: 20000,
+          maxSize: 244000,
           cacheGroups: {
+            // AI SDK и связанные библиотеки
+            ai: {
+              test: /[\\/]node_modules[\\/](ai|@ai-sdk|@ai-sdk-react)[\\/]/,
+              name: "ai-vendor",
+              chunks: "all",
+              priority: 30,
+            },
+            // UI библиотеки
+            ui: {
+              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|class-variance-authority|clsx|tailwind-merge)[\\/]/,
+              name: "ui-vendor",
+              chunks: "all",
+              priority: 25,
+            },
+            // React и связанные
+            react: {
+              test: /[\\/]node_modules[\\/](react|react-dom|react-hook-form|@hookform)[\\/]/,
+              name: "react-vendor",
+              chunks: "all",
+              priority: 20,
+            },
+            // Остальные vendor библиотеки
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: "vendors",
               chunks: "all",
+              priority: 10,
             },
+            // Общие компоненты приложения
             common: {
               name: "common",
               minChunks: 2,
               chunks: "all",
               enforce: true,
+              priority: 5,
             },
           },
         },
+        // Включаем tree shaking
+        usedExports: true,
+        sideEffects: false,
       };
     } else {
       // В dev режиме отключаем некоторые оптимизации для ускорения сборки

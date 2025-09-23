@@ -39,7 +39,7 @@ export async function GET() {
       details: {
         apiKeyConfigured: !!apiKey,
         modelName: "gemini-2.5-flash-lite",
-        testResponse: testResponse.substring(0, 100) + "...",
+        testResponse: `${testResponse.substring(0, 100)}...`,
         responseLength: testResponse.length,
         timestamp: new Date().toISOString(),
       },

@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
   getAllUsers,
-  getUserById,
   updateUserBalance,
   deleteUser,
   getUserStats,
@@ -33,28 +32,32 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get("action");
 
     switch (action) {
-      case "stats":
+      case "stats": {
         const stats = await getUserStats();
         return NextResponse.json({ success: true, stats });
+      }
 
-      case "by-type":
+      case "by-type": {
         const userType = searchParams.get("type") as "guest" | "regular" | null;
         const typeUsers = await getUsersByType(userType);
         return NextResponse.json({ success: true, users: typeUsers });
+      }
 
-      case "recent":
-        const recentLimit = parseInt(searchParams.get("limit") || "10");
+      case "recent": {
+        const recentLimit = Number.parseInt(searchParams.get("limit") || "10");
         const recentUsers = await getRecentUsers(recentLimit);
         return NextResponse.json({ success: true, users: recentUsers });
+      }
 
-      default:
+      default: {
         // Default: get paginated users
-        const page = parseInt(searchParams.get("page") || "1");
-        const defaultLimit = parseInt(searchParams.get("limit") || "20");
+        const page = Number.parseInt(searchParams.get("page") || "1");
+        const defaultLimit = Number.parseInt(searchParams.get("limit") || "20");
         const search = searchParams.get("search") || "";
 
         const result = await getAllUsers(page, defaultLimit, search);
         return NextResponse.json({ success: true, ...result });
+      }
     }
   } catch (error: any) {
     console.error("Admin enhanced users fetch error:", error);

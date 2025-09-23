@@ -5,8 +5,8 @@
  * This script will show you the exact SQL commands to run
  */
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 console.log('🚀 Manual Migration Application');
 console.log('================================');

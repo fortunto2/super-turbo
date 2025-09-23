@@ -144,7 +144,7 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
         description: "Ссылка на видео по URL",
         targetResolver: (message, media) => {
           const urlMedia = media.filter(
-            (m) => m.url && m.url.startsWith("http")
+            (m) => m.url?.startsWith("http")
           );
           return urlMedia[urlMedia.length - 1] || null;
         },
@@ -311,7 +311,7 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
         description: "Reference to video from URL",
         targetResolver: (message, media) => {
           const urlMedia = media.filter(
-            (m) => m.url && m.url.startsWith("http")
+            (m) => m.url?.startsWith("http")
           );
           return urlMedia[urlMedia.length - 1] || null;
         },

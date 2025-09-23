@@ -103,7 +103,7 @@ export async function testSemanticSearch() {
 
   const analyzer = new ImageContextAnalyzer();
   let passedTests = 0;
-  let totalTests = testCases.length;
+  const totalTests = testCases.length;
 
   for (const testCase of testCases) {
     console.log(`\n🧪 Testing: ${testCase.description}`);

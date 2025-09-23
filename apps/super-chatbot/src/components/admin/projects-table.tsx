@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DeleteProjectDialog } from "./delete-project-dialog";
-import { DataTypeEnum, TaskTypeEnum } from "@turbo-super/api";
 import {
   getStatusIcon,
   getStatusColor,

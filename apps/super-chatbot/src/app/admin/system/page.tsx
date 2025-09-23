@@ -10,10 +10,6 @@ import { Badge } from "@turbo-super/ui";
 import {
   Server,
   Database,
-  Users,
-  FileText,
-  Activity,
-  TrendingUp,
   Clock,
   HardDrive,
   Cpu,
@@ -36,7 +32,7 @@ export default async function SystemPage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             System Online
           </div>
         </div>

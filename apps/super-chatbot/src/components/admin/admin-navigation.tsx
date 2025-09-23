@@ -7,7 +7,6 @@ import {
   Users,
   CreditCard,
   BarChart3,
-  Settings,
   Home,
   Shield,
   Activity,

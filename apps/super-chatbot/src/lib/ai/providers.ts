@@ -4,7 +4,6 @@ import {
   wrapLanguageModel,
 } from "ai";
 import { createAzure } from "@ai-sdk/azure";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 // Убираем импорт Vertex AI - будем использовать прямой API
 import { isTestEnvironment } from "@/lib/constants";
 import {

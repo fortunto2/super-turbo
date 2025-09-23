@@ -4,9 +4,9 @@
  * Apply migration using psql command
  */
 
-const { exec } = require('child_process');
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { exec } = require('node:child_process');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 async function applyMigration() {
   console.log('🚀 Applying database migration...');

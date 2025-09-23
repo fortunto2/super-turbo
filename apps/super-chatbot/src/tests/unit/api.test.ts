@@ -9,7 +9,7 @@ describe("API Configuration", () => {
 
     it("should handle missing SUPERDUPERAI_URL", () => {
       const originalUrl = process.env.SUPERDUPERAI_URL;
-      delete process.env.SUPERDUPERAI_URL;
+      process.env.SUPERDUPERAI_URL = undefined;
 
       // Should not throw error
       expect(() => {
@@ -25,7 +25,7 @@ describe("API Configuration", () => {
 
     it("should handle missing SUPERDUPERAI_TOKEN", () => {
       const originalToken = process.env.SUPERDUPERAI_TOKEN;
-      delete process.env.SUPERDUPERAI_TOKEN;
+      process.env.SUPERDUPERAI_TOKEN = undefined;
 
       // Should not throw error
       expect(() => {

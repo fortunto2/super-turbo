@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { addUserBalance } from "@/lib/utils/tools-balance";
 
@@ -99,7 +99,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     if (paymentType === "credits" && creditAmount) {
       // Add credits to user balance
-      const amount = parseInt(creditAmount, 10);
+      const amount = Number.parseInt(creditAmount, 10);
       console.log(
         `💰 Processing credit payment: ${amount} credits for user ${userId}`
       );

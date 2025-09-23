@@ -531,7 +531,7 @@ function findTargetImageByPattern(
   ) {
     // Ищем последнее изображение с полным URL
     const urlImages = chatImages.filter(
-      (img) => img.url && img.url.startsWith("http")
+      (img) => img.url?.startsWith("http")
     );
     const result = urlImages[urlImages.length - 1];
     console.log(

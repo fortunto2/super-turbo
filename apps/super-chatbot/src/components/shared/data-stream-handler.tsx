@@ -3,7 +3,7 @@ import { useEffect, useRef, memo } from "react";
 import type { Suggestion } from "@/lib/db/schema";
 import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { toast } from "../common/toast";
-import { artifactDefinitions, ArtifactKind } from "../artifacts/artifact";
+import { artifactDefinitions, type ArtifactKind } from "../artifacts/artifact";
 
 export type DataStreamDelta = {
   type:

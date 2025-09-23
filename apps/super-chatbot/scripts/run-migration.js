@@ -4,8 +4,8 @@
  * Run database migration directly
  */
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 async function runMigration() {
   try {

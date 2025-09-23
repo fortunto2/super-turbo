@@ -24,7 +24,6 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../";
 import { TOOLS_CONFIG } from "@/lib/config/tools-config";
 import { ToolIcon } from "@/lib/config/tools-icons";
-import { GeminiChatButton } from "@/components/chat/gemini-chat-button";
 import { BananaVeo3Button } from "@/components/chat/banana-veo3-button";
 import { BananaVeo3AdvancedButton } from "@/components/chat/banana-veo3-advanced-button";
 

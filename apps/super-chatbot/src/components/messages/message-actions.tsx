@@ -1,5 +1,4 @@
 import type { Message } from "ai";
-import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
 
 import type { Vote } from "@/lib/db/schema";
@@ -27,7 +26,7 @@ export function PureMessageActions({
   vote: Vote | undefined;
   isLoading: boolean;
 }) {
-  const { mutate } = useSWRConfig();
+  // Use global mutate function from swr
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;

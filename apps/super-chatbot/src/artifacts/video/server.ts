@@ -151,7 +151,7 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
       let result;
       if (actualGenerationType === "image-to-video" && actualSourceImageUrl) {
         // Image-to-video generation - переключаем модель на image_to_video тип
-        let videoParams = {
+        const videoParams = {
           prompt,
           file: actualSourceImageUrl, // Pass the image URL as file parameter
           model,
@@ -363,7 +363,7 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
       let result;
       if (actualGenerationType === "image-to-video" && actualSourceImageUrl) {
         // Image-to-video generation - переключаем модель на image_to_video тип
-        let videoParams = {
+        const videoParams = {
           prompt,
           file: actualSourceImageUrl, // Pass the image URL as file parameter
           model,

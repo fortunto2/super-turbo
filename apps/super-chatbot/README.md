@@ -122,6 +122,8 @@ This application is built with a modern, scalable architecture designed for prof
 - **[Prompt Examples](docs/prompt-examples.md)** - Proven prompts for optimal results
 - **[Technical Specifications](docs/TECHNICAL_SPECIFICATIONS.md)** - Implementation details
 - **[WebSocket Architecture](docs/CHAT_WEBSOCKET_ARCHITECTURE.md)** - Real-time communication
+- **[Monitoring API](docs/api/monitoring-api.md)** - API documentation for monitoring systems
+- **[Monitoring Architecture](docs/architecture/monitoring-architecture.md)** - System architecture overview
 - **[AGENTS.md](AGENTS.md)** - AI agent development guide
 
 ### 🏗️ Core Components
@@ -145,8 +147,18 @@ This application is built with a modern, scalable architecture designed for prof
 - **Type Safety**: Full TypeScript implementation
 - **Code Quality**: Biome for linting and formatting
 - **Testing**: Comprehensive E2E testing with Playwright
-- **Monitoring**: Sentry for error tracking and performance
+- **Monitoring**: Advanced monitoring system with metrics, alerts, and health checks
 - **Security**: NextAuth v5 with enterprise-grade authentication
+- **Performance**: Optimized bundle size with lazy loading and caching
+
+### 📊 Monitoring & Observability
+
+- **Health Checks**: Real-time system health monitoring with automatic alerts
+- **Performance Metrics**: API response times, component render performance, and system resources
+- **Structured Logging**: Contextual logging with automatic sanitization and external integration
+- **Alerting System**: Multi-channel notifications (Slack, Email, Webhook, Sentry) with escalation rules
+- **Dashboard**: Real-time monitoring dashboard for administrators
+- **API Endpoints**: `/api/health` and `/api/metrics` for external monitoring integration
 
 ## Use Cases
 

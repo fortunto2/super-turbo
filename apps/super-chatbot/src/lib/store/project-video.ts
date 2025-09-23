@@ -1,6 +1,6 @@
 "use client";
 
-import { IFileRead } from "@turbo-super/api";
+import type { IFileRead } from "@turbo-super/api";
 import { create } from "zustand";
 
 type SetState = Omit<ProjectVideoRenderStore, "setState">;

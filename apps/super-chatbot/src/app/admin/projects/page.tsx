@@ -6,22 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
 import {
-  Trash2,
-  Search,
   Users,
   FileText,
   Calendar,
-  User,
-  CreditCard,
-  AlertTriangle,
 } from "lucide-react";
 import { getProjectStats } from "@/lib/db/admin-project-queries";
 import { ProjectsTable } from "@/components/admin/projects-table";
-import { DeleteProjectDialog } from "@/components/admin/delete-project-dialog";
 
 interface PageProps {
   searchParams: Promise<{
@@ -32,7 +24,7 @@ interface PageProps {
 
 export default async function ProjectsPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
-  const page = parseInt(resolvedSearchParams.page || "1");
+  const page = Number.parseInt(resolvedSearchParams.page || "1");
   const search = resolvedSearchParams.search || "";
 
   // Get project statistics

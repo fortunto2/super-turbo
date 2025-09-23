@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { EntityService, IEntityCreate } from "@turbo-super/api";
+import { EntityService, type IEntityCreate } from "@turbo-super/api";
 import { entityKeys } from "../query";
 
 export const useEntityCreate = () => {

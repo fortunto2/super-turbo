@@ -1,8 +1,8 @@
 import { createQueryKeys } from "@lukemorales/query-key-factory";
 import { cancelableRequest } from "@/lib/utils/cancelable-request";
 import {
-  IEntityRead,
-  IResponsePaginated_IEntityRead_,
+  type IEntityRead,
+  type IResponsePaginated_IEntityRead_,
   EntityService,
 } from "@turbo-super/api";
 import { useQuery } from "@tanstack/react-query";

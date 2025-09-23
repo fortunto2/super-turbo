@@ -2,10 +2,6 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { MediaOption } from "@/lib/types/media-settings";
 import { getAudioGenerationConfig } from "@/lib/config/media-settings-factory";
-import {
-  checkBalanceBeforeArtifact,
-  getOperationDisplayName,
-} from "@/lib/utils/ai-tools-balance";
 import type { Session } from "next-auth";
 import { analyzeAudioContext } from "@/lib/ai/context";
 

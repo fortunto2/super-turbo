@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { saveMediaToChat } from "@/lib/ai/chat/media";
 
 interface UseImageEffectsProps {
   imageUrl?: string;

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // AICODE-NOTE: Простая рабочая версия MCP роута без зависимостей от проблемных пакетов
 export async function GET(request: NextRequest) {
