@@ -1,5 +1,3 @@
-
-
 /**
  * Интерфейс для конфигурации рефакторинга компонента
  */
@@ -255,7 +253,7 @@ export class ComponentRefactorer {
    */
   createRefactorPlan(
     componentName: string,
-    analysis: ReturnType<typeof analyze>
+    analysis: ReturnType<typeof this.analyze>
   ) {
     const plan = {
       componentName,
@@ -269,22 +267,22 @@ export class ComponentRefactorer {
       estimatedTime: 0,
     };
 
-    if (analysis.issues.some((issue) => issue.includes("строк"))) {
+    if (analysis.issues.some((issue: string) => issue.includes("строк"))) {
       plan.steps.push("Разделить компонент на подкомпоненты");
       plan.estimatedTime += 60; // минуты
     }
 
-    if (analysis.issues.some((issue) => issue.includes("хуков"))) {
+    if (analysis.issues.some((issue: string) => issue.includes("хуков"))) {
       plan.steps.push("Создать кастомные хуки");
       plan.estimatedTime += 30;
     }
 
-    if (analysis.issues.some((issue) => issue.includes("пропсов"))) {
+    if (analysis.issues.some((issue: string) => issue.includes("пропсов"))) {
       plan.steps.push("Оптимизировать пропсы");
       plan.estimatedTime += 20;
     }
 
-    if (analysis.issues.some((issue) => issue.includes("состояний"))) {
+    if (analysis.issues.some((issue: string) => issue.includes("состояний"))) {
       plan.steps.push("Упростить состояние");
       plan.estimatedTime += 25;
     }

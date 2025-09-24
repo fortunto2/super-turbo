@@ -3,10 +3,10 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react()] as any,
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/tests/setup.ts"],
+    setupFiles: ["./src/tests/helpers/setup.ts"],
     globals: true,
     css: true,
     // Конфигурация для разных типов тестов

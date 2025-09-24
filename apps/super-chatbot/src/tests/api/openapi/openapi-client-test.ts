@@ -2,7 +2,7 @@ import {
   getAvailableVideoModels,
   getAvailableImageModels,
   configureSuperduperAI,
-} from "../lib/config/superduperai";
+} from "../../../lib/config/superduperai";
 
 async function testOpenAPIClient() {
   console.log("🔧 OpenAPI Client Test");

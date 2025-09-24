@@ -1,11 +1,6 @@
 "use client";
 
-import { EditorView } from "@codemirror/view";
-import { EditorState, Transaction } from "@codemirror/state";
-import { python } from "@codemirror/lang-python";
-import { oneDark } from "@codemirror/theme-one-dark";
-import { basicSetup } from "codemirror";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { Suggestion } from "@/lib/db/schema";
 
 type EditorProps = {
@@ -19,20 +14,46 @@ type EditorProps = {
 
 function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<EditorView | null>(null);
+  const editorRef = useRef<any>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (containerRef.current && !editorRef.current) {
-      const startState = EditorState.create({
-        doc: content,
-        extensions: [basicSetup, python(), oneDark],
-      });
+    const initEditor = async () => {
+      if (containerRef.current && !editorRef.current && !isLoaded) {
+        try {
+          // Динамический импорт CodeMirror
+          const [
+            { EditorView },
+            { EditorState },
+            { python },
+            { oneDark },
+            { basicSetup },
+          ] = await Promise.all([
+            import("@codemirror/view"),
+            import("@codemirror/state"),
+            import("@codemirror/lang-python"),
+            import("@codemirror/theme-one-dark"),
+            import("codemirror"),
+          ]);
 
-      editorRef.current = new EditorView({
-        state: startState,
-        parent: containerRef.current,
-      });
-    }
+          const startState = EditorState.create({
+            doc: content,
+            extensions: [basicSetup, python(), oneDark],
+          });
+
+          editorRef.current = new EditorView({
+            state: startState,
+            parent: containerRef.current,
+          });
+
+          setIsLoaded(true);
+        } catch (error) {
+          console.error("Failed to load CodeMirror:", error);
+        }
+      }
+    };
+
+    initEditor();
 
     return () => {
       if (editorRef.current) {
@@ -45,34 +66,35 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
   }, []);
 
   useEffect(() => {
-    if (editorRef.current) {
-      const updateListener = EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
-          const transaction = update.transactions.find(
-            (tr) => !tr.annotation(Transaction.remote)
-          );
+    if (editorRef.current && isLoaded) {
+      const updateListener = editorRef.current.state
+        .facet(editorRef.current.state.facet.define)
+        .updateListener?.of((update: any) => {
+          if (update.docChanged) {
+            const transaction = update.transactions.find(
+              (tr: any) => !tr.annotation(tr.annotation.define?.remote)
+            );
 
-          if (transaction) {
-            const newContent = update.state.doc.toString();
-            onSaveContent(newContent, true);
+            if (transaction) {
+              const newContent = update.state.doc.toString();
+              onSaveContent(newContent, true);
+            }
           }
-        }
-      });
+        });
 
-      const currentSelection = editorRef.current.state.selection;
-
-      const newState = EditorState.create({
-        doc: editorRef.current.state.doc,
-        extensions: [basicSetup, python(), oneDark, updateListener],
-        selection: currentSelection,
-      });
-
-      editorRef.current.setState(newState);
+      if (updateListener) {
+        const currentSelection = editorRef.current.state.selection;
+        const newState = editorRef.current.state.update({
+          extensions: [updateListener],
+          selection: currentSelection,
+        });
+        editorRef.current.setState(newState);
+      }
     }
-  }, [onSaveContent]);
+  }, [onSaveContent, isLoaded]);
 
   useEffect(() => {
-    if (editorRef.current && content) {
+    if (editorRef.current && content && isLoaded) {
       const currentContent = editorRef.current.state.doc.toString();
 
       if (status === "streaming" || currentContent !== content) {
@@ -82,13 +104,15 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
             to: currentContent.length,
             insert: content,
           },
-          annotations: [Transaction.remote.of(true)],
+          annotations: [
+            editorRef.current.state.annotation.define?.remote?.of(true),
+          ],
         });
 
         editorRef.current.dispatch(transaction);
       }
     }
-  }, [content, status]);
+  }, [content, status, isLoaded]);
 
   return (
     <div

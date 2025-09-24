@@ -1,9 +1,9 @@
-import { configureVideoGeneration } from "../lib/ai/tools/configure-video-generation";
-import { configureImageGeneration } from "../lib/ai/tools/configure-image-generation";
+import { configureVideoGeneration } from "../../../lib/ai/tools/configure-video-generation";
+import { configureImageGeneration } from "../../../lib/ai/tools/configure-image-generation";
 import {
   getImageGenerationConfig,
   getVideoGenerationConfig,
-} from "../lib/config/media-settings-factory";
+} from "../../../lib/config/media-settings-factory";
 
 console.log("🎯 OpenAPI Integration Final Test");
 console.log("==================================================");

@@ -11,8 +11,11 @@ export function useVideoConnection(projectId?: string) {
     "disconnected" | "connecting" | "connected"
   >("disconnected");
 
-  const { isConnected, connect, disconnect, sendMessage } =
-    useVideoSSE(projectId);
+  const { isConnected, disconnect } = useVideoSSE({
+    projectId: projectId || "",
+    eventHandlers: [],
+    enabled: !!projectId,
+  });
 
   useEffect(() => {
     if (isConnected) {
@@ -22,22 +25,9 @@ export function useVideoConnection(projectId?: string) {
     }
   }, [isConnected]);
 
-  const connectToProject = useCallback(
-    async (targetProjectId: string) => {
-      setConnectionStatus("connecting");
-      try {
-        await connect(targetProjectId);
-      } catch (error) {
-        console.error("Failed to connect to project:", error);
-        setConnectionStatus("disconnected");
-      }
-    },
-    [connect]
-  );
-
   const disconnectFromProject = useCallback(async () => {
     try {
-      await disconnect();
+      disconnect();
     } catch (error) {
       console.error("Failed to disconnect:", error);
     }
@@ -46,8 +36,6 @@ export function useVideoConnection(projectId?: string) {
   return {
     isConnected,
     connectionStatus,
-    connectToProject,
     disconnectFromProject,
-    sendMessage,
   };
 }

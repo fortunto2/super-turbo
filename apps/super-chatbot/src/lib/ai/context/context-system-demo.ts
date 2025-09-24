@@ -174,8 +174,10 @@ export async function testContextScenarios() {
 }
 
 // Экспорт для использования в других модулях
-export default {
+const contextSystemDemo = {
   demonstrateContextSystem,
   testContextScenarios,
   contextExamples,
 };
+
+export default contextSystemDemo;

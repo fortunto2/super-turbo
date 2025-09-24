@@ -1,8 +1,7 @@
 "use client";
 import { MarkdownEditor } from "@/components/editors/markdown-editor";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
-import { jsPDF } from "jspdf";
-import { marked } from "marked";
+// Динамические импорты будут в useEffect
 import {
   CopyIcon,
   DownloadIcon,
@@ -182,7 +181,7 @@ export default function ScriptGenerationResult({
     {
       icon: <FileIcon size={18} />,
       bg: "bg-red-600 hover:bg-red-700",
-      onClick: () => handleExportPdf(script),
+      onClick: () => handleExportPdf(script).catch(console.error),
       tooltip: "Export to PDF",
     },
     {
@@ -246,7 +245,14 @@ const handleDownload = (script: string) => {
 };
 
 // Export to PDF с максимально приближённым к сценарию оформлением
-const handleExportPdf = (script: string) => {
+const handleExportPdf = async (script: string) => {
+  // Проверяем, что мы на клиенте
+  if (typeof window === "undefined") {
+    console.warn("PDF export is only available on the client side");
+    return;
+  }
+
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const margin = 32;
   const maxWidth = 540;
@@ -331,6 +337,7 @@ const handleExportPdf = (script: string) => {
   });
 
   // Парсим markdown в tokens
+  const { marked } = await import("marked");
   const tokens = marked.lexer(processedScript);
   let prevType = "";
   tokens.forEach((token) => {

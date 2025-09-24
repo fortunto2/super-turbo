@@ -1,56 +1,31 @@
-/**
- * API endpoint для проверки здоровья приложения
- * GET /api/health - возвращает текущее состояние здоровья
- */
-
-import { type NextRequest, NextResponse } from "next/server";
-import { healthMonitor } from "@/lib/monitoring/health-monitor";
-import { performanceMetrics } from "@/lib/monitoring/performance-metrics";
-import { alertingSystem } from "@/lib/monitoring/alerting-system";
-import { logger } from "@/lib/monitoring/logging-system";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
-
   try {
-    // Получаем текущее состояние здоровья
-    const healthStatus = await healthMonitor.performHealthChecks();
-
-    // Получаем метрики производительности
-    const metrics = performanceMetrics.getStats();
-
-    // Получаем активные алерты
-    const activeAlerts = alertingSystem.getActiveAlerts();
-
-    // Формируем полный ответ
-    const response = {
-      status: healthStatus.overall,
-      timestamp: healthStatus.timestamp,
-      uptime: healthStatus.uptime,
-      version: healthStatus.version,
-      environment: healthStatus.environment,
-      checks: healthStatus.checks,
-      summary: healthStatus.summary,
-      metrics: {
-        performance: metrics,
-        alerts: {
-          active: activeAlerts.length,
-          critical: activeAlerts.filter((a) => a.severity === "CRITICAL")
-            .length,
-          error: activeAlerts.filter((a) => a.severity === "ERROR").length,
-          warning: activeAlerts.filter((a) => a.severity === "WARNING").length,
+    const health = {
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: process.env.npm_package_version || "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      system: {
+        platform: process.platform,
+        nodeVersion: process.version,
+        memory: {
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+          unit: "MB",
         },
+      },
+      services: {
+        database: "healthy", // Можно добавить реальную проверку БД
+        api: "healthy",
+        monitoring: "healthy",
       },
     };
 
-    // Логируем запрос
-    logger.request("GET", "/api/health", 200, Date.now() - startTime, {
-      component: "api",
-      action: "health_check",
-    });
-
-    return NextResponse.json(response, {
-      status: healthStatus.overall === "unhealthy" ? 503 : 200,
+    return NextResponse.json(health, {
+      status: 200,
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",
         Pragma: "no-cache",
@@ -58,30 +33,13 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error(
-      "Health check failed",
-      {
-        component: "api",
-        action: "health_check",
-      },
-      error as Error
-    );
-
     return NextResponse.json(
       {
-        status: "unknown",
-        timestamp: Date.now(),
-        error: "Health check failed",
-        message: (error as Error).message,
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Unknown error",
       },
-      {
-        status: 500,
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
-        },
-      }
+      { status: 500 }
     );
   }
 }

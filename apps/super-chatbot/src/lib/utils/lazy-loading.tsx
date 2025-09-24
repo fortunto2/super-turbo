@@ -3,7 +3,9 @@
  * Уменьшают initial bundle size за счет загрузки компонентов по требованию
  */
 
-import React, { lazy, type ComponentType, Suspense } from "react";
+"use client";
+
+import { lazy, type ComponentType, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
 // Компонент загрузки
@@ -18,14 +20,14 @@ export function LoadingSpinner() {
 
 // HOC для lazy loading с fallback
 export function withLazyLoading<T extends ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>,
+  importFunc: () => Promise<any>,
   fallback?: ComponentType
 ) {
   const LazyComponent = lazy(importFunc);
-  
+
   return function LazyWrapper(props: any) {
     const FallbackComponent = fallback || LoadingSpinner;
-    
+
     return (
       <Suspense fallback={<FallbackComponent />}>
         <LazyComponent {...props} />
@@ -47,13 +49,9 @@ export const LazyPromptEnhancer = withLazyLoading(
   () => import("@/app/tools/prompt-enhancer/components/prompt-enhancer-form")
 );
 
-export const LazyAdminPanel = withLazyLoading(
-  () => import("@/app/admin/page")
-);
+export const LazyAdminPanel = withLazyLoading(() => import("@/app/admin/page"));
 
-export const LazyGallery = withLazyLoading(
-  () => import("@/app/gallery/page")
-);
+export const LazyGallery = withLazyLoading(() => import("@/app/gallery/page"));
 
 // Утилита для предзагрузки компонентов
 export function preloadComponent(importFunc: () => Promise<any>) {
@@ -68,12 +66,20 @@ export const preloadCriticalComponents = () => {
   if (typeof window !== "undefined") {
     // Предзагружаем при первом взаимодействии пользователя
     const preloadOnInteraction = () => {
-      preloadComponent(() => import("@/app/tools/image-generator/components/image-generator-form"))();
-      preloadComponent(() => import("@/app/tools/video-generator/components/video-generator-form"))();
+      preloadComponent(
+        () =>
+          import("@/app/tools/image-generator/components/image-generator-form")
+      )();
+      preloadComponent(
+        () =>
+          import("@/app/tools/video-generator/components/video-generator-form")
+      )();
     };
 
     // Предзагружаем при hover или focus
-    document.addEventListener("mouseover", preloadOnInteraction, { once: true });
+    document.addEventListener("mouseover", preloadOnInteraction, {
+      once: true,
+    });
     document.addEventListener("focus", preloadOnInteraction, { once: true });
   }
 };

@@ -1,8 +1,8 @@
-# API документация - Системы мониторинга
+# API документация - Упрощенная система мониторинга
 
 ## Обзор
 
-Данный документ описывает API endpoints для систем мониторинга, включая проверку здоровья приложения, метрики производительности и управление алертами.
+Данный документ описывает упрощенные API endpoints для мониторинга, включая проверку здоровья приложения и базовые метрики производительности. Система была упрощена для лучшей производительности и простоты поддержки.
 
 ## Endpoints
 
@@ -20,43 +20,24 @@
 
 ```json
 {
-  "status": "healthy" | "degraded" | "unhealthy" | "unknown",
-  "timestamp": 1703123456789,
-  "uptime": 3600000,
+  "status": "healthy",
+  "timestamp": "2025-01-24T23:51:37.000Z",
+  "uptime": 2925.088545,
   "version": "1.0.0",
-  "environment": "production",
-  "checks": [
-    {
-      "name": "database",
-      "status": "healthy",
-      "message": "Database connection: 45ms",
-      "timestamp": 1703123456789,
-      "duration": 45,
-      "metadata": {
-        "responseTime": 45
-      }
+  "environment": "development",
+  "system": {
+    "platform": "win32",
+    "nodeVersion": "v20.10.0",
+    "memory": {
+      "used": 92,
+      "total": 98,
+      "unit": "MB"
     }
-  ],
-  "summary": {
-    "healthy": 4,
-    "degraded": 0,
-    "unhealthy": 0,
-    "unknown": 0
   },
-  "metrics": {
-    "performance": {
-      "api": {
-        "totalRequests": 1250,
-        "averageResponseTime": 150,
-        "successRate": 99.2
-      }
-    },
-    "alerts": {
-      "active": 0,
-      "critical": 0,
-      "error": 0,
-      "warning": 0
-    }
+  "services": {
+    "database": "healthy",
+    "api": "healthy",
+    "monitoring": "healthy"
   }
 }
 ```
@@ -66,136 +47,58 @@
 - `200` - Система работает нормально
 - `503` - Система нездорова
 
-### 2. Метрики производительности
+### 2. Базовые метрики системы
 
 #### `GET /api/metrics`
 
-Возвращает детальные метрики производительности системы.
+Возвращает базовые метрики системы и API endpoints.
 
 **Параметры запроса:**
 
-- `timeWindow` (опционально) - Временное окно для метрик (например: "1h", "24h", "7d")
-- `format` (опционально) - Формат ответа: "json" (по умолчанию) или "prometheus"
+- Нет
 
-**Пример запроса:**
-
-```
-GET /api/metrics?timeWindow=1h&format=json
-```
-
-**Ответ (JSON):**
+**Ответ:**
 
 ```json
 {
-  "timestamp": 1703123456789,
-  "timeWindow": {
-    "requested": "1h",
-    "actual": 3600000
-  },
-  "performance": {
-    "api": {
-      "totalRequests": 1250,
-      "averageResponseTime": 150,
-      "successRate": 99.2,
-      "requestsUnder100ms": 800,
-      "requestsUnder500ms": 1200,
-      "requestsUnder1s": 1250
-    },
-    "components": {
-      "totalRenders": 5600,
-      "averageRenderTime": 25
-    },
+  "status": "success",
+  "data": {
     "system": {
-      "memoryUsage": {
+      "uptime": 2925.088545,
+      "memory": {
         "rss": 125829120,
         "heapTotal": 67108864,
         "heapUsed": 41943040,
         "external": 1048576
       },
-      "cpuUsage": {
-        "user": 1500000,
-        "system": 500000
-      }
+      "platform": "win32",
+      "nodeVersion": "v20.10.0"
+    },
+    "api": {
+      "endpoints": [
+        {
+          "endpoint": "/api/health",
+          "requests": 45,
+          "errors": 0,
+          "averageTime": 23.5,
+          "errorRate": 0
+        }
+      ],
+      "totalRequests": 45,
+      "totalErrors": 0
+    },
+    "summary": {
+      "uptime": 2925.088545,
+      "memoryUsage": 62.5,
+      "totalEndpoints": 1
     }
-  },
-  "alerts": {
-    "total": 5,
-    "active": 1,
-    "resolved": 4,
-    "byType": {
-      "PERFORMANCE_DEGRADATION": 2,
-      "HIGH_ERROR_RATE": 1,
-      "MEMORY_LEAK": 0
-    },
-    "bySeverity": {
-      "CRITICAL": 0,
-      "ERROR": 1,
-      "WARNING": 2,
-      "INFO": 2
-    },
-    "averageResolutionTime": 1800000
-  },
-  "logs": {
-    "total": 15000,
-    "errorRate": 0.8,
-    "byLevel": {
-      "debug": 2000,
-      "info": 10000,
-      "warn": 2000,
-      "error": 1000,
-      "fatal": 0
-    }
-  },
-  "system": {
-    "uptime": 3600,
-    "memory": {
-      "rss": 125829120,
-      "heapTotal": 67108864,
-      "heapUsed": 41943040,
-      "external": 1048576
-    },
-    "cpu": {
-      "user": 1500000,
-      "system": 500000
-    },
-    "platform": "win32",
-    "nodeVersion": "v18.17.0"
   }
 }
 ```
 
-**Ответ (Prometheus):**
-
-```
-# HELP nodejs_memory_usage_bytes Memory usage in bytes
-# TYPE nodejs_memory_usage_bytes gauge
-nodejs_memory_usage_bytes{type="rss"} 125829120
-nodejs_memory_usage_bytes{type="heapTotal"} 67108864
-nodejs_memory_usage_bytes{type="heapUsed"} 41943040
-nodejs_memory_usage_bytes{type="external"} 1048576
-
-# HELP nodejs_uptime_seconds Process uptime in seconds
-# TYPE nodejs_uptime_seconds counter
-nodejs_uptime_seconds 3600
-
-# HELP api_requests_total Total number of API requests
-# TYPE api_requests_total counter
-api_requests_total 1250
-
-# HELP api_request_duration_seconds API request duration
-# TYPE api_request_duration_seconds histogram
-api_request_duration_seconds_bucket{le="0.1"} 800
-api_request_duration_seconds_bucket{le="0.5"} 1200
-api_request_duration_seconds_bucket{le="1.0"} 1250
-api_request_duration_seconds_bucket{le="+Inf"} 1250
-api_request_duration_seconds_sum 187500
-api_request_duration_seconds_count 1250
-```
-
 **Коды ответов:**
 
-- `200` - Успешно
-- `400` - Неверный формат параметров
+- `200` - Метрики успешно получены
 - `500` - Ошибка получения метрик
 
 ## Типы данных
@@ -203,87 +106,58 @@ api_request_duration_seconds_count 1250
 ### HealthStatus
 
 ```typescript
-type ComponentHealthStatus = "healthy" | "degraded" | "unhealthy" | "unknown";
-
-interface HealthCheck {
-  name: string;
-  status: ComponentHealthStatus;
-  message: string;
-  timestamp: number;
-  duration: number;
-  metadata?: Record<string, any>;
-}
-
 interface HealthStatus {
-  overall: ComponentHealthStatus;
-  timestamp: number;
+  status: "healthy" | "degraded" | "unhealthy";
+  timestamp: string;
   uptime: number;
   version: string;
   environment: string;
-  checks: HealthCheck[];
-  summary: {
-    healthy: number;
-    degraded: number;
-    unhealthy: number;
-    unknown: number;
+  system: {
+    platform: string;
+    nodeVersion: string;
+    memory: {
+      used: number;
+      total: number;
+      unit: string;
+    };
+  };
+  services: {
+    database: string;
+    api: string;
+    monitoring: string;
   };
 }
 ```
 
-### PerformanceMetrics
+### MetricsData
 
 ```typescript
-interface ApiMetrics {
-  totalRequests: number;
-  averageResponseTime: number;
-  successRate: number;
-  requestsUnder100ms: number;
-  requestsUnder500ms: number;
-  requestsUnder1s: number;
-}
-
-interface ComponentMetrics {
-  totalRenders: number;
-  averageRenderTime: number;
-}
-
-interface SystemMetrics {
-  memoryUsage: NodeJS.MemoryUsage;
-  cpuUsage: NodeJS.CpuUsage;
-}
-```
-
-### Alert
-
-```typescript
-type AlertType =
-  | "PERFORMANCE_DEGRADATION"
-  | "HIGH_ERROR_RATE"
-  | "MEMORY_LEAK"
-  | "CPU_SPIKE"
-  | "DATABASE_SLOW"
-  | "API_TIMEOUT"
-  | "WEBSOCKET_DISCONNECTIONS"
-  | "SECURITY_BREACH"
-  | "RATE_LIMIT_EXCEEDED"
-  | "DISK_SPACE_LOW"
-  | "SERVICE_DOWN"
-  | "CUSTOM";
-
-type AlertSeverity = "INFO" | "WARNING" | "ERROR" | "CRITICAL";
-
-interface Alert {
-  id: string;
-  type: AlertType;
-  severity: AlertSeverity;
-  title: string;
-  message: string;
-  timestamp: number;
-  source: string;
-  tags: Record<string, string>;
-  metadata?: Record<string, any>;
-  resolved?: boolean;
-  resolvedAt?: number;
+interface MetricsData {
+  status: "success" | "error";
+  data: {
+    system: {
+      uptime: number;
+      memory: NodeJS.MemoryUsage;
+      platform: string;
+      nodeVersion: string;
+    };
+    api: {
+      endpoints: Array<{
+        endpoint: string;
+        requests: number;
+        errors: number;
+        averageTime: number;
+        errorRate: number;
+      }>;
+      totalRequests: number;
+      totalErrors: number;
+    };
+    summary: {
+      uptime: number;
+      memoryUsage: number;
+      totalEndpoints: number;
+    };
+  };
 }
 ```
 

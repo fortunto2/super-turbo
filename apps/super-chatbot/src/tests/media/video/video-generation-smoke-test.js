@@ -6,7 +6,7 @@
 // Mock the SuperDuperAI config
 const mockConfig = {
   baseURL: process.env.SUPERDUPERAI_URL || 'https://dev-editor.superduperai.co',
-  apiToken: process.env.SUPERDUPERAI_TOKEN || 'test-token',
+  apiToken: process.env.SUPERDUPERAI_TOKEN || process.env.RAI_TOKEN || 'test-token',
   wsURL: 'wss://dev-editor.superduperai.co'
 };
 

@@ -3,11 +3,11 @@ import {
   getAvailableVideoModels,
   getAvailableImageModels,
   configureSuperduperAI,
-} from "../lib/config/superduperai";
+} from "../../../lib/config/superduperai";
 import type {
   ImageGenerationConfig,
   VideoGenerationConfig,
-} from "../lib/types/media-settings";
+} from "../../../lib/types/media-settings";
 
 // Adapter function to convert OpenAPI model to MediaSettings format
 function adaptModelForMediaSettings(

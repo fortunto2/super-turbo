@@ -4,7 +4,15 @@
  */
 
 import { z } from "zod";
-import DOMPurify from "isomorphic-dompurify";
+// Простая функция санитизации HTML без внешних зависимостей
+const sanitizeHTML = (html: string): string => {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .replace(/javascript:/gi, "")
+    .replace(/on\w+\s*=/gi, "")
+    .replace(/<[^>]*>/g, "");
+};
 
 // Схемы валидации для различных типов данных
 export const UserInputSchema = z.object({
@@ -79,10 +87,7 @@ export class InputSanitizer {
    */
   static sanitizeHTML(input: string): string {
     if (typeof input !== "string") return "";
-    return DOMPurify.sanitize(input, {
-      ALLOWED_TAGS: ["b", "i", "em", "strong", "p", "br"],
-      ALLOWED_ATTR: [],
-    });
+    return sanitizeHTML(input);
   }
 
   /**

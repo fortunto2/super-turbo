@@ -1,5 +1,5 @@
-import { configureImageGeneration } from "../lib/ai/tools/configure-image-generation";
-import { configureVideoGeneration } from "../lib/ai/tools/configure-video-generation";
+import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
+import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
 
 console.log("🔧 Testing AI Tools with OpenAPI Integration");
 console.log("==================================================");

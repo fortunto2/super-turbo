@@ -2,7 +2,7 @@ import {
   getImageGenerationConfig,
   getVideoGenerationConfig,
   clearMediaSettingsCache,
-} from "../lib/config/media-settings-factory";
+} from "@/lib/config/media-settings-factory";
 
 async function testMediaSettingsFactory() {
   console.log("🏭 MediaSettings Factory Test");

@@ -55,7 +55,7 @@ export function useVideoGenerator({
   } = useVideoStorage();
 
   // Подключение к WebSocket
-  const { isConnected, connectionStatus, connectToProject, sendMessage } =
+  const { isConnected, connectionStatus, disconnectFromProject } =
     useVideoConnection(projectId);
 
   // Генерация видео
@@ -65,16 +65,14 @@ export function useVideoGenerator({
         updateStatus("preparing");
         updateMessage("Подготовка к генерации видео...");
 
-        // Подключаемся к проекту если нужно
-        if (projectId && !isConnected) {
-          await connectToProject(projectId);
-        }
-
-        // Сохраняем параметры генерации
-        generationPersistence.saveGenerationParams(formData);
+        // Сохраняем параметры генерации в localStorage
+        localStorage.setItem(
+          "lastVideoGenerationParams",
+          JSON.stringify(formData)
+        );
 
         // Отправляем запрос на генерацию
-        const response = await fetch(API_NEXT_ROUTES.VIDEO_GENERATE, {
+        const response = await fetch(API_NEXT_ROUTES.GENERATE_VIDEO, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -106,8 +104,6 @@ export function useVideoGenerator({
     },
     [
       projectId,
-      isConnected,
-      connectToProject,
       updateStatus,
       updateMessage,
       updateRequestId,
@@ -118,9 +114,14 @@ export function useVideoGenerator({
 
   // Повторная генерация
   const retryGeneration = useCallback(async () => {
-    const lastParams = generationPersistence.getLastGenerationParams();
-    if (lastParams) {
-      await generateVideo(lastParams);
+    const lastParamsStr = localStorage.getItem("lastVideoGenerationParams");
+    if (lastParamsStr) {
+      try {
+        const lastParams = JSON.parse(lastParamsStr);
+        await generateVideo(lastParams);
+      } catch (error) {
+        toast.error("Ошибка при загрузке параметров для повтора");
+      }
     } else {
       toast.error("Нет сохраненных параметров для повтора генерации");
     }
@@ -129,7 +130,7 @@ export function useVideoGenerator({
   // Очистка текущей генерации
   const clearGeneration = useCallback(() => {
     resetState();
-    generationPersistence.clearGenerationParams();
+    localStorage.removeItem("lastVideoGenerationParams");
   }, [resetState]);
 
   // Сохранение видео
@@ -152,10 +153,20 @@ export function useVideoGenerator({
   // Обновление настроек
   const updateSettings = useCallback(
     (settings: Partial<VideoGenerationFormData>) => {
-      const currentParams = generationPersistence.getLastGenerationParams();
-      if (currentParams) {
-        const updatedParams = { ...currentParams, ...settings };
-        generationPersistence.saveGenerationParams(updatedParams);
+      const currentParamsStr = localStorage.getItem(
+        "lastVideoGenerationParams"
+      );
+      if (currentParamsStr) {
+        try {
+          const currentParams = JSON.parse(currentParamsStr);
+          const updatedParams = { ...currentParams, ...settings };
+          localStorage.setItem(
+            "lastVideoGenerationParams",
+            JSON.stringify(updatedParams)
+          );
+        } catch (error) {
+          console.error("Ошибка при обновлении настроек:", error);
+        }
       }
     },
     []
@@ -164,7 +175,16 @@ export function useVideoGenerator({
   // Получение последних параметров генерации
   const getLastGenerationParams =
     useCallback((): VideoGenerationFormData | null => {
-      return generationPersistence.getLastGenerationParams();
+      const lastParamsStr = localStorage.getItem("lastVideoGenerationParams");
+      if (lastParamsStr) {
+        try {
+          return JSON.parse(lastParamsStr);
+        } catch (error) {
+          console.error("Ошибка при загрузке параметров:", error);
+          return null;
+        }
+      }
+      return null;
     }, []);
 
   // Текущее видео

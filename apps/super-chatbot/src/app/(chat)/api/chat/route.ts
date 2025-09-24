@@ -7,6 +7,7 @@ import {
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
+import { withMonitoring } from "@/lib/monitoring/simple-monitor";
 import {
   createStreamId,
   deleteChatById,
@@ -129,7 +130,7 @@ function getStreamContext() {
   return globalStreamContext;
 }
 
-export async function POST(request: Request) {
+export const POST = withMonitoring(async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
   try {
@@ -950,7 +951,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return formatErrorResponse(error);
   }
-}
+});
 
 export async function GET(request: Request) {
   try {

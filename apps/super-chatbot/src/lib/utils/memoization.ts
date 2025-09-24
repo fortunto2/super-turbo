@@ -3,6 +3,8 @@
  * Улучшают производительность за счет предотвращения ненужных перерендеров
  */
 
+"use client";
+
 import { memo, useMemo, useCallback, type ComponentType } from "react";
 import equal from "fast-deep-equal";
 
@@ -44,7 +46,7 @@ export function useExpensiveMemo<T>(
   factory: () => T,
   deps: React.DependencyList
 ): T {
-  return useMemo(factory, deps);
+  return useMemo(factory, [factory, ...deps]);
 }
 
 // Утилита для мемоизации колбэков
@@ -52,5 +54,5 @@ export function useStableCallback<T extends (...args: any[]) => any>(
   callback: T,
   deps: React.DependencyList
 ): T {
-  return useCallback(callback, deps);
+  return useCallback(callback, [callback, ...deps]);
 }

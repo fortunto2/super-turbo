@@ -111,7 +111,8 @@ export class RateLimitKeyGenerator {
    * Генерирует ключ на основе IP адреса
    */
   static byIP(req: NextRequest): string {
-    const ip = req.ip || req.headers.get("x-forwarded-for") || "unknown";
+    const ip =
+      (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
     return `ip:${ip}`;
   }
 
@@ -119,7 +120,8 @@ export class RateLimitKeyGenerator {
    * Генерирует ключ на основе IP и User-Agent
    */
   static byIPAndUserAgent(req: NextRequest): string {
-    const ip = req.ip || req.headers.get("x-forwarded-for") || "unknown";
+    const ip =
+      (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
     const userAgent = req.headers.get("user-agent") || "unknown";
     return `ip_ua:${ip}:${userAgent}`;
   }
@@ -128,7 +130,8 @@ export class RateLimitKeyGenerator {
    * Генерирует ключ на основе IP и пути запроса
    */
   static byIPAndPath(req: NextRequest): string {
-    const ip = req.ip || req.headers.get("x-forwarded-for") || "unknown";
+    const ip =
+      (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
     const path = req.nextUrl.pathname;
     return `ip_path:${ip}:${path}`;
   }
@@ -321,7 +324,9 @@ export class RateLimitMonitor {
     topKeys: Array<{ key: string; count: number }>;
   } {
     const store = rateLimitStore as any;
-    const entries = Array.from(store.store.entries());
+    const entries = Array.from(store.store.entries()) as Array<
+      [string, RateLimitData]
+    >;
 
     const blockedKeys = entries.filter(([, data]) => data.blocked).length;
 
@@ -342,7 +347,9 @@ export class RateLimitMonitor {
    */
   static clearBlocked(): void {
     const store = rateLimitStore as any;
-    for (const [key, data] of store.store.entries()) {
+    for (const [key, data] of store.store.entries() as Array<
+      [string, RateLimitData]
+    >) {
       if (data.blocked) {
         store.store.delete(key);
       }
