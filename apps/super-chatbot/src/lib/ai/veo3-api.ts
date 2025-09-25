@@ -57,7 +57,7 @@ export async function createVeo3Video(
         },
         body: JSON.stringify({
           prompt: request.prompt,
-          duration: request.duration || 10,
+          duration: request.duration || 5,
           style: request.style || "realistic",
           resolution: request.resolution || "1080p",
           aspectRatio: request.aspectRatio || "16:9",

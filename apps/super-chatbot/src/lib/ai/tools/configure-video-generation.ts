@@ -185,14 +185,17 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
 
             console.log("🔍 Context analysis result:", contextResult);
 
-            if (contextResult.sourceUrl && contextResult.confidence !== "low") {
+            if (
+              contextResult.sourceImageUrl &&
+              contextResult.confidence !== "low"
+            ) {
               console.log(
-                "🔍 Using sourceUrl from new context analysis:",
-                contextResult.sourceUrl,
+                "🔍 Using sourceImageUrl from new context analysis:",
+                contextResult.sourceImageUrl,
                 "confidence:",
                 contextResult.confidence
               );
-              normalizedSourceUrl = contextResult.sourceUrl;
+              normalizedSourceUrl = contextResult.sourceImageUrl;
             }
           } catch (error) {
             console.warn("🔍 Error in context analysis, falling back:", error);
@@ -267,38 +270,11 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
             (pattern) => pattern.test(params.userMessage || "")
           );
 
-          if (hasSemanticSearchRequest) {
-            // Проверяем, был ли найден подходящий источник через семантический поиск
-            // Если источник был найден через fallback (последнее изображение), это означает, что семантический поиск не сработал
-            const isFallbackSource =
-              params.defaultSourceVideoUrl === normalizedSourceUrl ||
-              params.defaultSourceImageUrl === normalizedSourceUrl;
-
-            console.log("🔍 Fallback check:", {
-              normalizedSourceUrl,
-              defaultSourceVideoUrl: params.defaultSourceVideoUrl,
-              defaultSourceImageUrl: params.defaultSourceImageUrl,
-              isFallbackSource,
-              hasSemanticSearchRequest,
-            });
-
-            if (isFallbackSource) {
-              console.log(
-                "🔍 Semantic search failed, providing helpful message instead of balance error"
-              );
-              return {
-                error: "semantic_search_failed",
-                message:
-                  "К сожалению, я не смог найти изображение с нужным содержимым в истории чата. Попробуйте:\n\n• Загрузить новое изображение с нужным содержимым\n• Описать сцену для создания нового изображения\n• Использовать более конкретное описание (например, 'первое изображение' или 'последнее изображение')",
-                suggestions: [
-                  "Загрузить изображение с луной",
-                  "Создать новое изображение с луной",
-                  "Использовать последнее изображение",
-                  "Описать сцену для анимации",
-                ],
-              };
-            }
-          }
+          // Убираем проверку fallback, так как она блокирует создание видео-артефактов
+          // Новая система контекста уже правильно определяет источник изображения
+          console.log(
+            "🔍 Skipping fallback check - new context system handles source selection properly"
+          );
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(

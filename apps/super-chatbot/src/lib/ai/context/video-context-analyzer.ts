@@ -9,6 +9,7 @@ import {
   type ChatMedia,
   type ReferencePattern,
 } from "./universal-context";
+import { analyzeVideoContext } from "../chat/video-context";
 
 export class VideoContextAnalyzer extends BaseContextAnalyzer {
   mediaType: MediaType = "video";
@@ -143,9 +144,7 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
         weight: 0.7,
         description: "Ссылка на видео по URL",
         targetResolver: (message, media) => {
-          const urlMedia = media.filter(
-            (m) => m.url?.startsWith("http")
-          );
+          const urlMedia = media.filter((m) => m.url?.startsWith("http"));
           return urlMedia[urlMedia.length - 1] || null;
         },
       },
@@ -310,9 +309,7 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
         weight: 0.7,
         description: "Reference to video from URL",
         targetResolver: (message, media) => {
-          const urlMedia = media.filter(
-            (m) => m.url?.startsWith("http")
-          );
+          const urlMedia = media.filter((m) => m.url?.startsWith("http"));
           return urlMedia[urlMedia.length - 1] || null;
         },
       },
@@ -470,5 +467,45 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
       "split",
       "compress",
     ];
+  }
+
+  /**
+   * Улучшенный анализ видео-контекста с фокусом на загруженные пользователем изображения
+   */
+  async analyzeVideoImageContext(
+    userMessage: string,
+    chatMedia: ChatMedia[],
+    currentAttachments?: any[]
+  ): Promise<any> {
+    console.log(
+      "🎬 VideoContextAnalyzer: Starting enhanced video image context analysis"
+    );
+
+    // Фильтруем только изображения из медиа
+    const chatImages = chatMedia
+      .filter((media) => media.mediaType === "image")
+      .map((media) => ({
+        url: media.url,
+        id: media.id,
+        role: media.role as "user" | "assistant",
+        timestamp: media.timestamp,
+        prompt: media.prompt,
+        messageIndex: media.messageIndex,
+        mediaType: "image" as const,
+        chatId: media.chatId,
+        createdAt: media.timestamp,
+        parts: [],
+        attachments: [],
+      }));
+
+    // Используем нашу улучшенную функцию анализа видео-контекста
+    const result = await analyzeVideoContext(
+      userMessage,
+      chatImages,
+      currentAttachments
+    );
+
+    console.log("🎬 VideoContextAnalyzer: Enhanced analysis result:", result);
+    return result;
   }
 }

@@ -23,6 +23,9 @@ export { ImageContextAnalyzer } from "./image-context-analyzer";
 export { VideoContextAnalyzer } from "./video-context-analyzer";
 export { AudioContextAnalyzer } from "./audio-context-analyzer";
 
+// Улучшенные функции анализа контекста
+import { analyzeVideoContext as analyzeVideoContextDirect } from "../chat/video-context";
+
 // Инициализация анализаторов
 import { contextManager } from "./universal-context";
 import { ImageContextAnalyzer } from "./image-context-analyzer";
@@ -55,13 +58,32 @@ export async function analyzeVideoContext(
   chatId: string,
   currentAttachments?: any[]
 ) {
+  console.log("🎬 analyzeVideoContext: Using enhanced video context analysis");
+
   const chatMedia = await contextManager.getChatMedia(chatId);
-  return contextManager.analyzeContext(
-    "video",
+  
+  // Фильтруем только изображения и конвертируем в ChatImage формат
+  const chatImages = chatMedia
+    .filter(media => media.mediaType === "image")
+    .map(media => ({
+      url: media.url,
+      id: media.id,
+      role: media.role as "user" | "assistant",
+      timestamp: media.timestamp,
+      prompt: media.prompt,
+      messageIndex: media.messageIndex,
+      mediaType: "image" as const,
+      chatId: media.chatId,
+      createdAt: media.timestamp,
+      parts: [],
+      attachments: [],
+    }));
+
+  // Используем нашу улучшенную функцию анализа видео-контекста
+  return await analyzeVideoContextDirect(
     userMessage,
-    chatMedia,
-    currentAttachments,
-    chatId
+    chatImages,
+    currentAttachments
   );
 }
 
