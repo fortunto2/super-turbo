@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
-import { getUserById, updateUserBalance } from "@/lib/db/admin-queries";
+import { getUserById, } from "@/lib/db/admin-queries";
+import { requireAdmin } from "@/lib/auth/admin-utils";
 import { eq, inArray } from "drizzle-orm";
 import {
   user,
@@ -27,16 +27,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Проверяем авторизацию
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Проверяем права администратора
+    const adminError = await requireAdmin();
+    if (adminError) {
+      return adminError;
     }
-
-    // TODO: Добавить проверку прав администратора
-    // if (!session.user.isAdmin) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    // }
 
     const { id } = await params;
 
@@ -73,16 +68,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Проверяем авторизацию
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Проверяем права администратора
+    const adminError = await requireAdmin();
+    if (adminError) {
+      return adminError;
     }
-
-    // TODO: Добавить проверку прав администратора
-    // if (!session.user.isAdmin) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    // }
 
     const { id } = await params;
     const body = await request.json();
@@ -147,16 +137,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Проверяем авторизацию
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Проверяем права администратора
+    const adminError = await requireAdmin();
+    if (adminError) {
+      return adminError;
     }
-
-    // TODO: Добавить проверку прав администратора
-    // if (!session.user.isAdmin) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    // }
 
     const { id } = await params;
 

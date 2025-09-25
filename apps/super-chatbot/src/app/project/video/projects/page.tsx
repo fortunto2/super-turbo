@@ -11,10 +11,7 @@ import {
 } from "@turbo-super/ui";
 import {
   Play,
-  Clock,
-  CheckCircle,
   AlertCircle,
-  Loader2,
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";

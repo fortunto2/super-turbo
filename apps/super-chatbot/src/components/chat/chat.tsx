@@ -83,6 +83,7 @@ function ChatContent({
   autoResume,
   onDataStream,
   onError,
+  isGeminiChat = false,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
@@ -93,6 +94,7 @@ function ChatContent({
   autoResume: boolean;
   onDataStream?: (dataStream: any[]) => void;
   onError?: (error: Error) => void;
+  isGeminiChat?: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -120,7 +122,7 @@ function ChatContent({
   } = useChat({
     id,
     initialMessages,
-    api: "/api/chat",
+    api: isGeminiChat ? "/api/gemini-chat" : "/api/chat",
     body: {
       id,
       selectedChatModel: initialChatModel,
@@ -388,6 +390,7 @@ export function Chat(props: {
   session: Session;
   autoResume: boolean;
   onDataStream?: (dataStream: any[]) => void;
+  isGeminiChat?: boolean;
 }) {
   return (
     <Suspense
@@ -406,7 +409,10 @@ export function Chat(props: {
         </div>
       }
     >
-      <ChatContent {...props} />
+      <ChatContent
+        {...props}
+        isGeminiChat={props.isGeminiChat}
+      />
     </Suspense>
   );
 }

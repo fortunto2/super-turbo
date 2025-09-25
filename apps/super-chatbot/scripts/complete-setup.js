@@ -4,8 +4,8 @@
  * Complete setup script - shows all steps needed
  */
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 function showCompleteSetup() {
   console.log('🎯 ПОЛНАЯ НАСТРОЙКА API С ОБРАБОТКОЙ ОШИБОК PREFECT');

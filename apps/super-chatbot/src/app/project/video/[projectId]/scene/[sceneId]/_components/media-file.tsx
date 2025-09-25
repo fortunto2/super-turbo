@@ -1,4 +1,4 @@
-import { FileTypeEnum, ISceneRead, type IFileRead } from "@turbo-super/api";
+import { FileTypeEnum, type ISceneRead, type IFileRead } from "@turbo-super/api";
 import { FileGenerationStatus } from "./helper";
 import { FileMetadataModal } from "./file-metadata-modal";
 import { hasMetadata } from "./file-metadata-utils";

@@ -166,7 +166,6 @@ function ConnectionStatus({ isConnected }: { isConnected: boolean }) {
   );
 }
 
-
 export function VideoEditor({
   chatId: propChatId,
   append,
@@ -229,12 +228,29 @@ export function VideoEditor({
     // This will be implemented when we add the video generation panel
   };
 
-  const handleRetry = () => {
-    // Clear error and reset state for retry
-    setError(undefined);
-    setIsGenerating(true);
-    // TODO: Implement actual retry logic
-    toast.info("Функция повтора будет добавлена в следующей версии");
+  const handleRetry = async () => {
+    try {
+      // Clear error and reset state for retry
+      setError(undefined);
+      setIsGenerating(true);
+
+      // For now, we don't have video generation hooks implemented
+      // This is a placeholder implementation
+      if (!prompt) {
+        toast.error("Нет промпта для повтора генерации");
+        setIsGenerating(false);
+        return;
+      }
+
+      // TODO: Implement proper video generation retry logic
+      // This would typically call a video generation hook or API
+      toast.info("Функция повтора видео будет реализована в следующей версии");
+    } catch (error) {
+      console.error("Error during retry:", error);
+      toast.error("Ошибка при повторе генерации");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // Get global WebSocket connection status
@@ -258,9 +274,9 @@ export function VideoEditor({
   // Render based on status
   if (status === "error" && error) {
     return (
-      <VideoErrorDisplay 
-        error={error} 
-        prompt={prompt} 
+      <VideoErrorDisplay
+        error={error}
+        prompt={prompt}
         onRetry={handleRetry}
       />
     );

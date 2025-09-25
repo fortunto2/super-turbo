@@ -1,6 +1,6 @@
 import "server-only";
 
-import { eq, and } from "drizzle-orm";
+import { eq, } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { userProject } from "./schema";
@@ -29,7 +29,7 @@ export interface ProjectData {
 export async function createUserProject(
   userId: string,
   projectId: string,
-  creditsUsed: number = 0
+  creditsUsed = 0
 ): Promise<ProjectData> {
   try {
     // Временно создаем проект без новых колонок до применения миграции

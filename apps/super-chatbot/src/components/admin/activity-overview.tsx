@@ -14,8 +14,6 @@ import {
   FileText,
   Activity,
   TrendingUp,
-  User,
-  Calendar,
   Award,
   BarChart3,
 } from "lucide-react";
@@ -137,12 +135,12 @@ export function ActivityOverview() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {activity.topCreators.length === 0 ? (
+            {activity.topCreators?.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No content creators found
               </div>
             ) : (
-              activity.topCreators.map((creator, index) => (
+              activity.topCreators?.map((creator, index) => (
                 <div
                   key={creator.userId}
                   className="flex items-center justify-between p-3 rounded-lg border"
@@ -185,12 +183,12 @@ export function ActivityOverview() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {activity.topProjectCreators.length === 0 ? (
+            {activity.topProjectCreators?.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No project creators found
               </div>
             ) : (
-              activity.topProjectCreators.map((creator, index) => (
+              activity.topProjectCreators?.map((creator, index) => (
                 <div
                   key={creator.userId}
                   className="flex items-center justify-between p-3 rounded-lg border"

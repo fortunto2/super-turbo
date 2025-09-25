@@ -54,7 +54,7 @@ export function convertDBMessagesToUIMessages(dbMessages: DBMessage[]): UIMessag
         id: dbMessage.id,
         role: 'assistant',
         content: '', // AI SDK expects content for assistants
-        parts: parts,
+        parts: parts as any, // Explicit cast to fix TypeScript error
         createdAt: dbMessage.createdAt,
       } as UIMessage;
     }

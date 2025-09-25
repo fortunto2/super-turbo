@@ -190,7 +190,8 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             const contextResult = await analyzeImageContext(
               params.userMessage,
               params.chatId,
-              params.currentAttachments
+              params.currentAttachments,
+              params.session?.user?.id
             );
 
             console.log("🔍 Context analysis result:", contextResult);
@@ -231,6 +232,54 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         const operationType = normalizedSourceUrl
           ? "image-to-image"
           : "text-to-image";
+
+        // Проверяем, был ли найден подходящий источник для семантического поиска
+        if (
+          params?.userMessage &&
+          normalizedSourceUrl &&
+          operationType === "image-to-image"
+        ) {
+          // Проверяем, содержит ли сообщение запрос на поиск по содержимому
+          const semanticSearchPatterns = [
+            /(картинк[а-я]+\s+с\s+|изображение\s+с\s+|фото\s+с\s+|image\s+with\s+|picture\s+with\s+|photo\s+with\s+)/i,
+            /(картинк[а-я]+\s+где\s+есть|изображение\s+где\s+есть|фото\s+где\s+есть|image\s+that\s+has|picture\s+that\s+contains|photo\s+that\s+shows)/i,
+          ];
+
+          const hasSemanticSearchRequest = semanticSearchPatterns.some(
+            (pattern) => pattern.test(params.userMessage || "")
+          );
+
+          if (hasSemanticSearchRequest) {
+            // Проверяем, был ли найден подходящий источник через семантический поиск
+            // Если источник был найден через fallback (последнее изображение), это означает, что семантический поиск не сработал
+            const isFallbackSource =
+              params.defaultSourceImageUrl === normalizedSourceUrl;
+
+            console.log("🔍 Fallback check:", {
+              normalizedSourceUrl,
+              defaultSourceImageUrl: params.defaultSourceImageUrl,
+              isFallbackSource,
+              hasSemanticSearchRequest,
+            });
+
+            if (isFallbackSource) {
+              console.log(
+                "🔍 Semantic search failed, providing helpful message instead of balance error"
+              );
+              return {
+                error: "semantic_search_failed",
+                message:
+                  "К сожалению, я не смог найти изображение с нужным содержимым в истории чата. Попробуйте:\n\n• Загрузить новое изображение с нужным содержимым\n• Описать сцену для создания нового изображения\n• Использовать более конкретное описание (например, 'первое изображение' или 'последнее изображение')",
+                suggestions: [
+                  "Загрузить изображение с луной",
+                  "Создать новое изображение с луной",
+                  "Использовать последнее изображение",
+                  "Описать сцену для редактирования",
+                ],
+              };
+            }
+          }
+        }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
           params.session || null,

@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import {
-  getSuperduperAIConfigWithUserToken,
-} from "@/lib/config/superduperai";
+import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
 import {
   generateImageWithStrategy,
   type ImageGenerationParams,
@@ -14,8 +12,9 @@ import {
 
 import { validateOperationBalance } from "@/lib/utils/tools-balance";
 import { createBalanceErrorResponse } from "@/lib/utils/balance-error-handler";
+import { withMonitoring } from "@/lib/monitoring/simple-monitor";
 
-export async function POST(request: NextRequest) {
+export const POST = withMonitoring(async function POST(request: NextRequest) {
   try {
     // Check authentication first
     const session = await auth();
@@ -238,4 +237,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

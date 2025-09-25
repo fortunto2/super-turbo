@@ -2758,7 +2758,6 @@ var FabricController = class {
   }
   updateText(object, options) {
     object.set(options);
-    this.canvas.fire("text:changed", { target: object });
     this.canvas.renderAll();
   }
 };

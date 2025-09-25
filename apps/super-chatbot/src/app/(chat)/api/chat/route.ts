@@ -7,6 +7,7 @@ import {
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
+import { withMonitoring } from "@/lib/monitoring/simple-monitor";
 import {
   createStreamId,
   deleteChatById,
@@ -129,7 +130,7 @@ function getStreamContext() {
   return globalStreamContext;
 }
 
-export async function POST(request: Request) {
+export const POST = withMonitoring(async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
   try {
@@ -616,26 +617,22 @@ export async function POST(request: Request) {
         // Анализируем контекст изображения
         let defaultSourceImageUrl: string | undefined;
         try {
-          const { analyzeImageContext, getChatImages } = await import(
-            "@/lib/ai/chat/image-context"
-          );
-
-          const chatImages = await getChatImages(id);
-          console.log("🔍 Pre-analysis: Chat images found:", chatImages.length);
+          const { analyzeImageContext } = await import("@/lib/ai/context");
 
           const imageContext = await analyzeImageContext(
             messageToProcess.parts?.[0]?.text || "",
-            chatImages,
-            (messageToProcess as any)?.experimental_attachments
+            id,
+            (messageToProcess as any)?.experimental_attachments,
+            session.user.id
           );
 
           console.log("🔍 Pre-analysis: Image context:", {
             confidence: imageContext.confidence,
             reasoning: imageContext.reasoning,
-            sourceImageUrl: imageContext.sourceImageUrl,
+            sourceUrl: imageContext.sourceUrl,
           });
 
-          defaultSourceImageUrl = imageContext.sourceImageUrl;
+          defaultSourceImageUrl = imageContext.sourceUrl;
 
           console.log(
             "🔍 defaultSourceImageUrl set to:",
@@ -672,7 +669,8 @@ export async function POST(request: Request) {
           const videoContext = await analyzeVideoContext(
             messageToProcess.parts?.[0]?.text || "",
             id,
-            (messageToProcess as any)?.experimental_attachments
+            (messageToProcess as any)?.experimental_attachments,
+            session.user.id
           );
 
           console.log("🔍 Pre-analysis: Video context:", {
@@ -722,7 +720,7 @@ export async function POST(request: Request) {
           defaultSourceImageUrl
         );
 
-        // Если есть изображение для редактирования, добавляем явную инструкцию
+        // Если есть изображение для редактирования или анимации, добавляем явную инструкцию
         let enhancedMessages = messages;
         if (defaultSourceImageUrl && messageToProcess.parts?.[0]?.text) {
           const userText = messageToProcess.parts[0].text;
@@ -735,7 +733,21 @@ export async function POST(request: Request) {
             "исправь",
             "улучши",
           ];
+          const animationKeywords = [
+            "анимируй",
+            "animate",
+            "анимация",
+            "animation",
+            "видео",
+            "video",
+            "движение",
+            "motion",
+          ];
+
           const hasEditIntent = editKeywords.some((keyword) =>
+            userText.toLowerCase().includes(keyword)
+          );
+          const hasAnimationIntent = animationKeywords.some((keyword) =>
             userText.toLowerCase().includes(keyword)
           );
 
@@ -748,7 +760,21 @@ export async function POST(request: Request) {
               {
                 id: generateUUID(),
                 role: "system" as const,
-                content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt. The system has already identified the source image URL: ${defaultSourceImageUrl}. Do not just respond with text - create an image artifact and start generation.`,
+                content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
+                createdAt: new Date(),
+                parts: [],
+              },
+            ];
+          } else if (hasAnimationIntent) {
+            console.log(
+              "🔍 Animation intent detected, adding explicit instruction to call configureVideoGeneration"
+            );
+            enhancedMessages = [
+              ...messages,
+              {
+                id: generateUUID(),
+                role: "system" as const,
+                content: `IMPORTANT: The user wants to animate an existing image. You MUST call the configureVideoGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
                 createdAt: new Date(),
                 parts: [],
               },
@@ -789,9 +815,11 @@ export async function POST(request: Request) {
               createDocument: tools.createDocument,
               session,
               defaultSourceVideoUrl: defaultSourceVideoUrl,
+              defaultSourceImageUrl: defaultSourceImageUrl,
               chatId: id,
-              userMessage: message?.content || "",
-              currentAttachments: message?.experimental_attachments || [],
+              userMessage: messageToProcess.parts?.[0]?.text || "",
+              currentAttachments:
+                messageToProcess.experimental_attachments || [],
             }),
             configureAudioGeneration: configureAudioGeneration({
               createDocument: tools.createDocument,
@@ -920,7 +948,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return formatErrorResponse(error);
   }
-}
+});
 
 export async function GET(request: Request) {
   try {

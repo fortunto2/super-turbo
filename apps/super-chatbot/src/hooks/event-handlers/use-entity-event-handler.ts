@@ -1,9 +1,9 @@
 import { entityKeys } from "@/lib/api";
-import { EventHandler } from "@/lib/utils/event-source-store-factory";
+import type { EventHandler } from "@/lib/utils/event-source-store-factory";
 import { useQueryClient } from "@tanstack/react-query";
-import { WSMessage, WSMessageTypeEnum } from "@turbo-super/api";
-import { IEntityRead } from "@turbo-super/api";
-import { IResponsePaginated_IEntityRead_ } from "@turbo-super/api";
+import { type WSMessage, WSMessageTypeEnum } from "@turbo-super/api";
+import type { IEntityRead } from "@turbo-super/api";
+import type { IResponsePaginated_IEntityRead_ } from "@turbo-super/api";
 import { unshiftOrReplace } from "@/lib/utils/array";
 
 export const useEntityEventHandler = (projectId?: string): EventHandler => {

@@ -4,6 +4,7 @@ import {
   wrapLanguageModel,
 } from "ai";
 import { createAzure } from "@ai-sdk/azure";
+// Убираем импорт Vertex AI - будем использовать прямой API
 import { isTestEnvironment } from "@/lib/constants";
 import {
   chatModel,
@@ -38,6 +39,15 @@ const o3ProModel = customAzure(
   process.env.AZURE_O3_PRO_DEPLOYMENT_NAME || "o3-pro"
 );
 
+// Создаем простую модель Gemini 2.5 Flash Lite через прямой API
+// Это будет использоваться только для Gemini чата
+const geminiModel = {
+  // Заглушка для тестов
+  provider: "google-ai-platform",
+  modelId: "gemini-2.5-flash-lite",
+  apiKey: process.env.GOOGLE_AI_API_KEY || "",
+};
+
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
@@ -45,6 +55,7 @@ export const myProvider = isTestEnvironment
         "chat-model-reasoning": reasoningModel,
         "title-model": titleModel,
         "artifact-model": artifactModel,
+        "gemini-2.5-flash-lite": chatModel, // Используем mock для тестов
       },
     })
   : customProvider({
@@ -62,6 +73,7 @@ export const myProvider = isTestEnvironment
           model: o3ProModel,
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
+        "gemini-2.5-flash-lite": geminiModel as any,
         "title-model": mainModel,
         "artifact-model": mainModel,
       },

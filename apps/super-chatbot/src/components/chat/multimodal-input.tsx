@@ -27,7 +27,7 @@ import { ArrowDown } from "lucide-react";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 
 import { Button } from "@turbo-super/ui";
-import { VisibilityType } from "../shared/visibility-selector";
+import type { VisibilityType } from "../shared/visibility-selector";
 function PureMultimodalInput({
   chatId,
   input,

@@ -4,7 +4,7 @@
  */
 
 let cachedToken: string | null = null;
-let tokenTimestamp: number = 0;
+let tokenTimestamp = 0;
 
 // Время жизни кэша - 30 минут (токен не меняется, но периодически перечитываем на всякий случай)
 const CACHE_DURATION = 30 * 60 * 1000;

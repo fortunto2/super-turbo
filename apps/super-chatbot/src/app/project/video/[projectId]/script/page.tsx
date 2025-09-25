@@ -4,11 +4,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@turbo-super/ui";
-import { FileText, Save, ArrowRight, Users } from "lucide-react";
+import { FileText, Save, Users } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
 import Link from "next/link";
 import { MarkdownEditor } from "@/components/editors/markdown-editor";
-import { useProjectGetById, projectKeys, useDataUpdate } from "@/lib/api";
+import { useProjectGetById, useDataUpdate } from "@/lib/api";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 
 export default function ScriptPage() {

@@ -28,6 +28,16 @@ export interface SystemStats {
     recentUsers: number;
     recentDocuments: number;
     recentProjects: number;
+    topCreators: Array<{
+      userId: string;
+      userEmail: string;
+      documentCount: number;
+    }>;
+    topProjectCreators: Array<{
+      userId: string;
+      userEmail: string;
+      projectCount: number;
+    }>;
   };
   balance: {
     total: number;
@@ -85,16 +95,16 @@ export async function getSystemStats(): Promise<SystemStats> {
     const last24h = new Date();
     last24h.setDate(last24h.getDate() - 1);
 
-    const recentUsers = await db
-      .select({ count: count() })
-      .from(user)
-      .where(sql`${user.id} > (SELECT MAX(id) - 100 FROM "User")`); // Approximate recent users
+    // Recent users (last 24h) - пока считаем всех, так как в user нет createdAt
+    const recentUsers = await db.select({ count: count() }).from(user);
 
+    // Recent documents (last 24h)
     const recentDocuments = await db
       .select({ count: count() })
       .from(document)
-      .where(gte(document.createdAt, last24h));
+      .where(sql`${document.createdAt} >= ${last24h.toISOString()}`);
 
+    // Recent projects (last 24h)
     const recentProjects = await db
       .select({ count: count() })
       .from(userProject)
@@ -120,6 +130,13 @@ export async function getSystemStats(): Promise<SystemStats> {
     `);
 
     const systemData = systemInfo[0] as any;
+    console.log("System data from database:", systemData);
+    console.log("Recent activity data:", {
+      recentUsers: recentUsers[0]?.count || 0,
+      recentDocuments: recentDocuments[0]?.count || 0,
+      recentProjects: recentProjects[0]?.count || 0,
+      last24h: last24h.toISOString(),
+    });
 
     return {
       overview: {
@@ -139,6 +156,8 @@ export async function getSystemStats(): Promise<SystemStats> {
         recentUsers: recentUsers[0]?.count || 0,
         recentDocuments: recentDocuments[0]?.count || 0,
         recentProjects: recentProjects[0]?.count || 0,
+        topCreators: [], // TODO: Implement top creators query
+        topProjectCreators: [], // TODO: Implement top project creators query
       },
       balance: {
         total: balanceStats[0]?.total || 0,

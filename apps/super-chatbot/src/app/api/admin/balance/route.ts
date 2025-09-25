@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { updateUserBalance } from "@/lib/db/admin-queries";
+import { requireAdmin } from "@/lib/auth/admin-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,10 +11,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // TODO: Добавить проверку прав администратора
-    // if (!session.user.isAdmin) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    // }
+    // Проверяем права администратора
+    const adminError = await requireAdmin();
+    if (adminError) {
+      return adminError;
+    }
 
     const body = await request.json();
     const { userId, newBalance } = body;

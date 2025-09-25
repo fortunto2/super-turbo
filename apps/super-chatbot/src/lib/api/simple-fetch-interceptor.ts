@@ -43,7 +43,11 @@ async function interceptedFetch(
     const token = getSuperduperToken();
     const headers = new Headers(init.headers);
     headers.set("Authorization", `Bearer ${token}`);
-    headers.set("Content-Type", "application/json");
+
+    // НЕ устанавливаем Content-Type для FormData - браузер сам установит с boundary
+    if (!(init.body instanceof FormData)) {
+      headers.set("Content-Type", "application/json");
+    }
 
     console.log("🔑 Added SuperDuperAI token to server request");
 

@@ -4,8 +4,8 @@
  * Check database connection and apply migration manually
  */
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 async function checkAndMigrate() {
   try {

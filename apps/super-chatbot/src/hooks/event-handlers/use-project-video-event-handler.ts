@@ -1,10 +1,10 @@
 "use client";
 
 import { useProjectVideoRenderStore } from "@/lib/store";
-import { EventHandler } from "@/lib/utils/event-source-store-factory";
+import type { EventHandler } from "@/lib/utils/event-source-store-factory";
 import {
-  IFileRead,
-  WSMessage,
+  type IFileRead,
+  type WSMessage,
   WSMessageTypeEnum,
   type IDataRead,
 } from "@turbo-super/api";

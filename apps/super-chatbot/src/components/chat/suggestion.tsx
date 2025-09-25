@@ -10,7 +10,7 @@ import { CrossIcon, MessageIcon } from "../common/icons";
 import { cn } from "@turbo-super/ui";
 
 import { Button } from "@turbo-super/ui";
-import { ArtifactKind } from "../artifacts/artifact";
+import type { ArtifactKind } from "../artifacts/artifact";
 export const Suggestion = ({
   suggestion,
   onApply,

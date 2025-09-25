@@ -4,7 +4,7 @@
  * Test API after migration is applied
  */
 
-const { exec } = require('child_process');
+const { exec } = require('node:child_process');
 
 async function testAPI() {
   console.log('🧪 Testing API after migration...');

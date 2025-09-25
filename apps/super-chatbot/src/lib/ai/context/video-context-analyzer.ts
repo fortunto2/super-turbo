@@ -9,6 +9,7 @@ import {
   type ChatMedia,
   type ReferencePattern,
 } from "./universal-context";
+import { analyzeVideoContext } from "../chat/video-context";
 
 export class VideoContextAnalyzer extends BaseContextAnalyzer {
   mediaType: MediaType = "video";
@@ -90,14 +91,61 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
       },
       {
         pattern:
-          /(перв[а-я]+|втор[а-я]+|треть[а-я]+)\s+(видео|ролик|фильм|клип)/,
-        weight: 0.6,
+          /(перв[а-я]+|втор[а-я]+|треть[а-я]+|четверт[а-я]+|пят[а-я]+)\s+(видео|ролик|фильм|клип)/,
+        weight: 0.8,
         description: "Ссылка на видео по порядку",
         targetResolver: (message, media) => {
           if (message.includes("перв")) return media[0] || null;
           if (message.includes("втор")) return media[1] || null;
           if (message.includes("треть")) return media[2] || null;
+          if (message.includes("четверт")) return media[3] || null;
+          if (message.includes("пят")) return media[4] || null;
           return null;
+        },
+      },
+      // Новые паттерны для лучшего распознавания
+      {
+        pattern:
+          /(возьми|используй|работай\s+с)\s+(перв[а-я]+|втор[а-я]+|треть[а-я]+)\s+(видео|ролик|фильм|клип)/,
+        weight: 0.9,
+        description: "Команда работы с видео по порядку",
+        targetResolver: (message, media) => {
+          if (message.includes("перв")) return media[0] || null;
+          if (message.includes("втор")) return media[1] || null;
+          if (message.includes("треть")) return media[2] || null;
+          return null;
+        },
+      },
+      // Паттерны для распознавания по типу источника
+      {
+        pattern:
+          /(видео\s+котор[а-я]+\s+(я|пользователь)\s+загрузил|загруженн[а-я]+\s+мною|мо[я-я]+\s+видео)/,
+        weight: 0.8,
+        description: "Ссылка на загруженное пользователем видео",
+        targetResolver: (message, media) => {
+          const uploaded = media.filter((m) => m.role === "user");
+          return uploaded[uploaded.length - 1] || null;
+        },
+      },
+      {
+        pattern:
+          /(видео\s+котор[а-я]+\s+создал\s+(бот|ассистент|ии)|сгенерированн[а-я]+\s+ботом|созданн[а-я]+\s+ии)/,
+        weight: 0.8,
+        description: "Ссылка на сгенерированное ботом видео",
+        targetResolver: (message, media) => {
+          const generated = media.filter((m) => m.role === "assistant");
+          return generated[generated.length - 1] || null;
+        },
+      },
+      // Паттерны для работы с URL видео
+      {
+        pattern:
+          /(видео\s+с\s+ссылк[а-я]+|ролик\s+по\s+адресу|фильм\s+по\s+url)/,
+        weight: 0.7,
+        description: "Ссылка на видео по URL",
+        targetResolver: (message, media) => {
+          const urlMedia = media.filter((m) => m.url?.startsWith("http"));
+          return urlMedia[urlMedia.length - 1] || null;
         },
       },
       {
@@ -209,14 +257,60 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
         },
       },
       {
-        pattern: /(first|second|third)\s+(video|clip|movie|film)/,
-        weight: 0.6,
+        pattern: /(first|second|third|fourth|fifth)\s+(video|clip|movie|film)/,
+        weight: 0.8,
         description: "Reference to video by order",
         targetResolver: (message, media) => {
           if (message.includes("first")) return media[0] || null;
           if (message.includes("second")) return media[1] || null;
           if (message.includes("third")) return media[2] || null;
+          if (message.includes("fourth")) return media[3] || null;
+          if (message.includes("fifth")) return media[4] || null;
           return null;
+        },
+      },
+      // Новые паттерны для лучшего распознавания (английские)
+      {
+        pattern:
+          /(take|use|work\s+with)\s+(the\s+)?(first|second|third)\s+(video|clip|movie|film)/,
+        weight: 0.9,
+        description: "Command to work with video by order",
+        targetResolver: (message, media) => {
+          if (message.includes("first")) return media[0] || null;
+          if (message.includes("second")) return media[1] || null;
+          if (message.includes("third")) return media[2] || null;
+          return null;
+        },
+      },
+      // Паттерны для распознавания по типу источника (английские)
+      {
+        pattern:
+          /(video\s+(that\s+)?(i|user)\s+uploaded|uploaded\s+by\s+me|my\s+uploaded\s+video|video\s+that\s+i\s+uploaded)/,
+        weight: 0.8,
+        description: "Reference to uploaded video",
+        targetResolver: (message, media) => {
+          const uploaded = media.filter((m) => m.role === "user");
+          return uploaded[uploaded.length - 1] || null;
+        },
+      },
+      {
+        pattern:
+          /(video\s+(that\s+)?(bot|assistant|ai)\s+created|generated\s+by\s+bot|created\s+by\s+ai)/,
+        weight: 0.8,
+        description: "Reference to generated video",
+        targetResolver: (message, media) => {
+          const generated = media.filter((m) => m.role === "assistant");
+          return generated[generated.length - 1] || null;
+        },
+      },
+      // Паттерны для работы с URL видео (английские)
+      {
+        pattern: /(video\s+from\s+url|clip\s+with\s+link|movie\s+by\s+address)/,
+        weight: 0.7,
+        description: "Reference to video from URL",
+        targetResolver: (message, media) => {
+          const urlMedia = media.filter((m) => m.url?.startsWith("http"));
+          return urlMedia[urlMedia.length - 1] || null;
         },
       },
       {
@@ -373,5 +467,46 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
       "split",
       "compress",
     ];
+  }
+
+  /**
+   * Улучшенный анализ видео-контекста с фокусом на загруженные пользователем изображения
+   */
+  async analyzeVideoImageContext(
+    userMessage: string,
+    chatMedia: ChatMedia[],
+    currentAttachments?: any[],
+    chatId?: string
+  ): Promise<any> {
+    console.log(
+      "🎬 VideoContextAnalyzer: Starting enhanced video image context analysis"
+    );
+
+    // Фильтруем только изображения из медиа
+    const chatImages = chatMedia
+      .filter((media) => media.mediaType === "image")
+      .map((media) => ({
+        url: media.url,
+        id: media.id,
+        role: media.role as "user" | "assistant",
+        timestamp: media.timestamp,
+        prompt: media.prompt,
+        messageIndex: media.messageIndex,
+        mediaType: "image" as const,
+        chatId: chatId || "", // Используем переданный chatId или пустую строку
+        createdAt: media.timestamp,
+        parts: [],
+        attachments: [],
+      }));
+
+    // Используем нашу улучшенную функцию анализа видео-контекста
+    const result = await analyzeVideoContext(
+      userMessage,
+      chatImages,
+      currentAttachments
+    );
+
+    console.log("🎬 VideoContextAnalyzer: Enhanced analysis result:", result);
+    return result;
   }
 }

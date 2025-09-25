@@ -6,15 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import {
-  Users,
-  CreditCard,
   TrendingUp,
   TrendingDown,
-  UserCheck,
-  UserX,
-  DollarSign,
   BarChart3,
 } from "lucide-react";
 import { getUserStats } from "@/lib/db/admin-queries";

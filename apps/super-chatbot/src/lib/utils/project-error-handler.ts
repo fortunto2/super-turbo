@@ -2,7 +2,6 @@ import { addUserBalance } from "./tools-balance";
 import {
   deleteUserProject,
   updateProjectStatus,
-  type ProjectStatus,
 } from "@/lib/db/project-queries";
 
 export interface ProjectError {
@@ -80,7 +79,7 @@ export function createProjectError(
   message: string,
   projectId: string,
   userId: string,
-  creditsUsed: number = 0,
+  creditsUsed = 0,
   originalError?: any
 ): ProjectError {
   return {

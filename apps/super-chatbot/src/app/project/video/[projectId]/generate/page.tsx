@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Card,

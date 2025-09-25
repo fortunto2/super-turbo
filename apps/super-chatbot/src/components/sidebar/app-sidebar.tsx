@@ -24,6 +24,8 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../";
 import { TOOLS_CONFIG } from "@/lib/config/tools-config";
 import { ToolIcon } from "@/lib/config/tools-icons";
+import { BananaVeo3Button } from "@/components/chat/banana-veo3-button";
+import { BananaVeo3AdvancedButton } from "@/components/chat/banana-veo3-advanced-button";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -71,6 +73,12 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           <SidebarGroupLabel>AI Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <BananaVeo3AdvancedButton />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <BananaVeo3Button />
+              </SidebarMenuItem>
               {TOOLS_CONFIG.map((tool) => (
                 <SidebarMenuItem key={tool.id}>
                   <SidebarMenuButton asChild>

@@ -88,7 +88,7 @@ export function EnhancedUsersTable() {
   };
 
   useEffect(() => {
-    const page = parseInt(searchParams.get("page") || "1");
+    const page = Number.parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
     const type = searchParams.get("type") || "all";
 
@@ -143,7 +143,7 @@ export function EnhancedUsersTable() {
   };
 
   const handleUserUpdate = () => {
-    const page = parseInt(searchParams.get("page") || "1");
+    const page = Number.parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
     const type = searchParams.get("type") || "all";
     fetchUsers(page, search, type);
@@ -152,7 +152,7 @@ export function EnhancedUsersTable() {
   };
 
   const handleUserDelete = () => {
-    const page = parseInt(searchParams.get("page") || "1");
+    const page = Number.parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
     const type = searchParams.get("type") || "all";
     fetchUsers(page, search, type);

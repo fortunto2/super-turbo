@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { FileTypeEnum } from "../../../api";
 import type {
   ImageToImageParams,
   ImageGenerationStrategy,
@@ -34,15 +34,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     method: "upload";
     error?: string;
   }> {
-    console.log("🔍 handleImageUpload called with:", {
-      hasFile: !!params.file,
-      fileType: params.file?.type,
-      fileSize: params.file?.size,
-      uploadUrl: `${config.url}/api/v1/file/upload`,
-    });
-
     if (!params.file) {
-      console.log("❌ No file provided for upload");
       return {
         error: "No file provided for upload",
         method: "upload",
@@ -50,27 +42,46 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     }
 
     try {
+      // Проверяем валидность файла
+      if (params.file.size === 0) {
+        throw new Error("File is empty");
+      }
+
+      if (params.file.size > 50 * 1024 * 1024) {
+        throw new Error("File is too large (max 50MB)");
+      }
+
+      console.log("📤 Starting image upload using direct fetch...");
+
+      // Создаем FormData для загрузки (только payload, type передается как query параметр)
       const formData = new FormData();
-      formData.append("payload", params.file, params.file.name);
-      formData.append("type", "image");
+      formData.append("payload", params.file);
 
-      console.log(
-        "📤 Sending upload request to:",
-        `${config.url}/api/v1/file/upload`
-      );
-      console.log("📤 FormData contents:", {
-        hasPayload: formData.has("payload"),
-        hasType: formData.has("type"),
-        fileName: params.file.name,
-        fileSize: params.file.size,
-        fileType: params.file.type,
-      });
+      // Отладочная информация
+      console.log("📤 FormData entries:");
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(
+            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+          );
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
 
-      const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
+      // Строим URL с query параметрами
+      const queryParams = new URLSearchParams();
+      queryParams.set("type", FileTypeEnum.IMAGE);
+      if (params.projectId) queryParams.set("project_id", params.projectId);
+      if (params.sceneId) queryParams.set("scene_id", params.sceneId);
+
+      const apiUrl = `${config.url.replace(/\/+$/, "")}/api/v1/file/upload?${queryParams.toString()}`;
+
+      // Отправляем запрос к SuperDuperAI API
+      const uploadResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${config.token}`,
-          "User-Agent": "SuperDuperAI-Landing/1.0",
         },
         body: formData,
       });
@@ -83,7 +94,7 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
       }
 
       const uploadResult = await uploadResponse.json();
-      console.log("uploadResult", uploadResult);
+      console.log("📤 Image upload result:", uploadResult);
 
       return {
         imageId: uploadResult?.id,
@@ -93,7 +104,102 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     } catch (error) {
       console.error("Error uploading file", error);
       return {
-        error: "Image upload failed",
+        error: `Image upload failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        method: "upload",
+      };
+    }
+  }
+
+  async handleImageUploadFromUrl(
+    imageUrl: string,
+    config: { url: string; token: string }
+  ): Promise<{
+    imageId?: string;
+    imageUrl?: string;
+    method: "upload";
+    error?: string;
+  }> {
+    try {
+      console.log("📤 Starting image upload from URL:", imageUrl);
+
+      // Загружаем изображение по URL
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch image from URL: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const blob = await response.blob();
+      const filename = imageUrl.split("/").pop() || "source-image.jpg";
+      const file = new File([blob], filename, { type: blob.type });
+
+      console.log("📤 Created File object from URL:", {
+        filename,
+        size: file.size,
+        type: file.type,
+      });
+
+      // Проверяем валидность файла
+      if (file.size === 0) {
+        throw new Error("Downloaded file is empty");
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        throw new Error("Downloaded file is too large (max 50MB)");
+      }
+
+      // Создаем FormData для загрузки
+      const formData = new FormData();
+      formData.append("payload", file);
+
+      // Отладочная информация
+      console.log("📤 FormData entries:");
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(
+            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+          );
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+
+      // Строим URL с query параметрами
+      const queryParams = new URLSearchParams();
+      queryParams.set("type", FileTypeEnum.IMAGE);
+
+      const apiUrl = `${config.url.replace(/\/+$/, "")}/api/v1/file/upload?${queryParams.toString()}`;
+      console.log("📤 Upload URL:", apiUrl);
+
+      // Отправляем запрос к SuperDuperAI API
+      const uploadResponse = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${config.token}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(
+          `File upload failed: ${uploadResponse.status} - ${errorText}`
+        );
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log("📤 Image upload result:", uploadResult);
+
+      return {
+        imageId: uploadResult?.id,
+        imageUrl: uploadResult?.url || undefined,
+        method: "upload",
+      };
+    } catch (error) {
+      console.error("Error uploading image from URL", error);
+      return {
+        error: `Image upload from URL failed: ${error instanceof Error ? error.message : "Unknown error"}`,
         method: "upload",
       };
     }
@@ -101,51 +207,53 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
 
   async handleMaskUpload(
     params: ImageToImageParams,
-    config: { url: string; token: string }
+    config?: { url: string; token: string }
   ): Promise<{
     maskId?: string;
     maskUrl?: string;
+    error?: string;
   }> {
-    console.log("🔍 handleMaskUpload called with:", {
-      hasMask: !!params.mask,
-      maskType: params.mask?.type,
-      maskSize: params.mask?.size,
-      uploadUrl: `${config.url}/api/v1/file/upload`,
-    });
-
     if (!params.mask) {
-      console.log("❌ No mask provided for upload");
       return {
         error: "No mask provided for upload",
-        method: "upload",
       };
     }
 
-    let maskId: string | undefined;
-    let maskUrl: string | undefined;
+    if (!config) {
+      return {
+        error: "Config not provided for mask upload",
+      };
+    }
 
     try {
+      // Проверяем валидность маски
+      if (params.mask.size === 0) {
+        throw new Error("Mask file is empty");
+      }
+
+      if (params.mask.size > 50 * 1024 * 1024) {
+        throw new Error("Mask file is too large (max 50MB)");
+      }
+
+      console.log("📤 Starting mask upload using direct fetch...");
+
+      // Создаем FormData для загрузки маски (только payload, type передается как query параметр)
       const formData = new FormData();
-      formData.append("payload", params.mask, params.mask.name);
-      formData.append("type", "image");
+      formData.append("payload", params.mask);
 
-      console.log(
-        "📤 Sending mask upload request to:",
-        `${config.url}/api/v1/file/upload`
-      );
-      console.log("📤 Mask FormData contents:", {
-        hasPayload: formData.has("payload"),
-        hasType: formData.has("type"),
-        fileName: params.mask.name,
-        fileSize: params.mask.size,
-        fileType: params.mask.type,
-      });
+      // Строим URL с query параметрами
+      const queryParams = new URLSearchParams();
+      queryParams.set("type", FileTypeEnum.IMAGE);
+      if (params.projectId) queryParams.set("project_id", params.projectId);
+      if (params.sceneId) queryParams.set("scene_id", params.sceneId);
 
-      const uploadResponse = await fetch(`${config.url}/api/v1/file/upload`, {
+      const apiUrl = `${config.url.replace(/\/+$/, "")}/api/v1/file/upload?${queryParams.toString()}`;
+
+      // Отправляем запрос к SuperDuperAI API
+      const uploadResponse = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${config.token}`,
-          "User-Agent": "SuperDuperAI-Landing/1.0",
         },
         body: formData,
       });
@@ -158,19 +266,16 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
       }
 
       const uploadResult = await uploadResponse.json();
-      console.log("uploadResult", uploadResult);
-      maskId = uploadResult?.id;
-      maskUrl = uploadResult?.url || undefined;
+      console.log("📤 Mask upload result:", uploadResult);
 
       return {
-        maskId,
-        maskUrl,
+        maskId: uploadResult?.id,
+        maskUrl: uploadResult?.url || undefined,
       };
     } catch (error) {
       console.error("Error uploading mask", error);
       return {
-        error: "Mask upload failed",
-        method: "upload",
+        error: `Mask upload failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       };
     }
   }
@@ -187,15 +292,69 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     let maskId: string | undefined;
     let maskUrl: string | undefined;
 
-    if (params.sourceImageId) {
-      imageId = params.sourceImageId;
-      imageUrl = params.sourceImageUrl;
-      console.log("🔍 ImageToImageStrategy: using sourceImageId:", imageId);
-      console.log("🔍 ImageToImageStrategy: using sourceImageUrl:", imageUrl);
+    if (params.sourceImageId && params.sourceImageUrl) {
+      // Если у нас есть sourceImageId и sourceImageUrl, но это внешний источник,
+      // нужно загрузить изображение в SuperDuperAI для получения правильного ID
+      console.log(
+        "🔍 ImageToImageStrategy: external sourceImageId detected:",
+        params.sourceImageId
+      );
+      console.log(
+        "🔍 ImageToImageStrategy: external sourceImageUrl:",
+        params.sourceImageUrl
+      );
+
+      if (config) {
+        try {
+          // Загружаем изображение по URL в SuperDuperAI
+          console.log("📤 Uploading external image to SuperDuperAI...");
+          const uploadResult = await this.handleImageUploadFromUrl(
+            params.sourceImageUrl,
+            config
+          );
+
+          if (uploadResult.error) {
+            console.error(
+              "❌ External image upload failed:",
+              uploadResult.error
+            );
+            throw new Error(
+              `External image upload failed: ${uploadResult.error}`
+            );
+          }
+
+          imageId = uploadResult.imageId;
+          imageUrl = uploadResult.imageUrl;
+          console.log("✅ External image uploaded successfully:", {
+            imageId,
+            imageUrl,
+          });
+        } catch (error) {
+          console.error("❌ Failed to upload external image:", error);
+          throw new Error(
+            `Failed to upload external image: ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
+      } else {
+        console.error("❌ No config provided for external image upload");
+        throw new Error("No config provided for external image upload");
+      }
     } else if (config && params.file) {
       console.log("📤 Starting image upload...");
       const uploadResult = await this.handleImageUpload(params, config);
       console.log("📤 Image upload result:", uploadResult);
+
+      // AICODE-NOTE: Проверяем ошибку загрузки и останавливаем генерацию
+      if (uploadResult.error) {
+        console.error("❌ Image upload failed:", uploadResult.error);
+        throw new Error(`Image upload failed: ${uploadResult.error}`);
+      }
+
+      if (!uploadResult.imageId) {
+        console.error("❌ No image ID returned from upload");
+        throw new Error("Image upload failed: No image ID returned");
+      }
+
       imageId = uploadResult.imageId;
       imageUrl = uploadResult.imageUrl;
     } else {
@@ -205,6 +364,18 @@ export class ImageToImageStrategy implements ImageGenerationStrategy {
     if (params.mask) {
       console.log("🔍 ImageToImageStrategy: using mask");
       const uploadResult = await this.handleMaskUpload(params, config);
+
+      // AICODE-NOTE: Проверяем ошибку загрузки маски и останавливаем генерацию
+      if (uploadResult.error) {
+        console.error("❌ Mask upload failed:", uploadResult.error);
+        throw new Error(`Mask upload failed: ${uploadResult.error}`);
+      }
+
+      if (!uploadResult.maskId) {
+        console.error("❌ No mask ID returned from upload");
+        throw new Error("Mask upload failed: No mask ID returned");
+      }
+
       maskId = uploadResult.maskId;
       maskUrl = uploadResult.maskUrl;
     }

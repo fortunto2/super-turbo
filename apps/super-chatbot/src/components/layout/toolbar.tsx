@@ -28,10 +28,10 @@ import {
   ArrowUpIcon,
   StopIcon,
   SummarizeIcon,
-  ArtifactToolbarItem,
+  type ArtifactToolbarItem,
 } from "@/components";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { artifactDefinitions, ArtifactKind } from "../artifacts/artifact";
+import { artifactDefinitions, type ArtifactKind } from "../artifacts/artifact";
 
 type ToolProps = {
   description: string;

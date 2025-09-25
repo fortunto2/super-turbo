@@ -1,5 +1,4 @@
 import type { Message } from "ai";
-import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
 
 import type { Vote } from "@/lib/db/schema";
@@ -27,7 +26,6 @@ export function PureMessageActions({
   vote: Vote | undefined;
   isLoading: boolean;
 }) {
-  const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
@@ -83,27 +81,7 @@ export function PureMessageActions({
                 toast.promise(upvote, {
                   loading: "Upvoting Response...",
                   success: () => {
-                    mutate<Array<Vote>>(
-                      `/api/vote?chatId=${chatId}`,
-                      (currentVotes) => {
-                        if (!currentVotes) return [];
-
-                        const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id
-                        );
-
-                        return [
-                          ...votesWithoutCurrent,
-                          {
-                            chatId,
-                            messageId: message.id,
-                            isUpvoted: true,
-                          },
-                        ];
-                      },
-                      { revalidate: false }
-                    );
-
+                    // Просто показываем успех, без обновления кэша
                     return "Upvoted Response!";
                   },
                   error: "Failed to upvote response.",
@@ -136,27 +114,7 @@ export function PureMessageActions({
                 toast.promise(downvote, {
                   loading: "Downvoting Response...",
                   success: () => {
-                    mutate<Array<Vote>>(
-                      `/api/vote?chatId=${chatId}`,
-                      (currentVotes) => {
-                        if (!currentVotes) return [];
-
-                        const votesWithoutCurrent = currentVotes.filter(
-                          (vote) => vote.messageId !== message.id
-                        );
-
-                        return [
-                          ...votesWithoutCurrent,
-                          {
-                            chatId,
-                            messageId: message.id,
-                            isUpvoted: false,
-                          },
-                        ];
-                      },
-                      { revalidate: false }
-                    );
-
+                    // Просто показываем успех, без обновления кэша
                     return "Downvoted Response!";
                   },
                   error: "Failed to downvote response.",

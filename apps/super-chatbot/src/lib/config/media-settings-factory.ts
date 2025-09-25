@@ -529,7 +529,7 @@ export async function getVideoGenerationConfig(): Promise<VideoGenerationConfig>
           price: 0,
         },
       frameRate: 30,
-      duration: { id: "10s", label: "10 seconds", value: 10 },
+      duration: { id: "5s", label: "5 seconds", value: 5 },
       negativePrompt: "",
     },
   };

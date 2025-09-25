@@ -261,7 +261,8 @@ export class FabricController {
     options?: Partial<TextboxProps & { text: string }>
   ) {
     object.set(options);
-    this.canvas.fire("text:changed", { target: object as unknown as IText });
+    // Не вызываем text:changed событие здесь, чтобы избежать циклических обновлений
+    // Событие будет вызвано автоматически при изменении объекта
     this.canvas.renderAll();
   }
 }

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { count, desc, eq, sql, and, like } from "drizzle-orm";
+import { count, desc, eq, sql, } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { userProject, user } from "./schema";

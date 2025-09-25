@@ -1,53 +1,28 @@
-import { analyzeImageContext, getChatImages } from "./image-context";
-import type { DBMessage } from "@/lib/db/schema";
+import {
+  analyzeImageContext,
+  getChatImages,
+  type ChatImage,
+} from "./image-context";
 
-// Mock data для тестирования
-const mockChatHistory: DBMessage[] = [
+// Mock data для тестирования - теперь используем ChatImage[]
+const mockChatImages: ChatImage[] = [
   {
-    id: "1",
-    chatId: "chat1",
-    role: "user",
-    parts: [{ type: "text", text: "Сгенерируй кота" }],
-    attachments: [],
-    createdAt: new Date("2024-01-01T10:00:00Z"),
-  },
-  {
-    id: "2",
-    chatId: "chat1",
+    url: "https://example.com/cat1.jpg",
+    id: "img1",
     role: "assistant",
-    parts: [{ type: "text", text: "Вот ваш кот" }],
-    attachments: [
-      {
-        url: "https://example.com/cat1.jpg",
-        id: "img1",
-        contentType: "image/webp",
-        name: "Кот",
-      },
-    ],
-    createdAt: new Date("2024-01-01T10:01:00Z"),
+    timestamp: new Date("2024-01-01T10:01:00Z"),
+    prompt: "Кот",
+    messageIndex: 1,
+    mediaType: "image",
   },
   {
-    id: "3",
-    chatId: "chat1",
-    role: "user",
-    parts: [{ type: "text", text: "Теперь сгенерируй собаку" }],
-    attachments: [],
-    createdAt: new Date("2024-01-01T10:02:00Z"),
-  },
-  {
-    id: "4",
-    chatId: "chat1",
+    url: "https://example.com/dog1.jpg",
+    id: "img2",
     role: "assistant",
-    parts: [{ type: "text", text: "Вот ваша собака" }],
-    attachments: [
-      {
-        url: "https://example.com/dog1.jpg",
-        id: "img2",
-        contentType: "image/webp",
-        name: "Собака",
-      },
-    ],
-    createdAt: new Date("2024-01-01T10:03:00Z"),
+    timestamp: new Date("2024-01-01T10:03:00Z"),
+    prompt: "Собака",
+    messageIndex: 3,
+    mediaType: "image",
   },
 ];
 
@@ -62,7 +37,7 @@ describe("Image Context Analysis", () => {
 
     const result = await analyzeImageContext(
       "Подправь это изображение",
-      mockChatHistory,
+      mockChatImages,
       currentAttachments
     );
 
@@ -74,7 +49,7 @@ describe("Image Context Analysis", () => {
   test("should find last generated image when asking to edit", async () => {
     const result = await analyzeImageContext(
       "Сделай глаза голубыми",
-      mockChatHistory
+      mockChatImages
     );
 
     expect(result.confidence).toBe("medium");
@@ -85,7 +60,7 @@ describe("Image Context Analysis", () => {
   test("should find specific image by reference", async () => {
     const result = await analyzeImageContext(
       "Измени первое изображение",
-      mockChatHistory
+      mockChatImages
     );
 
     expect(result.confidence).toBe("medium");
@@ -93,7 +68,7 @@ describe("Image Context Analysis", () => {
   });
 
   test("should find last image when no specific reference", async () => {
-    const result = await analyzeImageContext("Подправь", mockChatHistory);
+    const result = await analyzeImageContext("Подправь", mockChatImages);
 
     expect(result.confidence).toBe("low");
     expect(result.sourceImageUrl).toBe("https://example.com/dog1.jpg");
@@ -103,7 +78,7 @@ describe("Image Context Analysis", () => {
   test("should handle Russian references", async () => {
     const result = await analyzeImageContext(
       "Исправь это изображение",
-      mockChatHistory
+      mockChatImages
     );
 
     expect(result.confidence).toBe("medium");
@@ -113,7 +88,7 @@ describe("Image Context Analysis", () => {
   test("should handle English references", async () => {
     const result = await analyzeImageContext(
       "Change the last image",
-      mockChatHistory
+      mockChatImages
     );
 
     expect(result.confidence).toBe("medium");
@@ -132,8 +107,58 @@ describe("Image Context Analysis", () => {
 describe("Get Chat Images", () => {
   test("should extract images from chat history", async () => {
     // Mock the database query
+    const mockMessages = [
+      {
+        id: "1",
+        chatId: "chat1",
+        role: "user",
+        parts: [{ type: "text", text: "Сгенерируй кота" }],
+        attachments: [],
+        createdAt: new Date("2024-01-01T10:00:00Z"),
+      },
+      {
+        id: "2",
+        chatId: "chat1",
+        role: "assistant",
+        parts: [{ type: "text", text: "Вот ваш кот" }],
+        attachments: [
+          {
+            url: "https://example.com/cat1.jpg",
+            id: "img1",
+            contentType: "image/webp",
+            name: "Кот",
+          },
+        ],
+        createdAt: new Date("2024-01-01T10:01:00Z"),
+      },
+      {
+        id: "3",
+        chatId: "chat1",
+        role: "user",
+        parts: [{ type: "text", text: "Теперь сгенерируй собаку" }],
+        attachments: [],
+        createdAt: new Date("2024-01-01T10:02:00Z"),
+      },
+      {
+        id: "4",
+        chatId: "chat1",
+        role: "assistant",
+        parts: [{ type: "text", text: "Вот ваша собака" }],
+        attachments: [
+          {
+            url: "https://example.com/dog1.jpg",
+            id: "img2",
+            contentType: "image/webp",
+            name: "Собака",
+          },
+        ],
+        createdAt: new Date("2024-01-01T10:03:00Z"),
+      },
+    ];
+
+    // Mock the database query
     jest.mock("@/lib/db/queries", () => ({
-      getMessagesByChatId: jest.fn().mockResolvedValue(mockChatHistory),
+      getMessagesByChatId: jest.fn().mockResolvedValue(mockMessages),
     }));
 
     const images = await getChatImages("chat1");

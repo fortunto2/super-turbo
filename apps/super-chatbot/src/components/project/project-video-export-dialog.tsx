@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "@turbo-super/ui";
 import { Loader2, Download, CheckCircle } from "lucide-react";
-import { type IFileRead } from "@turbo-super/api";
+import type { IFileRead } from "@turbo-super/api";
 import { useProjectVideoRenderStore } from "@/lib/store";
 
 // Simple Progress component since it's not available in UI library

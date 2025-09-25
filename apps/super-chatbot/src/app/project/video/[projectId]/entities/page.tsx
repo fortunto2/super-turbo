@@ -2,8 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { Button } from "@turbo-super/ui";
-import { Plus, Users, ArrowLeft, Edit, Eye } from "lucide-react";
+import { Users, Edit, Eye } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { BackButton } from "@/components/shared/back-button";
