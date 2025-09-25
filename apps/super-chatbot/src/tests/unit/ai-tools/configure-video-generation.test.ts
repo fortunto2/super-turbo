@@ -78,7 +78,7 @@ describe("configureVideoGeneration", () => {
     );
   });
 
-  it("should handle image-to-video generation with source image", async () => {
+  it("should handle image-to-video generation with source image URL", async () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,

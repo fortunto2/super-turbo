@@ -83,8 +83,8 @@ export const saveMediaToChat = async (
       ? `[FILE_ID:${fileId}] ${prompt}`
       : prompt;
     const displayPromptForAttachment =
-      attachmentNameWithFileId.length > 50
-        ? `${attachmentNameWithFileId.substring(0, 50)}...`
+      attachmentNameWithFileId.length > 200
+        ? `${attachmentNameWithFileId.substring(0, 200)}...`
         : attachmentNameWithFileId;
 
     const videoAttachment = {

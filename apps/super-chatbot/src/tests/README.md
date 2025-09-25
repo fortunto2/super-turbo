@@ -392,18 +392,15 @@ Tests use the following data structure (from your actual request):
 - Проверяет структуру payload без реальных API вызовов
 - Валидирует конфигурацию и модели
 
-**`video-generation-real-test.js`**
+**`video-file-endpoint-test.js`**
 
-- Реальные тесты генерации видео
-- Полный поток с API вызовами
-- Поддерживает dry-run и live режимы
+- Тестирует endpoint для работы с видео файлами
+- Проверяет загрузку и обработку видео
 
-**`video-generation-image-to-video-test.js`**
+**`video-model-selection-test.js`**
 
-- Тесты для генерации видео из изображений
-- Проверяет image-to-video функциональность
-
-**`video-generation-payload-fix-test.js`**
+- Тестирует выбор моделей для генерации видео
+- Проверяет доступность различных видео моделей
 
 - Тесты для исправления payload структуры
 - Проверяет корректность данных запроса

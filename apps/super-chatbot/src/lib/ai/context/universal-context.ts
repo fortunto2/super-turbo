@@ -3,6 +3,8 @@
  * Поддерживает изображения, видео, аудио и другие типы медиа
  */
 
+import { contextCache, generateMessageHash, CacheUtils } from "./cache";
+
 export type MediaType = "image" | "video" | "audio" | "document";
 
 export type ConfidenceLevel = "high" | "medium" | "low";
@@ -236,14 +238,49 @@ export class UniversalContextManager {
     mediaType: MediaType,
     userMessage: string,
     chatMedia: ChatMedia[],
-    currentAttachments?: any[]
+    currentAttachments?: any[],
+    chatId?: string
   ): Promise<MediaContext> {
+    // Проверяем кэш, если доступен chatId
+    if (chatId && CacheUtils.shouldUseCache(userMessage, currentAttachments)) {
+      const messageHash = generateMessageHash(userMessage, currentAttachments);
+      const cachedContext = await contextCache.getCachedContext(
+        chatId,
+        messageHash,
+        mediaType
+      );
+
+      if (cachedContext) {
+        console.log(
+          `🎯 Using cached context for ${mediaType} in chat ${chatId}`
+        );
+        return cachedContext;
+      }
+    }
+
     const analyzer = this.analyzers.get(mediaType);
     if (!analyzer) {
       throw new Error(`No analyzer registered for media type: ${mediaType}`);
     }
 
-    return analyzer.analyzeContext(userMessage, chatMedia, currentAttachments);
+    const context = await analyzer.analyzeContext(
+      userMessage,
+      chatMedia,
+      currentAttachments
+    );
+
+    // Сохраняем в кэш, если доступен chatId
+    if (chatId && CacheUtils.shouldUseCache(userMessage, currentAttachments)) {
+      const messageHash = generateMessageHash(userMessage, currentAttachments);
+      await contextCache.setCachedContext(
+        chatId,
+        messageHash,
+        mediaType,
+        context
+      );
+    }
+
+    return context;
   }
 
   async getChatMedia(chatId: string): Promise<ChatMedia[]> {

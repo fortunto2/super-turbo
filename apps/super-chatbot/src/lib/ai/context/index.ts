@@ -45,7 +45,8 @@ export async function analyzeImageContext(
     "image",
     userMessage,
     chatMedia,
-    currentAttachments
+    currentAttachments,
+    chatId
   );
 }
 
@@ -59,7 +60,8 @@ export async function analyzeVideoContext(
     "video",
     userMessage,
     chatMedia,
-    currentAttachments
+    currentAttachments,
+    chatId
   );
 }
 
@@ -73,7 +75,8 @@ export async function analyzeAudioContext(
     "audio",
     userMessage,
     chatMedia,
-    currentAttachments
+    currentAttachments,
+    chatId
   );
 }
 
@@ -89,6 +92,34 @@ export async function analyzeMediaContext(
     mediaType,
     userMessage,
     chatMedia,
-    currentAttachments
+    currentAttachments,
+    chatId
   );
 }
+
+// Экспорт системы кэширования
+export { contextCache, generateMessageHash, CacheUtils } from "./cache";
+
+// Экспорт семантического поиска
+export { semanticAnalyzer, SemanticContextAnalyzer } from "./semantic-search";
+export {
+  semanticIndex,
+  SemanticIndex,
+  type SemanticIndexEntry,
+  type SearchResult,
+} from "./semantic-index";
+
+// Экспорт системы обучения пользовательским предпочтениям
+export {
+  userPreferenceLearner,
+  UserPreferenceLearner,
+} from "./user-preferences";
+
+// Экспорт временного анализа
+export { temporalAnalyzer, TemporalAnalyzer } from "./temporal-analysis";
+
+// Экспорт мониторинга производительности
+export {
+  contextPerformanceMonitor,
+  ContextPerformanceMonitor,
+} from "./performance-monitor";
