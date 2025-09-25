@@ -617,26 +617,22 @@ export const POST = withMonitoring(async function POST(request: Request) {
         // Анализируем контекст изображения
         let defaultSourceImageUrl: string | undefined;
         try {
-          const { analyzeImageContext, getChatImages } = await import(
-            "@/lib/ai/chat/image-context"
-          );
-
-          const chatImages = await getChatImages(id);
-          console.log("🔍 Pre-analysis: Chat images found:", chatImages.length);
+          const { analyzeImageContext } = await import("@/lib/ai/context");
 
           const imageContext = await analyzeImageContext(
             messageToProcess.parts?.[0]?.text || "",
-            chatImages,
-            (messageToProcess as any)?.experimental_attachments
+            id,
+            (messageToProcess as any)?.experimental_attachments,
+            session.user.id
           );
 
           console.log("🔍 Pre-analysis: Image context:", {
             confidence: imageContext.confidence,
             reasoning: imageContext.reasoning,
-            sourceImageUrl: imageContext.sourceImageUrl,
+            sourceUrl: imageContext.sourceUrl,
           });
 
-          defaultSourceImageUrl = imageContext.sourceImageUrl;
+          defaultSourceImageUrl = imageContext.sourceUrl;
 
           console.log(
             "🔍 defaultSourceImageUrl set to:",
@@ -673,16 +669,17 @@ export const POST = withMonitoring(async function POST(request: Request) {
           const videoContext = await analyzeVideoContext(
             messageToProcess.parts?.[0]?.text || "",
             id,
-            (messageToProcess as any)?.experimental_attachments
+            (messageToProcess as any)?.experimental_attachments,
+            session.user.id
           );
 
           console.log("🔍 Pre-analysis: Video context:", {
             confidence: videoContext.confidence,
             reasoning: videoContext.reasoning,
-            sourceImageUrl: videoContext.sourceImageUrl,
+            sourceUrl: videoContext.sourceUrl,
           });
 
-          defaultSourceVideoUrl = videoContext.sourceImageUrl;
+          defaultSourceVideoUrl = videoContext.sourceUrl;
 
           console.log(
             "🔍 defaultSourceVideoUrl set to:",

@@ -1,10 +1,18 @@
-import { semanticIndex } from "../context/semantic-index";
+import {
+  semanticIndex,
+  temporalAnalyzer,
+  userPreferenceLearner,
+  contextCache,
+  generateMessageHash,
+  CacheUtils,
+} from "../context";
 
 export interface VideoContext {
   sourceImageUrl?: string;
   sourceImageId?: string;
   confidence: "high" | "medium" | "low";
   reasoning: string;
+  metadata?: Record<string, any>;
 }
 
 export interface ChatImage {
@@ -31,128 +39,51 @@ interface MessageAttachment {
 export async function analyzeVideoContext(
   userMessage: string,
   chatImages: ChatImage[],
-  currentMessageAttachments?: MessageAttachment[]
+  currentMessageAttachments?: MessageAttachment[],
+  chatId?: string,
+  userId?: string
 ): Promise<VideoContext> {
-  console.log("🎬 analyzeVideoContext: Starting analysis", {
-    userMessage,
-    chatImagesLength: chatImages.length,
-    currentMessageAttachments: currentMessageAttachments,
-  });
-
-  // 1. Фильтруем только загруженные пользователем изображения
-  const userImages = chatImages.filter((img) => img.role === "user");
-  console.log("🎬 analyzeVideoContext: User uploaded images:", {
-    totalUserImages: userImages.length,
-    images: userImages.map((img) => ({
-      url: img.url,
-      prompt: img.prompt,
-      messageIndex: img.messageIndex,
-    })),
-  });
-
-  if (userImages.length === 0) {
-    console.log("🎬 analyzeVideoContext: No user uploaded images found");
-    return {
-      confidence: "low",
-      reasoning:
-        "В истории чата не найдено загруженных пользователем изображений",
-    };
-  }
-
-  // 2. Анализируем текст сообщения на предмет ссылок на изображения
-  const messageLower = userMessage.toLowerCase();
   console.log(
-    "🎬 analyzeVideoContext: Analyzing message for image references:",
-    messageLower
+    "🎬 analyzeVideoContext: Starting enhanced analysis with all 4 systems",
+    {
+      userMessage,
+      chatImagesLength: chatImages.length,
+      currentMessageAttachments: currentMessageAttachments,
+      chatId,
+      userId,
+    }
   );
 
-  // Поиск по ключевым словам для видео-контекста
-  const imageReferences = await analyzeVideoImageReferences(
-    messageLower,
-    userImages
-  );
-  console.log(
-    "🎬 analyzeVideoContext: Found image references:",
-    imageReferences
-  );
-
-  if (imageReferences.length > 0) {
-    // Сортируем по релевантности
-    imageReferences.sort((a, b) => b.relevance - a.relevance);
-    const bestMatch = imageReferences[0];
-    console.log("🎬 analyzeVideoContext: Best match:", {
-      image: bestMatch.image,
-      relevance: bestMatch.relevance,
-      reasoning: bestMatch.reasoning,
-    });
-
-    return {
-      sourceImageUrl: bestMatch.image.url,
-      sourceImageId: bestMatch.image.id,
-      confidence: bestMatch.relevance > 0.7 ? "high" : "medium",
-      reasoning: `Найдена ссылка на изображение: ${bestMatch.reasoning}`,
-    };
-  }
-
-  // 3. Если нет явных ссылок, пробуем семантический поиск по загруженным изображениям
-  console.log(
-    "🎬 analyzeVideoContext: No explicit references found, trying semantic search on user images"
-  );
-  const semanticMatch = await findUserImageBySemanticContent(
-    messageLower,
-    userImages
-  );
-  console.log("🎬 analyzeVideoContext: Semantic match:", semanticMatch);
-
-  if (semanticMatch) {
-    return {
-      sourceImageUrl: semanticMatch.url,
-      sourceImageId: semanticMatch.id,
-      confidence: "medium",
-      reasoning: `Изображение найдено по семантическому поиску среди загруженных пользователем`,
-    };
-  }
-
-  // 3.5. Если семантический поиск не дал результатов, пробуем поиск по ключевым словам в сообщении
-  console.log(
-    "🎬 analyzeVideoContext: No semantic match found, trying keyword-based fallback search"
-  );
-  const keywordMatch = findUserImageByKeywords(messageLower, userImages);
-  console.log("🎬 analyzeVideoContext: Keyword match:", keywordMatch);
-
-  if (keywordMatch) {
-    return {
-      sourceImageUrl: keywordMatch.url,
-      sourceImageId: keywordMatch.id,
-      confidence: "medium",
-      reasoning: `Изображение найдено по ключевым словам: ${keywordMatch.reasoning}`,
-    };
-  }
-
-  // 4. Если семантический поиск не дал результатов, используем эвристики для видео
-  console.log(
-    "🎬 analyzeVideoContext: No semantic match found, trying video heuristics"
-  );
-  const heuristicMatch = findUserImageByVideoHeuristics(
-    messageLower,
-    userImages
-  );
-  console.log("🎬 analyzeVideoContext: Heuristic match:", heuristicMatch);
-
-  if (heuristicMatch) {
-    return {
-      sourceImageUrl: heuristicMatch.image.url,
-      sourceImageId: heuristicMatch.image.id,
-      confidence: "medium",
-      reasoning: `Изображение выбрано по эвристике для видео: ${heuristicMatch.reasoning}`,
-    };
-  }
-
-  // 5. Проверяем текущее сообщение на наличие изображений как fallback
-  if (currentMessageAttachments?.length) {
-    console.log(
-      "🎬 analyzeVideoContext: Checking current message attachments as fallback"
+  // 1. КЭШИРОВАНИЕ КОНТЕКСТА - проверяем кэш первым делом
+  if (
+    chatId &&
+    CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
+  ) {
+    const messageHash = generateMessageHash(
+      userMessage,
+      currentMessageAttachments
     );
+    const cachedContext = await contextCache.getCachedContext(
+      chatId,
+      messageHash,
+      "video"
+    );
+
+    if (cachedContext) {
+      console.log(`🎯 VideoContext: Cache HIT for video in chat ${chatId}`);
+      return {
+        sourceImageUrl: cachedContext.sourceUrl,
+        sourceImageId: cachedContext.sourceId,
+        confidence: cachedContext.confidence,
+        reasoning: `Кэшированный результат: ${cachedContext.reasoning}`,
+        metadata: cachedContext.metadata,
+      };
+    }
+  }
+
+  // 2. ПРОВЕРЯЕМ ТЕКУЩЕЕ СООБЩЕНИЕ на наличие изображений (image-to-video)
+  if (currentMessageAttachments?.length) {
+    console.log("🎬 analyzeVideoContext: Checking current message attachments");
     const currentImage = currentMessageAttachments.find(
       (a: MessageAttachment) =>
         typeof a?.url === "string" &&
@@ -162,35 +93,355 @@ export async function analyzeVideoContext(
 
     if (currentImage?.url) {
       console.log(
-        "🎬 analyzeVideoContext: Found image in current message as fallback:",
+        "🎬 analyzeVideoContext: Found image in current message:",
         currentImage.url
       );
-      return {
+
+      const result = {
         sourceImageUrl: currentImage.url,
         sourceImageId: currentImage.id,
-        confidence: "medium",
+        confidence: "high" as const,
         reasoning:
-          "Изображение найдено в текущем сообщении пользователя (fallback)",
+          "Изображение найдено в текущем сообщении пользователя для image-to-video",
+        metadata: {
+          source: "current_message",
+          contentType: currentImage.contentType,
+          timestamp: new Date().toISOString(),
+        },
       };
+
+      // Сохраняем в кэш
+      if (
+        chatId &&
+        CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
+      ) {
+        const messageHash = generateMessageHash(
+          userMessage,
+          currentMessageAttachments
+        );
+        await contextCache.setCachedContext(chatId, messageHash, "video", {
+          sourceUrl: result.sourceImageUrl,
+          sourceId: result.sourceImageId,
+          mediaType: "video" as const,
+          confidence: result.confidence,
+          reasoning: result.reasoning,
+          metadata: result.metadata,
+        });
+      }
+
+      return result;
     }
   }
 
-  // 6. По умолчанию используем последнее загруженное пользователем изображение
-  console.log(
-    "🎬 analyzeVideoContext: Using final fallback - last user uploaded image"
-  );
-  const lastUserImage = userImages[userImages.length - 1];
-  console.log("🎬 analyzeVideoContext: Last user image:", {
-    url: lastUserImage.url,
-    prompt: lastUserImage.prompt,
+  // 3. ПРОВЕРЯЕМ ИСТОРИЮ ЧАТА на наличие изображений
+  if (chatImages.length === 0) {
+    console.log("🎬 analyzeVideoContext: No images found in chat history");
+    return {
+      confidence: "low",
+      reasoning: "В истории чата не найдено изображений для image-to-video",
+      metadata: {
+        source: "chat_history",
+        totalImages: 0,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  console.log("🎬 analyzeVideoContext: Images from chat history:", {
+    totalImages: chatImages.length,
+    images: chatImages.map((img) => ({
+      url: img.url,
+      role: img.role,
+      prompt: img.prompt,
+      messageIndex: img.messageIndex,
+    })),
   });
 
-  return {
+  // 4. ФИЛЬТРУЕМ ТОЛЬКО ЗАГРУЖЕННЫЕ ПОЛЬЗОВАТЕЛЕМ изображения для image-to-video
+  const userImages = chatImages.filter((img) => img.role === "user");
+  console.log(
+    "🎬 analyzeVideoContext: User uploaded images for video generation:",
+    {
+      totalUserImages: userImages.length,
+      images: userImages.map((img) => ({
+        url: img.url,
+        prompt: img.prompt,
+        messageIndex: img.messageIndex,
+      })),
+    }
+  );
+
+  if (userImages.length === 0) {
+    console.log("🎬 analyzeVideoContext: No user uploaded images found");
+    return {
+      confidence: "low",
+      reasoning:
+        "В истории чата не найдено загруженных пользователем изображений для image-to-video",
+      metadata: {
+        source: "chat_history",
+        totalUserImages: 0,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  // 5. АНАЛИЗИРУЕМ ТЕКСТ СООБЩЕНИЯ с использованием всех 4 систем
+  const messageLower = userMessage.toLowerCase();
+  console.log(
+    "🎬 analyzeVideoContext: Analyzing message with all 4 systems:",
+    messageLower
+  );
+
+  // 5.1. ВРЕМЕННОЙ АНАЛИЗ - ищем временные ссылки
+  let temporalMatch = null;
+  try {
+    console.log("🕒 VideoContext: Analyzing temporal references...");
+    const temporalMatches = await temporalAnalyzer.analyzeTemporalReferences(
+      userMessage,
+      userImages.map((img) => ({
+        ...img,
+        mediaType: "image" as const,
+      }))
+    );
+
+    if (temporalMatches.length > 0 && temporalMatches[0].confidence > 0.6) {
+      temporalMatch = temporalMatches[0];
+      console.log("🕒 VideoContext: Found temporal match:", {
+        url: temporalMatch.media.url,
+        confidence: temporalMatch.confidence,
+        reasoning: temporalMatch.reasoning,
+      });
+    }
+  } catch (error) {
+    console.warn("🕒 VideoContext: Temporal analysis failed:", error);
+  }
+
+  // 5.2. СЕМАНТИЧЕСКИЙ ПОИСК - ищем по содержимому
+  let semanticMatch = null;
+  try {
+    console.log("🔍 VideoContext: Analyzing semantic content...");
+    const semanticResults = semanticIndex.search(messageLower, userImages);
+
+    if (semanticResults.length > 0 && semanticResults[0].relevanceScore > 0.3) {
+      semanticMatch = semanticResults[0];
+      console.log("🔍 VideoContext: Found semantic match:", {
+        url: semanticMatch.image.url,
+        score: semanticMatch.relevanceScore,
+        reasoning: semanticMatch.reasoning,
+      });
+    }
+  } catch (error) {
+    console.warn("🔍 VideoContext: Semantic search failed:", error);
+  }
+
+  // 5.3. ПОИСК ПО КЛЮЧЕВЫМ СЛОВАМ (legacy поддержка)
+  const imageReferences = await analyzeVideoImageReferences(
+    messageLower,
+    userImages
+  );
+  console.log(
+    "🎬 analyzeVideoContext: Found image references:",
+    imageReferences
+  );
+
+  // 6. ВЫБИРАЕМ ЛУЧШИЙ РЕЗУЛЬТАТ из всех систем
+  let bestMatch = null;
+  let bestScore = 0;
+  let bestReasoning = "";
+  let bestSource = "";
+
+  // Приоритет 1: Временной анализ (высший приоритет)
+  if (temporalMatch && temporalMatch.confidence > bestScore) {
+    bestMatch = temporalMatch.media;
+    bestScore = temporalMatch.confidence;
+    bestReasoning = `Временная ссылка: ${temporalMatch.reasoning}`;
+    bestSource = "temporal";
+  }
+
+  // Приоритет 2: Семантический поиск
+  if (semanticMatch && semanticMatch.relevanceScore > bestScore) {
+    bestMatch = semanticMatch.image;
+    bestScore = semanticMatch.relevanceScore;
+    bestReasoning = `Семантический поиск: ${semanticMatch.reasoning}`;
+    bestSource = "semantic";
+  }
+
+  // Приоритет 3: Поиск по ключевым словам (legacy)
+  if (imageReferences.length > 0) {
+    const keywordMatch = imageReferences.sort(
+      (a, b) => b.relevance - a.relevance
+    )[0];
+    if (keywordMatch.relevance > bestScore) {
+      bestMatch = keywordMatch.image;
+      bestScore = keywordMatch.relevance;
+      bestReasoning = `Поиск по ключевым словам: ${keywordMatch.reasoning}`;
+      bestSource = "keywords";
+    }
+  }
+
+  // Приоритет 4: Семантический поиск по загруженным изображениям (fallback)
+  if (!bestMatch) {
+    console.log(
+      "🎬 analyzeVideoContext: No explicit references found, trying semantic search on user images"
+    );
+    const fallbackSemanticMatch = await findUserImageBySemanticContent(
+      messageLower,
+      userImages
+    );
+
+    if (fallbackSemanticMatch) {
+      bestMatch = fallbackSemanticMatch;
+      bestScore = 0.5; // Средний приоритет для fallback
+      bestReasoning = `Fallback семантический поиск среди загруженных пользователем изображений`;
+      bestSource = "fallback_semantic";
+    }
+  }
+
+  // 7. FALLBACK ПОИСК если основные системы не дали результата
+  if (!bestMatch) {
+    console.log(
+      "🎬 analyzeVideoContext: No match found with main systems, trying fallback methods"
+    );
+
+    // Fallback 1: Поиск по ключевым словам
+    const keywordMatch = findUserImageByKeywords(messageLower, userImages);
+    if (keywordMatch) {
+      bestMatch = keywordMatch;
+      bestScore = 0.4;
+      bestReasoning = `Fallback поиск по ключевым словам: ${keywordMatch.reasoning}`;
+      bestSource = "fallback_keywords";
+    }
+
+    // Fallback 2: Эвристики для видео
+    if (!bestMatch) {
+      const heuristicMatch = findUserImageByVideoHeuristics(
+        messageLower,
+        userImages
+      );
+      if (heuristicMatch) {
+        bestMatch = heuristicMatch.image;
+        bestScore = 0.3;
+        bestReasoning = `Fallback эвристики для видео: ${heuristicMatch.reasoning}`;
+        bestSource = "fallback_heuristics";
+      }
+    }
+
+    // Fallback 3: Последнее загруженное изображение
+    if (!bestMatch && userImages.length > 0) {
+      bestMatch = userImages[userImages.length - 1];
+      bestScore = 0.2;
+      bestReasoning =
+        "Fallback: последнее загруженное пользователем изображение";
+      bestSource = "fallback_last";
+    }
+  }
+
+  // 8. ФОРМИРУЕМ РЕЗУЛЬТАТ с метаданными
+  if (bestMatch) {
+    const confidence =
+      bestScore > 0.7 ? "high" : bestScore > 0.4 ? "medium" : "low";
+
+    const result = {
+      sourceImageUrl: bestMatch.url,
+      sourceImageId: bestMatch.id,
+      confidence: confidence as "high" | "medium" | "low",
+      reasoning: bestReasoning,
+      metadata: {
+        source: bestSource,
+        score: bestScore,
+        totalUserImages: userImages.length,
+        timestamp: new Date().toISOString(),
+        systems_used: {
+          temporal: !!temporalMatch,
+          semantic: !!semanticMatch,
+          keywords: imageReferences.length > 0,
+        },
+      },
+    };
+
+    console.log("🎬 analyzeVideoContext: Final result:", {
+      sourceImageUrl: result.sourceImageUrl,
+      confidence: result.confidence,
+      reasoning: result.reasoning,
+      metadata: result.metadata,
+    });
+
+    // 9. СОХРАНЯЕМ В КЭШ
+    if (
+      chatId &&
+      CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
+    ) {
+      const messageHash = generateMessageHash(
+        userMessage,
+        currentMessageAttachments
+      );
+      await contextCache.setCachedContext(chatId, messageHash, "video", {
+        sourceUrl: result.sourceImageUrl,
+        sourceId: result.sourceImageId,
+        mediaType: "video" as const,
+        confidence: result.confidence,
+        reasoning: result.reasoning,
+        metadata: result.metadata,
+      });
+    }
+
+    // 10. ЗАПИСЫВАЕМ ВЫБОР ДЛЯ ОБУЧЕНИЯ ПРЕДПОЧТЕНИЙ
+    if (userId && chatId) {
+      try {
+        await userPreferenceLearner.recordUserChoice(
+          chatId,
+          userId,
+          userMessage,
+          {
+            url: result.sourceImageUrl!,
+            id: result.sourceImageId,
+            role: "user" as const,
+            timestamp: new Date(),
+            messageIndex: 0,
+            mediaType: "image" as const,
+          },
+          userImages.map((img) => ({
+            ...img,
+            mediaType: "image" as const,
+          })),
+          bestScore,
+          bestReasoning
+        );
+        console.log("🧠 VideoContext: Recorded user choice for learning");
+      } catch (error) {
+        console.warn("🧠 VideoContext: Failed to record user choice:", error);
+      }
+    }
+
+    return result;
+  }
+
+  // 11. FALLBACK: если ничего не найдено, возвращаем последнее изображение
+  console.log(
+    "🎬 analyzeVideoContext: No matches found, using last user image as fallback"
+  );
+  const lastUserImage = userImages[userImages.length - 1];
+
+  const fallbackResult = {
     sourceImageUrl: lastUserImage.url,
     sourceImageId: lastUserImage.id,
-    confidence: "low",
-    reasoning: `Используется последнее загруженное пользователем изображение`,
+    confidence: "low" as const,
+    reasoning: `Fallback: используется последнее загруженное пользователем изображение для image-to-video`,
+    metadata: {
+      source: "fallback_last",
+      score: 0.1,
+      totalUserImages: userImages.length,
+      timestamp: new Date().toISOString(),
+      systems_used: {
+        temporal: false,
+        semantic: false,
+        keywords: false,
+      },
+    },
   };
+
+  console.log("🎬 analyzeVideoContext: Fallback result:", fallbackResult);
+  return fallbackResult;
 }
 
 /**

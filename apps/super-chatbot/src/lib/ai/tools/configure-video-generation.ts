@@ -173,32 +173,39 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           userMessage: params?.userMessage,
         });
 
-        // Приоритет 1: новая система анализа контекста (семантический поиск)
+        // Приоритет 1: новая система анализа контекста (все 4 системы)
         if (params?.chatId && params?.userMessage) {
           try {
-            console.log("🔍 Analyzing video context with new system...");
+            console.log(
+              "🔍 Analyzing video context with enhanced system (all 4 systems)..."
+            );
             const contextResult = await analyzeVideoContext(
               params.userMessage,
               params.chatId,
-              params.currentAttachments
+              params.currentAttachments,
+              params.session?.user?.id
             );
 
-            console.log("🔍 Context analysis result:", contextResult);
+            console.log("🔍 Enhanced context analysis result:", contextResult);
 
-            if (
-              contextResult.sourceImageUrl &&
-              contextResult.confidence !== "low"
-            ) {
+            if (contextResult.sourceUrl && contextResult.confidence !== "low") {
               console.log(
-                "🔍 Using sourceImageUrl from new context analysis:",
-                contextResult.sourceImageUrl,
+                "🔍 Using sourceUrl from enhanced context analysis:",
+                contextResult.sourceUrl,
                 "confidence:",
-                contextResult.confidence
+                contextResult.confidence,
+                "reasoning:",
+                contextResult.reasoning,
+                "metadata:",
+                contextResult.metadata
               );
-              normalizedSourceUrl = contextResult.sourceImageUrl;
+              normalizedSourceUrl = contextResult.sourceUrl;
             }
           } catch (error) {
-            console.warn("🔍 Error in context analysis, falling back:", error);
+            console.warn(
+              "🔍 Error in enhanced context analysis, falling back:",
+              error
+            );
           }
         }
 

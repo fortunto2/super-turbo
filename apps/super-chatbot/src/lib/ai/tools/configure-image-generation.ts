@@ -190,7 +190,8 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             const contextResult = await analyzeImageContext(
               params.userMessage,
               params.chatId,
-              params.currentAttachments
+              params.currentAttachments,
+              params.session?.user?.id
             );
 
             console.log("🔍 Context analysis result:", contextResult);

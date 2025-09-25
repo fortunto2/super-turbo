@@ -41,7 +41,8 @@ contextManager.registerAnalyzer(new AudioContextAnalyzer());
 export async function analyzeImageContext(
   userMessage: string,
   chatId: string,
-  currentAttachments?: any[]
+  currentAttachments?: any[],
+  userId?: string
 ) {
   const chatMedia = await contextManager.getChatMedia(chatId);
   return contextManager.analyzeContext(
@@ -49,16 +50,20 @@ export async function analyzeImageContext(
     userMessage,
     chatMedia,
     currentAttachments,
-    chatId
+    chatId,
+    userId
   );
 }
 
 export async function analyzeVideoContext(
   userMessage: string,
   chatId: string,
-  currentAttachments?: any[]
+  currentAttachments?: any[],
+  userId?: string
 ) {
-  console.log("🎬 analyzeVideoContext: Using enhanced video context analysis");
+  console.log(
+    "🎬 analyzeVideoContext: Using enhanced video context analysis with all 4 systems"
+  );
 
   const chatMedia = await contextManager.getChatMedia(chatId);
 
@@ -79,12 +84,24 @@ export async function analyzeVideoContext(
       attachments: [],
     }));
 
-  // Используем нашу улучшенную функцию анализа видео-контекста
-  return await analyzeVideoContextDirect(
+  // Используем нашу улучшенную функцию анализа видео-контекста с полной интеграцией всех 4 систем
+  const videoResult = await analyzeVideoContextDirect(
     userMessage,
     chatImages,
-    currentAttachments
+    currentAttachments,
+    chatId,
+    userId
   );
+
+  // Конвертируем VideoContext в MediaContext для совместимости
+  return {
+    sourceUrl: videoResult.sourceImageUrl,
+    sourceId: videoResult.sourceImageId,
+    mediaType: "video" as const,
+    confidence: videoResult.confidence,
+    reasoning: videoResult.reasoning,
+    metadata: videoResult.metadata,
+  };
 }
 
 export async function analyzeAudioContext(

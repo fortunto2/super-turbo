@@ -105,7 +105,79 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       };
     }
 
-    // 4. Используем эвристики
+    // 3.1. СЕМАНТИЧЕСКИЙ ПОИСК
+    try {
+      const { semanticAnalyzer } = await import("./semantic-search");
+      const semanticMatches = await semanticAnalyzer.findSimilarMedia(
+        userMessage,
+        filteredMedia,
+        0.6
+      );
+      if (semanticMatches.length > 0) {
+        const bestSemanticMatch = semanticMatches[0];
+        return {
+          sourceUrl: bestSemanticMatch.media.url,
+          sourceId: bestSemanticMatch.media.id,
+          mediaType: this.mediaType,
+          confidence: bestSemanticMatch.similarity > 0.8 ? "high" : "medium",
+          reasoning: `Семантический поиск: ${bestSemanticMatch.reasoning}`,
+          metadata: {
+            ...bestSemanticMatch.media.metadata,
+            semanticSimilarity: bestSemanticMatch.similarity,
+          },
+        };
+      }
+    } catch (error) {
+      console.warn("Semantic search failed:", error);
+    }
+
+    // 3.2. ВРЕМЕННОЙ АНАЛИЗ
+    try {
+      const { temporalAnalyzer } = await import("./temporal-analysis");
+      const temporalMatches = await temporalAnalyzer.analyzeTemporalReferences(
+        userMessage,
+        filteredMedia
+      );
+      if (temporalMatches.length > 0) {
+        const bestTemporalMatch = temporalMatches[0];
+        return {
+          sourceUrl: bestTemporalMatch.media.url,
+          sourceId: bestTemporalMatch.media.id,
+          mediaType: this.mediaType,
+          confidence:
+            bestTemporalMatch.confidence > 0.7
+              ? "high"
+              : bestTemporalMatch.confidence > 0.5
+                ? "medium"
+                : "low",
+          reasoning: `Временной анализ: ${bestTemporalMatch.reasoning}`,
+          metadata: {
+            ...bestTemporalMatch.media.metadata,
+            temporalDistance: bestTemporalMatch.temporalDistance,
+          },
+        };
+      }
+    } catch (error) {
+      console.warn("Temporal analysis failed:", error);
+    }
+
+    // 4. ПОИСК ПО СОДЕРЖИМОМУ ИЗОБРАЖЕНИЯ (по ключевым словам в промпте)
+    const contentMatch = this.findByContent(userMessage, filteredMedia);
+    if (contentMatch) {
+      return {
+        sourceUrl: contentMatch.media.url,
+        sourceId: contentMatch.media.id,
+        mediaType: this.mediaType,
+        confidence: contentMatch.relevance > 0.7 ? "high" : "medium",
+        reasoning: `Поиск по содержимому: ${contentMatch.reasoning}`,
+        metadata: {
+          ...contentMatch.media.metadata,
+          contentRelevance: contentMatch.relevance,
+        },
+      };
+    }
+
+    // 5. Используем эвристики
     const heuristicMatch = this.findByHeuristics(userMessage, filteredMedia);
     if (heuristicMatch) {
       return {
@@ -118,7 +190,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       };
     }
 
-    // 5. По умолчанию используем последнее медиа
+    // 6. По умолчанию используем последнее медиа
     const lastMedia = filteredMedia[filteredMedia.length - 1];
     return {
       sourceUrl: lastMedia.url,
@@ -183,6 +255,192 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     return references;
   }
 
+  private findByContent(
+    userMessage: string,
+    chatMedia: ChatMedia[]
+  ): { media: ChatMedia; relevance: number; reasoning: string } | null {
+    const messageLower = userMessage.toLowerCase();
+
+    // Извлекаем ключевые слова из сообщения пользователя
+    const keywords = this.extractKeywords(messageLower);
+    console.log(
+      `🔍 [${this.mediaType}] findByContent: Keywords from "${userMessage}":`,
+      keywords
+    );
+
+    if (keywords.length === 0) {
+      console.log(
+        `🔍 [${this.mediaType}] findByContent: No keywords found, skipping content search`
+      );
+      return null;
+    }
+
+    let bestMatch: ChatMedia | null = null;
+    let bestRelevance = 0;
+    let bestReasoning = "";
+
+    for (const media of chatMedia) {
+      // Проверяем промпт изображения на наличие ключевых слов
+      const mediaPrompt = media.prompt || media.metadata?.prompt || "";
+      const mediaPromptLower = mediaPrompt.toLowerCase();
+
+      let relevance = 0;
+      const matchedKeywords: string[] = [];
+
+      for (const keyword of keywords) {
+        if (mediaPromptLower.includes(keyword)) {
+          relevance += this.getKeywordWeight(keyword);
+          matchedKeywords.push(keyword);
+        }
+      }
+
+      if (relevance > bestRelevance) {
+        bestMatch = media;
+        bestRelevance = relevance;
+        bestReasoning = `найдены ключевые слова: ${matchedKeywords.join(", ")}`;
+      }
+    }
+
+    console.log(`🔍 [${this.mediaType}] findByContent: Best match:`, {
+      hasMatch: !!bestMatch,
+      relevance: bestRelevance,
+      reasoning: bestReasoning,
+      mediaUrl: bestMatch?.url,
+      mediaPrompt: bestMatch?.prompt,
+    });
+
+    if (bestMatch && bestRelevance > 0.3) {
+      return {
+        media: bestMatch,
+        relevance: Math.min(bestRelevance, 1.0),
+        reasoning: bestReasoning,
+      };
+    }
+
+    console.log(
+      `🔍 [${this.mediaType}] findByContent: No suitable match found (relevance: ${bestRelevance})`
+    );
+    return null;
+  }
+
+  private extractKeywords(text: string): string[] {
+    // Извлекаем существительные и важные слова
+    const commonWords = new Set([
+      "the",
+      "a",
+      "an",
+      "and",
+      "or",
+      "but",
+      "in",
+      "on",
+      "at",
+      "to",
+      "for",
+      "of",
+      "with",
+      "by",
+      "this",
+      "that",
+      "is",
+      "are",
+      "was",
+      "were",
+      "be",
+      "been",
+      "have",
+      "has",
+      "had",
+      "do",
+      "does",
+      "did",
+      "will",
+      "would",
+      "could",
+      "should",
+      "may",
+      "might",
+      "can",
+      "must",
+      "shall",
+      "photo",
+      "image",
+      "picture",
+      "make",
+      "create",
+      "generate",
+      "add",
+      "take",
+      "next",
+      "with",
+      "to",
+      "the",
+      "a",
+      "an",
+    ]);
+
+    const words = text
+      .toLowerCase()
+      .replace(/[^\w\s]/g, " ")
+      .split(/\s+/)
+      .filter((word) => word.length > 2 && !commonWords.has(word));
+
+    return [...new Set(words)]; // Убираем дубликаты
+  }
+
+  private getKeywordWeight(keyword: string): number {
+    // Веса для разных типов ключевых слов
+    const weights: Record<string, number> = {
+      // Животные - высокий приоритет
+      cat: 1.0,
+      кот: 1.0,
+      кошка: 1.0,
+      котенок: 1.0,
+      котик: 1.0,
+      dog: 1.0,
+      собака: 1.0,
+      пес: 1.0,
+      щенок: 1.0,
+      собачка: 1.0,
+      mouse: 1.0,
+      мышь: 1.0,
+      мышка: 1.0,
+      snake: 1.0,
+      змея: 1.0,
+      змейка: 1.0,
+      bird: 0.8,
+      птица: 0.8,
+      птичка: 0.8,
+      fish: 0.8,
+      рыба: 0.8,
+      рыбка: 0.8,
+
+      // Объекты - средний приоритет
+      car: 0.7,
+      машина: 0.7,
+      автомобиль: 0.7,
+      house: 0.7,
+      дом: 0.7,
+      здание: 0.7,
+      tree: 0.7,
+      дерево: 0.7,
+      flower: 0.6,
+      цветок: 0.6,
+
+      // Цвета - низкий приоритет
+      red: 0.3,
+      красный: 0.3,
+      blue: 0.3,
+      синий: 0.3,
+      green: 0.3,
+      зеленый: 0.3,
+      yellow: 0.3,
+      желтый: 0.3,
+    };
+
+    return weights[keyword] || 0.5; // Дефолтный вес
+  }
+
   private findByHeuristics(
     userMessage: string,
     chatMedia: ChatMedia[]
@@ -239,7 +497,8 @@ export class UniversalContextManager {
     userMessage: string,
     chatMedia: ChatMedia[],
     currentAttachments?: any[],
-    chatId?: string
+    chatId?: string,
+    userId?: string
   ): Promise<MediaContext> {
     // Проверяем кэш, если доступен chatId
     if (chatId && CacheUtils.shouldUseCache(userMessage, currentAttachments)) {
@@ -278,6 +537,33 @@ export class UniversalContextManager {
         mediaType,
         context
       );
+    }
+
+    // Записываем выбор для обучения предпочтений, если доступны userId и chatId
+    if (userId && chatId && context.sourceUrl) {
+      try {
+        const { userPreferenceLearner } = await import("./user-preferences");
+        const selectedMedia = chatMedia.find(
+          (media) => media.url === context.sourceUrl
+        );
+        if (selectedMedia) {
+          await userPreferenceLearner.recordUserChoice(
+            chatId,
+            userId,
+            userMessage,
+            selectedMedia,
+            chatMedia,
+            context.confidence === "high"
+              ? 0.9
+              : context.confidence === "medium"
+                ? 0.7
+                : 0.5,
+            context.reasoning
+          );
+        }
+      } catch (error) {
+        console.warn("Failed to record user choice for learning:", error);
+      }
     }
 
     return context;
