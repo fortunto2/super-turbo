@@ -61,11 +61,11 @@ export async function analyzeVideoContext(
   console.log("🎬 analyzeVideoContext: Using enhanced video context analysis");
 
   const chatMedia = await contextManager.getChatMedia(chatId);
-  
+
   // Фильтруем только изображения и конвертируем в ChatImage формат
   const chatImages = chatMedia
-    .filter(media => media.mediaType === "image")
-    .map(media => ({
+    .filter((media) => media.mediaType === "image")
+    .map((media) => ({
       url: media.url,
       id: media.id,
       role: media.role as "user" | "assistant",
@@ -73,7 +73,7 @@ export async function analyzeVideoContext(
       prompt: media.prompt,
       messageIndex: media.messageIndex,
       mediaType: "image" as const,
-      chatId: media.chatId,
+      chatId: chatId, // Используем chatId из параметра функции
       createdAt: media.timestamp,
       parts: [],
       attachments: [],

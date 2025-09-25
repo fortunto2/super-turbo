@@ -679,10 +679,10 @@ export const POST = withMonitoring(async function POST(request: Request) {
           console.log("🔍 Pre-analysis: Video context:", {
             confidence: videoContext.confidence,
             reasoning: videoContext.reasoning,
-            sourceUrl: videoContext.sourceUrl,
+            sourceImageUrl: videoContext.sourceImageUrl,
           });
 
-          defaultSourceVideoUrl = videoContext.sourceUrl;
+          defaultSourceVideoUrl = videoContext.sourceImageUrl;
 
           console.log(
             "🔍 defaultSourceVideoUrl set to:",

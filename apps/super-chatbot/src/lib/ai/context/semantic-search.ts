@@ -107,19 +107,18 @@ export class SemanticContextAnalyzer {
       maxPossibleScore += this.weights.prompt;
     }
 
-    // Анализируем имя файла (если есть)
-    if (media.fileName) {
-      const fileNameKeywords = this.extractKeywords(media.fileName);
+    // Анализируем имя файла и URL (если есть)
+    if (media.url) {
+      const fileName = media.url.split("/").pop() || "";
+      const fileNameKeywords = this.extractKeywords(fileName);
       const fileNameScore = this.calculateKeywordOverlap(
         queryKeywords,
         fileNameKeywords
       );
       totalScore += fileNameScore * this.weights.fileName;
       maxPossibleScore += this.weights.fileName;
-    }
 
-    // Анализируем URL (частично)
-    if (media.url) {
+      // Дополнительно анализируем весь URL
       const urlKeywords = this.extractKeywords(media.url);
       const urlScore = this.calculateKeywordOverlap(queryKeywords, urlKeywords);
       totalScore += urlScore * this.weights.url;
@@ -165,7 +164,8 @@ export class SemanticContextAnalyzer {
       assistant: ["сгенерирован", "generated", "создан", "created"],
     };
 
-    const relevantKeywords = roleKeywords[role as keyof typeof roleKeywords] || [];
+    const relevantKeywords =
+      roleKeywords[role as keyof typeof roleKeywords] || [];
     const hasRelevantKeyword = keywords.some((keyword) =>
       relevantKeywords.some((rk) => keyword.toLowerCase().includes(rk))
     );
@@ -204,7 +204,7 @@ export class SemanticContextAnalyzer {
     if (media.prompt) {
       const keywords = this.extractKeywords(media.prompt);
       const embedding = this.createSimpleEmbedding(keywords);
-      
+
       this.mediaEmbeddings.set(media.id || media.url, {
         values: embedding,
         metadata: {
@@ -256,13 +256,16 @@ export class SemanticContextAnalyzer {
   } {
     const totalMedia = this.mediaEmbeddings.size;
     const totalKeywords = this.keywordEmbeddings.size;
-    const totalKeywordCount = Array.from(this.mediaEmbeddings.values())
-      .reduce((sum, embedding) => sum + embedding.values.length, 0);
+    const totalKeywordCount = Array.from(this.mediaEmbeddings.values()).reduce(
+      (sum, embedding) => sum + embedding.values.length,
+      0
+    );
 
     return {
       totalMedia,
       totalKeywords,
-      averageKeywordsPerMedia: totalMedia > 0 ? totalKeywordCount / totalMedia : 0,
+      averageKeywordsPerMedia:
+        totalMedia > 0 ? totalKeywordCount / totalMedia : 0,
     };
   }
 }

@@ -475,7 +475,8 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
   async analyzeVideoImageContext(
     userMessage: string,
     chatMedia: ChatMedia[],
-    currentAttachments?: any[]
+    currentAttachments?: any[],
+    chatId?: string
   ): Promise<any> {
     console.log(
       "🎬 VideoContextAnalyzer: Starting enhanced video image context analysis"
@@ -492,7 +493,7 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
         prompt: media.prompt,
         messageIndex: media.messageIndex,
         mediaType: "image" as const,
-        chatId: media.chatId,
+        chatId: chatId || "", // Используем переданный chatId или пустую строку
         createdAt: media.timestamp,
         parts: [],
         attachments: [],

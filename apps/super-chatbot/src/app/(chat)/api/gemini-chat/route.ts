@@ -6,7 +6,7 @@ import {
   streamText,
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
-import type { RequestHints, } from "@/lib/ai/prompts";
+import type { RequestHints } from "@/lib/ai/prompts";
 import {
   createStreamId,
   deleteChatById,
@@ -705,10 +705,10 @@ export async function POST(request: Request) {
           console.log("🔍 Pre-analysis: Video context:", {
             confidence: videoContext.confidence,
             reasoning: videoContext.reasoning,
-            sourceUrl: videoContext.sourceUrl,
+            sourceImageUrl: videoContext.sourceImageUrl,
           });
 
-          defaultSourceVideoUrl = videoContext.sourceUrl;
+          defaultSourceVideoUrl = videoContext.sourceImageUrl;
 
           console.log(
             "🔍 defaultSourceVideoUrl set to:",
