@@ -4,11 +4,7 @@ import { useState } from "react";
 import { Button } from "@turbo-super/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
-import {
-  getModelConfig,
-  getVideoModels,
-  getImageModels,
-} from "@/lib/models-config";
+import { getVideoModels, getImageModels } from "@/lib/models-config";
 
 export default function TestConfigsPage() {
   const [testResults, setTestResults] = useState<

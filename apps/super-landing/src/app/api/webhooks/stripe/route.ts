@@ -62,7 +62,7 @@ function getNegativePrompt(style: string): string {
     fantasy: "realistic, mundane, ordinary, everyday, realistic",
   };
 
-  return negativePrompts[style] || negativePrompts.cinematic;
+  return negativePrompts[style] || negativePrompts.cinematic || "";
 }
 
 const uploadImage = async (imageFile: {
@@ -190,19 +190,21 @@ async function generateVideoWithSuperDuperAI(
 
     if (
       generationType === "image-to-video" &&
-      modelConfig.imageToVideoConfigName
+      modelConfig?.imageToVideoConfigName
     ) {
       console.log(
         "🎨 Using image-to-video config:",
-        modelConfig.imageToVideoConfigName
+        modelConfig?.imageToVideoConfigName
       );
       return modelConfig.imageToVideoConfigName;
     } else {
       console.log(
         "📝 Using text-to-video config:",
-        modelConfig.generationConfigName
+        modelConfig?.generationConfigName
       );
-      return modelConfig.generationConfigName || "google-cloud/veo3-text2video";
+      return (
+        modelConfig?.generationConfigName || "google-cloud/veo3-text2video"
+      );
     }
   };
 
@@ -215,7 +217,14 @@ async function generateVideoWithSuperDuperAI(
       negative_prompt: getNegativePrompt(style),
       width,
       height,
-      aspect_ratio: width > height ? "16:9" : height > width ? "9:16" : "1:1",
+      aspect_ratio:
+        width && height
+          ? width > height
+            ? "16:9"
+            : height > width
+              ? "9:16"
+              : "1:1"
+          : "1:1",
       duration: getModelDuration(modelName, duration),
       seed: Math.floor(Math.random() * 1000000),
       generation_config_name: await getModelConfig(modelName, generationType),
@@ -627,11 +636,11 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     }
 
     const session = sessions.data[0];
-    const sessionId = session.id;
+    const sessionId = session?.id;
     console.log("🔍 Found checkout session:", sessionId);
 
     // Get session data from Redis
-    const sessionData = await getSessionData(sessionId);
+    const sessionData = await getSessionData(sessionId || "");
 
     if (!sessionData) {
       console.error("❌ No session data found in Redis for:", sessionId);
@@ -639,14 +648,14 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     }
 
     // Update status to completed (payment successful, ready for generation)
-    await updateSessionData(sessionId, { status: "completed" });
+    await updateSessionData(sessionId!, { status: "completed" });
 
     console.log(
       "✅ Payment completed successfully. Generation can now proceed with paymentSessionId."
     );
 
     // TODO: Send email notification
-    const email = session.customer_details?.email;
+    const email = session?.customer_details?.email;
     if (email) {
       const baseUrl =
         process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";

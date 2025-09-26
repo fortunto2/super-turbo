@@ -1,6 +1,6 @@
 {
   "name": "@turbo-super/tailwind",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -27,20 +27,19 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf dist"
+    "clean": "node ../../scripts/clean.js dist"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "autoprefixer": "^10.4.16",
-
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
+    "tsup": "^8.0.2",
+    "typescript": "^5.6.3"
   },
   "peerDependencies": {
     "tailwindcss": "^3.4.0"

@@ -304,11 +304,11 @@ export const testEdgeCases = {
   nullModelConfig: {
     modelName: "test_model",
     locale: "en",
-    modelConfig: null as any,
+    modelConfig: null as unknown,
   },
   undefinedLocale: {
     modelName: "dall_e_3",
-    locale: undefined as any,
+    locale: undefined as unknown,
     modelConfig: testModelConfigs.dall_e_3,
   },
   specialCharacters: {

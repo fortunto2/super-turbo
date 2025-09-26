@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* eslint-disable no-console, no-unused-vars */
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 
 /**
  * Redis Analytics Script for SuperDuperAI
@@ -28,7 +29,7 @@ async function connectRedis() {
   try {
     await client.connect();
     console.log('✅ Connected to Redis');
-  } catch (error) {
+  } catch {
     console.error('❌ Failed to connect to Redis:', error);
     process.exit(1);
   }
@@ -62,7 +63,7 @@ async function getStats() {
             timestamp: promptData.timestamp
           });
         }
-      } catch (error) {
+      } catch {
         console.warn(`⚠️ Failed to get data for key: ${key}`);
       }
     }
@@ -119,7 +120,7 @@ async function getStats() {
       console.log(`  Date: ${new Date(shortestPrompt.timestamp).toLocaleString()}`);
     }
     
-  } catch (error) {
+  } catch {
     console.error('❌ Error getting stats:', error);
   }
 }
@@ -151,7 +152,7 @@ async function getPrompts() {
             timestamp: promptData.timestamp
           });
         }
-      } catch (_error) {
+      } catch {
         console.warn(`⚠️ Failed to get data for key: ${key}`);
       }
     }
@@ -173,7 +174,7 @@ async function getPrompts() {
       console.log(`... and ${prompts.length - limit} more prompts`);
     }
     
-  } catch (error) {
+  } catch {
     console.error('❌ Error getting prompts:', error);
   }
 }
@@ -196,7 +197,7 @@ async function deletePrompt(sessionId) {
     await client.del(key);
     console.log(`✅ Deleted prompt for session: ${sessionId}`);
     
-  } catch (error) {
+  } catch {
     console.error('❌ Error deleting prompt:', error);
   }
 }

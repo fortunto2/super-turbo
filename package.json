@@ -14,11 +14,14 @@
     "build:packages": "node scripts/rebuild-packages.js",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format": "turbo run format",
     "generate-translation-types": "cd packages/shared && npm run generate-types",
     "type-check": "turbo type-check",
-    "clean": "turbo clean && rm -rf node_modules",
-    "test": "turbo test"
+    "clean": "turbo clean && node scripts/clean.js node_modules",
+    "test": "turbo test",
+    "sync-versions": "node scripts/sync-versions.js",
+    "check-versions": "node scripts/check-versions.js",
+    "validate": "pnpm run type-check && pnpm run lint && pnpm run test"
   },
   "devDependencies": {
     "@turbo/gen": "^2.3.0",

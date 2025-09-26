@@ -1,11 +1,10 @@
-import { allBlogs } from ".contentlayer/generated";
+import { allBlogs, Blog } from ".contentlayer/generated";
 import { MDXContent } from "@/components/content/mdx-components";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
-import { Blog } from ".contentlayer/generated";
-import { getTranslation } from "@/lib/translations";
+import { getServerSuperLandingTranslation } from "@turbo-super/shared";
 import { Locale } from "@/config/i18n-config";
 import { BlogModelGenerator } from "@/components/content/blog-model-generator";
 
@@ -24,15 +23,15 @@ export async function generateMetadata({
     return {};
   }
 
-  const title = post.seo?.title || post.title;
-  const description = post.seo?.description || post.description;
+  const title = post.seo?.title ?? post.title;
+  const description = post.seo?.description ?? post.description;
 
   return generatePageMetadata({
     title,
     description,
-    keywords: post.seo?.keywords || [],
+    keywords: post.seo?.keywords ?? [],
     url: `/blog/${slug}`,
-    ogImage: post.seo?.ogImage,
+    ...(post.seo?.ogImage && { ogImage: post.seo.ogImage }),
     type: "article",
     meta: {
       pageType: "blog",
@@ -88,7 +87,7 @@ function BlogPageContent({
   // Проверяем наличие заголовка H1 в MDX
   const hasH1Heading = checkForH1InMDX(post.body.raw);
   // Получаем типизированные переводы для серверного компонента
-  const { t } = getTranslation(locale as Locale);
+  const { t } = getServerSuperLandingTranslation(locale as Locale);
   // Подготавливаем метку для хлебных крошек
   const breadcrumbLabel = post.title;
 
@@ -112,7 +111,7 @@ function BlogPageContent({
             modelName={post.modelName}
             modelConfig={{
               ...post.modelConfig,
-              description: post.seo?.description || post.description,
+              description: post.seo?.description ?? post.description,
             }}
             locale={locale as Locale}
           />

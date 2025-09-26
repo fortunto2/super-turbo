@@ -1,83 +1,16 @@
-"use strict";
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var index_exports = {};
-__export(index_exports, {
-  Badge: () => Badge,
-  Button: () => Button,
-  Card: () => Card,
-  CardContent: () => CardContent,
-  CardDescription: () => CardDescription,
-  CardFooter: () => CardFooter,
-  CardHeader: () => CardHeader,
-  CardTitle: () => CardTitle,
-  Dialog: () => Dialog,
-  DialogClose: () => DialogClose,
-  DialogContent: () => DialogContent,
-  DialogDescription: () => DialogDescription,
-  DialogFooter: () => DialogFooter,
-  DialogHeader: () => DialogHeader,
-  DialogOverlay: () => DialogOverlay,
-  DialogPortal: () => DialogPortal,
-  DialogTitle: () => DialogTitle,
-  DialogTrigger: () => DialogTrigger,
-  Input: () => Input,
-  Label: () => Label,
-  Separator: () => Separator,
-  Skeleton: () => Skeleton,
-  Tabs: () => Tabs,
-  TabsContent: () => TabsContent,
-  TabsList: () => TabsList,
-  TabsTrigger: () => TabsTrigger,
-  Textarea: () => Textarea,
-  badgeVariants: () => badgeVariants,
-  buttonVariants: () => buttonVariants,
-  cn: () => cn,
-  tabsTriggerVariants: () => tabsTriggerVariants,
-  textareaVariants: () => textareaVariants
-});
-module.exports = __toCommonJS(index_exports);
-
 // src/components/badge.tsx
-var import_class_variance_authority = require("class-variance-authority");
+import { cva } from "class-variance-authority";
 
 // src/lib/utils.ts
-var import_clsx = require("clsx");
-var import_tailwind_merge = require("tailwind-merge");
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 function cn(...inputs) {
-  return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
+  return twMerge(clsx(inputs));
 }
 
 // src/components/badge.tsx
-var import_jsx_runtime = require("react/jsx-runtime");
-var badgeVariants = (0, import_class_variance_authority.cva)(
+import { jsx } from "react/jsx-runtime";
+var badgeVariants = cva(
   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
@@ -95,7 +28,7 @@ var badgeVariants = (0, import_class_variance_authority.cva)(
   }
 );
 function Badge({ className, variant, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+  return /* @__PURE__ */ jsx(
     "div",
     {
       className: cn(badgeVariants({ variant }), className),
@@ -105,11 +38,11 @@ function Badge({ className, variant, ...props }) {
 }
 
 // src/components/button.tsx
-var React = __toESM(require("react"));
-var import_react_slot = require("@radix-ui/react-slot");
-var import_class_variance_authority2 = require("class-variance-authority");
-var import_jsx_runtime2 = require("react/jsx-runtime");
-var buttonVariants = (0, import_class_variance_authority2.cva)(
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva as cva2 } from "class-variance-authority";
+import { jsx as jsx2 } from "react/jsx-runtime";
+var buttonVariants = cva2(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
@@ -137,8 +70,8 @@ var buttonVariants = (0, import_class_variance_authority2.cva)(
 );
 var Button = React.forwardRef(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? import_react_slot.Slot : "button";
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+    const Comp = asChild ? Slot : "button";
+    return /* @__PURE__ */ jsx2(
       Comp,
       {
         className: cn(buttonVariants({ variant, size, className })),
@@ -151,9 +84,9 @@ var Button = React.forwardRef(
 Button.displayName = "Button";
 
 // src/components/card.tsx
-var React2 = __toESM(require("react"));
-var import_jsx_runtime3 = require("react/jsx-runtime");
-var Card = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+import * as React2 from "react";
+import { jsx as jsx3 } from "react/jsx-runtime";
+var Card = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx3(
   "div",
   {
     ref,
@@ -165,9 +98,9 @@ var Card = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (
   }
 ));
 Card.displayName = "Card";
-var CardHeader = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { ref, className: cn("flex flex-col space-y-1.5 p-6", className), ...props }));
+var CardHeader = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx3("div", { ref, className: cn("flex flex-col space-y-1.5 p-6", className), ...props }));
 CardHeader.displayName = "CardHeader";
-var CardTitle = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+var CardTitle = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx3(
   "div",
   {
     ref,
@@ -176,7 +109,7 @@ var CardTitle = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__
   }
 ));
 CardTitle.displayName = "CardTitle";
-var CardDescription = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+var CardDescription = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx3(
   "div",
   {
     ref,
@@ -185,9 +118,9 @@ var CardDescription = React2.forwardRef(({ className, ...props }, ref) => /* @__
   }
 ));
 CardDescription.displayName = "CardDescription";
-var CardContent = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { ref, className: cn("p-6 pt-0", className), ...props }));
+var CardContent = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx3("div", { ref, className: cn("p-6 pt-0", className), ...props }));
 CardContent.displayName = "CardContent";
-var CardFooter = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+var CardFooter = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx3(
   "div",
   {
     ref,
@@ -198,11 +131,11 @@ var CardFooter = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE_
 CardFooter.displayName = "CardFooter";
 
 // src/components/input.tsx
-var React3 = __toESM(require("react"));
-var import_jsx_runtime4 = require("react/jsx-runtime");
+import * as React3 from "react";
+import { jsx as jsx4 } from "react/jsx-runtime";
 var Input = React3.forwardRef(
   ({ className, type, ...props }, ref) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    return /* @__PURE__ */ jsx4(
       "input",
       {
         type,
@@ -219,14 +152,14 @@ var Input = React3.forwardRef(
 Input.displayName = "Input";
 
 // src/components/label.tsx
-var React4 = __toESM(require("react"));
-var LabelPrimitive = __toESM(require("@radix-ui/react-label"));
-var import_class_variance_authority3 = require("class-variance-authority");
-var import_jsx_runtime5 = require("react/jsx-runtime");
-var labelVariants = (0, import_class_variance_authority3.cva)(
+import * as React4 from "react";
+import * as LabelPrimitive from "@radix-ui/react-label";
+import { cva as cva3 } from "class-variance-authority";
+import { jsx as jsx5 } from "react/jsx-runtime";
+var labelVariants = cva3(
   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 );
-var Label = React4.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+var Label = React4.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx5(
   LabelPrimitive.Root,
   {
     ref,
@@ -237,11 +170,11 @@ var Label = React4.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ 
 Label.displayName = LabelPrimitive.Root.displayName;
 
 // src/components/separator.tsx
-var React5 = __toESM(require("react"));
-var SeparatorPrimitive = __toESM(require("@radix-ui/react-separator"));
-var import_jsx_runtime6 = require("react/jsx-runtime");
+import * as React5 from "react";
+import * as SeparatorPrimitive from "@radix-ui/react-separator";
+import { jsx as jsx6 } from "react/jsx-runtime";
 var Separator = React5.forwardRef(
-  ({ className, orientation = "horizontal", decorative = true, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+  ({ className, orientation = "horizontal", decorative = true, ...props }, ref) => /* @__PURE__ */ jsx6(
     SeparatorPrimitive.Root,
     {
       ref,
@@ -259,12 +192,12 @@ var Separator = React5.forwardRef(
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 // src/components/skeleton.tsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
+import { jsx as jsx7 } from "react/jsx-runtime";
 function Skeleton({
   className,
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+  return /* @__PURE__ */ jsx7(
     "div",
     {
       className: cn("animate-pulse rounded-md bg-muted", className),
@@ -274,12 +207,12 @@ function Skeleton({
 }
 
 // src/components/tabs.tsx
-var React6 = __toESM(require("react"));
-var TabsPrimitive = __toESM(require("@radix-ui/react-tabs"));
-var import_class_variance_authority4 = require("class-variance-authority");
-var import_jsx_runtime8 = require("react/jsx-runtime");
+import * as React6 from "react";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { cva as cva4 } from "class-variance-authority";
+import { jsx as jsx8 } from "react/jsx-runtime";
 var Tabs = TabsPrimitive.Root;
-var TabsList = React6.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+var TabsList = React6.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx8(
   TabsPrimitive.List,
   {
     ref,
@@ -291,7 +224,7 @@ var TabsList = React6.forwardRef(({ className, ...props }, ref) => /* @__PURE__ 
   }
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
-var tabsTriggerVariants = (0, import_class_variance_authority4.cva)(
+var tabsTriggerVariants = cva4(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
@@ -306,7 +239,7 @@ var tabsTriggerVariants = (0, import_class_variance_authority4.cva)(
     }
   }
 );
-var TabsTrigger = React6.forwardRef(({ className, variant, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+var TabsTrigger = React6.forwardRef(({ className, variant, ...props }, ref) => /* @__PURE__ */ jsx8(
   TabsPrimitive.Trigger,
   {
     ref,
@@ -315,7 +248,7 @@ var TabsTrigger = React6.forwardRef(({ className, variant, ...props }, ref) => /
   }
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
-var TabsContent = React6.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+var TabsContent = React6.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx8(
   TabsPrimitive.Content,
   {
     ref,
@@ -329,10 +262,10 @@ var TabsContent = React6.forwardRef(({ className, ...props }, ref) => /* @__PURE
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 // src/components/textarea.tsx
-var React7 = __toESM(require("react"));
-var import_class_variance_authority5 = require("class-variance-authority");
-var import_jsx_runtime9 = require("react/jsx-runtime");
-var textareaVariants = (0, import_class_variance_authority5.cva)(
+import * as React7 from "react";
+import { cva as cva5 } from "class-variance-authority";
+import { jsx as jsx9 } from "react/jsx-runtime";
+var textareaVariants = cva5(
   "flex min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
@@ -350,7 +283,7 @@ var textareaVariants = (0, import_class_variance_authority5.cva)(
 );
 var Textarea = React7.forwardRef(
   ({ className, variant, ...props }, ref) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+    return /* @__PURE__ */ jsx9(
       "textarea",
       {
         className: cn(textareaVariants({ variant, className })),
@@ -363,15 +296,15 @@ var Textarea = React7.forwardRef(
 Textarea.displayName = "Textarea";
 
 // src/components/dialog.tsx
-var React8 = __toESM(require("react"));
-var DialogPrimitive = __toESM(require("@radix-ui/react-dialog"));
-var import_lucide_react = require("lucide-react");
-var import_jsx_runtime10 = require("react/jsx-runtime");
+import * as React8 from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
+import { jsx as jsx10, jsxs } from "react/jsx-runtime";
 var Dialog = DialogPrimitive.Root;
 var DialogTrigger = DialogPrimitive.Trigger;
 var DialogPortal = DialogPrimitive.Portal;
 var DialogClose = DialogPrimitive.Close;
-var DialogOverlay = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+var DialogOverlay = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx10(
   DialogPrimitive.Overlay,
   {
     ref,
@@ -383,9 +316,9 @@ var DialogOverlay = React8.forwardRef(({ className, ...props }, ref) => /* @__PU
   }
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-var DialogContent = React8.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(DialogPortal, { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(DialogOverlay, {}),
-  /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+var DialogContent = React8.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(DialogPortal, { children: [
+  /* @__PURE__ */ jsx10(DialogOverlay, {}),
+  /* @__PURE__ */ jsxs(
     DialogPrimitive.Content,
     {
       ref,
@@ -396,9 +329,9 @@ var DialogContent = React8.forwardRef(({ className, children, ...props }, ref) =
       ...props,
       children: [
         children,
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(DialogPrimitive.Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react.X, { className: "h-4 w-4" }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sr-only", children: "Close" })
+        /* @__PURE__ */ jsxs(DialogPrimitive.Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground", children: [
+          /* @__PURE__ */ jsx10(X, { className: "h-4 w-4" }),
+          /* @__PURE__ */ jsx10("span", { className: "sr-only", children: "Close" })
         ] })
       ]
     }
@@ -408,7 +341,7 @@ DialogContent.displayName = DialogPrimitive.Content.displayName;
 var DialogHeader = ({
   className,
   ...props
-}) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+}) => /* @__PURE__ */ jsx10(
   "div",
   {
     className: cn(
@@ -422,7 +355,7 @@ DialogHeader.displayName = "DialogHeader";
 var DialogFooter = ({
   className,
   ...props
-}) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+}) => /* @__PURE__ */ jsx10(
   "div",
   {
     className: cn(
@@ -433,7 +366,7 @@ var DialogFooter = ({
   }
 );
 DialogFooter.displayName = "DialogFooter";
-var DialogTitle = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+var DialogTitle = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx10(
   DialogPrimitive.Title,
   {
     ref,
@@ -445,7 +378,7 @@ var DialogTitle = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE
   }
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
-var DialogDescription = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+var DialogDescription = React8.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx10(
   DialogPrimitive.Description,
   {
     ref,
@@ -454,8 +387,7 @@ var DialogDescription = React8.forwardRef(({ className, ...props }, ref) => /* @
   }
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
+export {
   Badge,
   Button,
   Card,
@@ -488,5 +420,5 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName;
   cn,
   tabsTriggerVariants,
   textareaVariants
-});
+};
 //# sourceMappingURL=index.js.map

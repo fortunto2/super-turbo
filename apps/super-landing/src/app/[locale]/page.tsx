@@ -22,7 +22,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   try {
-    const { locale } = await params;
+    const [locale] = await params;
 
     const home = allHomes.find((home) => home.locale === locale);
 
@@ -82,7 +82,7 @@ export default async function Home({
           <VideoShowcase />
           <ApprovedBy locale={locale} />
           <FAQ
-            items={homeData.faq}
+            items={homeData.faq || []}
             locale={locale}
           />
           <CTA />

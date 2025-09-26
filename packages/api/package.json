@@ -1,6 +1,6 @@
 {
   "name": "@turbo-super/api",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf dist",
+    "clean": "node ../../scripts/clean.js dist",
     "generate-api": "npx openapi-typescript-codegen --input https://dev-editor.superduperai.co/openapi.json --output src/superduperai/api --client axios --useOptions",
     "lint": "eslint . --config eslint.config.js"
   },
@@ -24,12 +24,12 @@
     "axios": "^1.10.0",
     "form-data": "^4.0.3",
     "openapi": "1.0.1",
-    "zod": "^3.22.4"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3",
-    "eslint": "^9.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.6.3",
+    "eslint": "^9.24.0",
     "@eslint/js": "^9.0.0",
     "@eslint/eslintrc": "^3.0.0",
     "@eslint/compat": "^1.0.0",
@@ -37,6 +37,6 @@
     "eslint-config-prettier": "^9.0.0"
   },
   "peerDependencies": {
-    "next": "^15.0.0"
+    "next": "15.3.1"
   }
 }

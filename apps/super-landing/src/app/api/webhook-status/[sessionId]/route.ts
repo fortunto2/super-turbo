@@ -142,7 +142,7 @@ export async function GET(
       );
       await updateSessionData(sessionId, {
         status: updatedSessionData.status,
-        error: updatedSessionData.error,
+        error: updatedSessionData.error || "",
       });
       console.log(
         `✅ Updated session ${sessionId} status to: ${updatedSessionData.status}`

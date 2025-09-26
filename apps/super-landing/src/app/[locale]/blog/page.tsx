@@ -12,11 +12,13 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const [locale] = await params;
   const dictionary = await getDictionary(locale);
 
-  const pageTitle = (dictionary.blog as any)?.page_title || "Blog";
-  const siteName = (dictionary.site as any)?.name || "SuperDuperAI";
+  const pageTitle =
+    (dictionary.blog as { page_title?: string })?.page_title ?? "Blog";
+  const siteName =
+    (dictionary.site as { name?: string })?.name ?? "SuperDuperAI";
   // Default description for blog page
   const pageDescription = "Learn about the latest AI models and updates";
 
@@ -37,7 +39,7 @@ export default async function BlogPage({
 }: {
   params: Promise<{ locale: Locale }>;
 }) {
-  const { locale } = await params;
+  const [locale] = await params;
   const dictionary = await getDictionary(locale);
   const sortedBlogs = allBlogs
     .filter((p) => p.locale === locale)
@@ -49,7 +51,7 @@ export default async function BlogPage({
       <main className="flex-1">
         <div className="container mx-auto py-10">
           <h1 className="text-3xl font-bold mb-6">
-            {(dictionary.blog as any)?.page_title || "Blog"}
+            {(dictionary.blog as { page_title?: string })?.page_title ?? "Blog"}
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedBlogs.map((post: Blog) => (

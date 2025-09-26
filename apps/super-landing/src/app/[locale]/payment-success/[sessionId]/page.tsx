@@ -10,11 +10,7 @@ interface PaymentSuccessPageProps {
   }>;
 }
 
-export async function generateMetadata({
-  params,
-}: PaymentSuccessPageProps): Promise<Metadata> {
-  const { sessionId } = await params;
-
+export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Payment Successful - Processing Your Video",
     description:

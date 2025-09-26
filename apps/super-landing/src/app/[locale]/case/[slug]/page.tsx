@@ -1,11 +1,10 @@
-import { allCases } from ".contentlayer/generated";
+import { allCases, Case } from ".contentlayer/generated";
 import { MDXContent } from "@/components/content/mdx-components";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
-import { Case } from ".contentlayer/generated";
-import { useTranslation } from "@/hooks/use-translation";
+import { getServerSuperLandingTranslation } from "@turbo-super/shared";
 import { Locale } from "@/config/i18n-config";
 
 export async function generateMetadata({
@@ -24,15 +23,17 @@ export async function generateMetadata({
     return {};
   }
 
-  const title = caseItem.seo?.title || caseItem.title;
-  const description = caseItem.seo?.description || caseItem.description;
+  const title = caseItem.seo?.title ?? caseItem.title;
+  const description = caseItem.seo?.description ?? caseItem.description;
 
   return generatePageMetadata({
     title,
     description,
-    keywords: caseItem.seo?.keywords || [],
+    keywords: caseItem.seo?.keywords ?? [],
     url: `/case/${slug}`,
-    ogImage: caseItem.seo?.ogImage || caseItem.image,
+    ...((caseItem.seo?.ogImage ?? caseItem.image) && {
+      ogImage: (caseItem.seo?.ogImage ?? caseItem.image)!,
+    }),
     type: "article",
     meta: {
       pageType: "case",
@@ -87,9 +88,9 @@ function CasePageContent({
 }) {
   // Проверяем наличие заголовка H1 в MDX
   const hasH1Heading = checkForH1InMDX(caseItem.body.raw);
-  const { t } = useTranslation(locale as Locale);
+  const { t } = getServerSuperLandingTranslation(locale as Locale);
   // Подготавливаем метку для хлебных крошек
-  const breadcrumbLabel = caseItem.title;
+  const [breadcrumbLabel] = caseItem.title.split(" - ");
 
   return (
     <PageWrapper
@@ -98,7 +99,10 @@ function CasePageContent({
       breadcrumbItems={[
         { label: t("navbar.home"), href: `/${locale}` },
         { label: t("marketing.cases"), href: `/${locale}/case` },
-        { label: breadcrumbLabel, href: `/${locale}/case/${slug}` },
+        {
+          label: breadcrumbLabel ?? caseItem.title,
+          href: `/${locale}/case/${slug}`,
+        },
       ]}
       hasH1Heading={hasH1Heading}
     >

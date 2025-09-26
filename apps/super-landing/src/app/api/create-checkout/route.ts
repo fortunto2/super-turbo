@@ -148,20 +148,20 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       status: "pending" as const,
       // Добавляем информацию для перенаправления на страницу генерации
-      modelName,
+      modelName: modelName || "",
       // Новые поля для поддержки image-to-video
       generationType,
-      // Преобразуем File в сериализуемый объект
-      imageFile: imageFile
-        ? {
-            name: imageFile.name,
-            size: imageFile.size,
-            type: imageFile.type,
-            lastModified: imageFile.lastModified,
-            // Сохраняем содержимое файла как base64 для передачи в webhook
-            content: await fileToBase64(imageFile),
-          }
-        : undefined,
+      // Преобразуем File в сериализуемый объект только если файл существует
+      ...(imageFile && {
+        imageFile: {
+          name: imageFile.name,
+          size: imageFile.size,
+          type: imageFile.type,
+          lastModified: imageFile.lastModified,
+          // Сохраняем содержимое файла как base64 для передачи в webhook
+          content: await fileToBase64(imageFile),
+        },
+      }),
     };
 
     // Minimal Stripe metadata - only essential info

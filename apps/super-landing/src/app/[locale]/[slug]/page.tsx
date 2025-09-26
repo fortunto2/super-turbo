@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { MDXContent } from "@/components/content/mdx-components";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
-import { useTranslation } from "@/hooks/use-translation";
+import { getServerSuperLandingTranslation } from "@turbo-super/shared";
 import { Locale } from "@/config/i18n-config";
 
 // Функция для получения метаданных страницы
@@ -25,8 +25,8 @@ export async function generateMetadata({
     };
   }
 
-  const title = page.seo?.title || page.title;
-  const description = page.seo?.description || page.description;
+  const title = page.seo?.title ?? page.title;
+  const description = page.seo?.description ?? page.description;
 
   // Форматируем слаг для отображения в OpenGraph изображении
   const formattedSlug = slug
@@ -38,9 +38,9 @@ export async function generateMetadata({
   return generatePageMetadata({
     title,
     description,
-    keywords: page.seo?.keywords || [],
+    keywords: page.seo?.keywords ?? [],
     url: `/${slug}`,
-    ogImage: page.seo?.ogImage,
+    ...(page.seo?.ogImage && { ogImage: page.seo.ogImage }),
     type: "website",
     meta: {
       pageType: "page",
@@ -96,16 +96,16 @@ function PageContent({
 }) {
   // Проверяем наличие заголовка H1 в MDX
   const hasH1Heading = checkForH1InMDX(page.body.raw);
-  const { t } = useTranslation(locale as Locale);
+  const { t } = getServerSuperLandingTranslation(locale as Locale);
   // Подготавливаем метку для хлебных крошек
-  const breadcrumbLabel = page.title.split(" - ")[0];
+  const [breadcrumbLabel] = page.title.split(" - ");
 
   return (
     <PageWrapper
       title={page.title}
       breadcrumbItems={[
         { label: t("navbar.home"), href: `/${locale}` },
-        { label: breadcrumbLabel, href: `/${locale}/${slug}` },
+        { label: breadcrumbLabel ?? page.title, href: `/${locale}/${slug}` },
       ]}
       hasH1Heading={hasH1Heading}
       locale={locale}

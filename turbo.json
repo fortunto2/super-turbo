@@ -12,12 +12,14 @@
         ".next/**",
         "!.next/cache/**",
         "dist/**"
-      ]
+      ],
+      "env": ["NODE_ENV", "VERCEL_ENV"]
     },
     "dev": {
       "dependsOn": ["^build:types"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["NODE_ENV"]
     },
     "build:types": {
       "dependsOn": ["^build:types"],
@@ -34,7 +36,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         ".eslintrc*",
-        "eslint.config.*"
+        "eslint.config.*",
+        "biome.json*"
       ]
     },
     "type-check": {
@@ -49,16 +52,25 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "jest.config.*",
-        "vitest.config.*"
+        "vitest.config.*",
+        "playwright.config.*"
       ]
     },
     "clean": {
       "cache": false
+    },
+    "format": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".prettierrc*",
+        "prettier.config.*"
+      ]
     }
   },
   "globalEnv": [
     "NODE_ENV",
     "VERCEL",
-    "VERCEL_ENV"
+    "VERCEL_ENV",
+    "CI"
   ]
 } 

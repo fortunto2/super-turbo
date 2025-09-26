@@ -77,7 +77,7 @@ export async function uploadImageUrlToSuperduperAI(
 
     // Конфигурируем SuperDuperAI клиент
     configureSuperduperAI();
-    const config = getSuperduperAIConfig();
+    const _config = getSuperduperAIConfig();
 
     // Сначала получаем изображение по URL
     const imageResponse = await fetch(imageUrl);

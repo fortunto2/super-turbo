@@ -299,8 +299,11 @@ export async function POST(req: NextRequest) {
         img.tags.forEach((tag) => {
           if (!imagesByTag[tag]) imagesByTag[tag] = [];
           imagesByTag[tag].push({
-            ...img,
+            id: img.id,
+            weight: img.weight,
             index: index + 1,
+            tags: img.tags,
+            ...(img.description && { description: img.description }),
           });
         });
       });

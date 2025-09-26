@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -52,7 +52,7 @@ export default function PaymentSuccessClient({
   }, []);
 
   // Check webhook status
-  const checkWebhookStatus = async () => {
+  const checkWebhookStatus = useCallback(async () => {
     try {
       console.log("🔍 Checking webhook status for session:", sessionId);
       const response = await fetch(`/api/webhook-status/${sessionId}`);
@@ -85,7 +85,7 @@ export default function PaymentSuccessClient({
     } catch (error) {
       console.error("Error checking webhook status:", error);
     }
-  };
+  }, [sessionId, status.fileId, router, locale]);
 
   // Poll webhook status every 2 seconds
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function PaymentSuccessClient({
       clearInterval(interval);
       clearInterval(countdownInterval);
     };
-  }, [sessionId, locale, router]);
+  }, [sessionId, locale, router, checkWebhookStatus]);
 
   const getStatusIcon = () => {
     switch (status.status) {

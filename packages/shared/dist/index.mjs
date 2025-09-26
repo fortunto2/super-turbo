@@ -453,7 +453,6 @@ var i18n = {
   locales: ["en", "ru", "tr", "es", "hi"],
   localeDetection: true,
   // automatic detection by headers
-  domains: void 0,
   cookieName: localeCookieName,
   cookieMaxAge: 31536e3,
   // 1 year in seconds
@@ -479,7 +478,6 @@ var i18nServer = {
   locales: ["en", "ru", "tr", "es", "hi"],
   localeDetection: true,
   // automatic detection by headers
-  domains: void 0,
   cookieName: localeCookieName2,
   cookieMaxAge: 31536e3,
   // 1 year in seconds

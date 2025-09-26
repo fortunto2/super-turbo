@@ -11,7 +11,7 @@ export const dynamic = "force-static";
 export const revalidate = false;
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "superduperai.co";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "superduperai.co";
   const site = `https://${baseUrl}`;
 
   type Entry = { path: string; locale: string; lastMod: Date };
@@ -34,7 +34,7 @@ export async function GET() {
   for (const entry of entries) {
     const key = entry.path;
     if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(entry);
+    groups.get(key)?.push(entry);
   }
 
   // Создаем XML sitemap с правильным международным форматированием
@@ -48,7 +48,7 @@ export async function GET() {
     // Находим последнюю дату модификации для всех языковых версий
     const lastmod = list.reduce(
       (latest, cur) => (cur.lastMod > latest ? cur.lastMod : latest),
-      list[0].lastMod
+      list[0]?.lastMod ?? new Date()
     );
 
     // Создаем ОДИН URL entry на группу языков (согласно рекомендациям Google)
@@ -75,7 +75,7 @@ export async function GET() {
     xmlLines.push(
       `    <xhtml:link rel="alternate" hreflang="x-default" href="${mainUrl}" />`
     );
-    
+
     xmlLines.push(`    <lastmod>${lastmod.toISOString()}</lastmod>`);
     xmlLines.push(`    <changefreq>weekly</changefreq>`);
     xmlLines.push(`    <priority>${path === "/" ? "1.0" : "0.8"}</priority>`);

@@ -1,11 +1,10 @@
-import { allTools } from ".contentlayer/generated";
+import { allTools, Tool } from ".contentlayer/generated";
 import { MDXContent } from "@/components/content/mdx-components";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
-import { Tool } from ".contentlayer/generated";
-import { useTranslation } from "@/hooks/use-translation";
+import { getServerSuperLandingTranslation } from "@turbo-super/shared";
 import { Locale } from "@/config/i18n-config";
 
 export async function generateMetadata({
@@ -23,15 +22,15 @@ export async function generateMetadata({
     return {};
   }
 
-  const title = tool.seo?.title || tool.title;
-  const description = tool.seo?.description || tool.description;
+  const title = tool.seo?.title ?? tool.title;
+  const description = tool.seo?.description ?? tool.description;
 
   return generatePageMetadata({
     title,
     description,
-    keywords: tool.seo?.keywords || [],
+    keywords: tool.seo?.keywords ?? [],
     url: `/tool/${slug}`,
-    ogImage: tool.seo?.ogImage,
+    ...(tool.seo?.ogImage && { ogImage: tool.seo.ogImage }),
     type: "article",
     meta: {
       pageType: "tool",
@@ -86,9 +85,9 @@ function ToolPageContent({
 }) {
   // Проверяем наличие заголовка H1 в MDX
   const hasH1Heading = checkForH1InMDX(tool.body.raw);
-  const { t } = useTranslation(locale as Locale);
+  const { t } = getServerSuperLandingTranslation(locale as Locale);
   // Подготавливаем метку для хлебных крошек
-  const breadcrumbLabel = tool.title;
+  const [breadcrumbLabel] = tool.title.split(" - ");
 
   return (
     <PageWrapper
@@ -97,7 +96,7 @@ function ToolPageContent({
       breadcrumbItems={[
         { label: t("navbar.home"), href: `/${locale}` },
         { label: t("marketing.tools"), href: `/${locale}/tool` },
-        { label: breadcrumbLabel, href: `/${locale}/tool/${slug}` },
+        { label: breadcrumbLabel ?? tool.title, href: `/${locale}/tool/${slug}` },
       ]}
       hasH1Heading={hasH1Heading}
     >

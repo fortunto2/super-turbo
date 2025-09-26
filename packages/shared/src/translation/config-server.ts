@@ -6,7 +6,6 @@ export const i18nServer: LocaleConfig = {
   defaultLocale: "en",
   locales: ["en", "ru", "tr", "es", "hi"],
   localeDetection: true, // automatic detection by headers
-  domains: undefined,
   cookieName: localeCookieName,
   cookieMaxAge: 31536000, // 1 year in seconds
   preserveRouteOnHome: true, // flag for clean URLs on home page

@@ -36,7 +36,7 @@ export default function TestWorkingConfigsPage() {
   >({});
   const [isTesting, setIsTesting] = useState(false);
 
-  const testConfig = async (configName: string, type: string) => {
+  const testConfig = async (configName: string, _type: string) => {
     try {
       const response = await fetch("/api/test-config", {
         method: "POST",
