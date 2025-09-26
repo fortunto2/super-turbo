@@ -190,15 +190,11 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       };
     }
 
-    // 6. По умолчанию используем последнее медиа
-    const lastMedia = filteredMedia[filteredMedia.length - 1];
+    // 6. По умолчанию НЕ используем медиа, если пользователь не просил явно
     return {
-      sourceUrl: lastMedia.url,
-      sourceId: lastMedia.id,
       mediaType: this.mediaType,
       confidence: "low",
-      reasoning: `Используется последний ${this.mediaType} файл из чата`,
-      metadata: lastMedia.metadata,
+      reasoning: `В истории чата не найдено подходящих ${this.mediaType} файлов для использования`,
     };
   }
 

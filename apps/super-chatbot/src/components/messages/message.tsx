@@ -21,7 +21,7 @@ import type {
   VideoGenerationConfig,
   VideoSettings as VideoSettingsType,
 } from "@/lib/types/media-settings";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 import { ScriptArtifactViewer } from "@/artifacts/text/client";
 import { Button, cn } from "@turbo-super/ui";
 
@@ -51,7 +51,7 @@ const PurePreviewMessage = ({
   append?: UseChatHelpers["append"];
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
-  const { setArtifact } = useArtifact();
+  const { setArtifact } = useArtifactLegacy();
 
   return (
     <AnimatePresence>

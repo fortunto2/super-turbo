@@ -1,7 +1,7 @@
 import type { Attachment } from "ai";
 
 import { LoaderIcon } from "../common/icons";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 
 export const PreviewAttachment = ({
   attachment,
@@ -13,7 +13,7 @@ export const PreviewAttachment = ({
   chatId?: string;
 }) => {
   const { name, url, contentType } = attachment;
-  const { setArtifact } = useArtifact();
+  const { setArtifact } = useArtifactLegacy();
 
   const handleAttachmentClick = () => {
     if (contentType?.startsWith("image")) {

@@ -8,7 +8,7 @@ import {
   PencilEditIcon,
 } from "../common/icons";
 import { toast } from "sonner";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 
 const getActionText = (
   type: "create" | "update" | "request-suggestions",
@@ -39,7 +39,7 @@ function PureDocumentToolResult({
   result,
   isReadonly,
 }: DocumentToolResultProps) {
-  const { setArtifact } = useArtifact();
+  const { setArtifact } = useArtifactLegacy();
 
   return (
     <button
@@ -102,7 +102,7 @@ function PureDocumentToolCall({
   args,
   isReadonly,
 }: DocumentToolCallProps) {
-  const { setArtifact } = useArtifact();
+  const { setArtifact } = useArtifactLegacy();
 
   return (
     <button

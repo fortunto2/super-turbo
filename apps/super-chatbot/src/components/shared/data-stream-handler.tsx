@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, memo } from "react";
 import type { Suggestion } from "@/lib/db/schema";
-import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
+import { initialArtifactData, useArtifactLegacy } from "@/hooks/use-artifact";
+import { useArtifactContext } from "@/contexts/artifact-context";
 import { toast } from "../common/toast";
 import { artifactDefinitions, type ArtifactKind } from "../artifacts/artifact";
 
@@ -42,7 +43,22 @@ function PureDataStreamHandler({
 
   // DataStreamHandler initialized silently
 
-  const { artifact, setArtifact, setMetadata } = useArtifact();
+  // Всегда вызываем оба хука
+  const legacy = useArtifactLegacy();
+
+  // Попытаемся использовать контекст, если доступен
+  let artifact, setArtifact, setMetadata;
+  try {
+    const context = useArtifactContext();
+    artifact = context.artifact;
+    setArtifact = context.setArtifact;
+    setMetadata = context.setMetadata;
+  } catch (error) {
+    console.log("🔍 DataStreamHandler: Context not available, using legacy");
+    artifact = legacy.artifact;
+    setArtifact = legacy.setArtifact;
+    setMetadata = legacy.setMetadata;
+  }
   const lastProcessedIndex = useRef(-1);
   const isProcessing = useRef(false);
 
@@ -112,10 +128,66 @@ function PureDataStreamHandler({
               };
 
             case "kind":
+              // Вызываем onCreateDocument когда создается новый артефакт
+              const newKind = delta.content as ArtifactKind;
+              console.log("🎯 Creating new artifact with kind:", newKind);
+
+              // Проверяем, не создан ли уже артефакт этого типа
+              if (
+                draftArtifact.kind === newKind &&
+                draftArtifact.documentId !== "init"
+              ) {
+                console.log(
+                  "🎯 Artifact already created, skipping onCreateDocument"
+                );
+                return {
+                  ...draftArtifact,
+                  kind: newKind,
+                  status: "streaming",
+                  isVisible: true,
+                };
+              }
+
+              const kindArtifactDefinition = artifactDefinitions.find(
+                (def) => def.kind === newKind
+              );
+              if (kindArtifactDefinition?.onCreateDocument) {
+                console.log("🎯 Calling onCreateDocument for:", newKind);
+                kindArtifactDefinition.onCreateDocument({
+                  setArtifact: (updater) => {
+                    if (typeof updater === "function") {
+                      setArtifact((current) => {
+                        const updated = updater(current);
+                        return {
+                          ...updated,
+                          kind: newKind,
+                          status: "streaming",
+                        };
+                      });
+                    } else {
+                      setArtifact({
+                        ...updater,
+                        kind: newKind,
+                        status: "streaming",
+                      });
+                    }
+                  },
+                });
+              } else {
+                console.log("🎯 No onCreateDocument found for:", newKind);
+                // Если нет onCreateDocument, устанавливаем базовые значения
+                setArtifact((current) => ({
+                  ...current,
+                  kind: newKind,
+                  status: "streaming",
+                  isVisible: true,
+                }));
+              }
               return {
                 ...draftArtifact,
-                kind: delta.content as ArtifactKind,
+                kind: newKind,
                 status: "streaming",
+                isVisible: true, // Убеждаемся что артефакт видим
               };
 
             case "clear":

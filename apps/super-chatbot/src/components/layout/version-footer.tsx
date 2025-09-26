@@ -9,7 +9,7 @@ import { useWindowSize } from "usehooks-ts";
 import type { Document } from "@/lib/db/schema";
 
 import { LoaderIcon } from "../common/icons";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 
 import { Button } from "@turbo-super/ui";
 import { getDocumentTimestampByIndex } from "@/lib/utils";
@@ -24,7 +24,7 @@ export const VersionFooter = ({
   documents,
   currentVersionIndex,
 }: VersionFooterProps) => {
-  const { artifact } = useArtifact();
+  const { artifact } = useArtifactLegacy();
 
   const { width } = useWindowSize();
   const isMobile = width < 768;
