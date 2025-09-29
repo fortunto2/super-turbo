@@ -93,7 +93,7 @@ export default function PaymentSuccessClient({
 
     const interval = setInterval(() => {
       console.log(`⏰ Polling webhook status for session: ${sessionId}`);
-      checkWebhookStatus();
+      void checkWebhookStatus();
     }, 2000);
 
     const countdownInterval = setInterval(() => {
@@ -114,7 +114,7 @@ export default function PaymentSuccessClient({
 
     // Initial check
     console.log(`🚀 Initial webhook status check for session: ${sessionId}`);
-    checkWebhookStatus();
+    void checkWebhookStatus();
 
     return () => {
       console.log(
@@ -149,7 +149,7 @@ export default function PaymentSuccessClient({
       case "completed":
         return "Video generation started! Redirecting to status page...";
       case "error":
-        return status.error || "An error occurred processing your payment";
+        return status.error ?? "An error occurred processing your payment";
       default:
         return "Processing...";
     }
@@ -206,7 +206,9 @@ export default function PaymentSuccessClient({
           {status.fileId && status.status !== "error" && (
             <div className="text-center">
               <Button
-                onClick={() => router.push(`/${locale}/file/${status.fileId}`)}
+                onClick={() => {
+                  router.push(`/${locale}/file/${status.fileId}`);
+                }}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Video className="h-4 w-4 mr-2" />
@@ -229,14 +231,18 @@ export default function PaymentSuccessClient({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigator.clipboard.writeText(sessionId)}
+                  onClick={() => {
+                    void navigator.clipboard.writeText(sessionId);
+                  }}
                   className="h-6 w-6 p-0"
                 >
                   <Copy className="w-3 h-3" />
                 </Button>
               </div>
               <Button
-                onClick={() => router.push(`/${locale}/session/${sessionId}`)}
+                onClick={() => {
+                  router.push(`/${locale}/session/${sessionId}`);
+                }}
                 variant="outline"
                 className="gap-2"
               >
@@ -256,7 +262,9 @@ export default function PaymentSuccessClient({
               </p>
               <div className="flex flex-col gap-2">
                 <Button
-                  onClick={() => router.push(`/${locale}/dev/files`)}
+                  onClick={() => {
+                    router.push(`/${locale}/dev/files`);
+                  }}
                   variant="outline"
                   size="sm"
                   className="gap-2"
@@ -265,7 +273,9 @@ export default function PaymentSuccessClient({
                   Browse All Files
                 </Button>
                 <Button
-                  onClick={() => router.push(`/${locale}/session/${sessionId}`)}
+                  onClick={() => {
+                    router.push(`/${locale}/session/${sessionId}`);
+                  }}
                   variant="outline"
                   size="sm"
                   className="gap-2"
@@ -281,9 +291,9 @@ export default function PaymentSuccessClient({
           {status.status === "error" && (
             <div className="text-center">
               <Button
-                onClick={() =>
-                  router.push(`/${locale}/tool/veo3-prompt-generator`)
-                }
+                onClick={() => {
+                  router.push(`/${locale}/tool/veo3-prompt-generator`);
+                }}
                 variant="outline"
               >
                 Try Again
@@ -299,28 +309,30 @@ export default function PaymentSuccessClient({
               </p>
               <div className="flex gap-2 justify-center">
                 <Button
-                  onClick={() => setStatus({ status: "processing" })}
+                  onClick={() => {
+                    setStatus({ status: "processing" });
+                  }}
                   variant="outline"
                   size="sm"
                 >
                   Simulate Processing
                 </Button>
                 <Button
-                  onClick={() =>
+                  onClick={() => {
                     setStatus({
                       status: "completed",
                       fileId: "demo-file-id-12345",
-                    })
-                  }
+                    });
+                  }}
                   variant="outline"
                   size="sm"
                 >
                   Simulate Completed
                 </Button>
                 <Button
-                  onClick={() =>
-                    router.push(`/${locale}/file/demo-file-id-12345`)
-                  }
+                  onClick={() => {
+                    router.push(`/${locale}/file/demo-file-id-12345`);
+                  }}
                   variant="default"
                   size="sm"
                 >
@@ -354,11 +366,17 @@ export default function PaymentSuccessClient({
       <Card>
         <CardContent className="pt-6">
           <div>
-            <label className="text-sm font-medium text-muted-foreground">
+            <label
+              htmlFor="session-id-display"
+              className="text-sm font-medium text-muted-foreground"
+            >
               Session ID
             </label>
             <div className="flex items-center gap-2 mt-1">
-              <code className="text-xs bg-muted px-2 py-1 rounded flex-1 break-all">
+              <code
+                id="session-id-display"
+                className="text-xs bg-muted px-2 py-1 rounded flex-1 break-all"
+              >
                 {sessionId}
               </code>
             </div>

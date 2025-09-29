@@ -1,11 +1,11 @@
-import { allTools, Tool } from ".contentlayer/generated";
+import { allTools, type Tool } from ".contentlayer/generated";
 import { MDXContent } from "@/components/content/mdx-components";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
 import { getServerSuperLandingTranslation } from "@turbo-super/shared";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 export async function generateMetadata({
   params,
@@ -96,7 +96,10 @@ function ToolPageContent({
       breadcrumbItems={[
         { label: t("navbar.home"), href: `/${locale}` },
         { label: t("marketing.tools"), href: `/${locale}/tool` },
-        { label: breadcrumbLabel ?? tool.title, href: `/${locale}/tool/${slug}` },
+        {
+          label: breadcrumbLabel ?? tool.title,
+          href: `/${locale}/tool/${slug}`,
+        },
       ]}
       hasH1Heading={hasH1Heading}
     >

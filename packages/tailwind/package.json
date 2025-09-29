@@ -17,7 +17,7 @@
       "require": "./dist/config.js"
     },
     "./css": "./dist/styles.css",
-    "./landing-css": "./src/landing-styles.css"
+    "./landing-styles": "./src/landing-styles.css"
   },
   "files": [
     "dist/**",

@@ -2,7 +2,8 @@ import {
   configureSuperduperAI,
   getSuperduperAIConfig,
 } from "@/lib/config/superduperai";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const API_ENDPOINTS = {
   GENERATE_VIDEO: "/api/v1/generate/video",

@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { OG_IMAGE_SIZE } from "./generate-og-image";
 import { i18nServer } from "@/config/i18n-server";
 import { siteConfig } from "@/config/site";
@@ -97,7 +97,7 @@ export function generatePageMetadata({
 }): Metadata {
   // Получаем изображение для OG - сначала пытаемся использовать переданное,
   // а если его нет, генерируем динамически или берем статический баннер для главной
-  const image = ogImage || generateOGImageUrl(title, description, meta);
+  const image = ogImage ?? generateOGImageUrl(title, description, meta);
 
   // Добавляем дополнительную информацию для серверного API
   const customMeta: Record<string, string> = {};

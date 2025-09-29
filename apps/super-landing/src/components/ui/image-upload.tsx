@@ -3,8 +3,9 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@turbo-super/ui";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -46,7 +47,7 @@ export function ImageUpload({
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files?.[0]) {
       const file = e.dataTransfer.files[0];
       if (file.type.startsWith("image/")) {
         onImageSelect(file);
@@ -55,7 +56,7 @@ export function ImageUpload({
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       onImageSelect(e.target.files[0]);
     }
   };
@@ -76,6 +77,8 @@ export function ImageUpload({
 
       {!selectedImage ? (
         <div
+          role="button"
+          tabIndex={0}
           className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             dragActive
               ? "border-green-400 bg-green-950/20"
@@ -85,6 +88,12 @@ export function ImageUpload({
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
         >
           <input
             ref={fileInputRef}
@@ -129,9 +138,11 @@ export function ImageUpload({
             </Button>
           </div>
           <div className="mt-3">
-            <img
+            <Image
               src={URL.createObjectURL(selectedImage)}
               alt="Preview"
+              width={400}
+              height={128}
               className="w-full h-32 object-cover rounded border border-green-500/20"
             />
           </div>

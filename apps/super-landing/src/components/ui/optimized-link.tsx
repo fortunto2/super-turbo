@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { LinkProps } from "next/link";
+import type { LinkProps } from "next/link";
 
 // Расширенные свойства для ссылки, добавляем поддержку просмотра исходного markdown
 interface OptimizedLinkProps extends LinkProps {
@@ -35,7 +35,7 @@ const OptimizedLink: React.FC<OptimizedLinkProps> = ({
   const hrefString =
     typeof href === "string"
       ? href
-      : (href as { pathname?: string })?.pathname || "";
+      : ((href as { pathname?: string })?.pathname ?? "");
 
   // Определяем, является ли ссылка внутренней ссылкой на контент
   const isContentLink =

@@ -2,8 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+} from "@turbo-super/ui";
 import {
   Loader2,
   CheckCircle,
@@ -115,7 +120,7 @@ export default function SessionLookupClient({
             toolTitle: webhookData.toolTitle,
             prompt: webhookData.prompt,
             error:
-              webhookData.error ||
+              webhookData.error ??
               "An error occurred during video generation. Please try generating a new video.",
           });
           return;
@@ -141,12 +146,12 @@ export default function SessionLookupClient({
   }, [sessionId, locale, router]);
 
   useEffect(() => {
-    lookupSession();
+    void lookupSession();
   }, [sessionId, lookupSession]);
 
   const copySessionId = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(sessionId);
+      void navigator.clipboard.writeText(sessionId);
       toast.success("Session ID copied to clipboard");
     }
   };
@@ -210,11 +215,17 @@ export default function SessionLookupClient({
               <CardContent className="space-y-6">
                 {/* Session ID Display */}
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label
+                    htmlFor="session-id-code"
+                    className="text-sm font-medium text-muted-foreground"
+                  >
                     Session ID
                   </label>
                   <div className="flex items-center gap-2 mt-1">
-                    <code className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono break-all">
+                    <code
+                      id="session-id-code"
+                      className="flex-1 text-sm bg-muted px-3 py-2 rounded font-mono break-all"
+                    >
                       {sessionId}
                     </code>
                     <Button
@@ -251,10 +262,16 @@ export default function SessionLookupClient({
                     )}
 
                     <div className="bg-muted p-4 rounded-lg mb-4">
-                      <label className="text-xs text-muted-foreground">
+                      <label
+                        htmlFor="file-id-code"
+                        className="text-xs text-muted-foreground"
+                      >
                         File ID
                       </label>
-                      <code className="block text-sm font-mono mt-1 break-all">
+                      <code
+                        id="file-id-code"
+                        className="block text-sm font-mono mt-1 break-all"
+                      >
                         {result.fileId}
                       </code>
                     </div>
@@ -277,9 +294,9 @@ export default function SessionLookupClient({
                     </p>
 
                     <Button
-                      onClick={() =>
-                        router.push(`/${locale}/file/${result.fileId}`)
-                      }
+                      onClick={() => {
+                        router.push(`/${locale}/file/${result.fileId}`);
+                      }}
                       className="gap-2"
                     >
                       <Video className="w-4 h-4" />
@@ -297,7 +314,7 @@ export default function SessionLookupClient({
                       Payment Completed!
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                      {result.error ||
+                      {result.error ??
                         "Video generation will start shortly. Please check back in a few minutes."}
                     </p>
 
@@ -354,7 +371,7 @@ export default function SessionLookupClient({
                       Generation Error
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                      {result.error ||
+                      {result.error ??
                         "An error occurred during video generation."}
                     </p>
 
@@ -373,9 +390,9 @@ export default function SessionLookupClient({
 
                     <div className="space-y-3">
                       <Button
-                        onClick={() =>
-                          router.push(`/${locale}/tool/veo3-prompt-generator`)
-                        }
+                        onClick={() => {
+                          router.push(`/${locale}/tool/veo3-prompt-generator`);
+                        }}
                         className="gap-2"
                       >
                         <Video className="w-4 h-4" />
@@ -393,7 +410,7 @@ export default function SessionLookupClient({
                       File Not Found
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                      {result.error || "No file was found for this session ID."}
+                      {result.error ?? "No file was found for this session ID."}
                     </p>
 
                     <div className="space-y-3">
@@ -417,9 +434,9 @@ export default function SessionLookupClient({
                       </div>
 
                       <Button
-                        onClick={() =>
-                          router.push(`/${locale}/tool/veo3-prompt-generator`)
-                        }
+                        onClick={() => {
+                          router.push(`/${locale}/tool/veo3-prompt-generator`);
+                        }}
                         variant="outline"
                       >
                         Generate New Video

@@ -1,7 +1,7 @@
 import { default as Link } from "@/components/ui/optimized-link";
 import { allPages } from ".contentlayer/generated";
 
-export async function PageList({ locale }: { locale: string }) {
+export function PageList({ locale }: { locale: string }) {
   // Исключаем определенные страницы, которые уже отображаются отдельно в футере
   const excludedSlugs = ["pricing", "terms", "privacy", "about"];
 

@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useParams } from "next/navigation";
 import { getValidLocale } from "@/lib/get-valid-locale";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface CTABoxProps {
   children: React.ReactNode;

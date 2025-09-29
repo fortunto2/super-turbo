@@ -12,12 +12,12 @@ export interface GenerationData {
   createdAt: string;
   error?: string;
   // Для изображений
-  images?: Array<{
+  images?: {
     fileId: string;
     status: "pending" | "processing" | "completed" | "error";
     url?: string;
     thumbnailUrl?: string;
-  }>;
+  }[];
   // Для видео
   videoGeneration?: {
     fileId: string;
@@ -37,7 +37,7 @@ export interface GenerationData {
 }
 
 // Сохраняем данные генерации в localStorage
-export async function saveGenerationData(data: GenerationData) {
+export function saveGenerationData(data: GenerationData) {
   if (typeof window === "undefined") return;
 
   console.log(`💾 Saving generation data to localStorage:`, data);
@@ -52,9 +52,9 @@ export async function saveGenerationData(data: GenerationData) {
 }
 
 // Загружаем данные генерации из localStorage
-export async function loadGenerationData(
+export function loadGenerationData(
   generationId: string
-): Promise<GenerationData | null> {
+): GenerationData | null {
   if (typeof window === "undefined") return null;
 
   console.log(`🔍 Looking for generation data with ID: ${generationId}`);
@@ -78,7 +78,7 @@ export async function loadGenerationData(
 }
 
 // Получаем все данные генерации из localStorage
-export async function getAllGenerationData(): Promise<GenerationData[]> {
+export function getAllGenerationData(): GenerationData[] {
   if (typeof window === "undefined") return [];
 
   try {
@@ -86,7 +86,7 @@ export async function getAllGenerationData(): Promise<GenerationData[]> {
 
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith("generation_")) {
+      if (key?.startsWith("generation_")) {
         try {
           const data = localStorage.getItem(key);
           if (data) {
@@ -107,7 +107,7 @@ export async function getAllGenerationData(): Promise<GenerationData[]> {
 }
 
 // Удаляем данные генерации из localStorage
-export async function deleteGenerationData(generationId: string) {
+export function deleteGenerationData(generationId: string) {
   if (typeof window === "undefined") return false;
 
   try {

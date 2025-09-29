@@ -1,4 +1,4 @@
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { useTranslation } from "@/hooks/use-translation";
 
 interface FAQItem {
@@ -15,7 +15,7 @@ export function FAQ({ items, locale }: FAQProps) {
   const { t } = useTranslation(locale as Locale);
 
   // Default FAQ items if none are provided
-  const faqItems = items || [
+  const faqItems = items ?? [
     {
       question: "Is this service free?",
       answer:
@@ -46,7 +46,7 @@ export function FAQ({ items, locale }: FAQProps) {
 
   return (
     <section className="py-16 w-full bg-card/50">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <h2 className="text-5xl font-bold text-center mb-12">{t("ui.faq")}</h2>
         <div className="max-w-3xl mx-auto space-y-6">
           {faqItems.map((item, index) => (

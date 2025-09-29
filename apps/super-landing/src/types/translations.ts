@@ -1,7 +1,7 @@
 // Типизация для переводов super-landing
 // Импортируем автоматически сгенерированные типы из packages/shared
 
-import { SuperLandingTranslationKey } from "@turbo-super/shared";
+import type { SuperLandingTranslationKey } from "@turbo-super/shared";
 
 export type {
   SuperLandingTranslationKey,
@@ -24,6 +24,6 @@ export type TranslationFunction = <T = string>(
 
 // Тип для функции перевода с поддержкой строковых ключей (для обратной совместимости)
 export type FlexibleTranslationFunction = <T = string>(
-  key: SuperLandingTranslationKey | string,
+  key: string,
   fallback?: T
 ) => T;

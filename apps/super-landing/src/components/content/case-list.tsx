@@ -1,7 +1,7 @@
 import { default as Link } from "@/components/ui/optimized-link";
 import { allCases } from ".contentlayer/generated";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 export function CaseList({ locale }: { locale: string }) {
   // Получаем только избранные или первые 5 кейсов для текущей локали

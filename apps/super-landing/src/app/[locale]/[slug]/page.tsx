@@ -4,7 +4,7 @@ import { MDXContent } from "@/components/content/mdx-components";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
 import { getServerSuperLandingTranslation } from "@turbo-super/shared";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 // Функция для получения метаданных страницы
 export async function generateMetadata({

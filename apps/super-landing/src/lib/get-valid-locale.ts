@@ -1,4 +1,5 @@
-import { Locale, i18nServer } from "@/config/i18n-server";
+import { i18nServer } from "@/config/i18n-server";
+import type { Locale } from "@/config/i18n-server";
 
 export function getValidLocale(input: unknown): Locale {
   const value =

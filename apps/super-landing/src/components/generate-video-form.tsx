@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
 import {
+  Button,
+  Textarea,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Video, Sparkles, ArrowLeft } from "lucide-react";
 import { DirectPaymentButton } from "@/components/ui/direct-payment-button";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { useTranslation } from "@/hooks/use-translation";
 import Link from "next/link";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { getModelConfig, supportsImageToVideo } from "@/lib/models-config";
 
 interface GenerateVideoFormProps {
@@ -46,7 +46,7 @@ export function GenerateVideoForm({
 
   const handleGenerateClick = () => {
     if (!prompt.trim()) {
-      alert(t("video_generator.error") || "Please enter a video description");
+      alert(t("video_generator.error") ?? "Please enter a video description");
       return;
     }
 
@@ -57,7 +57,7 @@ export function GenerateVideoForm({
   const handlePaymentSuccess = (sessionId: string) => {
     console.log("Payment successful, session ID:", sessionId);
     alert(
-      t("video_generator.payment_successful") ||
+      t("video_generator.payment_successful") ??
         "Payment successful! Video generation will start soon."
     );
     setShowPayment(false);
@@ -66,7 +66,7 @@ export function GenerateVideoForm({
   const handlePaymentError = (error: string) => {
     console.error("Payment error:", error);
     alert(
-      t("video_generator.payment_error") || "Payment failed. Please try again."
+      t("video_generator.payment_error") ?? "Payment failed. Please try again."
     );
     setShowPayment(false);
   };
@@ -128,16 +128,22 @@ export function GenerateVideoForm({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-green-300">
+                  <label
+                    htmlFor="video-prompt"
+                    className="text-sm font-medium text-green-300"
+                  >
                     {t("video_generator.your_prompt", "Your prompt")}
                   </label>
                   <Textarea
+                    id="video-prompt"
                     placeholder={t(
                       "video_generator.placeholder",
                       "For example: Beautiful sunset over ocean with waves, bird's eye view, cinematic quality, smooth camera movements..."
                     )}
                     value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                    }}
                     rows={4}
                     className="input-enhanced border-green-500/30 bg-green-950/20 focus:border-green-400 focus:ring-green-400/20"
                   />
@@ -203,7 +209,7 @@ export function GenerateVideoForm({
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {modelConfig?.description ||
+                    {modelConfig?.description ??
                       t(
                         "video_generator.advanced_ai_model",
                         "Advanced AI video generation model"

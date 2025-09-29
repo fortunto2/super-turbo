@@ -1,11 +1,11 @@
-import { allCases, Case } from ".contentlayer/generated";
+import { allCases, type Case } from ".contentlayer/generated";
 import { MDXContent } from "@/components/content/mdx-components";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { PageWrapper } from "@/components/content/page-wrapper";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
 import { getServerSuperLandingTranslation } from "@turbo-super/shared";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 export async function generateMetadata({
   params,
@@ -32,7 +32,7 @@ export async function generateMetadata({
     keywords: caseItem.seo?.keywords ?? [],
     url: `/case/${slug}`,
     ...((caseItem.seo?.ogImage ?? caseItem.image) && {
-      ogImage: (caseItem.seo?.ogImage ?? caseItem.image)!,
+      ogImage: caseItem.seo?.ogImage ?? caseItem.image,
     }),
     type: "article",
     meta: {

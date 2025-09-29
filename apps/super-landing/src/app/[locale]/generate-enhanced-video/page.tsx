@@ -1,22 +1,23 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Button } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
 import {
+  Button,
+  Textarea,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Video, Image as ImageIcon, ArrowLeft, Upload, X } from "lucide-react";
+import Image from "next/image";
 import { DirectPaymentButton } from "@/components/ui/direct-payment-button";
 import { useTranslation } from "@/hooks/use-translation";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import {
   getModelConfig,
   supportsImageToVideo,
@@ -25,7 +26,7 @@ import {
 
 export default function GenerateEnhancedVideoPage() {
   const searchParams = useSearchParams();
-  const locale = (searchParams.get("locale") as Locale) || "en";
+  const locale = (searchParams.get("locale") as Locale) ?? "en";
   const { t } = useTranslation(locale);
   const [prompt, setPrompt] = useState("");
   const [showPayment, setShowPayment] = useState(false);
@@ -43,12 +44,12 @@ export default function GenerateEnhancedVideoPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const modelName = searchParams.get("model") || "Unknown Model";
+  const modelName = searchParams.get("model") ?? "Unknown Model";
   const modelConfig = getModelConfig(modelName);
   const supportsImageToVideoMode = supportsImageToVideo(modelName);
   const supportsTextToVideoMode = supportsTextToVideo(modelName);
 
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = (file: File) => {
     if (!file) return;
 
     // Создаем превью
@@ -78,13 +79,13 @@ export default function GenerateEnhancedVideoPage() {
 
   const handleGenerateClick = () => {
     if (!prompt.trim()) {
-      alert(t("video_generator.error") || "Please enter a video description");
+      alert(t("video_generator.error") ?? "Please enter a video description");
       return;
     }
 
     if (generationType === "image-to-video" && !selectedImage) {
       alert(
-        t("video_generator.upload_image_required") ||
+        t("video_generator.upload_image_required") ??
           "Please upload an image for image-to-video generation"
       );
       return;
@@ -102,7 +103,7 @@ export default function GenerateEnhancedVideoPage() {
   const handlePaymentError = (error: string) => {
     console.error("Payment error:", error);
     alert(
-      t("video_generator.payment_error") || "Payment failed. Please try again."
+      t("video_generator.payment_error") ?? "Payment failed. Please try again."
     );
     setShowPayment(false);
   };
@@ -149,7 +150,10 @@ export default function GenerateEnhancedVideoPage() {
               <CardContent className="space-y-4">
                 {/* Generation Type Selection - только поддерживаемые типы */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-purple-300">
+                  <label
+                    htmlFor="generation-type"
+                    className="text-sm font-medium text-purple-300"
+                  >
                     Generation Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -161,7 +165,9 @@ export default function GenerateEnhancedVideoPage() {
                             : "outline"
                         }
                         size="sm"
-                        onClick={() => setGenerationType("text-to-video")}
+                        onClick={() => {
+                          setGenerationType("text-to-video");
+                        }}
                         className={
                           generationType === "text-to-video"
                             ? "bg-purple-600 hover:bg-purple-700"
@@ -180,7 +186,9 @@ export default function GenerateEnhancedVideoPage() {
                             : "outline"
                         }
                         size="sm"
-                        onClick={() => setGenerationType("image-to-video")}
+                        onClick={() => {
+                          setGenerationType("image-to-video");
+                        }}
                         className={
                           generationType === "image-to-video"
                             ? "bg-orange-600 hover:bg-orange-700"
@@ -198,22 +206,29 @@ export default function GenerateEnhancedVideoPage() {
                 {/* Image Upload - только для image-to-video */}
                 {generationType === "image-to-video" && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-orange-300">
+                    <label
+                      htmlFor="image-upload"
+                      className="text-sm font-medium text-orange-300"
+                    >
                       Upload Image
                     </label>
                     <div className="border-2 border-dashed border-orange-500/30 rounded-lg p-4 text-center">
                       {imagePreview ? (
                         <div className="space-y-3">
                           <div className="relative inline-block">
-                            <img
+                            <Image
                               src={imagePreview}
                               alt="Preview"
+                              width={400}
+                              height={128}
                               className="max-w-full h-32 object-cover rounded-lg"
                             />
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={removeImage}
+                              onClick={() => {
+                                removeImage();
+                              }}
                               className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
                             >
                               <X className="w-3 h-3" />
@@ -232,7 +247,9 @@ export default function GenerateEnhancedVideoPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => {
+                              fileInputRef.current?.click();
+                            }}
                             className="border-orange-500/30 text-orange-300 hover:bg-orange-500/10"
                           >
                             <Upload className="w-4 h-4 mr-1" />
@@ -265,14 +282,18 @@ export default function GenerateEnhancedVideoPage() {
                         : "For example: Beautiful sunset over ocean with waves, bird's eye view, cinematic quality..."
                     }
                     value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                    }}
                     rows={4}
                     className="input-enhanced border-purple-500/30 bg-purple-950/20 focus:border-purple-400 focus:ring-purple-400/20"
                   />
                 </div>
 
                 <Button
-                  onClick={handleGenerateClick}
+                  onClick={() => {
+                    handleGenerateClick();
+                  }}
                   disabled={
                     !prompt.trim() ||
                     (generationType === "image-to-video" && !selectedImage) ||
@@ -304,7 +325,7 @@ export default function GenerateEnhancedVideoPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {modelConfig?.description ||
+                    {modelConfig?.description ??
                       "Advanced AI video generation model with enhanced features"}
                   </p>
                 </div>

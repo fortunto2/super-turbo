@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Button } from '@turbo-super/ui';
-import { Copy, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import React, { useState } from "react";
+import { Button } from "@turbo-super/ui";
+import { Copy, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 
 interface VideoPromptExample {
   videoUrl: string;
@@ -22,7 +22,7 @@ export const VideoPromptExamples: React.FC<VideoPromptExamplesProps> = ({
   onCopyPrompt,
   onSendToTool,
   gridCols = 3,
-  className = '',
+  className = "",
 }) => {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -31,22 +31,34 @@ export const VideoPromptExamples: React.FC<VideoPromptExamplesProps> = ({
     await navigator.clipboard.writeText(prompt);
     setCopiedIdx(idx);
     if (onCopyPrompt) onCopyPrompt(prompt);
-    setTimeout(() => setCopiedIdx(null), 1500);
+    setTimeout(() => {
+      setCopiedIdx(null);
+    }, 1500);
   };
 
   return (
     <div className={`w-full mt-8 mb-12 ${className}`}>
       <div className={`grid gap-6 grid-cols-1 md:grid-cols-${gridCols}`}>
         {examples.map((ex, idx) => (
-          <div key={idx} className="bg-background border rounded-xl shadow-sm p-4 flex flex-col">
+          <div
+            key={idx}
+            className="bg-background border rounded-xl shadow-sm p-4 flex flex-col"
+          >
             <div className="relative aspect-video rounded-lg overflow-hidden mb-3 group">
               <video
                 src={ex.videoUrl}
                 poster={ex.previewImage}
                 controls
                 className="w-full h-full object-cover"
-                title={ex.title || 'Preview video'}
-              />
+                title={ex.title ?? "Preview video"}
+              >
+                <track
+                  kind="captions"
+                  src=""
+                  srcLang="en"
+                  label="English"
+                />
+              </video>
               <a
                 href={ex.videoUrl}
                 target="_blank"
@@ -65,12 +77,18 @@ export const VideoPromptExamples: React.FC<VideoPromptExamplesProps> = ({
                 variant="ghost"
                 size="sm"
                 className="flex items-center gap-1 mb-2"
-                onClick={() => setExpanded(expanded === idx ? null : idx)}
+                onClick={() => {
+                  setExpanded(expanded === idx ? null : idx);
+                }}
                 aria-expanded={expanded === idx}
-                title={expanded === idx ? 'Hide prompt' : 'Show prompt'}
+                title={expanded === idx ? "Hide prompt" : "Show prompt"}
               >
-                {expanded === idx ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                {expanded === idx ? 'Hide prompt' : 'Show prompt'}
+                {expanded === idx ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+                {expanded === idx ? "Hide prompt" : "Show prompt"}
               </Button>
               {expanded === idx && (
                 <div className="bg-muted rounded p-3 text-xs whitespace-pre-line mb-2 max-h-64 overflow-auto border">
@@ -81,17 +99,21 @@ export const VideoPromptExamples: React.FC<VideoPromptExamplesProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleCopy(ex.prompt, idx)}
-                  title={copiedIdx === idx ? 'Copied!' : 'Copy prompt'}
+                  onClick={() => {
+                    void handleCopy(ex.prompt, idx);
+                  }}
+                  title={copiedIdx === idx ? "Copied!" : "Copy prompt"}
                 >
                   <Copy className="w-4 h-4 mr-1" />
-                  {copiedIdx === idx ? 'Copied!' : 'Copy'}
+                  {copiedIdx === idx ? "Copied!" : "Copy"}
                 </Button>
                 {onSendToTool && (
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => onSendToTool(ex.prompt)}
+                    onClick={() => {
+                      onSendToTool(ex.prompt);
+                    }}
                     title="Send prompt to generator"
                   >
                     ➡️ To Generator
@@ -99,10 +121,9 @@ export const VideoPromptExamples: React.FC<VideoPromptExamplesProps> = ({
                 )}
               </div>
             </div>
-
           </div>
         ))}
       </div>
     </div>
   );
-}; 
+};

@@ -1,9 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  :root {
+:root {
     --radius: 0.625rem;
     
     --background: 0 0% 100%;
@@ -74,4 +69,3 @@
   body {
     @apply bg-background text-foreground;
   }
-}

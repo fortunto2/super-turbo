@@ -1,17 +1,17 @@
 "use client";
 
-import { Button } from "@turbo-super/ui";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Image, Sparkles, Palette } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface ModelImageGeneratorProps {
   modelName: string;
@@ -35,7 +35,7 @@ export function ModelImageGenerator({
 
   const handleGenerateClick = () => {
     // Перенаправляем на страницу генерации
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const generationUrl = `${baseUrl}/${locale}/generate-image?model=${encodeURIComponent(modelName)}`;
     window.location.href = generationUrl;
   };
@@ -54,13 +54,13 @@ export function ModelImageGenerator({
               {modelName}
             </h3>
             <p className="text-muted-foreground text-sm mb-4">
-              {modelConfig?.description ||
+              {modelConfig?.description ??
                 t(
                   `model_descriptions.${modelName
                     .toLowerCase()
                     .replace(/\s+/g, "_")
                     .replace(/\./g, "")}`
-                ) ||
+                ) ??
                 `Create images with ${modelName}`}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -102,7 +102,7 @@ export function ModelImageGenerator({
             {t("image_generator.title")}
           </CardTitle>
           <CardDescription className="text-muted-foreground text-sm">
-            {t("image_generator.payment_description") ||
+            {t("image_generator.payment_description") ??
               "Pay $1.00 to generate images with this model"}
           </CardDescription>
         </CardHeader>

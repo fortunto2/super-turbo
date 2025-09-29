@@ -1,7 +1,7 @@
 import { allCases, type Case } from ".contentlayer/generated";
 import { default as Link } from "@/components/ui/optimized-link";
 import Image from "next/image";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
 import { generatePageMetadata, GRADIENTS } from "@/lib/metadata";
@@ -35,7 +35,7 @@ export default async function CasesPage({
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <main className="flex-1">
-        <div className="container mx-auto py-10">
+        <div className="container py-10">
           <h1 className="text-3xl font-bold mb-6">Use Cases</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sortedCases.map((caseItem: Case) => (

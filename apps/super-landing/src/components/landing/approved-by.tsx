@@ -1,7 +1,7 @@
 import { default as Link } from "@/components/ui/optimized-link";
 import { MicrosoftIcon } from "../ui/icons";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 export function ApprovedBy({ locale }: { locale: string }) {
   const partners = [
@@ -33,7 +33,7 @@ export function ApprovedBy({ locale }: { locale: string }) {
 
   return (
     <section className="py-8 w-full">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <h2 className="text-5xl font-bold text-center mb-8">
           {t("ui.approved_by")}
         </h2>

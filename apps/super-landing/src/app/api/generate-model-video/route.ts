@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 // Убираем импорт generateVideoWithStrategy и создаем собственную функцию
@@ -41,13 +42,13 @@ async function generateVideoWithSuperDuperAI(
     const mappedModelName = mapModelNameToConfig(modelName, generationType);
     const finalConfig = {
       generation_config_name: mappedModelName,
-      width: modelConfig?.width || 1280,
-      height: modelConfig?.height || 720,
-      aspectRatio: modelConfig?.aspectRatio || "16:9",
-      duration: modelConfig?.duration || 8,
-      frameRate: modelConfig?.frameRate || 30,
-      style: modelConfig?.style || "flux_watercolor",
-      shotSize: modelConfig?.shotSize || "medium_shot",
+      width: modelConfig?.width ?? 1280,
+      height: modelConfig?.height ?? 720,
+      aspectRatio: modelConfig?.aspectRatio ?? "16:9",
+      duration: modelConfig?.duration ?? 8,
+      frameRate: modelConfig?.frameRate ?? 30,
+      style: modelConfig?.style ?? "flux_watercolor",
+      shotSize: modelConfig?.shotSize ?? "medium_shot",
     };
 
     // Если есть изображение, загружаем его в SuperDuperAI
@@ -164,7 +165,7 @@ async function generateVideoWithSuperDuperAI(
 import {
   saveGenerationData as saveToGlobalStore,
   loadGenerationData as loadFromGlobalStore,
-  GenerationData,
+  type GenerationData,
 } from "@/lib/generation-store";
 
 // Функция для маппинга названий моделей на правильные конфигурации SuperDuperAI
@@ -221,10 +222,10 @@ function mapModelNameToConfig(
 
   const mappedConfig = modelMap[normalizedModelName]?.[generationType];
   console.log(
-    `🎯 Model mapping: "${modelName}" -> "${normalizedModelName}" -> "${mappedConfig || modelName}"`
+    `🎯 Model mapping: "${modelName}" -> "${normalizedModelName}" -> "${mappedConfig ?? modelName}"`
   );
 
-  return mappedConfig || modelName;
+  return mappedConfig ?? modelName;
 }
 
 // Схема запроса для генерации видео с моделью
@@ -275,7 +276,7 @@ const modelVideoGenerationSchema = z.object({
 type ModelVideoGenerationData = z.infer<typeof modelVideoGenerationSchema>;
 
 // Функция для преобразования ModelVideoGenerationData в GenerationData и сохранения в глобальное хранилище
-async function saveVideoGenerationData(data: ModelVideoGenerationData) {
+function saveVideoGenerationData(data: ModelVideoGenerationData) {
   if (!data.generationId) {
     console.warn("⚠️ Cannot save generation data: generationId is undefined");
     return;
@@ -289,7 +290,7 @@ async function saveVideoGenerationData(data: ModelVideoGenerationData) {
     modelName: data.modelName,
     modelType: "video",
     paymentSessionId: data.paymentSessionId,
-    createdAt: data.createdAt || new Date().toISOString(),
+    createdAt: data.createdAt ?? new Date().toISOString(),
     error: data.error,
     videoGeneration: data.videos?.[0]
       ? {
@@ -302,22 +303,22 @@ async function saveVideoGenerationData(data: ModelVideoGenerationData) {
     generationType: data.generationType,
   };
 
-  await saveToGlobalStore(generationData);
+  saveToGlobalStore(generationData);
   console.log(
     `💾 Saved video generation data to global store for ${data.generationId}`
   );
 }
 
 // Загружаем данные генерации из глобального хранилища
-async function loadVideoGenerationData(
+function loadVideoGenerationData(
   generationId: string
-): Promise<ModelVideoGenerationData | null> {
+): ModelVideoGenerationData | null {
   if (!generationId) {
     console.warn("⚠️ Cannot load generation data: generationId is undefined");
     return null;
   }
 
-  const globalData = await loadFromGlobalStore(generationId);
+  const globalData = loadFromGlobalStore(generationId);
   if (!globalData) {
     console.log(
       `📂 No generation data found in global store for ${generationId}`
@@ -332,11 +333,11 @@ async function loadVideoGenerationData(
     modelName: globalData.modelName,
     status: globalData.status,
     progress: globalData.progress,
-    createdAt: globalData.createdAt || new Date().toISOString(),
+    createdAt: globalData.createdAt ?? new Date().toISOString(),
     paymentSessionId: globalData.paymentSessionId,
     videoCount: 1, // По умолчанию
     generationType:
-      (globalData.generationType as "text-to-video" | "image-to-video") ||
+      (globalData.generationType as "text-to-video" | "image-to-video") ??
       "text-to-video",
     videos: globalData.videoGeneration
       ? [
@@ -377,18 +378,18 @@ export async function POST(request: NextRequest) {
     if (contentType?.includes("application/json")) {
       // Обрабатываем JSON данные
       const jsonData = await request.json();
-      generationId = jsonData.generationId || `gen_${Date.now()}`;
-      prompt = jsonData.prompt || "";
-      modelName = jsonData.modelName || "Unknown Model";
+      generationId = jsonData.generationId ?? `gen_${Date.now()}`;
+      prompt = jsonData.prompt ?? "";
+      modelName = jsonData.modelName ?? "Unknown Model";
       modelConfigStr = jsonData.modelConfig
         ? JSON.stringify(jsonData.modelConfig)
         : "{}";
-      videoCount = jsonData.videoCount || 1;
-      status = jsonData.status || "pending";
-      progress = jsonData.progress || 0;
-      createdAt = jsonData.createdAt || new Date().toISOString();
-      generationType = jsonData.generationType || "text-to-video";
-      paymentSessionId = jsonData.paymentSessionId || null;
+      videoCount = jsonData.videoCount ?? 1;
+      status = jsonData.status ?? "pending";
+      progress = jsonData.progress ?? 0;
+      createdAt = jsonData.createdAt ?? new Date().toISOString();
+      generationType = jsonData.generationType ?? "text-to-video";
+      paymentSessionId = jsonData.paymentSessionId ?? null;
     } else {
       // Обрабатываем FormData (для обратной совместимости)
       const formData = await request.formData();
@@ -436,8 +437,8 @@ export async function POST(request: NextRequest) {
       generationId: generationId || `gen_${Date.now()}`,
       prompt,
       modelName,
-      modelConfig: modelConfig || {},
-      videoCount: isNaN(videoCount) ? 1 : videoCount || 1,
+      modelConfig: modelConfig ?? {},
+      videoCount: isNaN(videoCount) ? 1 : (videoCount ?? 1),
       status: status || "pending",
       progress: isNaN(progress) ? 0 : progress || 0,
       createdAt: createdAt || new Date().toISOString(),
@@ -455,14 +456,14 @@ export async function POST(request: NextRequest) {
     const multipliers: string[] = [];
 
     // Множители длительности
-    const duration = modelConfig?.maxDuration || 8;
+    const duration = modelConfig?.maxDuration ?? 8;
     if (duration <= 5) multipliers.push("duration-5s");
     else if (duration <= 10) multipliers.push("duration-10s");
     else if (duration <= 15) multipliers.push("duration-15s");
     else if (duration <= 30) multipliers.push("duration-30s");
 
     // Множители качества
-    const width = modelConfig?.width || 1280;
+    const width = modelConfig?.width ?? 1280;
     if (width >= 2160) {
       multipliers.push("4k-quality");
     } else {
@@ -476,7 +477,7 @@ export async function POST(request: NextRequest) {
     const cookieUid = request.cookies.get("superduperai_uid")?.value;
     const forwarded = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
-    const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+    const ip = forwarded?.split(",")[0]?.trim() ?? realIp ?? "unknown";
     const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
     console.log(
@@ -498,7 +499,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Используем информацию о типе генерации из session data, если она доступна
-        if (sessionData?.generationType && !generationType) {
+        if (sessionData.generationType) {
           generationType = sessionData.generationType as
             | "text-to-video"
             | "image-to-video";
@@ -546,7 +547,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Для Sora используем только допустимые значения duration: 5, 10, 15, 20
-        let duration = modelConfig?.maxDuration || 8;
+        let duration = modelConfig?.maxDuration ?? 8;
         if (mappedModelName === "azure-openai/sora") {
           // Ближайшее допустимое значение для Sora
           if (duration <= 5) duration = 5;
@@ -559,11 +560,11 @@ export async function POST(request: NextRequest) {
           prompt,
           modelName,
           {
-            width: modelConfig?.width || 1280,
-            height: modelConfig?.height || 720,
-            aspectRatio: modelConfig?.aspectRatio || "16:9",
+            width: modelConfig?.width ?? 1280,
+            height: modelConfig?.height ?? 720,
+            aspectRatio: modelConfig?.aspectRatio ?? "16:9",
             duration: duration,
-            frameRate: modelConfig?.frameRate || 30,
+            frameRate: modelConfig?.frameRate ?? 30,
             style: "flux_watercolor",
             shotSize: "medium_shot",
           },
@@ -575,7 +576,7 @@ export async function POST(request: NextRequest) {
         console.log("📝 Starting text-to-video generation");
 
         // Для Sora используем только допустимые значения duration: 5, 10, 15, 20
-        let duration = modelConfig?.maxDuration || 8;
+        let duration = modelConfig?.maxDuration ?? 8;
         if (mappedModelName === "azure-openai/sora") {
           // Ближайшее допустимое значение для Sora
           if (duration <= 5) duration = 5;
@@ -588,11 +589,11 @@ export async function POST(request: NextRequest) {
           prompt,
           modelName,
           {
-            width: modelConfig?.width || 1280,
-            height: modelConfig?.height || 720,
-            aspectRatio: modelConfig?.aspectRatio || "16:9",
+            width: modelConfig?.width ?? 1280,
+            height: modelConfig?.height ?? 720,
+            aspectRatio: modelConfig?.aspectRatio ?? "16:9",
             duration: duration,
-            frameRate: modelConfig?.frameRate || 30,
+            frameRate: modelConfig?.frameRate ?? 30,
             style: "flux_watercolor",
             shotSize: "medium_shot",
           },
@@ -652,14 +653,12 @@ export async function POST(request: NextRequest) {
       };
 
       // Сохраняем в общее хранилище
-      await saveVideoGenerationData(updatedData);
+      saveVideoGenerationData(updatedData);
 
       // Проверяем, что данные действительно сохранились
       console.log("🔍 Verifying data was saved...");
       if (validatedData.generationId) {
-        const savedData = await loadVideoGenerationData(
-          validatedData.generationId
-        );
+        const savedData = loadVideoGenerationData(validatedData.generationId);
         console.log(
           "🔍 Saved data verification:",
           savedData ? "SUCCESS" : "FAILED"
@@ -696,7 +695,7 @@ export async function POST(request: NextRequest) {
         error: error instanceof Error ? error.message : "Unknown error",
       };
 
-      await saveVideoGenerationData(errorData);
+      saveVideoGenerationData(errorData);
 
       return NextResponse.json(
         {
@@ -749,7 +748,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Загружаем данные генерации из глобального хранилища
-    const generationData = await loadVideoGenerationData(generationId);
+    const generationData = loadVideoGenerationData(generationId);
 
     if (!generationData) {
       return NextResponse.json(
@@ -869,7 +868,7 @@ export async function GET(request: NextRequest) {
         videos: updatedVideos,
       };
 
-      await saveVideoGenerationData(updatedData);
+      saveVideoGenerationData(updatedData);
 
       return NextResponse.json({
         success: true,

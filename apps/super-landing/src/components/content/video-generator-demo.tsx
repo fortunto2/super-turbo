@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@turbo-super/ui";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Play, ArrowRight } from "lucide-react";
 import Link from "@/components/ui/optimized-link";
 
@@ -72,7 +72,9 @@ export function VideoGeneratorDemo() {
               className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
                 selectedModel === model.name ? "ring-2 ring-green-500" : ""
               }`}
-              onClick={() => setSelectedModel(model.name)}
+              onClick={() => {
+                setSelectedModel(model.name);
+              }}
             >
               <CardHeader className="text-center">
                 <div

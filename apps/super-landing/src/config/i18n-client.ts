@@ -9,5 +9,4 @@ export const i18nClient = {
   preserveRouteOnHome: true,
 };
 
-export type Locale = typeof i18nClient.locales[number];
-
+export type Locale = (typeof i18nClient.locales)[number];

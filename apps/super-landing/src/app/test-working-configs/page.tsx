@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+} from "@turbo-super/ui";
 
 const TEST_CONFIGS = [
   // Azure OpenAI конфигурации
@@ -55,7 +60,7 @@ export default function TestWorkingConfigsPage() {
         ...prev,
         [configName]: {
           status: response.ok ? "success" : "error",
-          error: result.error || "Unknown error",
+          error: result.error ?? "Unknown error",
         },
       }));
     } catch (error) {

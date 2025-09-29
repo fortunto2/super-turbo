@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
@@ -6,12 +7,13 @@ import path from "path";
  * Функция для преобразования MDX в Markdown без выполнения кода
  * Использует регулярные выражения для извлечения текста из компонентов
  */
-async function mdxToMarkdown(filePath: string): Promise<string> {
+function mdxToMarkdown(filePath: string): string {
   // Читаем содержимое файла
   const content = fs.readFileSync(filePath, "utf8");
 
   // Сохраняем frontmatter
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+  const frontmatterMatch = frontmatterRegex.exec(content);
   const frontmatter = frontmatterMatch
     ? `---\n${frontmatterMatch[1]}\n---\n\n`
     : "";
@@ -39,16 +41,16 @@ async function mdxToMarkdown(filePath: string): Promise<string> {
   // Сохраняем код блоки и удаляем фигурные скобки только вне их
   const codeBlocks: string[] = [];
   let codeBlockIndex = 0;
-  
+
   // Сохраняем код блоки
   markdown = markdown.replace(/```[\s\S]*?```/g, (match) => {
     codeBlocks.push(match);
     return `__CODE_BLOCK_${codeBlockIndex++}__`;
   });
-  
+
   // Удаляем фигурные скобки с выражениями только вне код блоков
   markdown = markdown.replace(/\{[^{}]*\}/g, "");
-  
+
   // Восстанавливаем код блоки
   codeBlocks.forEach((block, index) => {
     markdown = markdown.replace(`__CODE_BLOCK_${index}__`, block);
@@ -90,9 +92,9 @@ export async function GET(
     }
 
     // Извлекаем параметры из пути
-    const type = urlParams[0]; // тип (tool, case, page)
-    const locale = urlParams[1]; // локаль (en, ru)
-    const slug = urlParams[2].replace(/\.md$/, ""); // slug без расширения .md
+    const type = urlParams[0] ?? ""; // тип (tool, case, page)
+    const locale = urlParams[1] ?? ""; // локаль (en, ru)
+    const slug = urlParams[2]?.replace(/\.md$/, ""); // slug без расширения .md
 
     // Проверяем допустимость типа
     const validTypes = ["tool", "case", "pages", "homes", "docs"];
@@ -168,7 +170,7 @@ export async function GET(
       }
 
       // Преобразуем MDX в чистый Markdown без выполнения кода
-      markdown = await mdxToMarkdown(filePath);
+      markdown = mdxToMarkdown(filePath);
     }
 
     // Устанавливаем заголовки для plaintext

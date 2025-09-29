@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 
 export async function GET(
@@ -59,8 +60,8 @@ export async function GET(
             videoUrl: fileData.url,
             thumbnailUrl: fileData.thumbnail_url,
             duration: fileData.duration,
-            width: fileData.video_generation?.width || 1280,
-            height: fileData.video_generation?.height || 720,
+            width: fileData.video_generation?.width ?? 1280,
+            height: fileData.video_generation?.height ?? 720,
           },
         });
       }

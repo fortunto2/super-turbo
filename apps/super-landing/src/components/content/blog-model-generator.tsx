@@ -1,6 +1,6 @@
 "use client";
 
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { ModelVideoGenerator } from "./model-video-generator";
 import { EnhancedModelVideoGenerator } from "./enhanced-model-video-generator";
 import { ModelImageGenerator } from "./model-image-generator";

@@ -8,7 +8,7 @@ async function getRedisClient() {
   if (!redis) {
     // Use fallback URL if REDIS_URL is not set (for development/production without Redis)
     const redisUrl =
-      process.env.REDIS_URL ||
+      process.env.REDIS_URL ??
       "redis://default:cmGE7trsPdzSwSUviLJXrwgVukdXnaL7@redis-10317.c256.us-east-1-2.ec2.redns.redis-cloud.com:10317";
 
     redis = createClient({

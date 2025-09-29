@@ -28,7 +28,7 @@ const itemVariants = {
   },
 };
 
-interface Step {
+interface _Step {
   title: string;
   description: string;
 }
@@ -37,7 +37,7 @@ export function HowItWorks() {
   const params = useParams();
   const locale = getValidLocale(params.locale);
   const { t } = useTranslation(locale);
-  const steps = t("howItWorks.steps") as Step[];
+  const steps = t("howItWorks.steps");
 
   // Default icons to use for each step
   const iconComponents = [LightbulbIcon, Bot, SlidersHorizontal];
@@ -80,7 +80,7 @@ export function HowItWorks() {
               <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
               <p className="text-muted-foreground">{step.description}</p>
               <div className="absolute top-8 right-8 font-bold text-5xl text-accent/10 neon-text opacity-20">
-                {index + 1}
+                {Number(index) + 1}
               </div>
             </motion.div>
           ))}

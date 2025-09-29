@@ -1,17 +1,17 @@
 "use client";
 
-import { Button } from "@turbo-super/ui";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Video, Sparkles, Zap } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface ModelVideoGeneratorProps {
   modelName: string;
@@ -49,7 +49,7 @@ export function ModelVideoGenerator({
 
   const handleGenerateClick = () => {
     // Перенаправляем на страницу генерации
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const generationUrl = `${baseUrl}/${locale}/generate-video?model=${encodeURIComponent(modelName)}`;
     window.location.href = generationUrl;
   };
@@ -109,7 +109,7 @@ export function ModelVideoGenerator({
             {t("video_generator.title")}
           </CardTitle>
           <CardDescription className="text-muted-foreground text-sm">
-            {t("video_generator.payment_description") ||
+            {t("video_generator.payment_description") ??
               "Pay $1.00 to generate videos with this model"}
           </CardDescription>
         </CardHeader>
@@ -120,7 +120,7 @@ export function ModelVideoGenerator({
             className="w-full btn-accent bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-green-500/25"
           >
             <Video className="w-4 h-4 mr-2" />
-            {t("video_generator.generate_for").replace("{price}", "$1.00") ||
+            {t("video_generator.generate_for").replace("{price}", "$1.00") ??
               "Generate for $1.00"}
           </Button>
         </CardContent>

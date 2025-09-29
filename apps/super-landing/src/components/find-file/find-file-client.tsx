@@ -24,7 +24,7 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const trimmedId = sessionId.trim();
 
     if (!trimmedId) {
@@ -80,16 +80,22 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <label
+                    htmlFor="session-id-input"
+                    className="text-sm font-medium text-muted-foreground mb-2 block"
+                  >
                     Session ID
                   </label>
                   <div className="flex gap-2">
                     <Input
+                      id="session-id-input"
                       type="text"
                       placeholder="cs_live_a1... or cs_test_a1..."
                       value={sessionId}
-                      onChange={(e) => setSessionId(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onChange={(e) => {
+                        setSessionId(e.target.value);
+                      }}
+                      onKeyDown={handleKeyPress}
                       className="flex-1 font-mono"
                     />
                     <Button
@@ -134,9 +140,9 @@ export default function FindFileClient({ locale }: FindFileClientProps) {
                     Don&apos;t have a session ID?
                   </p>
                   <Button
-                    onClick={() =>
-                      router.push(`/${locale}/tool/veo3-prompt-generator`)
-                    }
+                    onClick={() => {
+                      router.push(`/${locale}/tool/veo3-prompt-generator`);
+                    }}
                     variant="outline"
                     className="gap-2"
                   >

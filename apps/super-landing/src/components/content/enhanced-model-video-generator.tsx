@@ -1,17 +1,17 @@
 "use client";
 
-import { Button } from "@turbo-super/ui";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Video, Zap, Image as ImageIcon, CreditCard } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { getModelConfig, supportsImageToVideo } from "@/lib/models-config";
 
 interface EnhancedModelVideoGeneratorProps {
@@ -40,17 +40,17 @@ export function EnhancedModelVideoGenerator({
   const supportsImageToVideoMode = supportsImageToVideo(modelName);
 
   const defaultConfig = {
-    maxDuration: modelConfigFromDB?.maxDuration || 8,
-    aspectRatio: modelConfigFromDB?.aspectRatio || "16:9",
-    width: modelConfigFromDB?.width || 1280,
-    height: modelConfigFromDB?.height || 720,
-    frameRate: modelConfigFromDB?.frameRate || 30,
+    maxDuration: modelConfigFromDB?.maxDuration ?? 8,
+    aspectRatio: modelConfigFromDB?.aspectRatio ?? "16:9",
+    width: modelConfigFromDB?.width ?? 1280,
+    height: modelConfigFromDB?.height ?? 720,
+    frameRate: modelConfigFromDB?.frameRate ?? 30,
     supportsImageToVideo: supportsImageToVideoMode,
     description:
-      modelConfigFromDB?.description ||
+      modelConfigFromDB?.description ??
       t(
         `model_descriptions.${modelName.toLowerCase().replace(/\s+/g, "_").replace(/\./g, "")}`
-      ) ||
+      ) ??
       `Video generation with ${modelName}`,
   };
 
@@ -58,7 +58,7 @@ export function EnhancedModelVideoGenerator({
 
   const handleGenerateClick = () => {
     // Перенаправляем на страницу генерации
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const generationUrl = `${baseUrl}/${locale}/generate-video?model=${encodeURIComponent(modelName)}`;
     window.location.href = generationUrl;
   };
@@ -127,7 +127,7 @@ export function EnhancedModelVideoGenerator({
             {t("video_generator.title")}
           </CardTitle>
           <CardDescription className="text-muted-foreground text-sm">
-            {t("video_generator.payment_description") ||
+            {t("video_generator.payment_description") ??
               "Pay $1.00 to access video generation with this model"}
           </CardDescription>
         </CardHeader>

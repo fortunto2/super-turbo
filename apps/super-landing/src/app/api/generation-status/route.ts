@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 
 // Функция для проверки статуса файла в SuperDuperAI

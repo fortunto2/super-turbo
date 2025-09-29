@@ -10,7 +10,7 @@ import {
 export const dynamic = "force-static";
 export const revalidate = false;
 
-export async function GET() {
+export function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "superduperai.co";
   const site = `https://${baseUrl}`;
 
@@ -22,12 +22,24 @@ export async function GET() {
   };
 
   // Собираем все страницы
-  allHomes.forEach((home) => push("/", home.locale, new Date(home.date)));
-  allPages.forEach((p) => push(p.url, p.locale, new Date(p.date)));
-  allTools.forEach((t) => push(t.url, t.locale, new Date(t.date)));
-  allCases.forEach((c) => push(c.url, c.locale, new Date(c.date)));
-  allBlogs.forEach((b) => push(`/blog/${b.slug}`, b.locale, new Date(b.date)));
-  allDocs.forEach((d) => push(d.url, d.locale, new Date(d.date)));
+  allHomes.forEach((home) => {
+    push("/", home.locale, new Date(home.date));
+  });
+  allPages.forEach((p) => {
+    push(p.url, p.locale, new Date(p.date));
+  });
+  allTools.forEach((t) => {
+    push(t.url, t.locale, new Date(t.date));
+  });
+  allCases.forEach((c) => {
+    push(c.url, c.locale, new Date(c.date));
+  });
+  allBlogs.forEach((b) => {
+    push(`/blog/${b.slug}`, b.locale, new Date(b.date));
+  });
+  allDocs.forEach((d) => {
+    push(d.url, d.locale, new Date(d.date));
+  });
 
   // Группируем по пути для создания языковых кластеров
   const groups = new Map<string, Entry[]>();
@@ -53,8 +65,7 @@ export async function GET() {
 
     // Создаем ОДИН URL entry на группу языков (согласно рекомендациям Google)
     // Используем английскую версию как основной URL в <loc>
-    const mainLocale = "en";
-    const mainPrefix = mainLocale === "en" ? "" : `/${mainLocale}`;
+    const mainPrefix = "";
     const mainUrl = `${site}${mainPrefix}${path === "/" ? "" : path}`;
 
     xmlLines.push("  <url>");

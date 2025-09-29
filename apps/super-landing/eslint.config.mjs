@@ -1,196 +1,143 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import path from "path";
+import { fileURLToPath } from "url";
+
+import { fixupConfigRules } from "@eslint/compat";
+import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
+import eslintConfigPrettier from "eslint-config-prettier";
+import tseslint from "typescript-eslint";
+// import importPlugin from "eslint-plugin-import";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Создаем полную конфигурацию в формате .eslintrc.js
-const eslintrcConfig = {
-  extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended'
-  ],
-  settings: {
-    react: {
-      version: '19.0' // Явно указываем версию React
-    }
-  }
-};
+const __dirname = path.dirname(__filename);
 
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended
+    baseDirectory: __dirname,
+    resolvePluginsRelativeTo: __dirname,
 });
 
-export default [
-  js.configs.recommended,
-  ...compat.config(eslintrcConfig), // Используем полную конфигурацию
-  ...tseslint.configs.recommended,
-  {
-    ignores: [
-      '.next/**', 
-      'node_modules/**',
-      'public/**',
-      '**/*.config.js',
-      '**/*.config.mjs',
-      'next-env.d.ts',
-      '.open-next/**',
-      'out/**',
-      '.contentlayer/**',
-      '.wrangler/**',
-      'scripts/**'
-    ]
-  },
-  {
-    files: ['**/*.{js,mjs,jsx}'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true
-        }
-      },
-      globals: {
-        process: 'readonly',
-        console: 'readonly',
-        require: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        exports: 'readonly',
-        global: 'readonly',
-        Buffer: 'readonly',
-        fetch: 'readonly'
-      }
+/** @type {import('typescript-eslint').ConfigWithExtends} */
+const config = tseslint.config(
+    {
+        ignores: [
+            ".next",
+            "dist",
+            "public",
+            "node_modules",
+            "next.config.mjs",
+            "postcss.config.mjs",
+            "prettier.config.cjs",
+            "eslint.config.js",
+            "render-storyboard.mjs",
+            "render-timeline.mjs",
+            "src/shared/api/**/*",
+            ".contentlayer/**",
+            ".wrangler/**",
+            "scripts/**",
+            "src/tests/**"
+        ],
     },
-    // Настройки для React дублируем здесь для надежности
-    settings: {
-      react: {
-        version: '19.0' // Та же версия, что и выше
-      }
-    },
-    rules: {
-      // Отключаем правила Next.js, которые вызывают ошибки
-      '@next/next/no-duplicate-head': 'off',
-      '@next/next/no-html-link-for-pages': 'off',
-      '@next/next/no-img-element': 'off',
-      '@next/next/no-page-custom-font': 'off',
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-      
-      // Строгие правила TypeScript (только для файлов с type information)
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { 
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_', 
-        'ignoreRestSiblings': true 
-      }],
-      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-      '@typescript-eslint/prefer-optional-chain': 'warn',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      
-      // React Hooks правила
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
-      
-      // Общие правила
-      'no-console': 'warn',
-      'no-debugger': 'error',
-      'no-alert': 'warn',
-      'no-var': 'error',
-      'prefer-const': 'error',
-      'no-unused-expressions': 'error',
-      'no-duplicate-imports': 'warn',
-      'no-useless-return': 'error',
-      'no-useless-constructor': 'error',
-      'no-useless-catch': 'error',
-      'no-useless-concat': 'error',
-      'no-useless-escape': 'error',
-      'no-useless-rename': 'error',
-      'no-void': 'error',
-      'prefer-template': 'warn',
-      'prefer-arrow-callback': 'error',
-      'prefer-destructuring': ['warn', {
-        'array': true,
-        'object': true
-      }, {
-        'enforceForRenamedProperties': false
-      }]
-    }
-  },
-  {
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true
+
+    js.configs.recommended,
+    ...tseslint.configs.strictTypeChecked,
+    ...tseslint.configs.stylisticTypeChecked,
+    ...fixupConfigRules(compat.extends("plugin:@next/next/recommended")),
+    ...fixupConfigRules(compat.extends("plugin:react/recommended")),
+    ...fixupConfigRules(compat.extends("plugin:react-hooks/recommended")),
+    ...fixupConfigRules(compat.extends("plugin:jsx-a11y/strict")),
+    // ...fixupConfigRules(compat.extends("plugin:import/recommended")),
+    eslintConfigPrettier,
+
+    {
+        files: ["**/*.config.js", "**/*.config.mjs", "**/*.config.ts"],
+        rules: {
+            "@typescript-eslint/await-thenable": "off",
         },
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname
-      },
-      globals: {
-        process: 'readonly',
-        console: 'readonly',
-        fetch: 'readonly'
-      }
     },
-    settings: {
-      react: {
-        version: '19.0'
-      }
+    {
+        ignores: [
+            "**/node_modules/**",
+            "**/.next/**",
+            "**/dist/**",
+            "**/build/**",
+            "**/.contentlayer/**",
+            "**/public/**",
+        ],
+        linterOptions: {
+            reportUnusedDisableDirectives: true,
+        },
+        languageOptions: {
+            parserOptions: {
+                project: true,
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
+        settings: {
+            react: {
+                version: "detect",
+            },
+            "import/resolver": {
+                typescript: {},
+            },
+        },
+        rules: {
+            "@typescript-eslint/no-non-null-assertion": ["off"],
+
+            "react-hooks/exhaustive-deps": ["off"],
+
+            "jsx-a11y/no-autofocus": ["off"],
+
+            "@typescript-eslint/require-await": ["warn"],
+
+            "@typescript-eslint/no-unsafe-return": ["off"],
+
+
+            "@typescript-eslint/no-unsafe-assignment": ["off"],
+
+            "@typescript-eslint/no-floating-promises": ["warn"],
+
+            "@typescript-eslint/no-empty-object-type": ["off"],
+
+            "@typescript-eslint/consistent-type-definitions": "off",
+
+            // Отключаем правила, которые не влияют на качество кода
+            "@typescript-eslint/prefer-nullish-coalescing": ["off"],
+            "@typescript-eslint/no-unnecessary-condition": ["off"],
+            "@typescript-eslint/no-unsafe-argument": ["off"],
+
+            "@typescript-eslint/no-unsafe-member-access": ["off"],
+
+            "@typescript-eslint/no-unsafe-call": ["off"],
+
+            "@typescript-eslint/no-explicit-any": ["off"],
+
+            "@typescript-eslint/restrict-template-expressions": ["off"],
+
+            "@typescript-eslint/unbound-method": ["off"],
+
+            "@typescript-eslint/no-unused-vars": [
+                "warn",
+                { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+            ],
+
+            "@typescript-eslint/consistent-type-imports": [
+                "warn",
+                { prefer: "type-imports", fixStyle: "separate-type-imports" },
+            ],
+
+            "@typescript-eslint/no-misused-promises": [
+                "error",
+                { checksVoidReturn: { attributes: false } },
+            ],
+
+
+            "react/react-in-jsx-scope": "off",
+
+            "react/display-name": "off",
+
+            // "import/no-unresolved": "error", // Disabled - plugin not available
+        },
     },
-    rules: {
-      // Строгие правила TypeScript для файлов с type information
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { 
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_', 
-        'ignoreRestSiblings': true 
-      }],
-      '@typescript-eslint/no-unsafe-assignment': 'warn',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'warn',
-      '@typescript-eslint/no-unsafe-return': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-      '@typescript-eslint/prefer-optional-chain': 'warn',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      
-      // React Hooks правила
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
-      
-      // Общие правила
-      'no-console': 'warn',
-      'no-debugger': 'error',
-      'no-alert': 'warn',
-      'no-var': 'error',
-      'prefer-const': 'error',
-      'no-unused-expressions': 'error',
-      'no-duplicate-imports': 'warn',
-      'no-useless-return': 'error',
-      'no-useless-constructor': 'error',
-      'no-useless-catch': 'error',
-      'no-useless-concat': 'error',
-      'no-useless-escape': 'error',
-      'no-useless-rename': 'error',
-      'no-void': 'error',
-      'prefer-template': 'warn',
-      'prefer-arrow-callback': 'error',
-      'prefer-destructuring': ['warn', {
-        'array': true,
-        'object': true
-      }, {
-        'enforceForRenamedProperties': false
-      }]
-    }
-  }
-]; 
+);
+
+export default config;

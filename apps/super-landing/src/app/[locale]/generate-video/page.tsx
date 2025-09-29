@@ -1,5 +1,5 @@
 import { GenerateVideoForm } from "@/components/generate-video-form";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface PageProps {
   params: Promise<{
@@ -16,7 +16,7 @@ export default async function GenerateVideoPage({
 }: PageProps) {
   const { locale } = await params;
   const { model } = await searchParams;
-  const modelName = model || "Unknown Model";
+  const modelName = model ?? "Unknown Model";
 
   return (
     <GenerateVideoForm

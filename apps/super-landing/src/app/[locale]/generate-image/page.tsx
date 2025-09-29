@@ -1,29 +1,29 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
 import {
+  Button,
+  Textarea,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import { Image, Sparkles, ArrowLeft } from "lucide-react";
 import { StripePaymentButton } from "@turbo-super/payment";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { getModelConfig } from "@/lib/models-config";
 
 export default function GenerateImagePage() {
   const searchParams = useSearchParams();
-  const locale = (searchParams.get("locale") as Locale) || "en";
+  const locale = (searchParams.get("locale") as Locale) ?? "en";
   const [prompt, setPrompt] = useState("");
   const [showPayment, setShowPayment] = useState(false);
-  const modelName = searchParams.get("model") || "Unknown Model";
+  const modelName = searchParams.get("model") ?? "Unknown Model";
   const modelConfig = getModelConfig(modelName);
 
   const getToolSlug = () => {
@@ -87,10 +87,14 @@ export default function GenerateImagePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-blue-300">
+                  <label
+                    htmlFor="image-prompt"
+                    className="text-sm font-medium text-blue-300"
+                  >
                     Your prompt
                   </label>
                   <Textarea
+                    id="image-prompt"
                     placeholder="For example: Modern cityscape, skyscrapers, sunset lights, high quality, realistic style..."
                     value={prompt}
                     onChange={(e) => {
@@ -106,7 +110,9 @@ export default function GenerateImagePage() {
 
                 <Button
                   disabled={!prompt.trim() || showPayment}
-                  onClick={handleGenerateClick}
+                  onClick={() => {
+                    handleGenerateClick();
+                  }}
                   className="w-full btn-accent bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
                 >
                   <Image className="w-4 h-4 mr-2" />
@@ -133,7 +139,7 @@ export default function GenerateImagePage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {modelConfig?.description ||
+                    {modelConfig?.description ??
                       "High-quality AI image generation model"}
                   </p>
                 </div>
@@ -157,7 +163,9 @@ export default function GenerateImagePage() {
                 generationType="text-to-image"
                 imageFile={null}
                 modelName={modelName}
-                onPaymentClick={() => {}}
+                onPaymentClick={() => {
+                  /* Payment click handler */
+                }}
               />
             )}
 

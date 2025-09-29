@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Veo3StatusClient from "@/components/veo3/veo3-status-client";
 
 interface Veo3StatusPageProps {
@@ -38,7 +38,7 @@ export default async function Veo3StatusPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center">
           VEO3 Video Generation Status
