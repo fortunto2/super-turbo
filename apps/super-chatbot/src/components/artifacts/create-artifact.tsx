@@ -98,7 +98,7 @@ export class Artifact<T extends string, M = any> {
     this.actions = config.actions || [];
     this.toolbar = config.toolbar || [];
     this.initialize = config.initialize || (async () => ({}));
-    this.onCreateDocument = config.onCreateDocument;
+    this.onCreateDocument = config.onCreateDocument || (() => {});
     this.onStreamPart = config.onStreamPart;
   }
 }

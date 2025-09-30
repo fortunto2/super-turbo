@@ -183,8 +183,10 @@ function PureMultimodalInput({
       }
       const { error } = await response.json();
       toast.error(error);
+      return null;
     } catch (error) {
       toast.error("Failed to upload file, please try again!");
+      return null;
     }
   };
 
@@ -382,8 +384,8 @@ function PureMultimodalInput({
             submitForm={submitForm}
             uploadQueue={uploadQueue}
             status={status}
-            isSubmitting={isSubmitting}
-            isSubmittingRef={isSubmittingRef}
+            {...(isSubmitting !== undefined && { isSubmitting })}
+            {...(isSubmittingRef && { isSubmittingRef })}
           />
         )}
       </div>

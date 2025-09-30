@@ -66,7 +66,7 @@ class ImageSSEStore {
         projectHandlerList.push({
           projectId,
           handler,
-          requestId,
+          ...(requestId && { requestId }),
           timestamp,
         });
       }
@@ -438,7 +438,9 @@ class ImageSSEStore {
         const messageWithContext = {
           ...message,
           projectId,
-          requestId: message.requestId || requestId,
+          ...(message.requestId || requestId
+            ? { requestId: message.requestId || requestId }
+            : {}),
         };
 
         handler(messageWithContext);

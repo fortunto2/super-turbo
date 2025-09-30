@@ -13,9 +13,7 @@ import {
 } from "@/lib/utils/local-storage";
 import type { ImageGenerationFormData } from "../components/image-generator-form";
 import type { GenerationStatus } from "../components/generation-progress";
-import {
-  generateImageApi,
-} from "../api/image-generation";
+import { generateImageApi } from "../api/image-generation";
 
 // Legacy interfaces - MUST remain exactly the same for compatibility
 export interface GeneratedImage {
@@ -94,7 +92,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
       prompt: stored.prompt,
       timestamp: stored.timestamp,
       projectId: stored.projectId ?? "",
-      requestId: stored.requestId,
+      requestId: stored.requestId ?? "",
       settings: stored.settings,
     }));
     setGeneratedImages(convertedImages);
@@ -131,11 +129,11 @@ export function useImageGenerator(): UseImageGeneratorReturn {
         const apiData = {
           prompt: formData.prompt,
           model: formData.model ?? "",
-          style: formData.style,
-          resolution: formData.resolution,
-          shotSize: formData.shotSize,
-          seed: formData.seed,
-          file: formData.file,
+          style: formData.style ?? "",
+          resolution: formData.resolution ?? "",
+          shotSize: formData.shotSize ?? "",
+          ...(formData.seed !== undefined && { seed: formData.seed }),
+          ...(formData.file && { file: formData.file }),
         };
         const result = await generateImageApi(apiData);
 
@@ -182,13 +180,13 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   prompt: formData.prompt,
                   timestamp: Date.now(),
                   projectId: result.projectId || "",
-                  requestId: result.requestId,
+                  requestId: result.requestId ?? "",
                   settings: {
                     model: formData.model || "",
                     style: formData.style || "",
                     resolution: formData.resolution || "",
                     shotSize: formData.shotSize || "",
-                    seed: formData.seed ?? undefined,
+                    ...(formData.seed !== undefined && { seed: formData.seed }),
                   },
                 };
 
@@ -202,7 +200,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   prompt: generatedImage.prompt,
                   timestamp: generatedImage.timestamp,
                   projectId: generatedImage.projectId || "",
-                  requestId: generatedImage.requestId,
+                  requestId: generatedImage.requestId || "",
                   settings: generatedImage.settings,
                 });
 
@@ -363,8 +361,8 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   url: generatedImage.url,
                   prompt: generatedImage.prompt,
                   timestamp: generatedImage.timestamp,
-                  projectId: generatedImage.projectId,
-                  requestId: generatedImage.requestId,
+                  projectId: generatedImage.projectId ?? "",
+                  requestId: generatedImage.requestId ?? "",
                   settings: generatedImage.settings,
                   fileId: fileId || projectId,
                 });

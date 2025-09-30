@@ -71,7 +71,7 @@ class ImageWebsocketStore {
         projectHandlerList.push({
           projectId,
           handler,
-          requestId,
+          ...(requestId && { requestId }),
           timestamp,
         });
       }

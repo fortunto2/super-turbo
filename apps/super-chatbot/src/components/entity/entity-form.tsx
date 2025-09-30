@@ -195,7 +195,7 @@ const EntityForm: FC<Props> & { ID: string } = ({
 
         if (
           index > 0 &&
-          optionalFields[index - 1].isInline &&
+          optionalFields[index - 1]?.isInline &&
           optionalField.isInline
         ) {
           return null;

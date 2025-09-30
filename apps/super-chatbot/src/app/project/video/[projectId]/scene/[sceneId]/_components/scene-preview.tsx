@@ -53,7 +53,7 @@ export const ScenePreview = ({
   const { isInpainting, canvas, setCanvas, handleInpainting } = useInpainting({
     scene: scene ?? null,
     projectId,
-    onActiveToolChange,
+    onActiveToolChange: onActiveToolChange ?? (() => {}),
     onStarted,
   });
 
@@ -111,7 +111,7 @@ export const ScenePreview = ({
           canvasSize={canvasSize}
           activeTool={activeTool}
           onPlayingChange={onPlayingChange ?? (() => {})}
-          isPlaying={isPlaying}
+          isPlaying={isPlaying ?? false}
           isReady={isReady}
           updateCanvasSize={updateCanvasSize}
           onToolbarUpdate={updateToolbarAnchorFromTarget}

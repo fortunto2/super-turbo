@@ -440,8 +440,8 @@ const ImageDisplay = ({
         prompt={prompt}
         documentId={documentId}
         chatId={chatId}
-        projectId={projectId}
-        fileId={fileId}
+        {...(projectId && { projectId })}
+        {...(fileId && { fileId })}
         setArtifact={setArtifact}
         onCancelEdit={onCancelEdit}
         onSaveEdit={onSaveEdit}

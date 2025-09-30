@@ -194,17 +194,28 @@ export function useVideoGenerator({
         url: state.videoUrl,
         prompt: getLastGenerationParams()?.prompt || "",
         timestamp: Date.now(),
-        projectId: state.projectId,
-        requestId: state.requestId,
-        settings: {
-          model: getLastGenerationParams()?.model || "",
-          style: getLastGenerationParams()?.style || "",
-          resolution: getLastGenerationParams()?.resolution || "",
-          shotSize: getLastGenerationParams()?.shotSize || "",
-          duration: getLastGenerationParams()?.duration || 5,
-          frameRate: getLastGenerationParams()?.frameRate || 24,
-          negativePrompt: getLastGenerationParams()?.negativePrompt ?? undefined,
-        },
+        ...(state.projectId && { projectId: state.projectId }),
+        ...(state.requestId && { requestId: state.requestId }),
+        settings: (() => {
+          const params = getLastGenerationParams();
+          const settings = {
+            model: params?.model || "",
+            style: params?.style || "",
+            resolution: params?.resolution || "",
+            shotSize: params?.shotSize || "",
+            duration: params?.duration || 5,
+            frameRate: params?.frameRate || 24,
+          };
+
+          if (params?.negativePrompt) {
+            return {
+              ...settings,
+              negativePrompt: params.negativePrompt,
+            };
+          }
+
+          return settings;
+        })(),
       };
     }
     return null;

@@ -92,7 +92,7 @@ export function SoundEffectList({
                   key={file.id}
                   file={file}
                   isActive={scene?.sound_effect_id === file.id}
-                  scene={scene ?? undefined}
+                  {...(scene && { scene })}
                 />
               ))}
             </>

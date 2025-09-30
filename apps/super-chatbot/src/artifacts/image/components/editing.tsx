@@ -179,7 +179,7 @@ export const ImageEditing = ({
 
         // Try to extract fileId from URL (e.g., from /file/{fileId})
         const fileIdMatch = url.match(/\/file\/([^/]+)/);
-        if (fileIdMatch) {
+        if (fileIdMatch?.[1]) {
           console.log(
             "🔍 extractFileIdFromUrl: Found fileId from /file/ pattern:",
             fileIdMatch[1]
@@ -190,7 +190,7 @@ export const ImageEditing = ({
         // If this is a generated image URL, extract ID from path
         // Pattern: generated/image/YYYY/M/D/H/filename.ext
         const generatedMatch = url.match(/generated\/image\/[^/]+\/([^/]+)\./);
-        if (generatedMatch) {
+        if (generatedMatch?.[1]) {
           console.log(
             "🔍 extractFileIdFromUrl: Found fileId from generated pattern:",
             generatedMatch[1]
@@ -200,7 +200,7 @@ export const ImageEditing = ({
 
         // Additional pattern for generated image URLs without leading slash
         const generatedMatch2 = url.match(/generated\/image\/[^/]+\/([^/]+)\./);
-        if (generatedMatch2) {
+        if (generatedMatch2?.[1]) {
           console.log(
             "🔍 extractFileIdFromUrl: Found fileId from generated pattern (no slash):",
             generatedMatch2[1]
@@ -210,7 +210,7 @@ export const ImageEditing = ({
 
         // Additional pattern for other URL formats
         const altMatch = url.match(/\/([a-f0-9-]{36})\./);
-        if (altMatch) {
+        if (altMatch?.[1]) {
           console.log(
             "🔍 extractFileIdFromUrl: Found fileId from UUID pattern:",
             altMatch[1]

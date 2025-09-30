@@ -55,7 +55,7 @@ export default function GalleryPage() {
                 if (search) {
                   newFilters.search = search;
                 } else {
-                  delete newFilters.search;
+                  newFilters.search = undefined;
                 }
                 setFilters(newFilters);
                 setPage(1);

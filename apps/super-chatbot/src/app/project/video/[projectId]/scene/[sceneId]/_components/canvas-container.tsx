@@ -39,7 +39,7 @@ export function CanvasContainer({
           scene={scene}
           canvasSize={canvasSize}
           onPlayingChange={onPlayingChange ?? (() => {})}
-          isPlaying={isPlaying}
+          isPlaying={isPlaying ?? false}
           isReady={isReady}
           updateCanvasSize={updateCanvasSize}
         />

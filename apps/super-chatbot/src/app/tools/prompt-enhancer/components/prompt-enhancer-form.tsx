@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from '@turbo-super/ui';
-import { Textarea } from '@turbo-super/ui';
-import { Label } from '@turbo-super/ui';
+import { Button } from "@turbo-super/ui";
+import { Textarea } from "@turbo-super/ui";
+import { Label } from "@turbo-super/ui";
 import {
   Select,
   SelectContent,
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from '@turbo-super/ui';
+import { Input } from "@turbo-super/ui";
 
 import {
   Card,
@@ -19,7 +19,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@turbo-super/ui';
+} from "@turbo-super/ui";
 import { Wand2, Sparkles } from "lucide-react";
 import type { EnhancementParams } from "../hooks/use-prompt-enhancer";
 
@@ -50,9 +50,9 @@ export function PromptEnhancerForm({
       originalPrompt: originalPrompt.trim(),
       mediaType,
       enhancementLevel,
-      targetAudience: targetAudience.trim() || undefined,
+      targetAudience: targetAudience.trim() || "",
       includeNegativePrompt,
-      modelHint: modelHint.trim() || undefined,
+      ...(modelHint && { modelHint: modelHint.trim() }),
     };
 
     onEnhance(params);

@@ -86,7 +86,7 @@ export function VideoErrorDisplay({
       <ErrorDisplay
         error={error}
         title="Video generation error"
-        onRetry={onRetry}
+        {...(onRetry && { onRetry })}
       />
       {prompt && (
         <div className="mt-3 p-3 bg-red-100 rounded-md border border-red-200">
@@ -114,7 +114,7 @@ export function ImageErrorDisplay({
       <ErrorDisplay
         error={error}
         title="Image generation error"
-        onRetry={onRetry}
+        {...(onRetry && { onRetry })}
       />
       {prompt && (
         <div className="mt-3 p-3 bg-red-100 rounded-md border border-red-200">

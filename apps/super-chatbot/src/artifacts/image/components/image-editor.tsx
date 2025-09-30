@@ -276,7 +276,9 @@ export function ImageEditor({
     : imageGeneration.status;
 
   useImageEffects({
-    imageUrl: effectiveImageUrlForEffects,
+    ...(effectiveImageUrlForEffects && {
+      imageUrl: effectiveImageUrlForEffects,
+    }),
     status: effectiveStatusForEffects || "",
     append,
     prompt: prompt || initialState?.prompt || "",
@@ -572,25 +574,24 @@ export function ImageEditor({
         {imageGeneration.error && (
           <ImageErrorDisplay
             error={imageGeneration.error}
-            prompt={initialState?.prompt}
+            {...(initialState?.prompt && { prompt: initialState.prompt })}
             onRetry={handleRetry}
           />
         )}
 
         {showSkeleton && (
           <GenerationSkeleton
-            prompt={initialState?.prompt}
-            onForceCheck={
-              imageGeneration.isGenerating ? handleForceCheck : undefined
-            }
-            isChecking={isForceChecking}
+            {...(initialState?.prompt && { prompt: initialState.prompt })}
+            {...(imageGeneration.isGenerating &&
+              handleForceCheck && { onForceCheck: handleForceCheck })}
+            {...(isForceChecking && { isChecking: isForceChecking })}
           />
         )}
 
         {showImage && displayImageUrl && (
           <ImageDisplay
             imageUrl={displayImageUrl}
-            prompt={displayPrompt}
+            {...(displayPrompt && { prompt: displayPrompt })}
             onCopyUrl={handleCopyUrl}
             onGenerateNew={handleGenerateNew}
             apiPayload={parsedContent} // Pass parsed content for debug display

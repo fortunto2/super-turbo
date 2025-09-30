@@ -77,11 +77,6 @@ const initialState: UseImageGenerationState = {
   isGenerating: false,
   progress: 0,
   status: "pending",
-  error: undefined,
-  imageUrl: undefined,
-  projectId: undefined,
-  requestId: undefined,
-  fileId: undefined,
 };
 
 export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
@@ -252,10 +247,8 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
       isGenerating: true,
       progress: 0,
       status: "processing",
-      error: undefined,
-      imageUrl: undefined,
-      projectId,
-      requestId,
+      ...(projectId && { projectId }),
+      ...(requestId && { requestId }),
     }));
 
     // Reduced tracking logging
@@ -337,9 +330,9 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
         // CRITICAL: Use result.projectId which contains the fileId for SSE connection
         setState((prev) => ({
           ...prev,
-          projectId: result.projectId, // This is the fileId we need for SSE
-          fileId: result.fileId, // Store the actual fileId separately
-          requestId: result.requestId,
+          ...(result.projectId && { projectId: result.projectId }), // This is the fileId we need for SSE
+          ...(result.fileId && { fileId: result.fileId }), // Store the actual fileId separately
+          ...(result.requestId && { requestId: result.requestId }),
           status: "processing",
         }));
 
@@ -397,7 +390,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
               setState((prev) => ({
                 ...prev,
                 status: "completed" as const,
-                imageUrl: imageUrl || undefined,
+                ...(imageUrl && { imageUrl }),
                 progress: 100,
                 isGenerating: false,
               }));
@@ -434,7 +427,7 @@ export function useImageGeneration(chatId?: string): UseImageGenerationReturn {
                 setState((prev) => ({
                   ...prev,
                   status: "completed" as const,
-                  imageUrl: fileResponse.url || undefined,
+                  ...(fileResponse.url && { imageUrl: fileResponse.url }),
                   progress: 100,
                   isGenerating: false,
                 }));

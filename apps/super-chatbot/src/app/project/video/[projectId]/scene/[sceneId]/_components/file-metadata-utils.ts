@@ -56,15 +56,18 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
 
   if (file.video_generation) {
     const vidGen = file.video_generation;
-    metadata.prompt = vidGen.prompt;
+    metadata.prompt = vidGen.prompt ?? "";
     if (vidGen.negative_prompt)
       metadata.negativePrompt = vidGen.negative_prompt;
     if (vidGen.seed !== undefined) metadata.seed = vidGen.seed;
     if (vidGen.generation_config_name)
       metadata.generationConfig = vidGen.generation_config_name;
-    if (vidGen.duration !== undefined && vidGen.duration !== null) metadata.duration = vidGen.duration;
-    if (vidGen.width !== undefined && vidGen.width !== null) metadata.width = vidGen.width;
-    if (vidGen.height !== undefined && vidGen.height !== null) metadata.height = vidGen.height;
+    if (vidGen.duration !== undefined && vidGen.duration !== null)
+      metadata.duration = vidGen.duration;
+    if (vidGen.width !== undefined && vidGen.width !== null)
+      metadata.width = vidGen.width;
+    if (vidGen.height !== undefined && vidGen.height !== null)
+      metadata.height = vidGen.height;
     if (vidGen.aspect_ratio) metadata.aspectRatio = vidGen.aspect_ratio;
 
     // Извлекаем model_sid из generation_config

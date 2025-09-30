@@ -86,7 +86,7 @@ class VideoSSEStore {
         projectHandlerList.push({
           projectId,
           handler,
-          requestId,
+          ...(requestId && { requestId }),
           timestamp,
         });
       }

@@ -437,7 +437,7 @@ export function VideoGeneratorForm({
               <div className="space-y-2">
                 <Label htmlFor="model">AI Model</Label>
                 <Select
-                  value={formData.model}
+                  value={formData.model ?? ""}
                   onValueChange={(value) => handleInputChange("model", value)}
                   disabled={disabled || isGenerating}
                 >
@@ -508,7 +508,7 @@ export function VideoGeneratorForm({
               <div className="space-y-2">
                 <Label htmlFor="model">AI Model</Label>
                 <Select
-                  value={formData.model}
+                  value={formData.model ?? ""}
                   onValueChange={(value) => handleInputChange("model", value)}
                   disabled={disabled || isGenerating}
                 >

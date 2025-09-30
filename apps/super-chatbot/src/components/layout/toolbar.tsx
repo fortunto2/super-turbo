@@ -283,17 +283,19 @@ export const Tools = ({
           ))}
       </AnimatePresence>
 
-      <Tool
-        description={primaryTool.description}
-        icon={primaryTool.icon}
-        selectedTool={selectedTool}
-        setSelectedTool={setSelectedTool}
-        isToolbarVisible={isToolbarVisible}
-        setIsToolbarVisible={setIsToolbarVisible}
-        append={append}
-        isAnimating={isAnimating}
-        onClick={primaryTool.onClick}
-      />
+      {primaryTool && (
+        <Tool
+          description={primaryTool.description}
+          icon={primaryTool.icon}
+          selectedTool={selectedTool}
+          setSelectedTool={setSelectedTool}
+          isToolbarVisible={isToolbarVisible}
+          setIsToolbarVisible={setIsToolbarVisible}
+          append={append}
+          isAnimating={isAnimating}
+          onClick={primaryTool.onClick}
+        />
+      )}
     </motion.div>
   );
 };

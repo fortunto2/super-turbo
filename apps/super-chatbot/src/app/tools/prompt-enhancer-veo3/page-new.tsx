@@ -33,7 +33,6 @@ export default function Veo3PromptGeneratorPage() {
   return (
     <Veo3PromptGenerator
       enhancePromptFunction={enhancePromptFunction}
-      MoodboardUploader={undefined}
       showInfoBanner={true}
     />
   );

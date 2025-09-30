@@ -123,7 +123,7 @@ const PurePreviewMessage = ({
                       const jsonMatch = part.text.match(
                         /```json\s*({[\s\S]*?})\s*```/
                       );
-                      if (jsonMatch) {
+                      if (jsonMatch?.[1]) {
                         artifact = JSON.parse(jsonMatch[1]);
                       }
                     } catch {}
@@ -339,7 +339,7 @@ const PurePreviewMessage = ({
                           }}
                           selectedChatModel={selectedChatModel}
                           selectedVisibilityType={selectedVisibilityType}
-                          append={append}
+                          {...(append && { append })}
                         />
                       </div>
                     );
@@ -365,7 +365,7 @@ const PurePreviewMessage = ({
                           }}
                           selectedChatModel={selectedChatModel}
                           selectedVisibilityType={selectedVisibilityType}
-                          append={append}
+                          {...(append && { append })}
                         />
                       </div>
                     );

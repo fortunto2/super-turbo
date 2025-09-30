@@ -149,7 +149,7 @@ export function validateImageAssignment(
     // Log to monitor
     imageMonitor.logRequest({
       projectId: receivedProjectId,
-      requestId,
+      requestId: requestId || "",
       status: "mix-up-detected",
       timestamp: Date.now(),
       imageUrl,

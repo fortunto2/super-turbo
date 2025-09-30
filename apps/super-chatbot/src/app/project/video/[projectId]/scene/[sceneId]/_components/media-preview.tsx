@@ -45,10 +45,10 @@ export function MediaPreview({
           url={scene.file.url}
           onPlayingChange={onPlayingChange ?? (() => {})}
           duration={scene.duration}
-          isPlaying={isPlaying}
-          musicSrc={scene.sound_effect?.url}
-          soundEffectSrc={scene.sound_effect?.url}
-          voiceoverSrc={scene.voiceover?.url}
+          isPlaying={isPlaying ?? false}
+          musicSrc={scene.sound_effect?.url ?? null}
+          soundEffectSrc={scene.sound_effect?.url ?? null}
+          voiceoverSrc={scene.voiceover?.url ?? null}
           isReady={isReady}
           videoRef={videoRef}
           updateCanvasSize={updateCanvasSize}

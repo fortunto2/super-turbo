@@ -306,11 +306,11 @@ export async function POST(req: NextRequest) {
           if (!imagesByTag[tag]) imagesByTag[tag] = [];
           imagesByTag[tag].push({
             id: img.id,
-            description: img.description,
+            description: img.description ?? "",
             weight: img.weight,
             tags: img.tags,
-            url: img.url,
-            base64: img.base64,
+            ...(img.url && { url: img.url }),
+            ...(img.base64 && { base64: img.base64 }),
             index: index + 1,
           });
         });
