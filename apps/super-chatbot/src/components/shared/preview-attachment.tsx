@@ -102,7 +102,7 @@ export const PreviewAttachment = ({
         title: name || "Video",
       }));
     } else if (contentType === "text/markdown") {
-      let documentId;
+      let documentId: string | undefined;
       if (url) {
         const urlParts = url.split("/");
         documentId = urlParts[urlParts.length - 1];

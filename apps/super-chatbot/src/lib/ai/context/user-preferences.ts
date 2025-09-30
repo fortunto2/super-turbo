@@ -80,7 +80,7 @@ export class UserPreferenceLearner {
     console.log(
       `🧠 UserPreferenceLearner: Recorded choice for user ${userId}:`,
       {
-        message: userMessage.substring(0, 50) + "...",
+        message: `${userMessage.substring(0, 50)}...`,
         selectedMedia: selectedMedia.url,
         confidence,
         reasoning,
@@ -449,7 +449,7 @@ export class UserPreferenceLearner {
   /**
    * Очищает старые данные обучения
    */
-  cleanup(daysToKeep: number = 30): void {
+  cleanup(daysToKeep = 30): void {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 

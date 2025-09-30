@@ -819,9 +819,12 @@ wait_for_${isVideo ? "video" : "image"} "$${isVideo ? "VIDEO_ID" : "IMAGE_ID"}"`
                   (model) => model.type === value
                 );
                 if (newCategoryModels.length > 0) {
+                  if (!newCategoryModels[0]?.id) {
+                    return;
+                  }
                   setConfig((prev) => ({
                     ...prev,
-                    model: newCategoryModels[0].id,
+                    model: newCategoryModels[0]!.id,
                   }));
                 }
               }}

@@ -37,11 +37,11 @@ export async function GET(request: Request) {
     // For public-only documents, no auth required
     if (visibility === "public") {
       const result = await getPublicDocuments({
-        kind,
-        model,
-        search,
-        dateFrom,
-        dateTo,
+        ...(kind && { kind }),
+        ...(model && { model }),
+        ...(search && { search }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo }),
         sortBy,
         page,
         limit,
@@ -56,12 +56,12 @@ export async function GET(request: Request) {
 
     const result = await getDocuments({
       userId: session.user.id,
-      kind,
-      model,
+      ...(kind && { kind }),
+      ...(model && { model }),
       visibility,
-      search,
-      dateFrom,
-      dateTo,
+      ...(search && { search }),
+      ...(dateFrom && { dateFrom }),
+      ...(dateTo && { dateTo }),
       sortBy,
       page,
       limit,
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
   if (documents.length > 0) {
     const [document] = documents;
 
-    if (document.userId !== session.user.id) {
+    if (document && document.userId !== session.user.id) {
       return new Response("Forbidden", { status: 403 });
     }
   }
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
     title,
     kind,
     userId: session.user.id,
-    thumbnailUrl,
+    thumbnailUrl: thumbnailUrl || null,
   });
 
   return Response.json(document, { status: 200 });
@@ -201,7 +201,7 @@ export async function DELETE(request: Request) {
 
   const [document] = documents;
 
-  if (document.userId !== session.user.id) {
+  if (document && document.userId !== session.user.id) {
     return new Response("Unauthorized", { status: 401 });
   }
 

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
+import { Input, Button } from "@turbo-super/ui";
 import { CrossIcon } from "@/components/common/icons";
 import { useDebounceCallback } from "usehooks-ts";
 

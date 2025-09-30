@@ -7,7 +7,7 @@ export const useGenerateTimeline = (mutationKey?: MutationKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: mutationKey,
+    mutationKey: mutationKey ?? [],
     mutationFn: ProjectService.projectRegenerateTimeline,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: projectKeys._def });

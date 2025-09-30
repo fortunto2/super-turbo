@@ -151,9 +151,9 @@ export const useChatImageWebSocket = ({
               for (let i = updatedMessages.length - 1; i >= 0; i--) {
                 const message = updatedMessages[i];
 
-                if (message.role === "assistant") {
+                if (message?.role === "assistant") {
                   // Check if this message has image artifact content
-                  const hasImageArtifact = message.parts?.some(
+                  const hasImageArtifact = message?.parts?.some(
                     (part) =>
                       part.type === "text" &&
                       "text" in part &&
@@ -182,7 +182,9 @@ export const useChatImageWebSocket = ({
                               /```json\\s*({[\\s\\S]*?})\\s*```/
                             );
                             if (jsonMatch) {
-                              artifactContent = JSON.parse(jsonMatch[1]);
+                              artifactContent = JSON.parse(
+                                jsonMatch[1] ?? "{}"
+                              );
                             }
                           } else if (
                             part.text.startsWith("{") &&
@@ -304,7 +306,7 @@ export const useChatImageWebSocket = ({
                     parts: updatedParts,
                   };
 
-                  updatedMessages[candidateIndex] = updatedMessage;
+                  updatedMessages[candidateIndex] = updatedMessage as any;
                   foundArtifact = true;
 
                   // Save the updated message to database

@@ -131,8 +131,14 @@ export function AnimatingTool({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <div className="space-y-1 md:col-span-3">
-          <label className="text-xs text-muted-foreground">Prompt</label>
+          <label
+            htmlFor="animation-prompt"
+            className="text-xs text-muted-foreground"
+          >
+            Prompt
+          </label>
           <input
+            id="animation-prompt"
             type="text"
             placeholder="Describe the animation..."
             className="w-full h-10 rounded-md border bg-background px-3 text-sm"
@@ -141,8 +147,14 @@ export function AnimatingTool({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Model</label>
+          <label
+            htmlFor="model-select"
+            className="text-xs text-muted-foreground"
+          >
+            Model
+          </label>
           <select
+            id="model-select"
             className="w-full h-10 rounded-md border bg-background px-3 text-sm"
             value={model?.name}
             onChange={(e) => handleChangeModel(e.target.value)}
@@ -162,10 +174,14 @@ export function AnimatingTool({
           </select>
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">
+          <label
+            htmlFor="duration-select"
+            className="text-xs text-muted-foreground"
+          >
             Duration (sec)
           </label>
           <select
+            id="duration-select"
             className="w-full h-10 rounded-md border bg-background px-3 text-sm"
             value={String(duration)}
             onChange={(e) => setDuration(Number(e.target.value))}

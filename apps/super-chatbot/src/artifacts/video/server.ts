@@ -148,7 +148,7 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
         hasSourceImage: !!actualSourceImageUrl,
       });
 
-      let result;
+      let result: any;
       if (actualGenerationType === "image-to-video" && actualSourceImageUrl) {
         // Image-to-video generation - переключаем модель на image_to_video тип
         const videoParams = {
@@ -360,7 +360,7 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
         ? "image-to-video"
         : "text-to-video";
 
-      let result;
+      let result: any;
       if (actualGenerationType === "image-to-video" && actualSourceImageUrl) {
         // Image-to-video generation - переключаем модель на image_to_video тип
         const videoParams = {

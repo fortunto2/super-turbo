@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Plus, } from "lucide-react";
+import { Plus } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
 import { EntityForm } from "@/components/entity/entity-form";
 import { useEntityCreate } from "@/lib/api/superduperai/entity/create/query";
@@ -119,6 +119,7 @@ export default function AddEntityPage() {
                     <div className="space-y-3">
                       {entityTypes.map((entityType) => (
                         <button
+                          type="button"
                           key={entityType.type}
                           onClick={() => setSelectedType(entityType.type)}
                           className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${

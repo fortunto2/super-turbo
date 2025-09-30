@@ -89,7 +89,9 @@ const auth0Enabled = Boolean(
 const resolvedAuthSecret =
   process.env.AUTH_SECRET ||
   process.env.NEXTAUTH_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-change-me" : undefined);
+  (process.env.NODE_ENV !== "production"
+    ? "dev-secret-change-me"
+    : "fallback-secret");
 
 export const {
   handlers: { GET, POST },
@@ -127,7 +129,7 @@ export const {
 
         const [user] = users;
 
-        if (!user.password) {
+        if (!user?.password) {
           await compare(password, DUMMY_PASSWORD);
           return null;
         }
@@ -254,11 +256,11 @@ export const {
           try {
             // Decode JWT to extract custom claims (without verification for simplicity)
             const base64Url = account.id_token.split(".")[1];
-            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const base64 = base64Url?.replace(/-/g, "+").replace(/_/g, "/");
             const jsonPayload = decodeURIComponent(
-              atob(base64)
+              atob(base64 ?? "")
                 .split("")
-                .map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`)
+                .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
                 .join("")
             );
 
@@ -343,11 +345,13 @@ export const {
               // Если пользователь найден по email, но имеет другой ID,
               // используем ID из базы данных вместо ID из Auth0
               const existingUser = users[0];
-              if (existingUser.id !== token.id) {
+              if (existingUser?.id !== token.id) {
                 console.log(
-                  `Found user with email ${token.email} in database with different ID. Using database ID: ${existingUser.id}`
+                  `Found user with email ${token.email} in database with different ID. Using database ID: ${existingUser?.id}`
                 );
-                session.user.id = existingUser.id;
+                if (existingUser?.id) {
+                  session.user.id = existingUser?.id;
+                }
                 // Не меняем token.id, так как это может вызвать проблемы с Auth0
               }
             } else {

@@ -111,9 +111,9 @@ export function MoodboardUploader({
 
       return {
         id: img.id,
-        file: img.file,
-        url: img.url,
-        base64: img.base64,
+        file: img.file as any,
+        url: img.url as any,
+        base64: img.base64 as any,
         preview,
       };
     });
@@ -150,7 +150,7 @@ export function MoodboardUploader({
         );
       });
 
-      updateMoodboardImages(newMoodboardImages);
+      updateMoodboardImages(newMoodboardImages as MoodboardImage[]);
     },
     [moodboardImages, updateMoodboardImages]
   );

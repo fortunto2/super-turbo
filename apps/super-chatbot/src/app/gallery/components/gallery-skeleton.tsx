@@ -1,11 +1,10 @@
-import { Card } from "@turbo-super/ui";
-import { Skeleton } from "@turbo-super/ui";
+import { Card, Skeleton } from "@turbo-super/ui";
 export function GallerySkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 8 }).map((_, index) => (
+      {Array.from({ length: 8 }, (_, index) => (
         <Card
-          key={index}
+          key={`skeleton-card-${index}`}
           className="overflow-hidden"
         >
           {/* Thumbnail skeleton - точно такая же высота как в реальных карточках */}

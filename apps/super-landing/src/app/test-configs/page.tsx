@@ -131,14 +131,14 @@ export default function TestConfigsPage() {
                   {testResults[model.name] && (
                     <div className="mt-2">
                       <Badge
-                        className={`${getStatusColor(testResults[model.name].status)} gap-1`}
+                        className={`${getStatusColor(testResults[model.name]?.status ?? "")} gap-1`}
                       >
-                        {getStatusIcon(testResults[model.name].status)}
-                        {testResults[model.name].status}
+                        {getStatusIcon(testResults[model.name]?.status ?? "")}
+                        {testResults[model.name]?.status}
                       </Badge>
-                      {testResults[model.name].error && (
+                      {testResults[model.name]?.error && (
                         <p className="text-xs text-red-300 mt-1">
-                          {testResults[model.name].error}
+                          {testResults[model.name]?.error}
                         </p>
                       )}
                     </div>

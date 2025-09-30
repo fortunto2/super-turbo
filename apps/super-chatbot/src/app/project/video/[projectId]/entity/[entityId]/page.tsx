@@ -105,7 +105,7 @@ export default function EntityPage() {
         },
         {
           onSuccess: (files) => {
-            if (files && files.length > 0 && entity) {
+            if (files && files.length > 0 && entity && files[0]) {
               updateEntity(
                 {
                   id: entity.id,

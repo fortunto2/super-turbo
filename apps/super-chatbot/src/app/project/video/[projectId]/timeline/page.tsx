@@ -113,15 +113,17 @@ export default function VideoPage() {
         errorMessage="Failed to load project"
         className="size-full"
       >
-        <ProjectTimeline
-          timeline={timeline}
-          project={project!}
-          onBack={() => router.back()}
-          onExport={() => setIsExportDialogOpen(true)}
-          onUpdateTimeline={handleUpdateTimeline}
-          onRegenerateTimeline={handleGenerateTimeline}
-          isGenerating={isGenerating}
-        />
+        {project && (
+          <ProjectTimeline
+            timeline={timeline}
+            project={project}
+            onBack={() => router.back()}
+            onExport={() => setIsExportDialogOpen(true)}
+            onUpdateTimeline={handleUpdateTimeline}
+            onRegenerateTimeline={handleGenerateTimeline}
+            isGenerating={isGenerating}
+          />
+        )}
       </QueryState>
 
       {/* Export Dialog */}

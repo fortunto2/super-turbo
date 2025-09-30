@@ -255,7 +255,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
       } else {
         // Пользователь найден по email, обновим userId в сессии для создания чата
         const foundUser = users[0];
-        if (foundUser.id !== session.user.id) {
+        if (foundUser && foundUser.id !== session.user.id) {
           console.log(
             `User found with email but different ID, using existing ID: ${foundUser.id} instead of ${session.user.id}`
           );
@@ -267,13 +267,13 @@ export const POST = withMonitoring(async function POST(request: Request) {
             level: "info",
             data: {
               sessionUserId: session.user.id,
-              databaseUserId: foundUser.id,
+              databaseUserId: foundUser?.id ?? session.user.id,
               email: session.user.email,
             },
           });
 
           // Используем ID из базы данных для создания чата
-          session.user.id = foundUser.id;
+          session.user.id = foundUser?.id ?? session.user.id;
         }
       }
     } catch (userError) {
@@ -466,7 +466,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
           tags: { error_type: "unauthorized", entity: "chat" },
           extra: {
             chatId: id,
-            chatOwnerId: chat.userId,
+            chatOwnerId: chat?.userId,
             userId: session.user.id,
           },
         });
@@ -809,13 +809,13 @@ export const POST = withMonitoring(async function POST(request: Request) {
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
               session,
-              defaultSourceImageUrl: defaultSourceImageUrl,
+              defaultSourceImageUrl: defaultSourceImageUrl ?? "",
             }),
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
               session,
-              defaultSourceVideoUrl: defaultSourceVideoUrl,
-              defaultSourceImageUrl: defaultSourceImageUrl,
+              defaultSourceVideoUrl: defaultSourceVideoUrl ?? "",
+              defaultSourceImageUrl: defaultSourceImageUrl ?? "",
               chatId: id,
               userMessage: messageToProcess.parts?.[0]?.text || "",
               currentAttachments:
@@ -996,7 +996,7 @@ export async function GET(request: Request) {
     let chat: Chat;
 
     try {
-      chat = await getChatById({ id: chatId });
+      chat = (await getChatById({ id: chatId })) ?? ({} as Chat);
     } catch (error) {
       console.error("Error getting chat by ID:", error);
       return formatErrorResponse(error as Error, "GET chat/getChatById");
@@ -1114,9 +1114,9 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const chat = await getChatById({ id });
+    const chat = (await getChatById({ id })) ?? ({} as Chat);
 
-    if (chat.userId !== session.user.id) {
+    if (chat?.userId !== session.user.id) {
       return new Response("Forbidden", { status: 403 });
     }
 

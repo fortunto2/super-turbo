@@ -10,14 +10,16 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const redirectUrl = searchParams.get("redirectUrl") || "/";
 
+  const secret =
+    process.env.AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    (process.env.NODE_ENV !== "production"
+      ? "dev-secret-change-me"
+      : "fallback-secret");
+
   const token = await getToken({
     req: request,
-    secret:
-      process.env.AUTH_SECRET ||
-      process.env.NEXTAUTH_SECRET ||
-      (process.env.NODE_ENV !== "production"
-        ? "dev-secret-change-me"
-        : undefined),
+    secret,
     secureCookie: !isDevelopmentEnvironment,
   });
 

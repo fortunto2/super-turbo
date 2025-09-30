@@ -53,7 +53,8 @@ class ImageWebsocketStore {
       this.projectHandlers.set(projectId, []);
     }
 
-    const projectHandlerList = this.projectHandlers.get(projectId)!;
+    const projectHandlerList = this.projectHandlers.get(projectId);
+    if (!projectHandlerList) return;
 
     // Check project-specific handler limit
     if (projectHandlerList.length >= this.maxHandlersPerProject) {
@@ -101,7 +102,8 @@ class ImageWebsocketStore {
       handlersToRemove.length
     );
 
-    const projectHandlerList = this.projectHandlers.get(projectId)!;
+    const projectHandlerList = this.projectHandlers.get(projectId);
+    if (!projectHandlerList) return;
 
     handlersToRemove.forEach((handlerToRemove) => {
       const index = projectHandlerList.findIndex(

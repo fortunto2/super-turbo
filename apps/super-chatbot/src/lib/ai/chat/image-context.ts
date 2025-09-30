@@ -879,7 +879,7 @@ async function findImageBySemanticContent(
         "🔍 findImageBySemanticContent: Found semantic index match:",
         {
           url: bestMatch.image.url,
-          score: Math.round(bestMatch.relevanceScore * 100) + "%",
+          score: `${Math.round(bestMatch.relevanceScore * 100)}%`,
           reasoning: bestMatch.reasoning,
           matchedKeywords: bestMatch.matchedKeywords,
         }
@@ -900,7 +900,7 @@ async function findImageBySemanticContent(
         "🔍 findImageBySemanticContent: Found semantic analyzer match:",
         {
           url: bestMatch.media.url,
-          similarity: Math.round(bestMatch.similarity * 100) + "%",
+          similarity: `${Math.round(bestMatch.similarity * 100)}%`,
           reasoning: bestMatch.reasoning,
           matchedKeywords: bestMatch.matchedKeywords,
         }

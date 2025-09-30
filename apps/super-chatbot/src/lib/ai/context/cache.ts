@@ -228,7 +228,7 @@ export function generateMessageHash(
   message: string,
   attachments?: any[]
 ): string {
-  const crypto = require("crypto");
+  const crypto = require("node:crypto");
 
   // Создаем строку для хэширования
   let hashInput = message.toLowerCase().trim();
@@ -252,33 +252,28 @@ export function generateMessageHash(
 export const contextCache = new ContextCache();
 
 /**
- * Утилиты для работы с кэшем
+ * Проверяет, нужно ли использовать кэш для данного запроса
  */
-export class CacheUtils {
-  /**
-   * Проверяет, нужно ли использовать кэш для данного запроса
-   */
-  static shouldUseCache(message: string, attachments?: any[]): boolean {
-    // Не кэшируем очень короткие сообщения
-    if (message.trim().length < 3) return false;
+export function shouldUseCache(message: string, attachments?: any[]): boolean {
+  // Не кэшируем очень короткие сообщения
+  if (message.trim().length < 3) return false;
 
-    // Не кэшируем сообщения с большим количеством вложений
-    if (attachments && attachments.length > 10) return false;
+  // Не кэшируем сообщения с большим количеством вложений
+  if (attachments && attachments.length > 10) return false;
 
-    // Кэшируем все остальные запросы
-    return true;
-  }
+  // Кэшируем все остальные запросы
+  return true;
+}
 
-  /**
-   * Получает ключ кэша для отладки
-   */
-  static getCacheKey(
-    chatId: string,
-    message: string,
-    mediaType: string,
-    attachments?: any[]
-  ): string {
-    const messageHash = generateMessageHash(message, attachments);
-    return `${chatId}:${mediaType}:${messageHash}`;
-  }
+/**
+ * Получает ключ кэша для отладки
+ */
+export function getCacheKey(
+  chatId: string,
+  message: string,
+  mediaType: string,
+  attachments?: any[]
+): string {
+  const messageHash = generateMessageHash(message, attachments);
+  return `${chatId}:${mediaType}:${messageHash}`;
 }

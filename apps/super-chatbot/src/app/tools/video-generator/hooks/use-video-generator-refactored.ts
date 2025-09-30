@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { useVideoGenerationState } from "./use-video-generation-state";
 import { useVideoStorage } from "./use-video-storage";
 import { useVideoConnection } from "./use-video-connection";
-import { generationPersistence } from "@/lib/websocket/generation-persistence";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
 import type {
   UseVideoGeneratorReturn,
@@ -204,7 +203,7 @@ export function useVideoGenerator({
           shotSize: getLastGenerationParams()?.shotSize || "",
           duration: getLastGenerationParams()?.duration || 5,
           frameRate: getLastGenerationParams()?.frameRate || 24,
-          negativePrompt: getLastGenerationParams()?.negativePrompt,
+          negativePrompt: getLastGenerationParams()?.negativePrompt ?? undefined,
         },
       };
     }

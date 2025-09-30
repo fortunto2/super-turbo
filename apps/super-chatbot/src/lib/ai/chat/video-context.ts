@@ -269,7 +269,7 @@ export async function analyzeVideoContext(
   // Приоритет 3: ПОИСК ПО СОДЕРЖИМОМУ ИЗОБРАЖЕНИЙ (по ключевым словам в промпте)
   console.log("🎬 analyzeVideoContext: Searching by image content...");
   const contentMatch = findUserImageByKeywords(messageLower, userImages);
-  if (contentMatch && contentMatch.reasoning) {
+  if (contentMatch?.reasoning) {
     const matchedImage = userImages.find((img) => img.url === contentMatch.url);
     if (matchedImage) {
       // Вычисляем релевантность на основе количества совпавших ключевых слов
@@ -288,7 +288,7 @@ export async function analyzeVideoContext(
         bestSource = "content";
         console.log("🎬 analyzeVideoContext: Content match selected:", {
           url: matchedImage.url,
-          relevance: Math.round(relevance * 100) + "%",
+          relevance: `${Math.round(relevance * 100)}%`,
           reasoning: bestReasoning,
         });
       }
@@ -422,7 +422,7 @@ export async function analyzeVideoContext(
           userId,
           userMessage,
           {
-            url: result.sourceImageUrl!,
+            url: result.sourceImageUrl || "",
             id: result.sourceImageId,
             role: "user" as const,
             timestamp: new Date(),
@@ -673,7 +673,7 @@ async function findUserImageBySemanticContent(
         "🎬 findUserImageBySemanticContent: Found semantic index match:",
         {
           url: bestMatch.image.url,
-          score: Math.round(bestMatch.relevanceScore * 100) + "%",
+          score: `${Math.round(bestMatch.relevanceScore * 100)}%`,
           reasoning: bestMatch.reasoning,
           matchedKeywords: bestMatch.matchedKeywords,
         }
@@ -1202,7 +1202,7 @@ function findUserImageByKeywords(
         url: image.url,
         prompt: imagePrompt,
         matchedKeywords,
-        relevance: Math.round(relevance * 100) + "%",
+        relevance: `${Math.round(relevance * 100)}%`,
       });
 
       if (relevance > bestRelevance) {

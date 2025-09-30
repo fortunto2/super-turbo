@@ -47,7 +47,9 @@ function PureDataStreamHandler({
   const legacy = useArtifactLegacy();
 
   // Попытаемся использовать контекст, если доступен
-  let artifact, setArtifact, setMetadata;
+  let artifact: any;
+  let setArtifact: any;
+  let setMetadata: any;
   try {
     const context = useArtifactContext();
     artifact = context.artifact;
@@ -127,7 +129,7 @@ function PureDataStreamHandler({
                 status: "streaming",
               };
 
-            case "kind":
+            case "kind": {
               // Вызываем onCreateDocument когда создается новый артефакт
               const newKind = delta.content as ArtifactKind;
               console.log("🎯 Creating new artifact with kind:", newKind);
@@ -189,6 +191,7 @@ function PureDataStreamHandler({
                 status: "streaming",
                 isVisible: true, // Убеждаемся что артефакт видим
               };
+            }
 
             case "clear":
               return {

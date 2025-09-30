@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@turbo-super/ui";
 import { Trash2, Settings } from "lucide-react";
 import type { GeneratedImage } from "../hooks/use-image-generator";
 import { ImageCard } from "./image-card";

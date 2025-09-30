@@ -289,16 +289,16 @@ function saveVideoGenerationData(data: ModelVideoGenerationData) {
     prompt: data.prompt,
     modelName: data.modelName,
     modelType: "video",
-    paymentSessionId: data.paymentSessionId,
+    paymentSessionId: data.paymentSessionId as any,
     createdAt: data.createdAt ?? new Date().toISOString(),
-    error: data.error,
+    error: data.error as any,
     videoGeneration: data.videos?.[0]
-      ? {
+      ? ({
           fileId: data.videos[0].fileId,
           status: data.videos[0].status,
-          url: data.videos[0].url,
-          thumbnailUrl: data.videos[0].thumbnailUrl,
-        }
+          url: data.videos[0].url as any,
+          thumbnailUrl: data.videos[0].thumbnailUrl as any,
+        } as any)
       : undefined,
     generationType: data.generationType,
   };

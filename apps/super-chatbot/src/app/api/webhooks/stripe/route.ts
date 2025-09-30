@@ -2,11 +2,16 @@ import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { addUserBalance } from "@/lib/utils/tools-balance";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!stripeSecretKey || !webhookSecret) {
+  throw new Error("Stripe configuration is missing");
+}
+
+const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2025-06-30.basil",
 });
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +20,13 @@ export async function POST(request: NextRequest) {
     console.log("🔍 Request method:", request.method);
 
     const body = await request.text();
-    const signature = request.headers.get("stripe-signature")!;
+    const signature = request.headers.get("stripe-signature");
+    if (!signature) {
+      return NextResponse.json(
+        { error: "Missing stripe-signature header" },
+        { status: 400 }
+      );
+    }
 
     console.log("📋 Webhook headers:", {
       signature: signature ? "present" : "missing",
@@ -32,6 +43,9 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event;
 
     try {
+      if (!webhookSecret) {
+        throw new Error("Stripe webhook secret is not configured");
+      }
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
       console.log("✅ Webhook signature verified");
     } catch (err) {

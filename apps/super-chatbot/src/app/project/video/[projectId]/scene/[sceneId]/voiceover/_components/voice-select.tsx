@@ -44,7 +44,12 @@ export function VoiceSelect({
 
   return (
     <div className="space-y-2 w-full">
-      <label className="text-sm">Voice</label>
+      <label
+        htmlFor="voice-select"
+        className="text-sm"
+      >
+        Voice
+      </label>
       <div className="flex gap-2">
         <Select
           value={value ?? ""}
@@ -52,7 +57,10 @@ export function VoiceSelect({
             onChange?.(v || null);
           }}
         >
-          <SelectTrigger className="w-full ">
+          <SelectTrigger
+            id="voice-select"
+            className="w-full "
+          >
             <SelectValue placeholder="Select voice" />
           </SelectTrigger>
           <SelectContent>
@@ -72,7 +80,7 @@ export function VoiceSelect({
             )}
           </SelectContent>
         </Select>
-        <AudioPlayer src={activeVoice?.preview_url} />
+        <AudioPlayer src={activeVoice?.preview_url ?? null} />
       </div>
     </div>
   );

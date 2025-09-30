@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
+import { Card, CardContent, Button } from "@turbo-super/ui";
 import { Loader2, Image, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import NextImage from "next/image";
 
@@ -80,6 +79,7 @@ export function GenerationProgress({
       }, 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [generationStatus.progress]);
 
   // AICODE-NOTE: Track elapsed time during generation

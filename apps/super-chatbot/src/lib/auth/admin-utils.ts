@@ -46,7 +46,7 @@ export async function requireAdmin() {
   const { isAdmin, error } = await checkAdminPermissions();
 
   if (!isAdmin) {
-    return error!;
+    return error;
   }
 
   return null;

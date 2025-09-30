@@ -38,7 +38,7 @@ describe("ai-tools-balance", () => {
       });
 
       const result = await checkBalanceBeforeArtifact(
-        mockSession,
+        mockSession as any,
         "image-generation",
         "text-to-image",
         [],
@@ -60,11 +60,10 @@ describe("ai-tools-balance", () => {
         valid: false,
         error: "Insufficient balance",
         cost: 10,
-        currentBalance: 5,
       });
 
       const result = await checkBalanceBeforeArtifact(
-        mockSession,
+        mockSession as any,
         "image-generation",
         "text-to-image",
         [],
@@ -91,7 +90,7 @@ describe("ai-tools-balance", () => {
 
       for (const operation of operations) {
         const result = await checkBalanceBeforeArtifact(
-          mockSession,
+          mockSession as any,
           operation,
           "test-type",
           [],
@@ -115,7 +114,7 @@ describe("ai-tools-balance", () => {
       });
 
       const result = await checkBalanceBeforeArtifact(
-        mockSession,
+        mockSession as any,
         "image-generation",
         "text-to-image",
         ["batch_size:3", "quality:hd"],
@@ -137,7 +136,7 @@ describe("ai-tools-balance", () => {
       );
 
       const result = await checkBalanceBeforeArtifact(
-        mockSession,
+        mockSession as any,
         "image-generation",
         "text-to-image",
         [],

@@ -142,7 +142,7 @@ export function ArtifactDebug({ chatId }: ArtifactDebugProps) {
     const artifactKeys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith("artifact-")) {
+      if (key?.startsWith("artifact-")) {
         const value = localStorage.getItem(key);
         artifactKeys.push({ key, value: value ? JSON.parse(value) : null });
       }

@@ -201,7 +201,7 @@ export default function TestWorkingConfigsPage() {
                     </Badge>
                     {testResults[config.config]?.error && (
                       <p className="text-xs text-red-300 mt-1">
-                        {testResults[config.config].error}
+                        {testResults[config.config]?.error}
                       </p>
                     )}
                   </CardContent>
@@ -239,14 +239,16 @@ export default function TestWorkingConfigsPage() {
                     {testResults[config.config] && (
                       <div className="mt-2">
                         <Badge
-                          className={`${getStatusColor(testResults[config.config].status)} gap-1`}
+                          className={`${getStatusColor(testResults[config.config]?.status ?? "")} gap-1`}
                         >
-                          {getStatusIcon(testResults[config.config].status)}
-                          {testResults[config.config].status}
+                          {getStatusIcon(
+                            testResults[config.config]?.status ?? ""
+                          )}
+                          {testResults[config.config]?.status}
                         </Badge>
-                        {testResults[config.config].error && (
+                        {testResults[config.config]?.error && (
                           <p className="text-xs text-red-300 mt-1">
-                            {testResults[config.config].error}
+                            {testResults[config.config]?.error}
                           </p>
                         )}
                       </div>

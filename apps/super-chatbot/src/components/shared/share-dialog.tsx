@@ -81,11 +81,15 @@ export const ShareDialog: React.FC<Props> = ({
 
         {/* URL Copy */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground">
+          <label
+            htmlFor="share-url"
+            className="text-sm font-medium text-foreground"
+          >
             Project link:
           </label>
           <div className="flex items-center space-x-2 rounded-xl border border-border p-3 bg-muted">
             <input
+              id="share-url"
               type="text"
               value={shareUrl}
               readOnly

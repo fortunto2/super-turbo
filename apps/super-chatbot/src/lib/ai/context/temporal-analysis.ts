@@ -250,9 +250,9 @@ export class TemporalAnalyzer {
 
           console.log(`🕒 TemporalAnalyzer: Found match:`, {
             url: media.url,
-            confidence: Math.round(confidence * 100) + "%",
+            confidence: `${Math.round(confidence * 100)}%`,
             temporalDistance:
-              Math.round(temporalDistance / (1000 * 60)) + " minutes ago",
+              `${Math.round(temporalDistance / (1000 * 60))} minutes ago`,
           });
         }
       }
@@ -286,7 +286,7 @@ export class TemporalAnalyzer {
         );
         const closestDistance = closest
           ? Math.abs(closest.timestamp.getTime() - targetTime.getTime())
-          : Infinity;
+          : Number.POSITIVE_INFINITY;
 
         return currentDistance < closestDistance ? current : closest;
       },

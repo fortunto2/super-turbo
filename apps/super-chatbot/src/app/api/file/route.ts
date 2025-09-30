@@ -23,9 +23,9 @@ export async function GET(request: NextRequest) {
     });
 
     const fileData = await FileService.fileGetList({
-      sceneId,
-      projectId,
-      types,
+      sceneId: sceneId ?? null,
+      projectId: projectId ?? null,
+      types: types ?? null,
     });
 
     return NextResponse.json(fileData);

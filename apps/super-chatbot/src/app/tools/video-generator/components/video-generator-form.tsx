@@ -315,7 +315,11 @@ export function VideoGeneratorForm({
     } catch (error) {
       if (error instanceof z.ZodError) {
         const firstError = error.errors[0];
-        toast.error(firstError.message);
+        if (firstError) {
+          toast.error(firstError.message);
+        } else {
+          toast.error("Invalid form data");
+        }
       } else {
         toast.error("Invalid form data");
       }
@@ -567,7 +571,7 @@ export function VideoGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="style">Style</Label>
               <Select
-                value={formData.style}
+                value={formData.style ?? ""}
                 onValueChange={(value) => handleInputChange("style", value)}
                 disabled={disabled || isGenerating}
               >
@@ -591,7 +595,7 @@ export function VideoGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="resolution">Resolution</Label>
               <Select
-                value={formData.resolution}
+                value={formData.resolution ?? ""}
                 onValueChange={(value) =>
                   handleInputChange("resolution", value)
                 }
@@ -619,7 +623,7 @@ export function VideoGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="shotSize">Shot Size</Label>
               <Select
-                value={formData.shotSize}
+                value={formData.shotSize ?? ""}
                 onValueChange={(value) => handleInputChange("shotSize", value)}
                 disabled={disabled || isGenerating}
               >
@@ -745,7 +749,7 @@ export function VideoGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="frameRate">Frame Rate (FPS)</Label>
               <Select
-                value={formData.frameRate?.toString()}
+                value={formData.frameRate?.toString() ?? ""}
                 onValueChange={(value) =>
                   handleInputChange("frameRate", Number.parseInt(value))
                 }

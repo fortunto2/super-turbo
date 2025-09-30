@@ -79,15 +79,16 @@ function saveImageGenerationData(data: ModelImageGenerationData) {
     prompt: data.prompt,
     modelName: data.modelName,
     modelType: "image",
-    paymentSessionId: data.paymentSessionId,
+    paymentSessionId: data.paymentSessionId as any,
     createdAt: data.createdAt ?? new Date().toISOString(),
-    error: data.error,
-    images: data.images?.map((img) => ({
-      fileId: img.fileId,
-      status: img.status,
-      url: img.url,
-      thumbnailUrl: img.thumbnailUrl,
-    })),
+    error: data.error as any,
+    images:
+      data.images?.map((img) => ({
+        fileId: img.fileId,
+        status: img.status,
+        url: img.url as any,
+        thumbnailUrl: img.thumbnailUrl ?? "",
+      })) ?? [],
     generationType: data.generationType,
   };
 
@@ -512,9 +513,9 @@ export async function POST(request: NextRequest) {
         finalData.prompt,
         finalData.modelName,
         finalData.imageCount,
-        finalData.modelConfig,
+        finalData.modelConfig as any,
         finalData.generationType,
-        finalData.imageFile
+        finalData.imageFile as any
       );
 
       // Логируем успешную генерацию для прямой оплаты

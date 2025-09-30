@@ -11,7 +11,7 @@ import {
 
 // Mock Next.js components
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt = "", ...props }: any) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}

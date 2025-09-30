@@ -185,8 +185,8 @@ export enum ShotSizeEnum {
 }
 
 // AICODE-NOTE: Default economical settings
-export const DEFAULT_VIDEO_RESOLUTION = VIDEO_RESOLUTIONS.find(
-  (r) => r.width === 1344 && r.height === 768
-)!; // HD 16:9
+export const DEFAULT_VIDEO_RESOLUTION =
+  VIDEO_RESOLUTIONS.find((r) => r.width === 1344 && r.height === 768) ||
+  VIDEO_RESOLUTIONS[0]; // HD 16:9
 export const DEFAULT_VIDEO_QUALITY = "hd"; // Instead of full_hd
 export const DEFAULT_VIDEO_DURATION = 5; // Shorter duration for cost savings

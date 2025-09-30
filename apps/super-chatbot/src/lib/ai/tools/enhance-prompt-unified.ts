@@ -4,9 +4,16 @@ import { myProvider } from "../providers";
 import { createAzure } from "@ai-sdk/azure";
 
 // Initialize Azure provider for VEO3
+const resourceName = process.env.AZURE_OPENAI_RESOURCE_NAME;
+const apiKey = process.env.AZURE_OPENAI_API_KEY;
+
+if (!resourceName || !apiKey) {
+  throw new Error("Azure OpenAI configuration is missing");
+}
+
 const azure = createAzure({
-  resourceName: process.env.AZURE_OPENAI_RESOURCE_NAME!,
-  apiKey: process.env.AZURE_OPENAI_API_KEY!,
+  resourceName,
+  apiKey,
   apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
 });
 

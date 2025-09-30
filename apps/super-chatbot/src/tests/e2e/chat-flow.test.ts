@@ -357,9 +357,6 @@ test.describe("Chat Flow E2E Tests", () => {
         readonly OPEN = 1;
         readonly CLOSING = 2;
         readonly CLOSED = 3;
-        constructor() {
-          return mockWebSocket as any;
-        }
       };
     });
 
@@ -390,9 +387,6 @@ test.describe("Chat Flow E2E Tests", () => {
         readonly OPEN = 1;
         readonly CLOSING = 2;
         readonly CLOSED = 3;
-        constructor() {
-          return mockWebSocket as any;
-        }
       };
     });
 

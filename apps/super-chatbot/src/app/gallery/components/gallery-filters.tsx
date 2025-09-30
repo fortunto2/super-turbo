@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
+import { Button, Label, Separator } from "@turbo-super/ui";
 import {
   Select,
   SelectContent,
@@ -112,7 +110,7 @@ export function GalleryFilters({
                 onChange={(e) =>
                   onFiltersChange({
                     ...filters,
-                    kind: e.target.checked ? type.value : undefined,
+                    kind: e.target.checked ? type.value : (undefined as any),
                   })
                 }
               />
@@ -134,7 +132,7 @@ export function GalleryFilters({
               onValueChange={(value) =>
                 onFiltersChange({
                   ...filters,
-                  model: value || undefined,
+                  model: value || (undefined as any),
                 })
               }
             >

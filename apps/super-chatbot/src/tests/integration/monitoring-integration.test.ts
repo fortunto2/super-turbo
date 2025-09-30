@@ -2,7 +2,7 @@
  * Интеграционные тесты для системы мониторинга
  */
 
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 
 // Мокаем fetch для тестов
 global.fetch = vi.fn();

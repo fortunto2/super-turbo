@@ -138,6 +138,7 @@ export default function GeneratePage() {
             Project ID not found
           </h1>
           <button
+            type="button"
             onClick={() => router.back()}
             className="text-primary hover:text-primary/80 underline"
           >
@@ -156,6 +157,7 @@ export default function GeneratePage() {
           <div className="flex items-center justify-between">
             <div className="space-y-4">
               <button
+                type="button"
                 onClick={() => router.back()}
                 className="inline-flex items-center text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 group"
               >

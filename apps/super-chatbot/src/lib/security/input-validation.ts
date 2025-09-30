@@ -81,229 +81,225 @@ export const AdminActionSchema = z.object({
 });
 
 // Утилиты для санитизации
-export class InputSanitizer {
-  /**
-   * Санитизирует HTML контент от XSS атак
-   */
-  static sanitizeHTML(input: string): string {
-    if (typeof input !== "string") return "";
-    return sanitizeHTML(input);
-  }
+/**
+ * Санитизирует HTML контент от XSS атак
+ */
+export function sanitizeHTMLContent(input: string): string {
+  if (typeof input !== "string") return "";
+  return sanitizeHTML(input);
+}
 
-  /**
-   * Санитизирует текст от потенциально опасных символов
-   */
-  static sanitizeText(input: string): string {
-    if (typeof input !== "string") return "";
+/**
+ * Санитизирует текст от потенциально опасных символов
+ */
+export function sanitizeText(input: string): string {
+  if (typeof input !== "string") return "";
 
-    return input
-      .replace(/[<>]/g, "") // Удаляем угловые скобки
-      .replace(/javascript:/gi, "") // Удаляем javascript: ссылки
-      .replace(/on\w+\s*=/gi, "") // Удаляем event handlers
-      .replace(/script/gi, "scriipt") // Заменяем script на scriipt
-      .trim();
-  }
+  return input
+    .replace(/[<>]/g, "") // Удаляем угловые скобки
+    .replace(/javascript:/gi, "") // Удаляем javascript: ссылки
+    .replace(/on\w+\s*=/gi, "") // Удаляем event handlers
+    .replace(/script/gi, "scriipt") // Заменяем script на scriipt
+    .trim();
+}
 
-  /**
-   * Санитизирует URL от потенциально опасных схем
-   */
-  static sanitizeURL(input: string): string {
-    if (typeof input !== "string") return "";
+/**
+ * Санитизирует URL от потенциально опасных схем
+ */
+export function sanitizeURL(input: string): string {
+  if (typeof input !== "string") return "";
 
-    try {
-      const url = new URL(input);
+  try {
+    const url = new URL(input);
 
-      // Разрешаем только безопасные схемы
-      const allowedSchemes = ["http", "https", "data"];
-      if (!allowedSchemes.includes(url.protocol.slice(0, -1))) {
-        throw new Error("Недопустимая схема URL");
-      }
-
-      return url.toString();
-    } catch {
-      return "";
-    }
-  }
-
-  /**
-   * Санитизирует путь файла от path traversal атак
-   */
-  static sanitizeFilePath(input: string): string {
-    if (typeof input !== "string") return "";
-
-    return input
-      .replace(/\.\./g, "") // Удаляем ..
-      .replace(/\/+/g, "/") // Удаляем множественные слеши
-      .replace(/^\/+/, "") // Удаляем ведущие слеши
-      .replace(/[^a-zA-Z0-9._/-]/g, ""); // Оставляем только безопасные символы
-  }
-
-  /**
-   * Санитизирует SQL запрос от injection атак
-   */
-  static sanitizeSQL(input: string): string {
-    if (typeof input !== "string") return "";
-
-    return input
-      .replace(/['"]/g, "") // Удаляем кавычки
-      .replace(/;/g, "") // Удаляем точки с запятой
-      .replace(/--/g, "") // Удаляем SQL комментарии
-      .replace(/\/\*/g, "") // Удаляем начало блочных комментариев
-      .replace(/\*\//g, "") // Удаляем конец блочных комментариев
-      .replace(
-        /\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\b/gi,
-        ""
-      ); // Удаляем SQL ключевые слова
-  }
-
-  /**
-   * Санитизирует JSON от потенциально опасных данных
-   */
-  static sanitizeJSON(input: any): any {
-    if (typeof input === "string") {
-      try {
-        const parsed = JSON.parse(input);
-        return InputSanitizer.sanitizeJSON(parsed);
-      } catch {
-        return null;
-      }
+    // Разрешаем только безопасные схемы
+    const allowedSchemes = ["http", "https", "data"];
+    if (!allowedSchemes.includes(url.protocol.slice(0, -1))) {
+      throw new Error("Недопустимая схема URL");
     }
 
-    if (Array.isArray(input)) {
-      return input.map((item) => InputSanitizer.sanitizeJSON(item));
-    }
-
-    if (input && typeof input === "object") {
-      const sanitized: any = {};
-      for (const [key, value] of Object.entries(input)) {
-        // Санитизируем ключи
-        const cleanKey = InputSanitizer.sanitizeText(key);
-        if (cleanKey) {
-          sanitized[cleanKey] = InputSanitizer.sanitizeJSON(value);
-        }
-      }
-      return sanitized;
-    }
-
-    return input;
+    return url.toString();
+  } catch {
+    return "";
   }
 }
 
-// Утилиты для валидации
-export class InputValidator {
-  /**
-   * Валидирует данные по схеме Zod
-   */
-  static validate<T>(
-    schema: z.ZodSchema<T>,
-    data: unknown
-  ): {
-    success: boolean;
-    data?: T;
-    errors?: string[];
-  } {
-    try {
-      const result = schema.safeParse(data);
+/**
+ * Санитизирует путь файла от path traversal атак
+ */
+export function sanitizeFilePath(input: string): string {
+  if (typeof input !== "string") return "";
 
-      if (result.success) {
-        return { success: true, data: result.data };
-      } else {
-        return {
-          success: false,
-          errors: result.error.errors.map((err) => err.message),
-        };
+  return input
+    .replace(/\.\./g, "") // Удаляем ..
+    .replace(/\/+/g, "/") // Удаляем множественные слеши
+    .replace(/^\/+/, "") // Удаляем ведущие слеши
+    .replace(/[^a-zA-Z0-9._/-]/g, ""); // Оставляем только безопасные символы
+}
+
+/**
+ * Санитизирует SQL запрос от injection атак
+ */
+export function sanitizeSQL(input: string): string {
+  if (typeof input !== "string") return "";
+
+  return input
+    .replace(/['"]/g, "") // Удаляем кавычки
+    .replace(/;/g, "") // Удаляем точки с запятой
+    .replace(/--/g, "") // Удаляем SQL комментарии
+    .replace(/\/\*/g, "") // Удаляем начало блочных комментариев
+    .replace(/\*\//g, "") // Удаляем конец блочных комментариев
+    .replace(
+      /\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\b/gi,
+      ""
+    ); // Удаляем SQL ключевые слова
+}
+
+/**
+ * Санитизирует JSON от потенциально опасных данных
+ */
+export function sanitizeJSON(input: any): any {
+  if (typeof input === "string") {
+    try {
+      const parsed = JSON.parse(input);
+      return sanitizeJSON(parsed);
+    } catch {
+      return null;
+    }
+  }
+
+  if (Array.isArray(input)) {
+    return input.map((item) => sanitizeJSON(item));
+  }
+
+  if (input && typeof input === "object") {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(input)) {
+      // Санитизируем ключи
+      const cleanKey = sanitizeText(key);
+      if (cleanKey) {
+        sanitized[cleanKey] = sanitizeJSON(value);
       }
-    } catch (error) {
+    }
+    return sanitized;
+  }
+
+  return input;
+}
+
+// Утилиты для валидации
+/**
+ * Валидирует данные по схеме Zod
+ */
+export function validateInput<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown
+): {
+  success: boolean;
+  data?: T;
+  errors?: string[];
+} {
+  try {
+    const result = schema.safeParse(data);
+
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
       return {
         success: false,
-        errors: ["Ошибка валидации данных"],
+        errors: result.error.errors.map((err) => err.message),
       };
     }
-  }
-
-  /**
-   * Валидирует email адрес
-   */
-  static validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  /**
-   * Валидирует URL
-   */
-  static validateURL(url: string): boolean {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Валидирует UUID
-   */
-  static validateUUID(uuid: string): boolean {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-  }
-
-  /**
-   * Валидирует пароль на соответствие требованиям безопасности
-   */
-  static validatePassword(password: string): {
-    isValid: boolean;
-    errors: string[];
-  } {
-    const errors: string[] = [];
-
-    if (password.length < 8) {
-      errors.push("Пароль должен содержать минимум 8 символов");
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push("Пароль должен содержать заглавные буквы");
-    }
-
-    if (!/[a-z]/.test(password)) {
-      errors.push("Пароль должен содержать строчные буквы");
-    }
-
-    if (!/[0-9]/.test(password)) {
-      errors.push("Пароль должен содержать цифры");
-    }
-
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push("Пароль должен содержать специальные символы");
-    }
-
+  } catch (error) {
     return {
-      isValid: errors.length === 0,
-      errors,
+      success: false,
+      errors: ["Ошибка валидации данных"],
     };
   }
+}
 
-  /**
-   * Проверяет, содержит ли строка потенциально опасные паттерны
-   */
-  static containsMaliciousPatterns(input: string): boolean {
-    const maliciousPatterns = [
-      /<script/i,
-      /javascript:/i,
-      /on\w+\s*=/i,
-      /union\s+select/i,
-      /drop\s+table/i,
-      /\.\.\//,
-      /\.\.\\/,
-      /eval\s*\(/i,
-      /exec\s*\(/i,
-      /system\s*\(/i,
-    ];
+/**
+ * Валидирует email адрес
+ */
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
 
-    return maliciousPatterns.some((pattern) => pattern.test(input));
+/**
+ * Валидирует URL
+ */
+export function validateURL(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
   }
+}
+
+/**
+ * Валидирует UUID
+ */
+export function validateUUID(uuid: string): boolean {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+/**
+ * Валидирует пароль на соответствие требованиям безопасности
+ */
+export function validatePassword(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (password.length < 8) {
+    errors.push("Пароль должен содержать минимум 8 символов");
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push("Пароль должен содержать заглавные буквы");
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push("Пароль должен содержать строчные буквы");
+  }
+
+  if (!/[0-9]/.test(password)) {
+    errors.push("Пароль должен содержать цифры");
+  }
+
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push("Пароль должен содержать специальные символы");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Проверяет, содержит ли строка потенциально опасные паттерны
+ */
+export function containsMaliciousPatterns(input: string): boolean {
+  const maliciousPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /union\s+select/i,
+    /drop\s+table/i,
+    /\.\.\//,
+    /\.\.\\/,
+    /eval\s*\(/i,
+    /exec\s*\(/i,
+    /system\s*\(/i,
+  ];
+
+  return maliciousPatterns.some((pattern) => pattern.test(input));
 }
 
 // Middleware для валидации API запросов
@@ -314,10 +310,10 @@ export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
         req
           .json()
           .then((body) => {
-            const result = InputValidator.validate(schema, body);
+            const result = validateInput(schema, body);
 
             if (result.success) {
-              resolve({ success: true, data: result.data });
+              resolve({ success: true, data: result.data as T });
             } else {
               resolve({
                 success: false,
@@ -337,58 +333,56 @@ export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
 }
 
 // Утилиты для безопасной обработки файлов
-export class FileSecurityUtils {
-  /**
-   * Проверяет, является ли файл безопасным для загрузки
-   */
-  static isSafeFile(file: File): boolean {
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "video/mp4",
-      "video/webm",
-      "audio/mpeg",
-      "audio/wav",
-    ];
+/**
+ * Проверяет, является ли файл безопасным для загрузки
+ */
+export function isSafeFile(file: File): boolean {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "video/mp4",
+    "video/webm",
+    "audio/mpeg",
+    "audio/wav",
+  ];
 
-    const allowedExtensions = [
-      ".jpg",
-      ".jpeg",
-      ".png",
-      ".gif",
-      ".webp",
-      ".mp4",
-      ".webm",
-      ".mp3",
-      ".wav",
-    ];
+  const allowedExtensions = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".mp4",
+    ".webm",
+    ".mp3",
+    ".wav",
+  ];
 
-    const hasValidType = allowedTypes.includes(file.type);
-    const hasValidExtension = allowedExtensions.some((ext) =>
-      file.name.toLowerCase().endsWith(ext)
-    );
+  const hasValidType = allowedTypes.includes(file.type);
+  const hasValidExtension = allowedExtensions.some((ext) =>
+    file.name.toLowerCase().endsWith(ext)
+  );
 
-    return hasValidType && hasValidExtension;
-  }
+  return hasValidType && hasValidExtension;
+}
 
-  /**
-   * Генерирует безопасное имя файла
-   */
-  static generateSafeFileName(originalName: string): string {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8);
-    const extension = originalName.split(".").pop()?.toLowerCase() || "";
+/**
+ * Генерирует безопасное имя файла
+ */
+export function generateSafeFileName(originalName: string): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const extension = originalName.split(".").pop()?.toLowerCase() || "";
 
-    return `${timestamp}_${random}.${extension}`;
-  }
+  return `${timestamp}_${random}.${extension}`;
+}
 
-  /**
-   * Проверяет размер файла
-   */
-  static validateFileSize(file: File, maxSizeMB: number): boolean {
-    const maxSizeBytes = maxSizeMB * 1024 * 1024;
-    return file.size <= maxSizeBytes;
-  }
+/**
+ * Проверяет размер файла
+ */
+export function validateFileSize(file: File, maxSizeMB: number): boolean {
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+  return file.size <= maxSizeBytes;
 }

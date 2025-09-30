@@ -34,7 +34,10 @@ export const POST = withMonitoring(async function POST(request: NextRequest) {
         resolution: (() => {
           const res = String(form.get("resolution") || "1024x1024");
           const [w, h] = res.split("x");
-          return { width: Number.parseInt(w), height: Number.parseInt(h) };
+          return {
+            width: Number.parseInt(w ?? "0"),
+            height: Number.parseInt(h ?? "0"),
+          };
         })(),
         style: { id: String(form.get("style") || "flux_watercolor") },
         shotSize: { id: String(form.get("shotSize") || "medium_shot") },
@@ -114,7 +117,7 @@ export const POST = withMonitoring(async function POST(request: NextRequest) {
 
     // Create image generation config using OpenAPI types
 
-    let result;
+    let result: any;
 
     if (body.generationType === "image-to-image") {
       try {

@@ -264,8 +264,8 @@ export async function POST(req: NextRequest) {
       model,
       focusType,
       includeAudio,
-      moodboardEnabled: moodboard.enabled,
-      imageCount: moodboard.images?.length ?? 0,
+      moodboardEnabled: moodboard?.enabled,
+      imageCount: moodboard?.images?.length ?? 0,
     });
 
     // Process focus types
@@ -283,7 +283,11 @@ export async function POST(req: NextRequest) {
     let moodboardContext = "";
     let moodboardImages: { type: "image"; image: string }[] = [];
 
-    if (moodboard.enabled && moodboard.images && moodboard.images.length > 0) {
+    if (
+      moodboard?.enabled &&
+      moodboard?.images &&
+      moodboard?.images.length > 0
+    ) {
       // Group images by tags for better organization
       const imagesByTag: Record<
         string,

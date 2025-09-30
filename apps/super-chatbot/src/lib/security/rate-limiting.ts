@@ -105,53 +105,47 @@ export const RATE_LIMIT_CONFIGS = {
   },
 } as const;
 
-// Утилиты для генерации ключей
-export class RateLimitKeyGenerator {
-  /**
-   * Генерирует ключ на основе IP адреса
-   */
-  static byIP(req: NextRequest): string {
-    const ip =
-      (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
-    return `ip:${ip}`;
-  }
+/**
+ * Генерирует ключ на основе IP адреса
+ */
+export function generateKeyByIP(req: NextRequest): string {
+  const ip = (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
+  return `ip:${ip}`;
+}
 
-  /**
-   * Генерирует ключ на основе IP и User-Agent
-   */
-  static byIPAndUserAgent(req: NextRequest): string {
-    const ip =
-      (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
-    const userAgent = req.headers.get("user-agent") || "unknown";
-    return `ip_ua:${ip}:${userAgent}`;
-  }
+/**
+ * Генерирует ключ на основе IP и User-Agent
+ */
+export function generateKeyByIPAndUserAgent(req: NextRequest): string {
+  const ip = (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
+  const userAgent = req.headers.get("user-agent") || "unknown";
+  return `ip_ua:${ip}:${userAgent}`;
+}
 
-  /**
-   * Генерирует ключ на основе IP и пути запроса
-   */
-  static byIPAndPath(req: NextRequest): string {
-    const ip =
-      (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
-    const path = req.nextUrl.pathname;
-    return `ip_path:${ip}:${path}`;
-  }
+/**
+ * Генерирует ключ на основе IP и пути запроса
+ */
+export function generateKeyByIPAndPath(req: NextRequest): string {
+  const ip = (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
+  const path = req.nextUrl.pathname;
+  return `ip_path:${ip}:${path}`;
+}
 
-  /**
-   * Генерирует ключ на основе пользователя (требует аутентификации)
-   */
-  static byUser(req: NextRequest): string {
-    const userId = req.headers.get("x-user-id") || "anonymous";
-    return `user:${userId}`;
-  }
+/**
+ * Генерирует ключ на основе пользователя (требует аутентификации)
+ */
+export function generateKeyByUser(req: NextRequest): string {
+  const userId = req.headers.get("x-user-id") || "anonymous";
+  return `user:${userId}`;
+}
 
-  /**
-   * Генерирует ключ на основе пользователя и действия
-   */
-  static byUserAndAction(req: NextRequest): string {
-    const userId = req.headers.get("x-user-id") || "anonymous";
-    const action = req.nextUrl.pathname.split("/").pop() || "unknown";
-    return `user_action:${userId}:${action}`;
-  }
+/**
+ * Генерирует ключ на основе пользователя и действия
+ */
+export function generateKeyByUserAndAction(req: NextRequest): string {
+  const userId = req.headers.get("x-user-id") || "anonymous";
+  const action = req.nextUrl.pathname.split("/").pop() || "unknown";
+  return `user_action:${userId}:${action}`;
 }
 
 // Основной класс для rate limiting
@@ -173,8 +167,7 @@ export class RateLimiter {
     resetTime: number;
     retryAfter?: number;
   } {
-    const key =
-      this.config.keyGenerator?.(req) || RateLimitKeyGenerator.byIP(req);
+    const key = this.config.keyGenerator?.(req) || generateKeyByIP(req);
     const now = Date.now();
     const windowStart = now - this.config.windowMs;
 
@@ -250,128 +243,120 @@ export class RateLimiter {
   }
 }
 
-// Фабрика для создания rate limiter'ов
-export class RateLimiterFactory {
-  /**
-   * Создает rate limiter для API запросов
-   */
-  static createAPI(): RateLimiter {
-    return new RateLimiter({
-      ...RATE_LIMIT_CONFIGS.API,
-      keyGenerator: RateLimitKeyGenerator.byIPAndPath,
-    });
-  }
+/**
+ * Создает rate limiter для API запросов
+ */
+export function createAPIRateLimiter(): RateLimiter {
+  return new RateLimiter({
+    ...RATE_LIMIT_CONFIGS.API,
+    keyGenerator: generateKeyByIPAndPath,
+  });
+}
 
-  /**
-   * Создает rate limiter для генерации контента
-   */
-  static createGeneration(): RateLimiter {
-    return new RateLimiter({
-      ...RATE_LIMIT_CONFIGS.GENERATION,
-      keyGenerator: RateLimitKeyGenerator.byUser,
-    });
-  }
+/**
+ * Создает rate limiter для генерации контента
+ */
+export function createGenerationRateLimiter(): RateLimiter {
+  return new RateLimiter({
+    ...RATE_LIMIT_CONFIGS.GENERATION,
+    keyGenerator: generateKeyByUser,
+  });
+}
 
-  /**
-   * Создает rate limiter для аутентификации
-   */
-  static createAuth(): RateLimiter {
-    return new RateLimiter({
-      ...RATE_LIMIT_CONFIGS.AUTH,
-      keyGenerator: RateLimitKeyGenerator.byIPAndUserAgent,
-    });
-  }
+/**
+ * Создает rate limiter для аутентификации
+ */
+export function createAuthRateLimiter(): RateLimiter {
+  return new RateLimiter({
+    ...RATE_LIMIT_CONFIGS.AUTH,
+    keyGenerator: generateKeyByIPAndUserAgent,
+  });
+}
 
-  /**
-   * Создает rate limiter для админских операций
-   */
-  static createAdmin(): RateLimiter {
-    return new RateLimiter({
-      ...RATE_LIMIT_CONFIGS.ADMIN,
-      keyGenerator: RateLimitKeyGenerator.byUser,
-    });
-  }
+/**
+ * Создает rate limiter для админских операций
+ */
+export function createAdminRateLimiter(): RateLimiter {
+  return new RateLimiter({
+    ...RATE_LIMIT_CONFIGS.ADMIN,
+    keyGenerator: generateKeyByUser,
+  });
+}
 
-  /**
-   * Создает rate limiter для загрузки файлов
-   */
-  static createUpload(): RateLimiter {
-    return new RateLimiter({
-      ...RATE_LIMIT_CONFIGS.UPLOAD,
-      keyGenerator: RateLimitKeyGenerator.byUser,
-    });
-  }
+/**
+ * Создает rate limiter для загрузки файлов
+ */
+export function createUploadRateLimiter(): RateLimiter {
+  return new RateLimiter({
+    ...RATE_LIMIT_CONFIGS.UPLOAD,
+    keyGenerator: generateKeyByUser,
+  });
+}
 
-  /**
-   * Создает rate limiter для WebSocket соединений
-   */
-  static createWebSocket(): RateLimiter {
-    return new RateLimiter({
-      ...RATE_LIMIT_CONFIGS.WEBSOCKET,
-      keyGenerator: RateLimitKeyGenerator.byIP,
-    });
+/**
+ * Создает rate limiter для WebSocket соединений
+ */
+export function createWebSocketRateLimiter(): RateLimiter {
+  return new RateLimiter({
+    ...RATE_LIMIT_CONFIGS.WEBSOCKET,
+    keyGenerator: generateKeyByIP,
+  });
+}
+
+/**
+ * Получает статистику по rate limiting
+ */
+export function getRateLimitStats(): {
+  totalKeys: number;
+  blockedKeys: number;
+  topKeys: Array<{ key: string; count: number }>;
+} {
+  const store = rateLimitStore as any;
+  const entries = Array.from(store.store.entries()) as Array<
+    [string, RateLimitData]
+  >;
+
+  const blockedKeys = entries.filter(([, data]) => data.blocked).length;
+
+  const topKeys = entries
+    .map(([key, data]) => ({ key, count: data.count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  return {
+    totalKeys: entries.length,
+    blockedKeys,
+    topKeys,
+  };
+}
+
+/**
+ * Очищает заблокированные ключи
+ */
+export function clearBlockedRateLimitKeys(): void {
+  const store = rateLimitStore as any;
+  for (const [key, data] of store.store.entries() as Array<
+    [string, RateLimitData]
+  >) {
+    if (data.blocked) {
+      store.store.delete(key);
+    }
   }
 }
 
-// Утилиты для мониторинга rate limiting
-export class RateLimitMonitor {
-  /**
-   * Получает статистику по rate limiting
-   */
-  static getStats(): {
-    totalKeys: number;
-    blockedKeys: number;
-    topKeys: Array<{ key: string; count: number }>;
-  } {
-    const store = rateLimitStore as any;
-    const entries = Array.from(store.store.entries()) as Array<
-      [string, RateLimitData]
-    >;
-
-    const blockedKeys = entries.filter(([, data]) => data.blocked).length;
-
-    const topKeys = entries
-      .map(([key, data]) => ({ key, count: data.count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-    return {
-      totalKeys: entries.length,
-      blockedKeys,
-      topKeys,
-    };
-  }
-
-  /**
-   * Очищает заблокированные ключи
-   */
-  static clearBlocked(): void {
-    const store = rateLimitStore as any;
-    for (const [key, data] of store.store.entries() as Array<
-      [string, RateLimitData]
-    >) {
-      if (data.blocked) {
-        store.store.delete(key);
-      }
-    }
-  }
-
-  /**
-   * Сбрасывает все данные rate limiting
-   */
-  static reset(): void {
-    rateLimitStore.destroy();
-  }
+/**
+ * Сбрасывает все данные rate limiting
+ */
+export function resetRateLimit(): void {
+  rateLimitStore.destroy();
 }
 
 // Экспорт готовых middleware для использования в API routes
-export const apiRateLimit = RateLimiterFactory.createAPI().createMiddleware();
+export const apiRateLimit = createAPIRateLimiter().createMiddleware();
 export const generationRateLimit =
-  RateLimiterFactory.createGeneration().createMiddleware();
-export const authRateLimit = RateLimiterFactory.createAuth().createMiddleware();
-export const adminRateLimit =
-  RateLimiterFactory.createAdmin().createMiddleware();
-export const uploadRateLimit =
-  RateLimiterFactory.createUpload().createMiddleware();
+  createGenerationRateLimiter().createMiddleware();
+export const authRateLimit = createAuthRateLimiter().createMiddleware();
+export const adminRateLimit = createAdminRateLimiter().createMiddleware();
+export const uploadRateLimit = createUploadRateLimiter().createMiddleware();
 export const websocketRateLimit =
-  RateLimiterFactory.createWebSocket().createMiddleware();
+  createWebSocketRateLimiter().createMiddleware();

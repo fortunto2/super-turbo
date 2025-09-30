@@ -54,6 +54,7 @@ export function MediaFile({
       onMouseLeave={() => setHoveredFile(null)}
     >
       <button
+        type="button"
         onClick={handleSelect}
         disabled={isSelecting}
         className={`relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
@@ -105,6 +106,7 @@ export function MediaFile({
       {hoveredFile === file.id && (
         <div className="absolute top-1 right-1 flex gap-1">
           <button
+            type="button"
             onClick={(e) => handleDelete(file.id, e)}
             disabled={isDeleting}
             className="p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"

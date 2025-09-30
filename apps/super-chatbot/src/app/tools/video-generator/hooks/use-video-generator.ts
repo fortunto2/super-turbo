@@ -210,7 +210,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.projectId || stored.fileId,
+      projectId: stored.projectId || stored.fileId || "",
       requestId: stored.requestId,
       settings: stored.settings,
     }));
@@ -235,18 +235,20 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         mostRecent
       );
 
-      setCurrentFileId(mostRecent.fileId);
-      requestIdRef.current = mostRecent.requestId || "";
-      setIsGenerating(true);
-      setGenerationStatus({
-        status: "processing",
-        progress: mostRecent.progress || 10,
-        message: "Checking video generation status...",
-        estimatedTime: mostRecent.estimatedTime || 60000,
-        projectId: mostRecent.projectId || "",
-        requestId: mostRecent.requestId || "",
-        fileId: mostRecent.fileId,
-      });
+      if (mostRecent) {
+        setCurrentFileId(mostRecent.fileId);
+        requestIdRef.current = mostRecent.requestId || "";
+        setIsGenerating(true);
+        setGenerationStatus({
+          status: "processing",
+          progress: mostRecent.progress || 10,
+          message: "Checking video generation status...",
+          estimatedTime: mostRecent.estimatedTime || 60000,
+          projectId: mostRecent.projectId || "",
+          requestId: mostRecent.requestId || "",
+          fileId: mostRecent.fileId,
+        });
+      }
 
       toast.info("Recovering video generation...");
 

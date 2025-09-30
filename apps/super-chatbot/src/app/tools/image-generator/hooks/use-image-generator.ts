@@ -93,7 +93,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.projectId,
+      projectId: stored.projectId ?? "",
       requestId: stored.requestId,
       settings: stored.settings,
     }));
@@ -128,7 +128,16 @@ export function useImageGenerator(): UseImageGeneratorReturn {
         }, 1000);
 
         // Call API using dedicated API function
-        const result = await generateImageApi(formData);
+        const apiData = {
+          prompt: formData.prompt,
+          model: formData.model ?? "",
+          style: formData.style,
+          resolution: formData.resolution,
+          shotSize: formData.shotSize,
+          seed: formData.seed,
+          file: formData.file,
+        };
+        const result = await generateImageApi(apiData);
 
         if (!result.success) {
           throw new Error(result.error || "Generation failed");
@@ -179,7 +188,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                     style: formData.style || "",
                     resolution: formData.resolution || "",
                     shotSize: formData.shotSize || "",
-                    seed: formData.seed,
+                    seed: formData.seed ?? undefined,
                   },
                 };
 
@@ -192,7 +201,7 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   url: generatedImage.url,
                   prompt: generatedImage.prompt,
                   timestamp: generatedImage.timestamp,
-                  projectId: generatedImage.projectId,
+                  projectId: generatedImage.projectId || "",
                   requestId: generatedImage.requestId,
                   settings: generatedImage.settings,
                 });
@@ -330,19 +339,19 @@ export function useImageGenerator(): UseImageGeneratorReturn {
               if (fileData.url) {
                 // Success!
                 const generatedImage: GeneratedImage = {
-                  id: projectId,
+                  id: projectId || "",
                   url: fileData.url,
                   prompt: prompt,
                   timestamp: Date.now(),
-                  projectId: projectId,
-                  requestId: projectId,
+                  projectId: projectId || "",
+                  requestId: projectId || "",
                   settings: {
                     model: "comfyui/flux/inpainting",
                     style: "inpainting",
                     resolution: "1024x1024",
                     shotSize: "medium_shot",
                   },
-                  fileId: fileId || projectId,
+                  fileId: fileId || projectId || "",
                 };
 
                 setCurrentGeneration(generatedImage);

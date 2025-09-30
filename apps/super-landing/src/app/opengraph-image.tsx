@@ -49,8 +49,8 @@ export default function Image({ params }: { params?: { slug?: string } }) {
   // Генерируем изображение
   return generateOGImage({
     title,
-    description,
-    category,
+    description: description as any,
+    category: category as any,
     gradient,
   });
 }

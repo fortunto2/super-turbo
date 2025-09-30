@@ -1,5 +1,5 @@
 import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
-import { useRef, } from "react";
+import { useRef } from "react";
 import { VideoPreview } from "./video-preview";
 
 interface MediaPreviewProps {
@@ -30,19 +30,21 @@ export function MediaPreview({
         height: `${canvasSize.height}px`,
       }}
     >
-      {scene.file?.type === FileTypeEnum.IMAGE ? (
+      {scene.file?.type === FileTypeEnum.IMAGE && scene.file.url ? (
         <img
-          src={scene.file.url!}
+          src={scene.file.url}
           alt={`Scene ${scene.id}`}
           className="absolute inset-0 w-full h-full object-contain"
           ref={imgRef}
           onLoad={updateCanvasSize}
         />
-      ) : scene.file?.type === FileTypeEnum.VIDEO ? (
+      ) : scene.file?.type === FileTypeEnum.VIDEO &&
+        scene.file.url &&
+        scene.duration ? (
         <VideoPreview
-          url={scene.file.url!}
-          onPlayingChange={onPlayingChange}
-          duration={scene.duration!}
+          url={scene.file.url}
+          onPlayingChange={onPlayingChange ?? (() => {})}
+          duration={scene.duration}
           isPlaying={isPlaying}
           musicSrc={scene.sound_effect?.url}
           soundEffectSrc={scene.sound_effect?.url}

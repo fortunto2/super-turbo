@@ -59,7 +59,7 @@ describe("Artifact Persistence", () => {
       const saved = localStorageMock.getItem(`artifact-${chatId}`);
       expect(saved).toBeTruthy();
 
-      const parsed = JSON.parse(saved!);
+      const parsed = JSON.parse(saved || "{}");
       expect(parsed.documentId).toBe("doc-456");
       expect(parsed.status).toBe("completed");
       expect(parsed.kind).toBe("image");
@@ -225,8 +225,8 @@ describe("Artifact Persistence", () => {
 
       const allArtifacts = getAllSavedArtifacts();
       expect(allArtifacts).toHaveLength(2);
-      expect(allArtifacts[0].chatId).toBe("chat-1");
-      expect(allArtifacts[1].chatId).toBe("chat-2");
+      expect(allArtifacts[0]?.chatId).toBe("chat-1");
+      expect(allArtifacts[1]?.chatId).toBe("chat-2");
     });
 
     it("should filter out expired artifacts", () => {
@@ -257,7 +257,7 @@ describe("Artifact Persistence", () => {
 
       const allArtifacts = getAllSavedArtifacts();
       expect(allArtifacts).toHaveLength(1);
-      expect(allArtifacts[0].chatId).toBe("chat-1");
+      expect(allArtifacts[0]?.chatId).toBe("chat-1");
     });
   });
 
@@ -308,11 +308,14 @@ describe("Artifact Persistence", () => {
       // 2. Load artifact
       const loadedData = loadArtifactFromStorage(chatId);
       expect(loadedData).toBeTruthy();
-      expect(loadedData!.documentId).toBe("doc-integration");
-      expect(loadedData!.status).toBe("completed");
+      expect(loadedData?.documentId).toBe("doc-integration");
+      expect(loadedData?.status).toBe("completed");
 
       // 3. Restore artifact
-      const restoredArtifact = restoreArtifactFromData(loadedData!);
+      if (!loadedData) {
+        throw new Error("Loaded data is null");
+      }
+      const restoredArtifact = restoreArtifactFromData(loadedData);
       expect(restoredArtifact.documentId).toBe(originalArtifact.documentId);
       expect(restoredArtifact.kind).toBe(originalArtifact.kind);
       expect(restoredArtifact.status).toBe(originalArtifact.status);

@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build params for shared generator
-    let result;
+    let result: any;
     if (generationType === "image-to-video" && body.file instanceof File) {
       result = await generateVideoWithStrategy(
         "image-to-video",
@@ -150,7 +150,9 @@ export async function POST(request: NextRequest) {
           duration: Number(body.duration) || 5,
           frameRate: Number(body.frameRate) || 30,
           negativePrompt: body.negativePrompt || "",
-          seed: body.seed ? Number(body.seed) : undefined,
+          seed: body.seed
+            ? Number(body.seed)
+            : Math.floor(Math.random() * 1000000),
           projectId: body?.projectId,
           sceneId: body?.sceneId,
         },
@@ -174,7 +176,9 @@ export async function POST(request: NextRequest) {
           duration: Number(body.duration) || 5,
           frameRate: Number(body.frameRate) || 30,
           negativePrompt: body.negativePrompt || "",
-          seed: body.seed ? Number(body.seed) : undefined,
+          seed: body.seed
+            ? Number(body.seed)
+            : Math.floor(Math.random() * 1000000),
           projectId: body?.projectId,
           sceneId: body?.sceneId,
         },

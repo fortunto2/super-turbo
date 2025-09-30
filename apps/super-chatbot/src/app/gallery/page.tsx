@@ -51,7 +51,13 @@ export default function GalleryPage() {
             <GallerySearch
               value={filters.search || ""}
               onChange={(search: string) => {
-                setFilters({ ...filters, search: search || undefined });
+                const newFilters = { ...filters };
+                if (search) {
+                  newFilters.search = search;
+                } else {
+                  delete newFilters.search;
+                }
+                setFilters(newFilters);
                 setPage(1);
               }}
             />

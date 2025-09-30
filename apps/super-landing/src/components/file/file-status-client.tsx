@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import ImageNext from "next/image";
 import {
   Card,
   CardContent,
@@ -529,7 +529,7 @@ export default function FileStatusClient({
                       />
                     </video>
                   ) : fileData.type === "image" ? (
-                    <Image
+                    <ImageNext
                       src={fileData.url}
                       alt={`Generated ${fileData.type} preview`}
                       width={400}

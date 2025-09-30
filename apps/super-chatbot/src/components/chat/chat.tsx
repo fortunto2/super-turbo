@@ -11,7 +11,6 @@ import { UIArtifact } from "../artifacts";
 import { MultimodalInput } from "./multimodal-input";
 import { Messages } from "../messages";
 import type { VisibilityType } from "../shared/visibility-selector";
-import { useArtifact } from "@/hooks/use-artifact";
 import { useArtifactContext } from "@/contexts/artifact-context";
 import { unstable_serialize } from "swr/infinite";
 import { getChatHistoryPaginationKey } from "../sidebar/sidebar-history";
@@ -22,7 +21,7 @@ import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatImageSSE } from "@/hooks/use-chat-image-sse";
 import { useChatVideoSSE } from "@/hooks/use-chat-video-sse";
-import { ChatWebSocketCleanup } from "@/lib/utils/chat-websocket-cleanup";
+import { setActiveChat } from "@/lib/utils/chat-websocket-cleanup";
 import { LoaderIcon } from "../common/icons";
 import { ArtifactManager } from "../artifacts/artifact-manager";
 import { ArtifactDebug } from "../artifacts/artifact-debug";
@@ -234,7 +233,7 @@ function ChatContent({
 
   // Set active chat for cleanup management
   useEffect(() => {
-    ChatWebSocketCleanup.setActiveChat(id);
+    setActiveChat(id);
   }, [id]);
 
   // Обновляем сообщения в контексте артефактов для детекции
@@ -297,7 +296,7 @@ function ChatContent({
 
   const handleFormSubmit = useCallback(
     (
-      event?: { preventDefault?: (() => void) | undefined } | undefined,
+      event?: { preventDefault?: () => void } | undefined,
       chatRequestOptions?: any
     ) => {
       if (event?.preventDefault) {
@@ -435,7 +434,7 @@ export function Chat(props: {
     >
       <ChatContent
         {...props}
-        isGeminiChat={props.isGeminiChat}
+        isGeminiChat={props.isGeminiChat ?? false}
       />
     </Suspense>
   );

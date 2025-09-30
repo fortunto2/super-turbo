@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Label,
+} from "@turbo-super/ui";
 import { EnhancedTextarea } from "@/components/ui/enhanced-textarea";
 import {
   Select,
@@ -156,10 +161,12 @@ export function ImageGeneratorForm({
         if (!currentIsOk) {
           // pick first model of required type
           const pick = filtered[0];
-          setFormData((prev) => ({
-            ...prev,
-            model: (pick.id || pick.name) as string,
-          }));
+          if (pick) {
+            setFormData((prev) => ({
+              ...prev,
+              model: (pick.id || pick.name) as string,
+            }));
+          }
         }
       }
     }
@@ -231,11 +238,14 @@ export function ImageGeneratorForm({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onGenerate({
+            const generateData = {
               ...formData,
               generationType: mode,
-              file: sourceImage?.file,
-            });
+            } as ImageGenerationFormData;
+            if (sourceImage?.file) {
+              generateData.file = sourceImage.file;
+            }
+            onGenerate(generateData);
           }}
           className="space-y-6"
         >
@@ -319,7 +329,7 @@ export function ImageGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="model">AI Model</Label>
               <Select
-                value={formData.model}
+                value={formData.model ?? ""}
                 onValueChange={(value) => handleInputChange("model", value)}
                 disabled={disabled || isGenerating}
               >
@@ -349,7 +359,7 @@ export function ImageGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="style">Style</Label>
               <Select
-                value={formData.style}
+                value={formData.style ?? ""}
                 onValueChange={(value) => handleInputChange("style", value)}
                 disabled={disabled || isGenerating}
               >
@@ -372,7 +382,7 @@ export function ImageGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="resolution">Resolution</Label>
               <Select
-                value={formData.resolution}
+                value={formData.resolution ?? ""}
                 onValueChange={(value) =>
                   handleInputChange("resolution", value)
                 }
@@ -397,7 +407,7 @@ export function ImageGeneratorForm({
             <div className="space-y-2">
               <Label htmlFor="shotSize">Shot Size</Label>
               <Select
-                value={formData.shotSize}
+                value={formData.shotSize ?? ""}
                 onValueChange={(value) => handleInputChange("shotSize", value)}
                 disabled={disabled || isGenerating}
               >

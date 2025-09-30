@@ -87,185 +87,173 @@ export function setupGlobalMocks() {
 }
 
 // Утилиты для тестирования API
-export class APITestUtils {
-  static mockSuccessResponse(data: any, status = 200) {
-    (global.fetch as any).mockResolvedValue({
-      ok: true,
-      status,
-      json: () => Promise.resolve(data),
-      text: () => Promise.resolve(JSON.stringify(data)),
-    });
-  }
+export function mockSuccessResponse(data: any, status = 200) {
+  (global.fetch as any).mockResolvedValue({
+    ok: true,
+    status,
+    json: () => Promise.resolve(data),
+    text: () => Promise.resolve(JSON.stringify(data)),
+  });
+}
 
-  static mockErrorResponse(error: string, status = 500) {
-    (global.fetch as any).mockResolvedValue({
-      ok: false,
-      status,
-      json: () => Promise.resolve({ error }),
-      text: () => Promise.resolve(JSON.stringify({ error })),
-    });
-  }
+export function mockErrorResponse(error: string, status = 500) {
+  (global.fetch as any).mockResolvedValue({
+    ok: false,
+    status,
+    json: () => Promise.resolve({ error }),
+    text: () => Promise.resolve(JSON.stringify({ error })),
+  });
+}
 
-  static mockNetworkError() {
-    (global.fetch as any).mockRejectedValue(new Error("Network error"));
-  }
+export function mockNetworkError() {
+  (global.fetch as any).mockRejectedValue(new Error("Network error"));
+}
 
-  static resetMocks() {
-    vi.clearAllMocks();
-  }
+export function resetApiMocks() {
+  vi.clearAllMocks();
 }
 
 // Утилиты для тестирования WebSocket
-export class WebSocketTestUtils {
-  static createMockWebSocket() {
-    const mockWS: any = {
-      readyState: 1, // OPEN
-      close: vi.fn(),
-      send: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      onopen: null,
-      onclose: null,
-      onmessage: null,
-      onerror: null,
-    };
+export function createMockWebSocket() {
+  const mockWS: any = {
+    readyState: 1, // OPEN
+    close: vi.fn(),
+    send: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    onopen: null,
+    onclose: null,
+    onmessage: null,
+    onerror: null,
+  };
 
-    // Симулируем подключение
-    setTimeout(() => {
-      mockWS.readyState = 1;
-      if (mockWS.onopen) {
-        mockWS.onopen(new Event("open"));
-      }
-    }, 10);
-
-    return mockWS;
-  }
-
-  static simulateMessage(mockWS: any, data: any) {
-    const event = new MessageEvent("message", {
-      data: JSON.stringify(data),
-    });
-    if (mockWS.onmessage) {
-      mockWS.onmessage(event);
+  // Симулируем подключение
+  setTimeout(() => {
+    mockWS.readyState = 1;
+    if (mockWS.onopen) {
+      mockWS.onopen(new Event("open"));
     }
-  }
+  }, 10);
 
-  static simulateError(mockWS: any) {
-    mockWS.readyState = 3; // CLOSED
-    if (mockWS.onerror) {
-      mockWS.onerror(new Event("error"));
-    }
+  return mockWS;
+}
+
+export function simulateWebSocketMessage(mockWS: any, data: any) {
+  const event = new MessageEvent("message", {
+    data: JSON.stringify(data),
+  });
+  if (mockWS.onmessage) {
+    mockWS.onmessage(event);
+  }
+}
+
+export function simulateWebSocketError(mockWS: any) {
+  mockWS.readyState = 3; // CLOSED
+  if (mockWS.onerror) {
+    mockWS.onerror(new Event("error"));
   }
 }
 
 // Утилиты для тестирования базы данных
-export class DatabaseTestUtils {
-  static mockQueryResult(data: any[]) {
-    return {
-      select: vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue(data),
-          orderBy: vi.fn().mockResolvedValue(data),
-          limit: vi.fn().mockResolvedValue(data),
-          offset: vi.fn().mockResolvedValue(data),
-        }),
+export function mockQueryResult(data: any[]) {
+  return {
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(data),
+        orderBy: vi.fn().mockResolvedValue(data),
+        limit: vi.fn().mockResolvedValue(data),
+        offset: vi.fn().mockResolvedValue(data),
       }),
-      insert: vi.fn().mockReturnValue({
-        values: vi.fn().mockResolvedValue(data),
+    }),
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockResolvedValue(data),
+    }),
+    update: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(data),
       }),
-      update: vi.fn().mockReturnValue({
-        set: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue(data),
-        }),
-      }),
-      delete: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([]),
-      }),
-    };
-  }
+    }),
+    delete: vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue([]),
+    }),
+  };
+}
 
-  static mockTransaction(callback: (db: any) => Promise<any>) {
-    return vi.fn().mockImplementation(callback);
-  }
+export function mockTransaction(callback: (db: any) => Promise<any>) {
+  return vi.fn().mockImplementation(callback);
 }
 
 // Утилиты для тестирования компонентов
-export class ComponentTestUtils {
-  static mockProps<T>(props: Partial<T>): T {
-    return props as T;
-  }
+export function mockProps<T>(props: Partial<T>): T {
+  return props as T;
+}
 
-  static createMockEvent(type: string, data?: any) {
-    return new Event(type, { bubbles: true, cancelable: true });
-  }
+export function createMockEvent(type: string, data?: any) {
+  return new Event(type, { bubbles: true, cancelable: true });
+}
 
-  static createMockMouseEvent(type: string, data?: any) {
-    return new MouseEvent(type, {
-      bubbles: true,
-      cancelable: true,
-      ...data,
-    });
-  }
+export function createMockMouseEvent(type: string, data?: any) {
+  return new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    ...data,
+  });
+}
 
-  static createMockKeyboardEvent(type: string, data?: any) {
-    return new KeyboardEvent(type, {
-      bubbles: true,
-      cancelable: true,
-      ...data,
-    });
-  }
+export function createMockKeyboardEvent(type: string, data?: any) {
+  return new KeyboardEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    ...data,
+  });
 }
 
 // Утилиты для тестирования производительности
-export class PerformanceTestUtils {
-  static measureExecutionTime(fn: () => void | Promise<void>): Promise<number> {
-    return new Promise(async (resolve) => {
-      const start = performance.now();
-      await fn();
-      const end = performance.now();
-      resolve(end - start);
-    });
-  }
+export async function measureExecutionTime(
+  fn: () => void | Promise<void>
+): Promise<number> {
+  const start = performance.now();
+  await fn();
+  const end = performance.now();
+  return end - start;
+}
 
-  static async waitForCondition(
-    condition: () => boolean,
-    timeout = 5000,
-    interval = 100
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const start = Date.now();
-      const check = () => {
-        if (condition()) {
-          resolve();
-        } else if (Date.now() - start > timeout) {
-          reject(new Error("Condition timeout"));
-        } else {
-          setTimeout(check, interval);
-        }
-      };
-      check();
-    });
-  }
+export async function waitForCondition(
+  condition: () => boolean,
+  timeout = 5000,
+  interval = 100
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const check = () => {
+      if (condition()) {
+        resolve();
+      } else if (Date.now() - start > timeout) {
+        reject(new Error("Condition timeout"));
+      } else {
+        setTimeout(check, interval);
+      }
+    };
+    check();
+  });
 }
 
 // Утилиты для тестирования безопасности
-export class SecurityTestUtils {
-  static createMaliciousInput() {
-    return {
-      xss: "<script>alert('xss')</script>",
-      sqlInjection: "'; DROP TABLE users; --",
-      pathTraversal: "../../../etc/passwd",
-      commandInjection: "; rm -rf /",
-    };
-  }
+export function createMaliciousInput() {
+  return {
+    xss: "<script>alert('xss')</script>",
+    sqlInjection: "'; DROP TABLE users; --",
+    pathTraversal: "../../../etc/passwd",
+    commandInjection: "; rm -rf /",
+  };
+}
 
-  static createValidInput() {
-    return {
-      email: "test@example.com",
-      name: "Test User",
-      message: "Hello, world!",
-    };
-  }
+export function createValidInput() {
+  return {
+    email: "test@example.com",
+    name: "Test User",
+    message: "Hello, world!",
+  };
 }
 
 // Настройка тестовой среды
@@ -279,7 +267,7 @@ export function setupTestEnvironment() {
   });
 
   beforeEach(() => {
-    APITestUtils.resetMocks();
+    resetApiMocks();
   });
 
   afterEach(() => {

@@ -64,7 +64,7 @@ export function MediaList({
               <MediaFile
                 isActive={file.id === scene?.file_id}
                 file={file}
-                scene={scene}
+                scene={scene ?? undefined}
                 key={file.id}
               />
             ))}
