@@ -323,9 +323,12 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         try {
           // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
           // TODO: Refactor to use proper parameter passing mechanism
-          const result = await params.createDocument.execute({
-            title: JSON.stringify(videoParams),
-            kind: "video",
+          const result = await params.createDocument({
+            session: params.session,
+            dataStream: {
+              title: JSON.stringify(videoParams),
+              kind: "video",
+            },
           });
 
           console.log("🎬 ✅ CREATE DOCUMENT RESULT:", result);
@@ -344,11 +347,13 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         // Create error artifact for better user feedback
         if (params?.createDocument) {
           try {
-            const errorResult = await params.createDocument.execute({
-              title: JSON.stringify({
-                prompt,
-                status: "error",
-                error: error.message || "Failed to create video document",
+            const errorResult = await params.createDocument({
+              session: params.session,
+              dataStream: {
+                title: JSON.stringify({
+                  prompt,
+                  status: "error",
+                  error: error.message || "Failed to create video document",
                 timestamp: Date.now(),
                 message: "Ошибка при создании видео",
               }),
