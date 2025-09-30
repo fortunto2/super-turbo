@@ -13,7 +13,7 @@ export async function generateMetadata({
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const dictionary = getDictionary(locale);
+  const dictionary = getDictionary(locale as any);
 
   const pageTitle =
     (dictionary.blog as { page_title?: string }).page_title ?? "Blog";
@@ -40,7 +40,7 @@ export default async function BlogPage({
   params: Promise<{ locale: Locale }>;
 }) {
   const { locale } = await params;
-  const dictionary = getDictionary(locale);
+  const dictionary = getDictionary(locale as any);
   const sortedBlogs = allBlogs
     .filter((p) => p.locale === locale)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

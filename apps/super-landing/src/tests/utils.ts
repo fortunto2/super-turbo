@@ -11,7 +11,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
 export function customRender(
   ui: ReactElement,
   options: CustomRenderOptions = {} as CustomRenderOptions
-) {
+): ReturnType<typeof render> {
   const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
     return React.createElement(React.Fragment, null, children);
   };
@@ -153,7 +153,7 @@ export function createMockCookies() {
 }
 
 // Утилита для создания моков window
-export function createMockWindow() {
+export function createMockWindow(): Partial<Window> {
   const originalWindow = global.window;
 
   const mockWindow = {
@@ -171,10 +171,11 @@ export function createMockWindow() {
       assign: vi.fn(),
       replace: vi.fn(),
       reload: vi.fn(),
+      ancestorOrigins: [] as unknown as DOMStringList,
     },
     history: {
       length: 1,
-      scrollRestoration: "auto",
+      scrollRestoration: "auto" as ScrollRestoration,
       state: null,
       back: vi.fn(),
       forward: vi.fn(),
@@ -228,7 +229,7 @@ export function createMockWindow() {
     cancelIdleCallback: vi.fn(),
   };
 
-  return mockWindow;
+  return mockWindow as unknown as Partial<Window>;
 }
 
 // Утилита для создания моков fetch
@@ -420,7 +421,23 @@ export function restoreAllMocks() {
 }
 
 // Утилита для создания тестового окружения
-export function createTestEnvironment() {
+export function createTestEnvironment(): {
+  mocks: {
+    console: ReturnType<typeof createMockConsole>;
+    timers: ReturnType<typeof createMockTimers>;
+    mathRandom: ReturnType<typeof createMockMathRandom>;
+    date: ReturnType<typeof createMockDate>;
+    crypto: ReturnType<typeof createMockCrypto>;
+    fetch: ReturnType<typeof createMockFetch>;
+    webSocket: ReturnType<typeof createMockWebSocket>;
+    localStorage: ReturnType<typeof createMockLocalStorage>;
+    sessionStorage: ReturnType<typeof createMockSessionStorage>;
+    cookies: ReturnType<typeof createMockCookies>;
+    window: ReturnType<typeof createMockWindow>;
+  };
+  setup: () => Promise<void>;
+  teardown: () => Promise<void>;
+} {
   const mocks = {
     console: createMockConsole(),
     timers: createMockTimers(),

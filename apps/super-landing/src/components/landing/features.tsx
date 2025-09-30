@@ -29,17 +29,11 @@ const itemVariants = {
   },
 };
 
-interface _FeatureItem {
-  title: string;
-  description: string;
-  icon?: string;
-}
-
 export function Features() {
   const params = useParams();
   const locale = getValidLocale(params.locale);
   const { t } = useTranslation(locale);
-  const features = t("features.list");
+  const features: any[] = t("features.list");
 
   return (
     <section className="py-24 bg-muted/30 gradient-section">

@@ -365,7 +365,8 @@ export class UserPreferenceLearner {
         if (
           pref.preference.preferredTimeframes.some(
             (timeframe: number[]) =>
-              hoursDiff >= timeframe[0] && hoursDiff <= timeframe[1]
+              hoursDiff >= (timeframe[0] || 0) &&
+              hoursDiff <= (timeframe[1] || 24)
           )
         ) {
           score += 0.2 * pref.accuracy;
@@ -390,15 +391,19 @@ export class UserPreferenceLearner {
     // Сортируем по убыванию скора
     scoredCandidates.sort((a, b) => b.score - a.score);
 
-    if (scoredCandidates.length > 0 && scoredCandidates[0].score > 0) {
-      const bestCandidate = scoredCandidates[0].candidate;
+    if (
+      scoredCandidates.length > 0 &&
+      scoredCandidates[0]?.score &&
+      scoredCandidates[0].score > 0
+    ) {
+      const bestCandidate = scoredCandidates[0]?.candidate;
 
       return {
         ...baseContext,
         sourceUrl: bestCandidate.url,
-        sourceId: bestCandidate.id,
+        ...(bestCandidate.id && { sourceId: bestCandidate.id }),
         confidence: "high" as const,
-        reasoning: `${baseContext.reasoning} + пользовательские предпочтения (score: ${Math.round(scoredCandidates[0].score * 100)})`,
+        reasoning: `${baseContext.reasoning} + пользовательские предпочтения (score: ${Math.round((scoredCandidates[0]?.score || 0) * 100)})`,
       };
     }
 

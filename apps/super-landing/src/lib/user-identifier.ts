@@ -31,7 +31,7 @@ export function getUserId(): string {
     const cookies = document.cookie.split('; ');
     const uidCookie = cookies.find((cookie) => cookie.startsWith(`${USER_ID_COOKIE}=`));
     if (uidCookie) {
-      return uidCookie.split('=')[1];
+      return uidCookie.split('=')[1] || '';
     }
   }
 

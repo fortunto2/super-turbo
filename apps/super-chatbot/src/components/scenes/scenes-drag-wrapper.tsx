@@ -61,9 +61,11 @@ const Root: FC<RootProps> = ({ children, scenes, onDragChange }) => {
     const updatedStoryboard = [...storyboard];
     const [movedScene] = updatedStoryboard.splice(source.index, 1);
     const order = destination.index;
-    updatedStoryboard.splice(order, 0, movedScene);
-
-    onDragChange(movedScene, order);
+    
+    if (movedScene) {
+      updatedStoryboard.splice(order, 0, movedScene);
+      onDragChange(movedScene, order);
+    }
     setStoryboard(updatedStoryboard);
   };
 

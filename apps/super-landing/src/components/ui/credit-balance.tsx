@@ -36,7 +36,7 @@ export function CreditBalance({
   showPurchaseButton = true,
   locale = "tr",
 }: CreditBalanceProps) {
-  const { t } = useTranslation(locale);
+  const { t } = useTranslation(locale as any);
 
   // Обертка для функции перевода с поддержкой параметров
   const [data, setData] = useState<CreditBalanceData | null>(null);

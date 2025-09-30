@@ -230,7 +230,7 @@ export default function Veo3StatusClient({
         status: overallStatus,
       };
 
-      saveGenerationData(updatedData);
+      saveGenerationData(updatedData as GenerationData);
       return updatedData;
     },
     [checkFileStatus, saveGenerationData]
@@ -286,7 +286,7 @@ export default function Veo3StatusClient({
             data.fileIds.length,
             "files"
           );
-          data = await updateVideoStatuses(data);
+          data = (await updateVideoStatuses(data)) as GenerationData;
         } else {
           console.log(
             "⏳ No fileIds yet, waiting for webhook or manual update"

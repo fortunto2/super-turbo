@@ -5,7 +5,6 @@ import { Button } from "@turbo-super/ui";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslation } from "@/hooks/use-translation";
-import type { Locale } from "@/config/i18n-config";
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -28,7 +27,7 @@ export function ImageUpload({
   description = "Optional",
   locale = "en",
 }: ImageUploadProps) {
-  const { t } = useTranslation(locale as Locale);
+  const { t } = useTranslation(locale as any);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

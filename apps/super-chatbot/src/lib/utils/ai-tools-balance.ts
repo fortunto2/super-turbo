@@ -47,8 +47,10 @@ export async function checkBalanceBeforeArtifact(
 
       return {
         valid: false,
-        error: balanceValidation.error,
-        cost: balanceValidation.cost,
+        ...(balanceValidation.error && { error: balanceValidation.error }),
+        ...(balanceValidation.cost !== undefined && {
+          cost: balanceValidation.cost,
+        }),
         userMessage,
       };
     }
@@ -57,7 +59,12 @@ export async function checkBalanceBeforeArtifact(
       `💳 Balance validated: ${balanceValidation.cost} credits required for ${operationType}`
     );
 
-    return { valid: true, cost: balanceValidation.cost };
+    return {
+      valid: true,
+      ...(balanceValidation.cost !== undefined && {
+        cost: balanceValidation.cost,
+      }),
+    };
   } catch (error) {
     console.error(`💳 Error checking balance for ${operationType}:`, error);
     return {

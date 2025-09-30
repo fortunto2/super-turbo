@@ -71,8 +71,8 @@ export function getProjectStatus(tasks: ITaskRead[]): ProjectStatusInfo {
 
   return {
     status,
-    errorStage,
-    errorMessage,
+    ...(errorStage !== undefined && { errorStage }),
+    ...(errorMessage !== undefined && { errorMessage }),
     completedStages,
     failedStages,
   };

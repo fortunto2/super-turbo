@@ -15,6 +15,16 @@ export const superLandingDictionaries: Record<Locale, NestedDictionary> = {
   tr,
   es,
   hi,
+  fr: en, // Fallback to English
+  de: en, // Fallback to English
+  it: en, // Fallback to English
+  pt: en, // Fallback to English
+  pl: en, // Fallback to English
+  uk: en, // Fallback to English
+  zh: en, // Fallback to English
+  ja: en, // Fallback to English
+  ko: en, // Fallback to English
+  ar: en, // Fallback to English
 };
 
 export function getSuperLandingDictionaryServer(

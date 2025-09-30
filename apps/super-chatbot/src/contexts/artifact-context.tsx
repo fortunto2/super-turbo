@@ -34,7 +34,7 @@ export function ArtifactProvider({
   const artifactHook = useArtifact(chatId, messages);
 
   return (
-    <ArtifactContext.Provider value={{ ...artifactHook, chatId }}>
+    <ArtifactContext.Provider value={{ ...artifactHook, ...(chatId && { chatId }) }}>
       {children}
     </ArtifactContext.Provider>
   );

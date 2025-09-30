@@ -8,7 +8,7 @@ interface SafeIconProps {
   className?: string;
   size?: number;
   strokeWidth?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 /**

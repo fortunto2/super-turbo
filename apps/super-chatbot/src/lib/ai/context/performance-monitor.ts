@@ -97,7 +97,7 @@ export class ContextPerformanceMonitor {
       endTime: 0,
       duration: 0,
       success: false,
-      metadata,
+      ...(metadata && { metadata }),
     };
 
     // Возвращаем функцию для завершения измерения

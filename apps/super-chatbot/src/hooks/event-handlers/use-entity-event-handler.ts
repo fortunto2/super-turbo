@@ -12,7 +12,7 @@ export const useEntityEventHandler = (projectId?: string): EventHandler => {
   return (eventData: WSMessage) => {
     if (eventData.type === WSMessageTypeEnum.ENTITY) {
       const object: IEntityRead = eventData.object as IEntityRead;
-      const listQueryKey = entityKeys.list({ projectId }).queryKey;
+      const listQueryKey = entityKeys.list({ ...(projectId && { projectId }) }).queryKey;
       const entityQueryKey = entityKeys.getById({
         id: object.id,
       }).queryKey;

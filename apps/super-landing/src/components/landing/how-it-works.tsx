@@ -37,7 +37,7 @@ export function HowItWorks() {
   const params = useParams();
   const locale = getValidLocale(params.locale);
   const { t } = useTranslation(locale);
-  const steps = t("howItWorks.steps");
+  const steps: any[] = t("howItWorks.steps");
 
   // Default icons to use for each step
   const iconComponents = [LightbulbIcon, Bot, SlidersHorizontal];

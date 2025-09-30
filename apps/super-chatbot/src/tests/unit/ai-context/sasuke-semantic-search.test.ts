@@ -24,10 +24,6 @@ describe("Sasuke Semantic Search", () => {
         timestamp: new Date("2024-01-20T10:00:00Z"),
         messageIndex: 1,
         role: "assistant",
-        chatId: "test-chat",
-        createdAt: new Date("2024-01-20T10:00:00Z"),
-        parts: [],
-        attachments: [],
         mediaType: "image",
       },
       {
@@ -37,10 +33,6 @@ describe("Sasuke Semantic Search", () => {
         timestamp: new Date("2024-01-20T12:00:00Z"),
         messageIndex: 2,
         role: "assistant",
-        chatId: "test-chat",
-        createdAt: new Date("2024-01-20T12:00:00Z"),
-        parts: [],
-        attachments: [],
         mediaType: "image",
       },
     ];
@@ -70,12 +62,13 @@ describe("Sasuke Semantic Search", () => {
 
     // Проверяем, что лучшее совпадение - это изображение с Sasuke
     const bestMatch = results[0];
-    expect(bestMatch.image.id).toBe("sasuke-image-1");
-    expect(bestMatch.image.prompt).toContain("saske");
-    expect(bestMatch.relevanceScore).toBeGreaterThan(0.3);
+    expect(bestMatch).toBeDefined();
+    expect(bestMatch?.image.id).toBe("sasuke-image-1");
+    expect(bestMatch?.image.prompt).toContain("saske");
+    expect(bestMatch?.relevanceScore).toBeGreaterThan(0.3);
 
     // Проверяем, что в совпавших ключевых словах есть "saske"
-    const hasSasukeKeyword = bestMatch.matchedKeywords.some((keyword) =>
+    const hasSasukeKeyword = bestMatch?.matchedKeywords.some((keyword) =>
       keyword.toLowerCase().includes("saske")
     );
     expect(hasSasukeKeyword).toBe(true);
@@ -124,10 +117,6 @@ describe("Sasuke Semantic Search", () => {
         timestamp: new Date("2024-01-20T10:00:00Z"),
         messageIndex: 1,
         role: "assistant",
-        chatId: "test-chat",
-        createdAt: new Date("2024-01-20T10:00:00Z"),
-        parts: [],
-        attachments: [],
         mediaType: "image",
       },
       {
@@ -137,10 +126,6 @@ describe("Sasuke Semantic Search", () => {
         timestamp: new Date("2024-01-20T11:00:00Z"),
         messageIndex: 2,
         role: "assistant",
-        chatId: "test-chat",
-        createdAt: new Date("2024-01-20T11:00:00Z"),
-        parts: [],
-        attachments: [],
         mediaType: "image",
       },
     ];
@@ -152,7 +137,8 @@ describe("Sasuke Semantic Search", () => {
     const results = semanticIndex.search("saske uchiha", chatImages);
 
     expect(results.length).toBeGreaterThan(0);
-    expect(results[0].image.id).toBe("exact-sasuke");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.8);
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.id).toBe("exact-sasuke");
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.8);
   });
 });

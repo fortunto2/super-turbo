@@ -127,13 +127,13 @@ export function QueryCard({
       )}
     >
       <QueryState
-        isLoading={isLoading}
-        isError={isError}
-        error={error}
-        isEmpty={isEmpty}
-        emptyMessage={emptyMessage}
-        loadingMessage={loadingMessage}
-        errorMessage={errorMessage}
+        isLoading={isLoading || false}
+        isError={isError || false}
+        error={error || null}
+        isEmpty={isEmpty || false}
+        emptyMessage={emptyMessage || ""}
+        loadingMessage={loadingMessage || ""}
+        errorMessage={errorMessage || ""}
       >
         {children}
       </QueryState>
@@ -172,11 +172,11 @@ export function useQueryState<T>(
       >
     ) => (
       <QueryState
-        isLoading={isLoading}
-        isError={isError}
-        error={error}
-        isEmpty={isEmpty}
-        emptyMessage={options?.emptyMessage}
+        isLoading={isLoading || false}
+        isError={isError || false}
+        error={error || null}
+        isEmpty={isEmpty || false}
+        emptyMessage={options?.emptyMessage || ""}
         {...props}
       />
     ),

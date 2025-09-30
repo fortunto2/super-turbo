@@ -11,7 +11,7 @@ type IProjectVideoScript2Entities = Parameters<
 export const useProjectVideoScript2Entities = (mutationKey?: MutationKey) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey,
+    ...(mutationKey && { mutationKey }),
     mutationFn: (payload: IProjectVideoScript2Entities) =>
       ProjectService.projectScript2Entities(payload),
     onSuccess: async () => {

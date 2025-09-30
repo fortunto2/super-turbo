@@ -25,7 +25,7 @@ export const PreviewAttachment = ({
 
       if (match) {
         extractedFileId = match[1]; // Извлекаем fileId
-        displayPrompt = match[2].trim(); // Остальная часть имени - это prompt
+        displayPrompt = match[2]?.trim() || ""; // Остальная часть имени - это prompt
       } else {
         // AICODE-DEBUG: Попробуем извлечь fileId из URL изображения
         console.log(
@@ -114,7 +114,7 @@ export const PreviewAttachment = ({
         ...prev,
         isVisible: true,
         kind,
-        documentId,
+        ...(documentId && { documentId }),
         title: name || (kind === "script" ? "Script" : "Document"),
       }));
     }

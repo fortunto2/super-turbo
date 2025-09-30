@@ -80,8 +80,8 @@ export function ImageUploader({
           const newImage: UploadedImage = {
             id: `img-${Date.now()}-${i}`,
             file,
-            base64: base64.split(",")[1], // Remove data URL prefix
-            preview: base64,
+            base64: base64 ? base64.split(",")[1] || "" : "", // Remove data URL prefix
+            preview: base64 || "",
           };
 
           newImages.push(newImage);

@@ -29,8 +29,8 @@ export default async function Veo3StatusPage({
   params,
   searchParams,
 }: Veo3StatusPageProps) {
-  const [locale, generationId] = await params;
-  const [session_id] = await searchParams;
+  const { locale, generationId } = await params;
+  const { session_id } = await searchParams;
 
   // Validate generationId format
   if (!generationId || typeof generationId !== "string") {

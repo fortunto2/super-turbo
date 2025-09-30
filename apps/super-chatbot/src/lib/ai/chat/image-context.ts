@@ -111,16 +111,16 @@ export async function analyzeImageContext(
     imageReferences.sort((a, b) => b.relevance - a.relevance);
     const bestMatch = imageReferences[0];
     console.log("🔍 analyzeImageContext: Best match:", {
-      image: bestMatch.image,
-      relevance: bestMatch.relevance,
-      reasoning: bestMatch.reasoning,
+      image: bestMatch?.image,
+      relevance: bestMatch?.relevance,
+      reasoning: bestMatch?.reasoning,
     });
 
     return {
-      sourceImageUrl: bestMatch.image.url,
-      sourceImageId: bestMatch.image.id,
-      confidence: bestMatch.relevance > 0.7 ? "high" : "medium",
-      reasoning: `Найдена ссылка на изображение: ${bestMatch.reasoning}`,
+      sourceImageUrl: bestMatch?.image?.url || "",
+      ...(bestMatch?.image?.id && { sourceImageId: bestMatch.image.id }),
+      confidence: (bestMatch?.relevance || 0) > 0.7 ? "high" : "medium",
+      reasoning: `Найдена ссылка на изображение: ${bestMatch?.reasoning || ""}`,
     };
   }
 
@@ -136,8 +136,8 @@ export async function analyzeImageContext(
 
   if (semanticMatch) {
     return {
-      sourceImageUrl: semanticMatch.url,
-      sourceImageId: semanticMatch.id,
+      sourceImageUrl: semanticMatch?.url || "",
+      ...(semanticMatch?.id && { sourceImageId: semanticMatch.id }),
       confidence: "medium",
       reasoning: `Изображение найдено по семантическому поиску`,
     };
@@ -152,10 +152,12 @@ export async function analyzeImageContext(
 
   if (heuristicMatch) {
     return {
-      sourceImageUrl: heuristicMatch.image.url,
-      sourceImageId: heuristicMatch.image.id,
+      sourceImageUrl: heuristicMatch?.image?.url || "",
+      ...(heuristicMatch?.image?.id && {
+        sourceImageId: heuristicMatch.image.id,
+      }),
       confidence: "medium",
-      reasoning: `Изображение выбрано по эвристике: ${heuristicMatch.reasoning}`,
+      reasoning: `Изображение выбрано по эвристике: ${heuristicMatch?.reasoning || ""}`,
     };
   }
 
@@ -163,16 +165,16 @@ export async function analyzeImageContext(
   console.log("🔍 analyzeImageContext: Using fallback - last image in chat");
   const lastImage = chatImages[chatImages.length - 1];
   console.log("🔍 analyzeImageContext: Last image:", {
-    url: lastImage.url,
-    role: lastImage.role,
-    prompt: lastImage.prompt,
+    url: lastImage?.url,
+    role: lastImage?.role,
+    prompt: lastImage?.prompt,
   });
 
   return {
-    sourceImageUrl: lastImage.url,
-    sourceImageId: lastImage.id,
+    sourceImageUrl: lastImage?.url || "",
+    ...(lastImage?.id && { sourceImageId: lastImage.id }),
     confidence: "low",
-    reasoning: `Используется последнее изображение из чата (${lastImage.role === "assistant" ? "сгенерированное" : "загруженное"})`,
+    reasoning: `Используется последнее изображение из чата (${lastImage?.role === "assistant" ? "сгенерированное" : "загруженное"})`,
   };
 }
 
@@ -637,10 +639,18 @@ function findImageByHeuristics(
       const lastGenerated = generatedImages[generatedImages.length - 1];
       console.log(
         "🔍 findImageByHeuristics: Same person context, returning last generated image:",
-        lastGenerated.url
+        lastGenerated?.url
       );
       return {
-        image: lastGenerated,
+        image: lastGenerated || {
+          url: "",
+          id: "",
+          role: "assistant",
+          timestamp: new Date(),
+          prompt: "",
+          messageIndex: 0,
+          mediaType: "image" as const,
+        },
         reasoning:
           "контекст 'той же девочки' - используется последнее сгенерированное изображение",
       };
@@ -675,27 +685,32 @@ function findImageByHeuristics(
     );
     const uploadedImages = chatImages.filter((img) => img.role === "user");
 
-    let targetImage: ChatImage;
+    let targetImage: ChatImage | undefined;
     let reasoning: string;
 
     if (generatedImages.length > 0) {
-      targetImage = generatedImages[generatedImages.length - 1];
+      targetImage = generatedImages[generatedImages.length - 1] || undefined;
       reasoning =
         "контекст редактирования - используется последнее сгенерированное изображение";
     } else if (uploadedImages.length > 0) {
-      targetImage = uploadedImages[uploadedImages.length - 1];
+      targetImage = uploadedImages[uploadedImages.length - 1] || undefined;
       reasoning =
         "контекст редактирования - используется последнее загруженное изображение";
     } else {
-      targetImage = chatImages[chatImages.length - 1];
+      targetImage = chatImages[chatImages.length - 1] || undefined;
       reasoning =
         "контекст редактирования - используется последнее изображение в чате";
     }
 
     console.log(
       "🔍 findImageByHeuristics: Edit intent detected, returning:",
-      targetImage.url
+      targetImage?.url
     );
+
+    if (!targetImage) {
+      return null;
+    }
+
     return { image: targetImage, reasoning };
   }
 
@@ -716,6 +731,9 @@ function findImageByHeuristics(
   const hasStyleIntent = styleWords.some((word) => messageLower.includes(word));
   if (hasStyleIntent) {
     const result = chatImages[chatImages.length - 1];
+    if (!result) {
+      return null;
+    }
     return {
       image: result,
       reasoning: "контекст стиля/качества - используется последнее изображение",
@@ -784,7 +802,7 @@ export async function getChatImages(chatId: string): Promise<ChatImage[]> {
 
               if (match) {
                 extractedFileId = match[1]; // Извлекаем fileId
-                displayPrompt = match[2].trim(); // Остальная часть имени - это prompt
+                displayPrompt = match[2]?.trim() || ""; // Остальная часть имени - это prompt
               }
 
               console.log("🔍 getChatImages: FileId extraction:", {
@@ -798,7 +816,7 @@ export async function getChatImages(chatId: string): Promise<ChatImage[]> {
 
               const chatImage: ChatImage = {
                 url: att.url,
-                id: extractedFileId || att.id, // Используем извлеченный fileId, fallback к att.id
+                ...(extractedFileId && { id: extractedFileId }), // Используем извлеченный fileId
                 role: msg.role as "user" | "assistant",
                 timestamp: msg.createdAt,
                 prompt: displayPrompt, // Используем извлеченный prompt
@@ -873,15 +891,22 @@ async function findImageBySemanticContent(
     // Сначала пробуем новый семантический индекс
     const semanticResults = semanticIndex.search(messageLower, chatImages);
 
-    if (semanticResults.length > 0 && semanticResults[0].relevanceScore > 0.3) {
+    if (
+      semanticResults.length > 0 &&
+      semanticResults[0]?.relevanceScore &&
+      semanticResults[0].relevanceScore > 0.3
+    ) {
       const bestMatch = semanticResults[0];
+      if (!bestMatch) {
+        return null;
+      }
       console.log(
         "🔍 findImageBySemanticContent: Found semantic index match:",
         {
-          url: bestMatch.image.url,
-          score: `${Math.round(bestMatch.relevanceScore * 100)}%`,
-          reasoning: bestMatch.reasoning,
-          matchedKeywords: bestMatch.matchedKeywords,
+          url: bestMatch?.image?.url,
+          score: `${Math.round((bestMatch?.relevanceScore || 0) * 100)}%`,
+          reasoning: bestMatch?.reasoning,
+          matchedKeywords: bestMatch?.matchedKeywords,
         }
       );
       return bestMatch.image;
@@ -899,14 +924,14 @@ async function findImageBySemanticContent(
       console.log(
         "🔍 findImageBySemanticContent: Found semantic analyzer match:",
         {
-          url: bestMatch.media.url,
-          similarity: `${Math.round(bestMatch.similarity * 100)}%`,
-          reasoning: bestMatch.reasoning,
-          matchedKeywords: bestMatch.matchedKeywords,
+          url: bestMatch?.media?.url,
+          similarity: `${Math.round((bestMatch?.similarity || 0) * 100)}%`,
+          reasoning: bestMatch?.reasoning,
+          matchedKeywords: bestMatch?.matchedKeywords,
         }
       );
       // Приводим ChatMedia к ChatImage, так как мы знаем, что это изображение
-      return bestMatch.media as ChatImage;
+      return bestMatch?.media as ChatImage;
     }
   } catch (error) {
     console.warn(

@@ -450,7 +450,23 @@ if (process.env.NODE_ENV === "development") {
 var localeCookieName = "NEXT_LOCALE";
 var i18n = {
   defaultLocale: "en",
-  locales: ["en", "ru", "tr", "es", "hi"],
+  locales: [
+    "en",
+    "ru",
+    "tr",
+    "es",
+    "hi",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "pl",
+    "uk",
+    "zh",
+    "ja",
+    "ko",
+    "ar"
+  ],
   localeDetection: true,
   // automatic detection by headers
   cookieName: localeCookieName,
@@ -464,7 +480,17 @@ var localeMap = {
   ru: "Russian",
   tr: "Turkish",
   es: "Spanish",
-  hi: "Hindi"
+  hi: "Hindi",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  pl: "Polish",
+  uk: "Ukrainian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic"
 };
 var translationConfig = {
   i18n,
@@ -475,7 +501,23 @@ var translationConfig = {
 var localeCookieName2 = "NEXT_LOCALE";
 var i18nServer = {
   defaultLocale: "en",
-  locales: ["en", "ru", "tr", "es", "hi"],
+  locales: [
+    "en",
+    "ru",
+    "tr",
+    "es",
+    "hi",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "pl",
+    "uk",
+    "zh",
+    "ja",
+    "ko",
+    "ar"
+  ],
   localeDetection: true,
   // automatic detection by headers
   cookieName: localeCookieName2,
@@ -489,7 +531,17 @@ var localeMapServer = {
   ru: "Russian",
   tr: "Turkish",
   es: "Spanish",
-  hi: "Hindi"
+  hi: "Hindi",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  pl: "Polish",
+  uk: "Ukrainian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic"
 };
 var translationConfigServer = {
   i18n: i18nServer,
@@ -2757,7 +2809,27 @@ var superLandingDictionaries = {
   ru,
   tr,
   es,
-  hi
+  hi,
+  fr: en,
+  // Fallback to English
+  de: en,
+  // Fallback to English
+  it: en,
+  // Fallback to English
+  pt: en,
+  // Fallback to English
+  pl: en,
+  // Fallback to English
+  uk: en,
+  // Fallback to English
+  zh: en,
+  // Fallback to English
+  ja: en,
+  // Fallback to English
+  ko: en,
+  // Fallback to English
+  ar: en
+  // Fallback to English
 };
 function getSuperLandingDictionary(locale) {
   return superLandingDictionaries[locale] || en;
@@ -2786,7 +2858,27 @@ var superLandingDictionaries2 = {
   ru,
   tr,
   es,
-  hi
+  hi,
+  fr: en,
+  // Fallback to English
+  de: en,
+  // Fallback to English
+  it: en,
+  // Fallback to English
+  pt: en,
+  // Fallback to English
+  pl: en,
+  // Fallback to English
+  uk: en,
+  // Fallback to English
+  zh: en,
+  // Fallback to English
+  ja: en,
+  // Fallback to English
+  ko: en,
+  // Fallback to English
+  ar: en
+  // Fallback to English
 };
 function getSuperLandingDictionaryServer(locale) {
   return superLandingDictionaries2[locale] || en;

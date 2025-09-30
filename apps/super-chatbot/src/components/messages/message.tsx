@@ -374,6 +374,8 @@ const PurePreviewMessage = ({
                   return null;
                 }
               }
+
+              return null;
             })}
 
             {!isReadonly && (

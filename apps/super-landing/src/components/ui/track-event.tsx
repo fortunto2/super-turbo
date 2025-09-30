@@ -54,7 +54,7 @@ export default function TrackEvent({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          handleClick();
+          handleClick(e as any);
         }
       }}
       className={className}

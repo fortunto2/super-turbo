@@ -24,7 +24,6 @@ export const initialArtifactData: UIArtifact = {
     width: 0,
     height: 0,
   },
-  timestamp: undefined,
 };
 
 type Selector<T> = (state: UIArtifact) => T;

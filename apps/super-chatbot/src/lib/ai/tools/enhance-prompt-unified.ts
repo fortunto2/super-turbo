@@ -315,18 +315,18 @@ export const enhancePromptUnified = tool({
           originalPrompt,
           mediaType,
           enhancementLevel,
-          targetAudience,
+          ...(targetAudience && { targetAudience }),
           includeNegativePrompt,
-          modelHint,
+          ...(modelHint && { modelHint }),
         });
       } else if (mode === "veo3") {
         return await enhanceVEO3Prompt({
           originalPrompt,
           customLimit,
-          focusType,
+          ...(focusType && { focusType }),
           includeAudio,
-          promptData,
-          moodboard,
+          ...(promptData && { promptData }),
+          ...(moodboard && { moodboard }),
         });
       } else {
         throw new Error(`Unknown enhancement mode: ${mode}`);

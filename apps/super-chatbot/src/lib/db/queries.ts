@@ -95,6 +95,9 @@ export async function getOrCreateOAuthUser(
     const existingUsers = await getUser(email);
     if (existingUsers.length > 0) {
       const existingUser = existingUsers[0];
+      if (!existingUser) {
+        throw new Error("User not found in existing users array");
+      }
 
       // Если пользователь найден по email, возвращаем его, даже если ID отличается
       console.log(
@@ -232,7 +235,7 @@ export async function getGuestUserById(userId: string) {
 
     const [userData] = users;
     // Проверяем, что это действительно гость
-    if (!userData.email.includes("guest")) {
+    if (!userData?.email?.includes("guest")) {
       return null;
     }
 
@@ -261,7 +264,7 @@ export async function getGuestUserBySessionId(sessionId: string) {
 
     const [userData] = users;
     // Проверяем, что это действительно гость
-    if (!userData.email.includes("guest")) {
+    if (!userData?.email?.includes("guest")) {
       return null;
     }
 
@@ -640,6 +643,8 @@ export async function deleteMessagesByChatIdAfterTimestamp({
           and(eq(message.chatId, chatId), inArray(message.id, messageIds))
         );
     }
+
+    return messageIds.length;
   } catch (error) {
     console.error(
       "Failed to delete messages by id after timestamp from database"
@@ -783,7 +788,7 @@ export async function getChatImageArtifacts({
                 if (text.includes("```json")) {
                   const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
                   if (jsonMatch) {
-                    artifactContent = JSON.parse(jsonMatch[1]);
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
                   }
                 } else if (text.startsWith("{") && text.endsWith("}")) {
                   artifactContent = JSON.parse(text);
@@ -942,7 +947,8 @@ export async function getDocuments({
       countQuery.where(and(...conditions));
     }
 
-    const [{ count: total }] = await countQuery;
+    const countResult = await countQuery;
+    const total = countResult[0]?.count || 0;
 
     // Get documents with pagination
     const documents = await queryWithSort.limit(limit).offset(offset);
@@ -983,14 +989,14 @@ export async function getPublicDocuments({
 }) {
   return getDocuments({
     visibility: "public",
-    kind,
-    model,
-    search,
-    dateFrom,
-    dateTo,
-    sortBy,
-    page,
-    limit,
+    ...(kind && { kind }),
+    ...(model && { model }),
+    ...(search && { search }),
+    ...(dateFrom && { dateFrom }),
+    ...(dateTo && { dateTo }),
+    ...(sortBy && { sortBy }),
+    ...(page !== undefined && { page }),
+    ...(limit !== undefined && { limit }),
   });
 }
 

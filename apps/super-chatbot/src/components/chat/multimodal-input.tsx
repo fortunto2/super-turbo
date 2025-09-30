@@ -202,8 +202,8 @@ function PureMultimodalInput({
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined
-        );
+          (attachment) => attachment !== undefined && attachment !== null
+        ) as Attachment[];
 
         setAttachments((currentAttachments) => [
           ...currentAttachments,

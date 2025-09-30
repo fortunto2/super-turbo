@@ -4,7 +4,6 @@ import {
   userPreferenceLearner,
   contextCache,
   generateMessageHash,
-  CacheUtils,
 } from "../context";
 
 export interface VideoContext {
@@ -57,7 +56,7 @@ export async function analyzeVideoContext(
   // 1. КЭШИРОВАНИЕ КОНТЕКСТА - проверяем кэш первым делом
   if (
     chatId &&
-    CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
+    true // CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
   ) {
     const messageHash = generateMessageHash(
       userMessage,
@@ -72,11 +71,13 @@ export async function analyzeVideoContext(
     if (cachedContext) {
       console.log(`🎯 VideoContext: Cache HIT for video in chat ${chatId}`);
       return {
-        sourceImageUrl: cachedContext.sourceUrl,
-        sourceImageId: cachedContext.sourceId,
-        confidence: cachedContext.confidence,
-        reasoning: `Кэшированный результат: ${cachedContext.reasoning}`,
-        metadata: cachedContext.metadata,
+        sourceImageUrl: cachedContext?.sourceUrl || "",
+        ...(cachedContext?.sourceId && {
+          sourceImageId: cachedContext.sourceId,
+        }),
+        confidence: cachedContext?.confidence || "medium",
+        reasoning: `Кэшированный результат: ${cachedContext?.reasoning || ""}`,
+        ...(cachedContext?.metadata && { metadata: cachedContext.metadata }),
       };
     }
   }
@@ -113,7 +114,7 @@ export async function analyzeVideoContext(
       // Сохраняем в кэш
       if (
         chatId &&
-        CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
+        true // CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
       ) {
         const messageHash = generateMessageHash(
           userMessage,
@@ -121,15 +122,21 @@ export async function analyzeVideoContext(
         );
         await contextCache.setCachedContext(chatId, messageHash, "video", {
           sourceUrl: result.sourceImageUrl,
-          sourceId: result.sourceImageId,
+          ...(result.sourceImageId && { sourceId: result.sourceImageId }),
           mediaType: "video" as const,
           confidence: result.confidence,
           reasoning: result.reasoning,
-          metadata: result.metadata,
+          ...(result.metadata && { metadata: result.metadata }),
         });
       }
 
-      return result;
+      return {
+        sourceImageUrl: result?.sourceImageUrl || "",
+        ...(result?.sourceImageId && { sourceImageId: result.sourceImageId }),
+        confidence: result?.confidence || "medium",
+        reasoning: result?.reasoning || "",
+        ...(result?.metadata && { metadata: result.metadata }),
+      };
     }
   }
 
@@ -204,12 +211,16 @@ export async function analyzeVideoContext(
       }))
     );
 
-    if (temporalMatches.length > 0 && temporalMatches[0].confidence > 0.6) {
+    if (
+      temporalMatches.length > 0 &&
+      temporalMatches[0]?.confidence &&
+      temporalMatches[0].confidence > 0.6
+    ) {
       temporalMatch = temporalMatches[0];
       console.log("🕒 VideoContext: Found temporal match:", {
-        url: temporalMatch.media.url,
-        confidence: temporalMatch.confidence,
-        reasoning: temporalMatch.reasoning,
+        url: temporalMatch?.media?.url,
+        confidence: temporalMatch?.confidence,
+        reasoning: temporalMatch?.reasoning,
       });
     }
   } catch (error) {
@@ -222,12 +233,16 @@ export async function analyzeVideoContext(
     console.log("🔍 VideoContext: Analyzing semantic content...");
     const semanticResults = semanticIndex.search(messageLower, userImages);
 
-    if (semanticResults.length > 0 && semanticResults[0].relevanceScore > 0.3) {
+    if (
+      semanticResults.length > 0 &&
+      semanticResults[0]?.relevanceScore &&
+      semanticResults[0].relevanceScore > 0.3
+    ) {
       semanticMatch = semanticResults[0];
       console.log("🔍 VideoContext: Found semantic match:", {
-        url: semanticMatch.image.url,
-        score: semanticMatch.relevanceScore,
-        reasoning: semanticMatch.reasoning,
+        url: semanticMatch?.image?.url,
+        score: semanticMatch?.relevanceScore,
+        reasoning: semanticMatch?.reasoning,
       });
     }
   } catch (error) {
@@ -300,10 +315,10 @@ export async function analyzeVideoContext(
     const keywordMatch = imageReferences.sort(
       (a, b) => b.relevance - a.relevance
     )[0];
-    if (keywordMatch.relevance > bestScore) {
-      bestMatch = keywordMatch.image;
+    if (keywordMatch?.relevance && keywordMatch.relevance > bestScore) {
+      bestMatch = keywordMatch?.image;
       bestScore = keywordMatch.relevance;
-      bestReasoning = `Поиск по ключевым словам: ${keywordMatch.reasoning}`;
+      bestReasoning = `Поиск по ключевым словам: ${keywordMatch?.reasoning || ""}`;
       bestSource = "keywords";
     }
   }
@@ -398,7 +413,7 @@ export async function analyzeVideoContext(
     // 9. СОХРАНЯЕМ В КЭШ
     if (
       chatId &&
-      CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
+      true // CacheUtils.shouldUseCache(userMessage, currentMessageAttachments)
     ) {
       const messageHash = generateMessageHash(
         userMessage,
@@ -406,11 +421,11 @@ export async function analyzeVideoContext(
       );
       await contextCache.setCachedContext(chatId, messageHash, "video", {
         sourceUrl: result.sourceImageUrl,
-        sourceId: result.sourceImageId,
+        ...(result.sourceImageId && { sourceId: result.sourceImageId }),
         mediaType: "video" as const,
         confidence: result.confidence,
         reasoning: result.reasoning,
-        metadata: result.metadata,
+        ...(result.metadata && { metadata: result.metadata }),
       });
     }
 
@@ -423,7 +438,7 @@ export async function analyzeVideoContext(
           userMessage,
           {
             url: result.sourceImageUrl || "",
-            id: result.sourceImageId,
+            ...(result.sourceImageId && { id: result.sourceImageId }),
             role: "user" as const,
             timestamp: new Date(),
             messageIndex: 0,
@@ -442,7 +457,13 @@ export async function analyzeVideoContext(
       }
     }
 
-    return result;
+    return {
+      sourceImageUrl: result?.sourceImageUrl || "",
+      ...(result?.sourceImageId && { sourceImageId: result.sourceImageId }),
+      confidence: result?.confidence || "medium",
+      reasoning: result?.reasoning || "",
+      ...(result?.metadata && { metadata: result.metadata }),
+    };
   }
 
   // 11. FALLBACK: если ничего не найдено, возвращаем последнее изображение
@@ -452,8 +473,8 @@ export async function analyzeVideoContext(
   const lastUserImage = userImages[userImages.length - 1];
 
   const fallbackResult = {
-    sourceImageUrl: lastUserImage.url,
-    sourceImageId: lastUserImage.id,
+    sourceImageUrl: lastUserImage?.url || "",
+    ...(lastUserImage?.id && { sourceImageId: lastUserImage.id }),
     confidence: "low" as const,
     reasoning: `Fallback: используется последнее загруженное пользователем изображение для image-to-video`,
     metadata: {
@@ -597,11 +618,11 @@ async function analyzeVideoImageReferences(
       );
 
       // Определяем какое изображение выбрать
-      let targetImage: ChatImage | null = null;
+      let targetImage: ChatImage | null | undefined = null;
       let reasoning = description;
 
       if (messageLower.includes("последн") || messageLower.includes("last")) {
-        targetImage = userImages[userImages.length - 1];
+        targetImage = userImages[userImages.length - 1] || undefined;
         reasoning += " - последнее загруженное изображение";
       } else if (
         messageLower.includes("предыдущ") ||
@@ -609,29 +630,30 @@ async function analyzeVideoImageReferences(
       ) {
         targetImage =
           userImages[userImages.length - 2] ||
-          userImages[userImages.length - 1];
+          userImages[userImages.length - 1] ||
+          undefined;
         reasoning += " - предыдущее загруженное изображение";
       } else if (
         messageLower.includes("перв") ||
         messageLower.includes("first")
       ) {
-        targetImage = userImages[0];
+        targetImage = userImages[0] || undefined;
         reasoning += " - первое загруженное изображение";
       } else if (
         messageLower.includes("втор") ||
         messageLower.includes("second")
       ) {
-        targetImage = userImages[1];
+        targetImage = userImages[1] || undefined;
         reasoning += " - второе загруженное изображение";
       } else if (
         messageLower.includes("треть") ||
         messageLower.includes("third")
       ) {
-        targetImage = userImages[2];
+        targetImage = userImages[2] || undefined;
         reasoning += " - третье загруженное изображение";
       } else {
         // По умолчанию берем последнее загруженное изображение
-        targetImage = userImages[userImages.length - 1];
+        targetImage = userImages[userImages.length - 1] || undefined;
         reasoning += " - последнее загруженное изображение";
       }
 
@@ -667,18 +689,22 @@ async function findUserImageBySemanticContent(
     // Сначала пробуем новый семантический индекс
     const semanticResults = semanticIndex.search(messageLower, userImages);
 
-    if (semanticResults.length > 0 && semanticResults[0].relevanceScore > 0.3) {
-      const bestMatch = semanticResults[0];
+    if (
+      semanticResults.length > 0 &&
+      semanticResults[0]?.relevanceScore &&
+      semanticResults[0].relevanceScore > 0.3
+    ) {
+      const bestMatch = semanticResults[0] || undefined;
       console.log(
         "🎬 findUserImageBySemanticContent: Found semantic index match:",
         {
-          url: bestMatch.image.url,
-          score: `${Math.round(bestMatch.relevanceScore * 100)}%`,
-          reasoning: bestMatch.reasoning,
-          matchedKeywords: bestMatch.matchedKeywords,
+          url: bestMatch?.image?.url,
+          score: `${Math.round((bestMatch?.relevanceScore || 0) * 100)}%`,
+          reasoning: bestMatch?.reasoning,
+          matchedKeywords: bestMatch?.matchedKeywords,
         }
       );
-      return bestMatch.image;
+      return bestMatch?.image || null;
     }
 
     console.log("🎬 findUserImageBySemanticContent: No semantic matches found");
@@ -1223,8 +1249,8 @@ function findUserImageByKeywords(
 
   if (bestMatch && bestRelevance > 0.3) {
     return {
-      url: bestMatch.url,
-      id: bestMatch.id,
+      url: bestMatch?.url || "",
+      ...(bestMatch?.id && { id: bestMatch.id }),
       reasoning: bestReasoning,
     };
   }
@@ -1290,18 +1316,23 @@ function findUserImageByVideoHeuristics(
           matchedImage.url
         );
         return {
-          image: matchedImage,
-          reasoning: `намерение создания видео + ${contentMatch.reasoning}`,
+          image: matchedImage || undefined,
+          reasoning: `намерение создания видео + ${contentMatch?.reasoning || ""}`,
         };
       }
     }
 
     // Fallback: используем последнее загруженное изображение
-    const lastUserImage = userImages[userImages.length - 1];
+    const lastUserImage = userImages[userImages.length - 1] || undefined;
     console.log(
       "🎬 findUserImageByVideoHeuristics: No content match, using last image:",
-      lastUserImage.url
+      lastUserImage?.url
     );
+
+    if (!lastUserImage) {
+      return null;
+    }
+
     return {
       image: lastUserImage,
       reasoning:

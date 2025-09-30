@@ -152,11 +152,11 @@ async function migrateMessages() {
 
         try {
           const uiSection = appendResponseMessages({
-            messages: [userMessage],
+            messages: userMessage ? [userMessage] : [],
             // Temporary type conversion for migration - this is a database migration script
             responseMessages: assistantMessages as any,
             _internal: {
-              currentDate: () => firstAssistantMessage.createdAt ?? new Date(),
+              currentDate: () => firstAssistantMessage?.createdAt ?? new Date(),
             },
           });
 

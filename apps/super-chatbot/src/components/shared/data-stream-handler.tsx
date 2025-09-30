@@ -4,7 +4,11 @@ import type { Suggestion } from "@/lib/db/schema";
 import { initialArtifactData, useArtifactLegacy } from "@/hooks/use-artifact";
 import { useArtifactContext } from "@/contexts/artifact-context";
 import { toast } from "../common/toast";
-import { artifactDefinitions, type ArtifactKind } from "../artifacts/artifact";
+import {
+  artifactDefinitions,
+  type UIArtifact,
+  type ArtifactKind,
+} from "../artifacts/artifact";
 
 export type DataStreamDelta = {
   type:
@@ -109,7 +113,7 @@ function PureDataStreamHandler({
           });
         }
 
-        setArtifact((draftArtifact) => {
+        setArtifact((draftArtifact: UIArtifact | null) => {
           if (!draftArtifact) {
             return { ...initialArtifactData, status: "streaming" };
           }
@@ -158,8 +162,8 @@ function PureDataStreamHandler({
                 kindArtifactDefinition.onCreateDocument({
                   setArtifact: (updater) => {
                     if (typeof updater === "function") {
-                      setArtifact((current) => {
-                        const updated = updater(current);
+                      setArtifact((current: UIArtifact | null) => {
+                        const updated = updater(current as UIArtifact);
                         return {
                           ...updated,
                           kind: newKind,
@@ -178,7 +182,7 @@ function PureDataStreamHandler({
               } else {
                 console.log("🎯 No onCreateDocument found for:", newKind);
                 // Если нет onCreateDocument, устанавливаем базовые значения
-                setArtifact((current) => ({
+                setArtifact((current: UIArtifact | null) => ({
                   ...current,
                   kind: newKind,
                   status: "streaming",

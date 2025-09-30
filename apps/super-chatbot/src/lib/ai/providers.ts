@@ -15,12 +15,12 @@ import {
 
 // Создаем настроенный экземпляр провайдера Azure
 const customAzure = createAzure({
-  apiKey: process.env.AZURE_OPENAI_API_KEY,
-  resourceName: process.env.AZURE_OPENAI_RESOURCE_NAME,
-  baseURL:
-    !process.env.AZURE_OPENAI_RESOURCE_NAME && process.env.AZURE_OPENAI_ENDPOINT
-      ? process.env.AZURE_OPENAI_ENDPOINT
-      : undefined,
+  apiKey: process.env.AZURE_OPENAI_API_KEY || "",
+  resourceName: process.env.AZURE_OPENAI_RESOURCE_NAME || "",
+  ...(process.env.AZURE_OPENAI_ENDPOINT &&
+    !process.env.AZURE_OPENAI_RESOURCE_NAME && {
+      baseURL: process.env.AZURE_OPENAI_ENDPOINT,
+    }),
   apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
   headers: {
     "x-ms-azure-region": process.env.AZURE_OPENAI_REGION || "eastus2",
@@ -51,11 +51,11 @@ const geminiModel = {
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
-        "chat-model": chatModel,
-        "chat-model-reasoning": reasoningModel,
-        "title-model": titleModel,
-        "artifact-model": artifactModel,
-        "gemini-2.5-flash-lite": chatModel, // Используем mock для тестов
+        "chat-model": chatModel as any,
+        "chat-model-reasoning": reasoningModel as any,
+        "title-model": titleModel as any,
+        "artifact-model": artifactModel as any,
+        "gemini-2.5-flash-lite": chatModel as any, // Используем mock для тестов
       },
     })
   : customProvider({

@@ -144,7 +144,7 @@ export function testStyleMatching(
   if (partialMatches.length > 0) {
     return {
       found: true,
-      matchedStyle: partialMatches[0],
+      ...(partialMatches[0] && { matchedStyle: partialMatches[0] }),
       suggestions: partialMatches
         .slice(0, 3)
         .map((s) => `Partial match: ${s.id} (${s.label})`),

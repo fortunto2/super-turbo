@@ -57,8 +57,10 @@ export function CaseUseCases() {
 
   // Собираем информацию о категориях
   allCases.forEach((caseItem) => {
-    const categoryTitle =
-      categoryDict[caseItem.category] ?? getCategoryTitle(caseItem.category);
+    const categoryTitle = String(
+      categoryDict[caseItem.category as keyof typeof categoryDict] ??
+        getCategoryTitle(caseItem.category)
+    );
     if (!categoriesMap.has(caseItem.category)) {
       categoriesMap.set(caseItem.category, {
         title: categoryTitle,
@@ -101,6 +103,15 @@ export function CaseUseCases() {
       });
 
     const bestCase = casesInCategory[0];
+
+    if (!bestCase) {
+      return {
+        title: info.title,
+        description: "",
+        icon: info.icon,
+        url: "#",
+      };
+    }
 
     return {
       title: info.title,
@@ -194,7 +205,7 @@ function getCategoryIcon(category: string): string {
   // Ищем наиболее подходящий ключ
   for (const key of Object.keys(iconMap)) {
     if (category.toLowerCase().includes(key.toLowerCase())) {
-      return iconMap[key];
+      return iconMap[key] || "sparkles";
     }
   }
 

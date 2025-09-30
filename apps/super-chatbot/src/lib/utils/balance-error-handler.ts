@@ -88,9 +88,13 @@ export function createBalanceError(
   return {
     type: "insufficient_balance",
     message: balanceValidation.error || "Недостаточно средств",
-    cost: balanceValidation.cost,
-    requiredCredits: balanceValidation.cost,
-    availableCredits,
+    ...(balanceValidation.cost !== undefined && {
+      cost: balanceValidation.cost,
+    }),
+    ...(balanceValidation.cost !== undefined && {
+      requiredCredits: balanceValidation.cost,
+    }),
+    ...(availableCredits !== undefined && { availableCredits }),
   };
 }
 

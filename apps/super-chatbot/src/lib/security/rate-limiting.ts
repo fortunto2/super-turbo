@@ -202,7 +202,7 @@ export class RateLimiter {
       allowed,
       remaining,
       resetTime,
-      retryAfter: allowed ? undefined : Math.ceil((resetTime - now) / 1000),
+      ...(allowed ? {} : { retryAfter: Math.ceil((resetTime - now) / 1000) }),
     };
   }
 

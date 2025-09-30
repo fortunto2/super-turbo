@@ -128,7 +128,9 @@ class SmartPollingManager {
 
           // Reset consecutive errors on successful call
           consecutiveErrors = 0;
-          stats.lastError = undefined;
+          if (stats) {
+            stats.lastError = "";
+          }
 
           // Check if completed
           if (result.completed) {
@@ -137,7 +139,7 @@ class SmartPollingManager {
             );
             return {
               success: true,
-              data: result.data,
+              data: result.data || (null as any),
               attempts,
               duration: elapsed,
               method: "success",
@@ -168,7 +170,9 @@ class SmartPollingManager {
         } catch (error: any) {
           consecutiveErrors++;
           const errorMessage = error?.message || "Unknown error";
-          stats.lastError = errorMessage;
+          if (stats) {
+            stats.lastError = errorMessage;
+          }
 
           console.error(
             `❌ Polling error ${consecutiveErrors}/${opts.maxConsecutiveErrors} for ${pollId}:`,
@@ -300,7 +304,7 @@ class SmartPollingManager {
       pollId,
       attempts: stats.attempts,
       elapsed: now - stats.startTime,
-      lastError: stats.lastError,
+      ...(stats.lastError && { lastError: stats.lastError }),
     }));
   }
 

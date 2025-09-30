@@ -26,14 +26,14 @@ export async function generateMetadata({
   const title = caseItem.seo?.title ?? caseItem.title;
   const description = caseItem.seo?.description ?? caseItem.description;
 
+  const ogImage = caseItem.seo?.ogImage ?? caseItem.image;
+  
   return generatePageMetadata({
     title,
     description,
     keywords: caseItem.seo?.keywords ?? [],
     url: `/case/${slug}`,
-    ...((caseItem.seo?.ogImage ?? caseItem.image) && {
-      ogImage: caseItem.seo?.ogImage ?? caseItem.image,
-    }),
+    ...(ogImage && { ogImage }),
     type: "article",
     meta: {
       pageType: "case",

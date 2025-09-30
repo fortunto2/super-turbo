@@ -44,8 +44,8 @@ export function analyzeComponent(
   // Подсчет пропсов (упрощенный анализ)
   const propsMatch = componentCode.match(/interface\s+\w+Props\s*\{([^}]+)\}/);
   const props = propsMatch
-    ? propsMatch[1].split("\n").filter((line) => line.trim().includes(":"))
-        .length
+    ? propsMatch[1]?.split("\n").filter((line) => line.trim().includes(":"))
+        .length || 0
     : 0;
   if (props > maxProps) {
     issues.push(`Слишком много пропсов: ${props} (максимум ${maxProps})`);

@@ -26,6 +26,7 @@ export function Navbar() {
     const segments = path.split("/").filter(Boolean);
     if (
       segments.length > 0 &&
+      segments[0] &&
       i18nClient.locales.includes(segments[0] as Locale)
     ) {
       return segments[0];
@@ -379,6 +380,7 @@ export const LanguageSwitcher = () => {
     const segments = path.split("/").filter(Boolean);
     if (
       segments.length > 0 &&
+      segments[0] &&
       i18nClient.locales.includes(segments[0] as Locale)
     ) {
       return segments[0];

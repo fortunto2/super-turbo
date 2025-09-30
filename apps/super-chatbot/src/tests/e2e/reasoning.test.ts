@@ -26,8 +26,9 @@ test.describe("chat activity with reasoning", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    expect(assistantMessage.element).toBeDefined();
     const reasoningElement =
-      assistantMessage.element.getByTestId("message-reasoning");
+      assistantMessage.element?.getByTestId("message-reasoning");
     expect(reasoningElement).toBeVisible();
 
     await assistantMessage.toggleReasoningVisibility();
@@ -42,8 +43,9 @@ test.describe("chat activity with reasoning", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    expect(assistantMessage.element).toBeDefined();
     const reasoningElement =
-      assistantMessage.element.getByTestId("message-reasoning");
+      assistantMessage.element?.getByTestId("message-reasoning");
     expect(reasoningElement).toBeVisible();
 
     const userMessage = await chatPage.getRecentUserMessage();

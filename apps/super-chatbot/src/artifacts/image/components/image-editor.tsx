@@ -280,16 +280,17 @@ export function ImageEditor({
       imageUrl: effectiveImageUrlForEffects,
     }),
     status: effectiveStatusForEffects || "",
-    append,
+    ...(append && { append }),
     prompt: prompt || initialState?.prompt || "",
     hasInitialized,
-    setArtifact,
+    ...(setArtifact && { setArtifact }),
     chatId,
     resetState: imageGeneration.resetState,
     setPrompt,
-    initialPrompt: initialState?.prompt,
-    setMessages,
-    fileId: initialState?.fileId || imageGeneration.fileId,
+    ...(initialState?.prompt && { initialPrompt: initialState.prompt }),
+    ...(setMessages && { setMessages }),
+    ...(initialState?.fileId && { fileId: initialState.fileId }),
+    ...(imageGeneration.fileId && { fileId: imageGeneration.fileId }),
   });
 
   // Get connection status - prioritize SSE over WebSocket

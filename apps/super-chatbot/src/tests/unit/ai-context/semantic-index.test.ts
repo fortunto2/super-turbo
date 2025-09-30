@@ -1,7 +1,5 @@
-import {
-  SemanticIndex,
-  type ChatImage,
-} from "../../../lib/ai/context/semantic-index";
+import { SemanticIndex } from "../../../lib/ai/context/semantic-index";
+import type { ChatImage } from "../../../lib/ai/chat/image-context";
 
 describe("SemanticIndex", () => {
   let semanticIndex: SemanticIndex;
@@ -57,52 +55,62 @@ describe("SemanticIndex", () => {
     const results = semanticIndex.search("фото с солнцем", testImages);
 
     expect(results).toHaveLength(1);
-    expect(results[0].image.url).toBe("https://example.com/sunset-beach.jpg");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.3);
-    expect(results[0].matchedKeywords).toContain("солнцем");
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.url).toBe("https://example.com/sunset-beach.jpg");
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.3);
+    expect(results[0]?.matchedKeywords).toContain("солнцем");
   });
 
   test("should find image with moon by semantic search", () => {
     const results = semanticIndex.search("картинка с луной", testImages);
 
     expect(results).toHaveLength(1);
-    expect(results[0].image.url).toBe("https://example.com/moon-landscape.jpg");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.3);
-    expect(results[0].matchedKeywords).toContain("лунным");
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.url).toBe(
+      "https://example.com/moon-landscape.jpg"
+    );
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.3);
+    expect(results[0]?.matchedKeywords).toContain("лунным");
   });
 
   test("should find image with cat by semantic search", () => {
     const results = semanticIndex.search("изображение кота", testImages);
 
     expect(results).toHaveLength(1);
-    expect(results[0].image.url).toBe("https://example.com/cat-portrait.jpg");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.3);
-    expect(results[0].matchedKeywords).toContain("кота");
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.url).toBe("https://example.com/cat-portrait.jpg");
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.3);
+    expect(results[0]?.matchedKeywords).toContain("кота");
   });
 
   test("should find image with forest by semantic search", () => {
     const results = semanticIndex.search("лес с деревьями", testImages);
 
     expect(results).toHaveLength(1);
-    expect(results[0].image.url).toBe("https://example.com/forest-path.jpg");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.3);
-    expect(results[0].matchedKeywords).toContain("лесу");
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.url).toBe("https://example.com/forest-path.jpg");
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.3);
+    expect(results[0]?.matchedKeywords).toContain("лесу");
   });
 
   test("should handle English queries", () => {
     const results = semanticIndex.search("sunset with sun", testImages);
 
     expect(results).toHaveLength(1);
-    expect(results[0].image.url).toBe("https://example.com/sunset-beach.jpg");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.3);
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.url).toBe("https://example.com/sunset-beach.jpg");
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.3);
   });
 
   test("should handle synonyms", () => {
     const results = semanticIndex.search("ночное небо", testImages);
 
     expect(results).toHaveLength(1);
-    expect(results[0].image.url).toBe("https://example.com/moon-landscape.jpg");
-    expect(results[0].relevanceScore).toBeGreaterThan(0.3);
+    expect(results[0]).toBeDefined();
+    expect(results[0]?.image.url).toBe(
+      "https://example.com/moon-landscape.jpg"
+    );
+    expect(results[0]?.relevanceScore).toBeGreaterThan(0.3);
   });
 
   test("should return empty results for irrelevant queries", () => {
@@ -127,13 +135,23 @@ describe("SemanticIndex", () => {
 
     const results = semanticIndex.search("солнце", [
       partialMatchImage,
-      testImages[0],
+      testImages[0] || {
+        url: "fallback.jpg",
+        mediaType: "image" as const,
+        role: "user" as const,
+        timestamp: new Date(),
+        messageIndex: 0,
+      },
     ]);
 
     expect(results).toHaveLength(2);
     // Более релевантное изображение должно быть первым
-    expect(results[0].relevanceScore).toBeGreaterThanOrEqual(
-      results[1].relevanceScore
+    expect(results[0]).toBeDefined();
+    expect(results[1]).toBeDefined();
+    expect(results[0]?.image.url).toBe("https://example.com/sunset-beach.jpg");
+    expect(results[1]?.image.url).toBe("https://example.com/beach-sunset.jpg");
+    expect(results[0]?.relevanceScore).toBeGreaterThanOrEqual(
+      results[1]?.relevanceScore || 0
     );
   });
 

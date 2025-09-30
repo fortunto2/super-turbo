@@ -102,7 +102,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }
@@ -121,7 +123,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }
@@ -144,7 +148,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }
@@ -167,7 +173,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }
@@ -192,7 +200,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }
@@ -215,7 +225,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }
@@ -238,7 +250,9 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      userAgent: req.headers.get("user-agent") || undefined,
+      ...(req.headers.get("user-agent") && {
+        userAgent: req.headers.get("user-agent") || "",
+      }),
       ip: this.getClientIP(req),
     });
   }

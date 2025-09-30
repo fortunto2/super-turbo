@@ -8,7 +8,7 @@ export function useTranslation(locale: Locale) {
   // Перегрузка функции для лучшего автодополнения
   function t<T = string>(key: SuperLandingTranslationKey, fallback?: T): T;
   function t<T = string>(key: string, fallback?: T): T;
-  function t<T = string>(key: SuperLandingTranslationKey, fallback?: T): T {
+  function t<T = string>(key: string, fallback?: T): T {
     // Ищем в словаре по ключу
     const keys = key.split(".");
     let value: unknown = dict;

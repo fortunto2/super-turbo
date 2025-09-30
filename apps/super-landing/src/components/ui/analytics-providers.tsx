@@ -42,7 +42,7 @@ export default function AnalyticsProviders({
   return (
     <EnhancedAnalytics
       skipInDevelopment={skipInDevelopment}
-      gtmId={gtmId}
+      gtmId={gtmId || ""}
     />
   );
 }

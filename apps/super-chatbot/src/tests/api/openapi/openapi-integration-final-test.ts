@@ -65,25 +65,25 @@ async function testFullIntegration() {
 
     // Check required fields
     const imageModelValid = !!(
-      imageModel.id &&
-      imageModel.label &&
-      imageModel.description &&
-      imageModel.name &&
-      imageModel.type
+      imageModel?.id &&
+      imageModel?.label &&
+      imageModel?.description &&
+      imageModel?.name &&
+      imageModel?.type
     );
     const videoModelValid = !!(
-      videoModel.id &&
-      videoModel.label &&
-      videoModel.description &&
-      videoModel.name &&
-      videoModel.type
+      videoModel?.id &&
+      videoModel?.label &&
+      videoModel?.description &&
+      videoModel?.name &&
+      videoModel?.type
     );
 
     console.log("✅ Model compatibility:", {
       imageModelValid,
       videoModelValid,
-      imageModelFields: Object.keys(imageModel).sort(),
-      videoModelFields: Object.keys(videoModel).sort(),
+      imageModelFields: imageModel ? Object.keys(imageModel).sort() : [],
+      videoModelFields: videoModel ? Object.keys(videoModel).sort() : [],
     });
 
     if (!imageModelValid || !videoModelValid) {

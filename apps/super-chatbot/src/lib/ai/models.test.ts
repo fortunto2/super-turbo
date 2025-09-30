@@ -9,6 +9,7 @@ export const chatModel = new MockLanguageModelV1({
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `Hello, world!`,
   }),
+  supportsStructuredOutputs: true as const,
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
       chunkDelayInMs: 500,
@@ -27,6 +28,7 @@ export const reasoningModel = new MockLanguageModelV1({
     text: `Hello, world!`,
     reasoning: `This is reasoning text that explains the thought process behind the answer.`,
   }),
+  supportsStructuredOutputs: true as const,
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
       chunkDelayInMs: 500,
@@ -51,7 +53,6 @@ export const reasoningModel = new MockLanguageModelV1({
         {
           type: "finish",
           finishReason: "stop",
-          logprobs: undefined,
           usage: { completionTokens: 10, promptTokens: 3 },
         },
       ],
@@ -76,7 +77,6 @@ export const titleModel = new MockLanguageModelV1({
         {
           type: "finish",
           finishReason: "stop",
-          logprobs: undefined,
           usage: { completionTokens: 10, promptTokens: 3 },
         },
       ],
@@ -92,6 +92,7 @@ export const artifactModel = new MockLanguageModelV1({
     usage: { promptTokens: 10, completionTokens: 20 },
     text: `Hello, world!`,
   }),
+  supportsStructuredOutputs: true as const,
   doStream: async ({ prompt }) => ({
     stream: simulateReadableStream({
       chunkDelayInMs: 50,

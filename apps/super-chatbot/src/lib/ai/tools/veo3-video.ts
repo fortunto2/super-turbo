@@ -51,11 +51,11 @@ export const createVeo3VideoTool = tool({
 
       const result = await createVeo3Video({
         prompt,
-        duration,
-        style,
-        resolution,
-        aspectRatio,
-        seed,
+        ...(duration !== undefined && { duration }),
+        ...(style && { style }),
+        ...(resolution && { resolution }),
+        ...(aspectRatio && { aspectRatio }),
+        ...(seed !== undefined && { seed }),
       });
 
       if (result.status === "failed") {

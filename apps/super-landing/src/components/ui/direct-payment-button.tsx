@@ -44,7 +44,7 @@ export function DirectPaymentButton({
   generationType = "text-to-video",
   imageFile = null,
 }: DirectPaymentButtonProps) {
-  const { t } = useTranslation(locale);
+  const { t } = useTranslation(locale as any);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const _handlePaymentSuccess = (sessionId: string) => {

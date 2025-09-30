@@ -60,8 +60,8 @@ export const useImageEventHandler = (
         requestId: eventData.requestId || requestId || "",
         status: eventData.type,
         timestamp: Date.now(),
-        imageUrl: eventData.imageUrl || eventData.url,
-        error: eventData.error,
+        imageUrl: eventData.imageUrl || eventData.url || "",
+        error: eventData.error || "",
       });
 
       switch (eventData.type) {
@@ -529,9 +529,9 @@ export const useImageEventHandler = (
           if (eventData.status) {
             onStateUpdate({
               status: eventData.status as ImageGenerationState["status"],
-              progress: eventData.progress,
-              imageUrl: eventData.imageUrl,
-              error: eventData.error,
+              ...(eventData.progress !== undefined && { progress: eventData.progress }),
+              ...(eventData.imageUrl && { imageUrl: eventData.imageUrl }),
+              ...(eventData.error && { error: eventData.error }),
               projectId: eventData.projectId || projectId,
               ...(eventData.requestId && { requestId: eventData.requestId }),
             });

@@ -85,7 +85,7 @@ const components = {
     children,
     ..._props
   }: React.HTMLAttributes<HTMLPreElement>) => (
-    <CodeBlock className={className}>{children}</CodeBlock>
+    <CodeBlock className={className || ""}>{children}</CodeBlock>
   ),
   FeatureGrid,
   Feature,

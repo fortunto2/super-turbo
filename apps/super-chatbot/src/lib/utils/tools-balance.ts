@@ -32,7 +32,7 @@ export async function getUserToolsBalance(userId: string): Promise<number> {
       throw new Error(`User not found: ${userId}`);
     }
 
-    return result[0].balance || 0;
+    return result[0]?.balance ?? 0;
   } catch (error) {
     console.error("Error getting user tools balance:", error);
     throw error;
