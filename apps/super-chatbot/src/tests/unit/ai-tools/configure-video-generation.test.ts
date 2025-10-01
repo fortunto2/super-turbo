@@ -40,7 +40,7 @@ describe("configureVideoGeneration", () => {
       sourceId: undefined as any,
       mediaType: "video" as const,
       confidence: "high" as const,
-      reasoning: "Test reasoning",
+      reasoningText: "Test reasoning",
       metadata: undefined as any,
     });
   });
@@ -53,7 +53,7 @@ describe("configureVideoGeneration", () => {
 
     expect(tool).toBeDefined();
     expect(tool.description).toContain("Configure video generation settings");
-    expect(tool.parameters).toBeDefined();
+    expect(tool.inputSchema).toBeDefined();
   });
 
   it("should handle text-to-video generation", async () => {
@@ -64,7 +64,7 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains with gentle wind",
         style: "cinematic",
@@ -98,7 +98,7 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "Animate this image with gentle movement",
         sourceVideoUrl: "https://example.com/image.jpg",
@@ -132,7 +132,7 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "Transform this video into a different style",
         sourceVideoUrl: "https://example.com/video.mp4",
@@ -166,7 +166,7 @@ describe("configureVideoGeneration", () => {
 
     // Test with missing prompt
     await expect(
-      tool.execute({}, { toolCallId: "test-call", messages: [] })
+      tool.execute?.({}, { toolCallId: "test-call", messages: [] })
     ).rejects.toThrow();
   });
 
@@ -181,7 +181,7 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains with gentle wind",
       },
@@ -203,7 +203,7 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains with gentle wind",
       },
@@ -227,7 +227,7 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    await tool.execute(
+    await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains with gentle wind",
       },
@@ -262,7 +262,7 @@ describe("configureVideoGeneration", () => {
     ];
 
     for (const resolution of resolutions) {
-      await tool.execute(
+      await tool.execute?.(
         {
           prompt: "A beautiful sunset over mountains with gentle wind",
           resolution,
@@ -292,7 +292,7 @@ describe("configureVideoGeneration", () => {
     const durations = ["5", "8", "10", "15", "30"];
 
     for (const duration of durations) {
-      await tool.execute(
+      await tool.execute?.(
         {
           prompt: "A beautiful sunset over mountains with gentle wind",
           duration,
@@ -334,7 +334,7 @@ describe("configureVideoGeneration", () => {
     ];
 
     for (const style of styles) {
-      await tool.execute(
+      await tool.execute?.(
         {
           prompt: "A beautiful sunset over mountains with gentle wind",
           style,

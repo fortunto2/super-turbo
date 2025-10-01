@@ -1,9 +1,8 @@
 import {
-  appendClientMessage,
-  appendResponseMessages,
-  createDataStream,
+  createUIMessageStream,
   smoothStream,
   streamText,
+  stepCountIs,
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import type { RequestHints } from "@/lib/ai/prompts";
@@ -19,7 +18,7 @@ import {
   getOrCreateOAuthUser,
   getUser,
 } from "@/lib/db/queries";
-import { generateUUID, getTrailingMessageId } from "@/lib/utils";
+import { generateUUID, } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { updateDocument } from "@/lib/ai/tools/update-document";
@@ -503,10 +502,11 @@ export async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
-      messages: convertDBMessagesToUIMessages(previousMessages),
-      message: normalizeMessage(messageToProcess),
-    });
+    // AI SDK v5: manually append client message
+    const messages = [
+      ...convertDBMessagesToUIMessages(previousMessages),
+      normalizeMessage(messageToProcess),
+    ];
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -518,6 +518,7 @@ export async function POST(request: Request) {
     };
 
     try {
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       await saveMessages({
         messages: [
           {
@@ -561,6 +562,7 @@ export async function POST(request: Request) {
           });
 
           // Try to save message again
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           await saveMessages({
             messages: [
               {
@@ -630,7 +632,7 @@ export async function POST(request: Request) {
       // Continue execution, as we can proceed without DB record
     }
 
-    const stream = createDataStream({
+    const stream = createUIMessageStream({
       execute: async (dataStream) => {
         const enhancedDataStream = {
           ...dataStream,
@@ -645,6 +647,7 @@ export async function POST(request: Request) {
         try {
           const { analyzeImageContext } = await import("@/lib/ai/context");
 
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           const imageContext = await analyzeImageContext(
             messageToProcess.parts?.[0]?.text || "",
             id,
@@ -654,7 +657,7 @@ export async function POST(request: Request) {
 
           console.log("🔍 Pre-analysis: Image context:", {
             confidence: imageContext.confidence,
-            reasoning: imageContext.reasoning,
+            reasoningText: imageContext.reasoningText,
             sourceUrl: imageContext.sourceUrl,
           });
 
@@ -668,6 +671,7 @@ export async function POST(request: Request) {
           console.error("🔍 Pre-analysis error:", error);
           // Fallback к старой логике
           try {
+            /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
             const atts =
               (messageToProcess as any)?.experimental_attachments || [];
             const img = atts.find(
@@ -692,6 +696,7 @@ export async function POST(request: Request) {
         try {
           const { analyzeVideoContext } = await import("@/lib/ai/context");
 
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           const videoContext = await analyzeVideoContext(
             messageToProcess.parts?.[0]?.text || "",
             id,
@@ -701,7 +706,7 @@ export async function POST(request: Request) {
 
           console.log("🔍 Pre-analysis: Video context:", {
             confidence: videoContext.confidence,
-            reasoning: videoContext.reasoning,
+            reasoningText: videoContext.reasoningText,
             sourceImageUrl: videoContext.sourceUrl,
           });
 
@@ -719,20 +724,21 @@ export async function POST(request: Request) {
         const tools = {
           createDocument: createDocument({
             session,
-            dataStream: enhancedDataStream,
+            dataStream: enhancedDataStream.writer,
           }),
           updateDocument: updateDocument({
             session,
-            dataStream: enhancedDataStream,
+            dataStream: enhancedDataStream.writer,
           }),
           requestSuggestions: requestSuggestions({
             session,
-            dataStream: enhancedDataStream,
+            dataStream: enhancedDataStream.writer,
           }),
         };
 
         // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
 
+        /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
         console.log("🔍 Message structure for configureImageGeneration:", {
           hasMessage: !!messageToProcess,
           messageKeys: messageToProcess ? Object.keys(messageToProcess) : [],
@@ -808,11 +814,17 @@ export async function POST(request: Request) {
           }
         }
 
+        /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
         const result = streamText({
-          model: myProvider.languageModel("gemini-2.5-flash-lite"), // Всегда используем Gemini
-          system: geminiSystemPrompt, // Используем специальный промпт для Gemini
+          // Всегда используем Gemini
+          model: myProvider.languageModel("gemini-2.5-flash-lite"),
+
+          // Используем специальный промпт для Gemini
+          system: geminiSystemPrompt,
+
           messages: enhancedMessages,
-          maxSteps: 5,
+          stopWhen: stepCountIs(5),
+
           experimental_activeTools: [
             "configureImageGeneration",
             "configureVideoGeneration",
@@ -824,8 +836,9 @@ export async function POST(request: Request) {
             "updateDocument",
             "requestSuggestions",
           ],
+
           experimental_transform: smoothStream({ chunking: "word" }),
-          experimental_generateMessageId: generateUUID,
+          // AI SDK v5: experimental_generateMessageId removed
 
           tools: {
             ...tools,
@@ -859,6 +872,7 @@ export async function POST(request: Request) {
             findBestVideoModel,
             enhancePromptUnified,
           },
+
           // Note: explicit toolChoice removed due to type constraints; tool remains available
           onFinish: async ({ response }) => {
             console.log("🔍 onFinish called with response:", {
@@ -871,43 +885,53 @@ export async function POST(request: Request) {
 
             if (session.user?.id) {
               try {
-                const assistantMessages = response.messages.filter(
+                const filteredAssistantMessages = response.messages.filter(
                   (message) => message.role === "assistant"
                 );
 
-                if (assistantMessages.length === 0) {
+                if (filteredAssistantMessages.length === 0) {
                   console.warn("No assistant messages found in response");
                   return;
                 }
 
-                const assistantId = getTrailingMessageId({
-                  messages: assistantMessages,
-                });
+                const assistantId =
+                  (
+                    filteredAssistantMessages[
+                      filteredAssistantMessages.length - 1
+                    ] as any
+                  )?.id || generateUUID();
 
                 if (!assistantId) {
                   console.warn("No assistant message ID found");
                   return;
                 }
 
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [messageToProcess as any],
-                  responseMessages: response.messages,
-                });
+                // AI SDK v5: manually append response messages
+                const assistantMessagesWithId = response.messages.map(
+                  (msg: any) => ({
+                    ...msg,
+                    id: msg.id || generateUUID(),
+                  })
+                );
+                const assistantMessage =
+                  assistantMessagesWithId[assistantMessagesWithId.length - 1];
 
                 if (!assistantMessage) {
                   console.warn("Failed to append response messages");
                   return;
                 }
 
+                /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
                 await saveMessages({
                   messages: [
                     {
                       id: assistantId,
                       chatId: id,
                       role: assistantMessage.role,
-                      parts: assistantMessage.parts,
+                      parts: (assistantMessage as any).parts,
                       attachments:
-                        assistantMessage.experimental_attachments ?? [],
+                        (assistantMessage as any).experimental_attachments ??
+                        [],
                       createdAt: new Date(),
                     },
                   ],
@@ -918,9 +942,11 @@ export async function POST(request: Request) {
                 // Отправляем команду перенаправления на страницу чата
                 // Это происходит только после успешного создания чата
                 try {
-                  dataStream.writeData({
-                    type: "redirect",
-                    url: `/gemini-chat/${id}`,
+                  dataStream.writer.write({
+                    type: "data-redirect",
+                    data: {
+                      url: `/gemini-chat/${id}`,
+                    },
                   });
                   console.log(
                     "🔍 Redirect command sent to client:",
@@ -941,6 +967,7 @@ export async function POST(request: Request) {
               }
             }
           },
+
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text-gemini",
@@ -949,9 +976,18 @@ export async function POST(request: Request) {
 
         result.consumeStream();
 
-        result.mergeIntoDataStream(dataStream, {
+        // AI SDK v5: mergeIntoUIMessageStream replaced with toUIMessageStream
+        const uiStream = result.toUIMessageStream({
           sendReasoning: true,
         });
+
+        // Merge the stream manually
+        const reader = uiStream.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          dataStream.writer.write(value);
+        }
       },
       onError: (error: any) => {
         console.error("🔍 DataStream onError called with:", error);
@@ -962,9 +998,24 @@ export async function POST(request: Request) {
     const streamContext = getStreamContext();
 
     if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream)
-      );
+      // AI SDK v5: convert stream to string for resumable streams
+      const resumableStream = streamContext.resumableStream(streamId, () => {
+        const reader = stream.getReader();
+        const chunks: string[] = [];
+
+        return new ReadableStream<string>({
+          async start(controller) {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(JSON.stringify(value));
+              controller.enqueue(JSON.stringify(value));
+            }
+            controller.close();
+          },
+        });
+      });
+      return new Response(await resumableStream);
     } else {
       return new Response(stream);
     }
@@ -1069,8 +1120,11 @@ export async function GET(request: Request) {
       return new Response("No recent stream found", { status: 404 });
     }
 
-    const emptyDataStream = createDataStream({
-      execute: () => {},
+    const emptyDataStream = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue('{"type":"finish"}');
+        controller.close();
+      },
     });
 
     const stream = await streamContext.resumableStream(
@@ -1095,17 +1149,17 @@ export async function GET(request: Request) {
           return new Response(emptyDataStream, { status: 200 });
         }
 
-        const messageCreatedAt = new Date(mostRecentMessage.createdAt);
+        const messageCreatedAt = new Date((mostRecentMessage as any).createdAt);
 
         if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
           return new Response(emptyDataStream, { status: 200 });
         }
 
-        const restoredStream = createDataStream({
-          execute: (buffer) => {
-            buffer.writeData({
-              type: "append-message",
-              message: JSON.stringify(mostRecentMessage),
+        const restoredStream = createUIMessageStream({
+          execute: ({ writer }) => {
+            writer.write({
+              type: "data-append-message",
+              data: mostRecentMessage,
             });
           },
         });

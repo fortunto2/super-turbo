@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { getImageGenerationConfig } from "@/lib/config/media-settings-factory";
 import {
   checkBalanceBeforeArtifact,
@@ -132,7 +132,7 @@ export const nanoBananaImageEditing = (params?: CreateImageDocumentParams) =>
   tool({
     description:
       "Редактирование изображений с помощью Gemini-2.5-Flash-Image (Nano Banana). Поддерживает контекстно-осознанное редактирование, хирургическую точность и интеллектуальное понимание сцены. Требует исходное изображение для редактирования.",
-    parameters: z.object({
+    inputSchema: z.object({
       editType: z
         .enum(NANO_BANANA_EDIT_TYPES.map((t) => t.id) as [string, ...string[]])
         .describe(

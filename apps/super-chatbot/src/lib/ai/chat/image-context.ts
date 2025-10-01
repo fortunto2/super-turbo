@@ -5,7 +5,7 @@ export interface ImageContext {
   sourceImageUrl?: string;
   sourceImageId?: string;
   confidence: "high" | "medium" | "low";
-  reasoning: string;
+  reasoningText: string;
 }
 
 export interface ChatImage {
@@ -57,7 +57,7 @@ export async function analyzeImageContext(
       return {
         sourceImageUrl: currentImage.url,
         confidence: "high",
-        reasoning: "Изображение найдено в текущем сообщении пользователя",
+        reasoningText: "Изображение найдено в текущем сообщении пользователя",
       };
     }
   }
@@ -67,7 +67,7 @@ export async function analyzeImageContext(
     console.log("🔍 analyzeImageContext: No images found in chat history");
     return {
       confidence: "low",
-      reasoning: "В истории чата не найдено изображений",
+      reasoningText: "В истории чата не найдено изображений",
     };
   }
 
@@ -85,7 +85,7 @@ export async function analyzeImageContext(
     console.log("🔍 analyzeImageContext: No images found in chat history");
     return {
       confidence: "low",
-      reasoning: "В истории чата не найдено изображений",
+      reasoningText: "В истории чата не найдено изображений",
     };
   }
 
@@ -113,14 +113,14 @@ export async function analyzeImageContext(
     console.log("🔍 analyzeImageContext: Best match:", {
       image: bestMatch?.image,
       relevance: bestMatch?.relevance,
-      reasoning: bestMatch?.reasoning,
+      reasoningText: bestMatch?.reasoningText,
     });
 
     return {
       sourceImageUrl: bestMatch?.image?.url || "",
       ...(bestMatch?.image?.id && { sourceImageId: bestMatch.image.id }),
       confidence: (bestMatch?.relevance || 0) > 0.7 ? "high" : "medium",
-      reasoning: `Найдена ссылка на изображение: ${bestMatch?.reasoning || ""}`,
+      reasoningText: `Найдена ссылка на изображение: ${bestMatch?.reasoningText || ""}`,
     };
   }
 
@@ -139,7 +139,7 @@ export async function analyzeImageContext(
       sourceImageUrl: semanticMatch?.url || "",
       ...(semanticMatch?.id && { sourceImageId: semanticMatch.id }),
       confidence: "medium",
-      reasoning: `Изображение найдено по семантическому поиску`,
+      reasoningText: `Изображение найдено по семантическому поиску`,
     };
   }
 
@@ -157,7 +157,7 @@ export async function analyzeImageContext(
         sourceImageId: heuristicMatch.image.id,
       }),
       confidence: "medium",
-      reasoning: `Изображение выбрано по эвристике: ${heuristicMatch?.reasoning || ""}`,
+      reasoningText: `Изображение выбрано по эвристике: ${heuristicMatch?.reasoningText || ""}`,
     };
   }
 
@@ -174,7 +174,7 @@ export async function analyzeImageContext(
     sourceImageUrl: lastImage?.url || "",
     ...(lastImage?.id && { sourceImageId: lastImage.id }),
     confidence: "low",
-    reasoning: `Используется последнее изображение из чата (${lastImage?.role === "assistant" ? "сгенерированное" : "загруженное"})`,
+    reasoningText: `Используется последнее изображение из чата (${lastImage?.role === "assistant" ? "сгенерированное" : "загруженное"})`,
   };
 }
 
@@ -184,7 +184,9 @@ export async function analyzeImageContext(
 async function analyzeImageReferences(
   messageLower: string,
   chatImages: ChatImage[]
-): Promise<Array<{ image: ChatImage; relevance: number; reasoning: string }>> {
+): Promise<
+  Array<{ image: ChatImage; relevance: number; reasoningText: string }>
+> {
   console.log(
     "🔍 analyzeImageReferences: Starting pattern matching for:",
     messageLower
@@ -192,7 +194,7 @@ async function analyzeImageReferences(
   const references: Array<{
     image: ChatImage;
     relevance: number;
-    reasoning: string;
+    reasoningText: string;
   }> = [];
 
   // Русские ссылки на изображения
@@ -423,7 +425,7 @@ async function analyzeImageReferences(
         return {
           image: targetImage,
           relevance: weight,
-          reasoning: `Найдено совпадение с паттерном: ${pattern.source}`,
+          reasoningText: `Найдено совпадение с паттерном: ${pattern.source}`,
         };
       }
     }
@@ -609,7 +611,7 @@ async function findTargetImageByPattern(
 function findImageByHeuristics(
   messageLower: string,
   chatImages: ChatImage[]
-): { image: ChatImage; reasoning: string } | null {
+): { image: ChatImage; reasoningText: string } | null {
   console.log(
     "🔍 findImageByHeuristics: Analyzing message for edit intent:",
     messageLower
@@ -651,7 +653,7 @@ function findImageByHeuristics(
           messageIndex: 0,
           mediaType: "image" as const,
         },
-        reasoning:
+        reasoningText:
           "контекст 'той же девочки' - используется последнее сгенерированное изображение",
       };
     }
@@ -711,7 +713,7 @@ function findImageByHeuristics(
       return null;
     }
 
-    return { image: targetImage, reasoning };
+    return { image: targetImage, reasoningText: reasoning };
   }
 
   // Если сообщение содержит слова о стиле/качестве
@@ -736,7 +738,8 @@ function findImageByHeuristics(
     }
     return {
       image: result,
-      reasoning: "контекст стиля/качества - используется последнее изображение",
+      reasoningText:
+        "контекст стиля/качества - используется последнее изображение",
     };
   }
 
@@ -905,7 +908,7 @@ async function findImageBySemanticContent(
         {
           url: bestMatch?.image?.url,
           score: `${Math.round((bestMatch?.relevanceScore || 0) * 100)}%`,
-          reasoning: bestMatch?.reasoning,
+          reasoningText: bestMatch?.reasoningText,
           matchedKeywords: bestMatch?.matchedKeywords,
         }
       );
@@ -926,7 +929,7 @@ async function findImageBySemanticContent(
         {
           url: bestMatch?.media?.url,
           similarity: `${Math.round((bestMatch?.similarity || 0) * 100)}%`,
-          reasoning: bestMatch?.reasoning,
+          reasoningText: bestMatch?.reasoningText,
           matchedKeywords: bestMatch?.matchedKeywords,
         }
       );

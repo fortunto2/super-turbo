@@ -7,9 +7,10 @@ import {
   vote,
   voteDeprecated,
 } from "../schema";
+import { generateUUID } from "@/lib/utils";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { inArray } from "drizzle-orm";
-import { appendResponseMessages, type UIMessage } from "ai";
+import type { UIMessage } from "ai";
 
 const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 if (!databaseUrl) {
@@ -84,7 +85,7 @@ function sanitizeParts<T extends { type: string; [k: string]: any }>(
   parts: T[]
 ): T[] {
   return parts.filter(
-    (part) => !(part.type === "reasoning" && part.reasoning === "undefined")
+    (part) => !(part.type === "reasoning" && part.reasoningText === "undefined")
   );
 }
 
@@ -151,24 +152,22 @@ async function migrateMessages() {
         const [firstAssistantMessage] = assistantMessages;
 
         try {
-          const uiSection = appendResponseMessages({
-            messages: userMessage ? [userMessage] : [],
-            // Temporary type conversion for migration - this is a database migration script
-            responseMessages: assistantMessages as any,
-            _internal: {
-              currentDate: () => firstAssistantMessage?.createdAt ?? new Date(),
-            },
-          });
+          /* FIXME(@ai-sdk-upgrade-v5): The `appendResponseMessages` option has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#message-persistence-changes */
+          // Manual appendResponseMessages implementation for AI SDK v5
+          const uiSection = assistantMessages.map((msg) => ({
+            ...msg,
+            id: msg.id || generateUUID(),
+          }));
 
           const projectedUISection = uiSection
-            .map((message) => {
+            .map((message: any) => {
               if (message.role === "user") {
                 return {
                   id: message.id,
                   chatId: chat.id,
                   parts: [{ type: "text", text: message.content }],
                   role: message.role,
-                  createdAt: message.createdAt,
+                  createdAt: (message as any).createdAt,
                   attachments: [],
                 } as NewMessageInsert;
               } else if (message.role === "assistant") {
@@ -181,7 +180,7 @@ async function migrateMessages() {
                   chatId: chat.id,
                   parts: cleanParts,
                   role: message.role,
-                  createdAt: message.createdAt,
+                  createdAt: (message as any).createdAt,
                   attachments: [],
                 } as NewMessageInsert;
               }

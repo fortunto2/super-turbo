@@ -47,7 +47,7 @@ describe("Video Context Analysis", () => {
     expect(result.confidence).toBe("high"); // Вес паттерна 0.9 > 0.7, поэтому high
     expect(result.sourceImageUrl).toBe("https://example.com/user-upload-2.jpg");
     expect(result.sourceImageId).toBe("user-image-2");
-    expect(result.reasoning).toContain("Прямая ссылка на изображение");
+    expect(result.reasoningText).toContain("Прямая ссылка на изображение");
   });
 
   test("should find specific user image by order reference", async () => {
@@ -82,7 +82,7 @@ describe("Video Context Analysis", () => {
       "https://example.com/first-user-image.jpg"
     );
     expect(result.sourceImageId).toBe("user-image-1");
-    expect(result.reasoning).toContain("Ссылка на загруженное изображение");
+    expect(result.reasoningText).toContain("Ссылка на загруженное изображение");
   });
 
   test("should find user image by semantic search", async () => {
@@ -115,7 +115,7 @@ describe("Video Context Analysis", () => {
     expect(result.confidence).toBe("high"); // Вес паттерна 0.9 > 0.7, поэтому high
     expect(result.sourceImageUrl).toBe("https://example.com/dog-photo.jpg"); // Система выбрала последнее изображение, а не по семантике
     expect(result.sourceImageId).toBe("user-dog-image");
-    expect(result.reasoning).toContain("Прямая ссылка на изображение");
+    expect(result.reasoningText).toContain("Прямая ссылка на изображение");
   });
 
   test("should handle current message attachments with high priority", async () => {
@@ -151,7 +151,7 @@ describe("Video Context Analysis", () => {
       "https://example.com/current-attachment.jpg"
     );
     expect(result.sourceImageId).toBe("current-image-id");
-    expect(result.reasoning).toContain("текущем сообщении пользователя");
+    expect(result.reasoningText).toContain("текущем сообщении пользователя");
   });
 
   test("should return low confidence when no user images found", async () => {
@@ -174,7 +174,7 @@ describe("Video Context Analysis", () => {
 
     expect(result.confidence).toBe("low");
     expect(result.sourceImageUrl).toBeUndefined();
-    expect(result.reasoning).toContain(
+    expect(result.reasoningText).toContain(
       "не найдено загруженных пользователем изображений"
     );
   });

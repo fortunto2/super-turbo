@@ -1,5 +1,5 @@
 import { tool, generateText } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
@@ -18,7 +18,7 @@ export const configureScriptGeneration = (
   tool({
     description:
       "Generate a script (scenario) and create a document artifact. When prompt is provided, this will create a script artifact and show it in chat.",
-    parameters: z.object({
+    inputSchema: z.object({
       prompt: z
         .string()
         .describe("Detailed description of the script to generate."),
@@ -73,7 +73,7 @@ You are a professional scriptwriter AI. Generate a detailed scenario in Markdown
           system: systemPrompt,
           prompt: userPrompt,
           temperature: 0.7,
-          maxTokens: 1200,
+          maxOutputTokens: 1200,
         });
 
         const script = generationResult.text;

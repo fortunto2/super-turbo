@@ -4,17 +4,16 @@ import type { UIMessage } from "ai";
 import { memo } from "react";
 import equal from "fast-deep-equal";
 import type { UIArtifact } from "./artifact";
-import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
 import { useMessages } from "@/hooks/use-messages";
 
 interface ArtifactMessagesProps {
   chatId: string;
-  status: UseChatHelpers["status"];
+  status: any;
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: (messages: any) => void;
+  reload: () => void;
   isReadonly: boolean;
   artifactStatus: UIArtifact["status"];
 }

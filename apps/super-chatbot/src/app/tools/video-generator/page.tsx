@@ -16,7 +16,7 @@ export default function VideoGeneratorPage() {
   // AICODE-NOTE: Initialize chat for video persistence
   const { messages, setMessages } = useChat({
     id: "video-generator-tool",
-    initialMessages: [],
+    messages: [],
   });
 
   const {

@@ -15,7 +15,7 @@ export interface BananaInferenceRequest {
   modelId: string;
   inputs: Record<string, any>;
   config?: {
-    maxTokens?: number;
+    maxOutputTokens?: number;
     temperature?: number;
     topP?: number;
   };

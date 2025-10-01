@@ -1,11 +1,11 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { getChatImageArtifacts } from "@/lib/db/queries";
 
 export const findChatImages = tool({
   description:
     "Find recently generated images in the current chat that can be used as source for image-to-video generation. Returns list of available images with their IDs and URLs.",
-  parameters: z.object({
+  inputSchema: z.object({
     limit: z
       .number()
       .optional()

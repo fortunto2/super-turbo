@@ -2,15 +2,13 @@
 
 import { useEffect } from "react";
 import type { UIMessage } from "ai";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import type { DataPart } from "@/lib/types";
 
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
-  experimental_resume: UseChatHelpers["experimental_resume"];
-  data: UseChatHelpers["data"];
-  setMessages: UseChatHelpers["setMessages"];
+  experimental_resume: () => void; // AI SDK v5: resume is now a simple function
+  data: any[]; // AI SDK v5: data type changed
+  setMessages: (messages: UIMessage[]) => void;
 }
 
 export function useAutoResume({
@@ -37,10 +35,11 @@ export function useAutoResume({
     if (!data) return;
     if (data.length === 0) return;
 
-    const dataPart = data[0] as DataPart;
+    // AI SDK v5: Handle data parts differently
+    const dataPart = data[0] as any;
 
-    if (dataPart.type === "append-message") {
-      const message = JSON.parse(dataPart.message) as UIMessage;
+    if (dataPart.type === "data-append-message") {
+      const message = JSON.parse(dataPart.data) as UIMessage;
       setMessages([...initialMessages, message]);
     }
   }, [data, initialMessages, setMessages]);

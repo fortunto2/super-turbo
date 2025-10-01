@@ -18,7 +18,7 @@ export interface EnhancementResult {
   enhancementLevel: string;
   modelHint?: string;
   improvements: string[];
-  reasoning: string;
+  reasoningText: string;
   usage?: {
     copyPrompt: string;
     negativePrompt?: string;
@@ -72,7 +72,7 @@ export function usePromptEnhancer() {
           mediaType: params.mediaType || "general",
           enhancementLevel: params.enhancementLevel || "basic",
           improvements: [],
-          reasoning: "Enhancement failed, showing original prompt",
+          reasoningText: "Enhancement failed, showing original prompt",
           error: errorMessage,
           fallback: true,
         });

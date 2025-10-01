@@ -5,18 +5,18 @@ import {
   videoSSEStore,
   type VideoEventHandler as VideoSSEEventHandler,
 } from "@/artifacts/video";
-import type { UseChatHelpers } from "@ai-sdk/react";
 
 interface ChatVideoSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: (messages: any) => void;
   enabled?: boolean;
 }
 
 // Add function to save message to database
 const saveMessageToDatabase = async (chatId: string, message: any) => {
   try {
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     const messageToSave = {
       id: message.id,
       role: message.role,
@@ -167,7 +167,7 @@ export const useChatVideoSSE = ({
 
             // Update messages with completed video
             setTimeout(() => {
-              setMessages((prevMessages) => {
+              setMessages((prevMessages: any) => {
                 const updatedMessages = [...prevMessages];
                 let foundArtifact = false;
 
@@ -178,7 +178,7 @@ export const useChatVideoSSE = ({
                   if (message?.role === "assistant") {
                     // Check if this message has video artifact content
                     const hasVideoArtifact = message.parts?.some(
-                      (part) =>
+                      (part: any) =>
                         part.type === "text" &&
                         "text" in part &&
                         part.text &&
@@ -292,6 +292,7 @@ export const useChatVideoSSE = ({
                     thumbnailUrl: thumbnailUrl,
                   };
 
+                  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
                   const newVideoMessage = {
                     id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     role: "assistant" as const,

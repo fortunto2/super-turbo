@@ -1,5 +1,5 @@
 import { tool, generateText, generateObject } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { myProvider } from "../providers";
 import { createAzure } from "@ai-sdk/azure";
 
@@ -14,7 +14,7 @@ if (!resourceName || !apiKey) {
 const azure = createAzure({
   resourceName,
   apiKey,
-  apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
+  apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-02-15-preview",
 });
 
 // VEO3 Model configuration
@@ -23,7 +23,7 @@ const VEO3_MODEL_CONFIG = {
     name: "GPT-4.1",
     deploymentName: "gpt-4.1",
     maxChars: { short: 500, medium: 1000, long: 2000 },
-    maxTokens: { short: 150, medium: 300, long: 600 },
+    maxOutputTokens: { short: 150, medium: 300, long: 600 },
     supportsSystem: true,
     isReasoning: false,
     type: "chat",
@@ -176,7 +176,7 @@ function createVEO3Schema(
 export const enhancePromptUnified = tool({
   description:
     "AI Prompt Enhancer that combines general prompt enhancement and VEO3-specific video prompt enhancement. Automatically translates text, applies prompt engineering best practices, and optimizes for specific media types and AI models. Supports both general enhancement mode and VEO3 structured video enhancement mode.",
-  parameters: z.object({
+  inputSchema: z.object({
     originalPrompt: z
       .string()
       .describe(
@@ -385,7 +385,7 @@ async function enhanceGeneralPrompt(params: {
     system: systemPrompt,
     prompt: userPrompt,
     temperature: 0.7,
-    maxTokens: 1000,
+    maxOutputTokens: 1000,
   });
 
   console.log("✅ LLM response received:", result.text);
@@ -401,7 +401,7 @@ async function enhanceGeneralPrompt(params: {
     enhancementLevel,
     modelHint,
     improvements: parsedResult.improvements,
-    reasoning: parsedResult.reasoning,
+    reasoningText: parsedResult.reasoningText,
     mode: "general",
     usage: {
       copyPrompt:
@@ -649,7 +649,7 @@ Your output will be automatically formatted for VEO3 usage.`,
 
   const result = await generateObject({
     model: modelInstance,
-    maxTokens: maxTokens,
+    maxOutputTokens: maxTokens,
     temperature: 0.7,
     messages,
     schema: veo3Schema,
@@ -856,7 +856,8 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
         enhancedPrompt: parsed.enhancedPrompt || originalPrompt,
         negativePrompt: parsed.negativePrompt || undefined,
         improvements: parsed.improvements || ["LLM enhancement applied"],
-        reasoning: parsed.reasoning || "Enhanced using AI prompt engineering",
+        reasoningText:
+          parsed.reasoningText || "Enhanced using AI prompt engineering",
       };
     }
 
@@ -883,7 +884,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       enhancedPrompt,
       negativePrompt: undefined,
       improvements: ["LLM enhancement applied"],
-      reasoning: "Enhanced using AI prompt engineering",
+      reasoningText: "Enhanced using AI prompt engineering",
     };
   } catch (error) {
     console.error("Failed to parse LLM response:", error);
@@ -891,7 +892,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       enhancedPrompt: originalPrompt,
       negativePrompt: undefined,
       improvements: ["Enhancement failed, returned original"],
-      reasoning: "Error in processing enhancement",
+      reasoningText: "Error in processing enhancement",
     };
   }
 }

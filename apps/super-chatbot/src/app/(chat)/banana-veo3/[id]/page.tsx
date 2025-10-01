@@ -5,7 +5,8 @@ import { auth } from "@/app/(auth)/auth";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import type { DBMessage } from "@/lib/db/schema";
-import type { Attachment, UIMessage } from "ai";
+import type { UIMessage } from "ai";
+import type { Attachment } from "@/lib/types/attachment";
 import * as Sentry from "@sentry/nextjs";
 import Script from "next/script";
 import { BananaVeo3ChatWrapper } from "./banana-veo3-chat-wrapper";
@@ -127,6 +128,7 @@ export default async function BananaVeo3ChatPage(props: {
             hasContent: !!content,
           });
 
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           return {
             id: message.id,
             parts,

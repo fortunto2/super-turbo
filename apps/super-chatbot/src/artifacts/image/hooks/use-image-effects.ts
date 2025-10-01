@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import type { UseChatHelpers } from "@ai-sdk/react";
 
 interface UseImageEffectsProps {
   imageUrl?: string;
   status: string;
-  append?: UseChatHelpers["append"];
+  append?: (message: any) => void;
   prompt: string;
   hasInitialized: boolean;
   setArtifact?: (fn: (prev: any) => any) => void;
@@ -12,7 +11,7 @@ interface UseImageEffectsProps {
   resetState: () => void;
   setPrompt: (prompt: string) => void;
   initialPrompt?: string;
-  setMessages?: UseChatHelpers["setMessages"];
+  setMessages?: (messages: any) => void;
   isArtifactMode?: boolean;
 }
 

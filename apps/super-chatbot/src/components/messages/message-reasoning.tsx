@@ -7,22 +7,22 @@ import { Markdown } from "../";
 
 interface MessageReasoningProps {
   isLoading: boolean;
-  reasoning: string;
+  reasoningText: string;
 }
 
 export function MessageReasoning({
   isLoading,
-  reasoning,
+  reasoningText,
 }: MessageReasoningProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     console.log("MessageReasoning received:", {
-      hasReasoning: !!reasoning,
-      reasoningLength: reasoning?.length || 0,
-      reasoningSample: reasoning?.substring(0, 30) || "",
+      hasReasoning: !!reasoningText,
+      reasoningLength: reasoningText?.length || 0,
+      reasoningSample: reasoningText?.substring(0, 30) || "",
     });
-  }, [reasoning]);
+  }, [reasoningText]);
 
   const variants = {
     collapsed: {
@@ -40,7 +40,7 @@ export function MessageReasoning({
   };
 
   // Проверяем, есть ли содержимое в рассуждениях
-  if (!reasoning || reasoning.trim() === "") {
+  if (!reasoningText || reasoningText.trim() === "") {
     return null;
   }
 
@@ -56,7 +56,7 @@ export function MessageReasoning({
       ) : (
         <div className="flex flex-row gap-2 items-center">
           <div className="font-medium">
-            AI reasoning ({reasoning.length} chars)
+            AI reasoning ({reasoningText.length} chars)
           </div>
           <button
             data-testid="message-reasoning-toggle"
@@ -84,7 +84,7 @@ export function MessageReasoning({
             style={{ overflow: "hidden" }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
-            <Markdown>{reasoning}</Markdown>
+            <Markdown>{reasoningText}</Markdown>
           </motion.div>
         )}
       </AnimatePresence>

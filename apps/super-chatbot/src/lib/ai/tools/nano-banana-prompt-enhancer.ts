@@ -1,5 +1,5 @@
 import { tool, generateText } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { myProvider } from "../providers";
 
 // Специфичные для Nano Banana техники промптинга
@@ -135,7 +135,7 @@ const NANO_BANANA_TECHNICAL_TERMS = [
 export const nanoBananaPromptEnhancer = tool({
   description:
     "Специализированный улучшитель промптов для Gemini-2.5-Flash-Image (Nano Banana). Оптимизирует промпты с учетом уникальных возможностей Nano Banana: контекстно-осознанное редактирование, хирургическая точность и понимание физической логики.",
-  parameters: z.object({
+  inputSchema: z.object({
     originalPrompt: z
       .string()
       .describe(
@@ -235,7 +235,7 @@ export const nanoBananaPromptEnhancer = tool({
         system: systemPrompt,
         prompt: userPrompt,
         temperature: creativeMode ? 0.8 : 0.7,
-        maxTokens: 1200,
+        maxOutputTokens: 1200,
       });
 
       console.log("✅ LLM response received:", result.text);
@@ -266,7 +266,7 @@ export const nanoBananaPromptEnhancer = tool({
           ? NANO_BANANA_STYLES.find((s) => s.id === targetStyle)
           : null,
         enhancementLevel: parsedResult.enhancementLevel,
-        reasoning: parsedResult.reasoning,
+        reasoningText: parsedResult.reasoningText,
         usage: {
           copyPrompt:
             "Скопируйте улучшенный промпт для использования в Nano Banana",
@@ -497,8 +497,8 @@ function parseNanoBananaEnhancementResult(
           "Nano Banana optimization applied",
         ],
         enhancementLevel: parsed.enhancementLevel || "detailed",
-        reasoning:
-          parsed.reasoning || "Enhanced using Nano Banana-specific techniques",
+        reasoningText:
+          parsed.reasoningText || "Enhanced using Nano Banana-specific techniques",
       };
     }
 
@@ -526,7 +526,7 @@ function parseNanoBananaEnhancementResult(
       negativePrompt: undefined,
       nanoBananaOptimizations: ["Nano Banana optimization applied"],
       enhancementLevel: "detailed",
-      reasoning: "Enhanced using Nano Banana-specific techniques",
+      reasoningText: "Enhanced using Nano Banana-specific techniques",
     };
   } catch (error) {
     console.error("Failed to parse LLM response:", error);
@@ -535,7 +535,7 @@ function parseNanoBananaEnhancementResult(
       negativePrompt: undefined,
       nanoBananaOptimizations: ["Enhancement failed, returned original"],
       enhancementLevel: "basic",
-      reasoning: "Error in processing enhancement",
+      reasoningText: "Error in processing enhancement",
     };
   }
 }

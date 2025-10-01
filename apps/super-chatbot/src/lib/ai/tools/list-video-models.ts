@@ -1,12 +1,12 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 // AICODE-NOTE: Updated to use new dynamic model system from SuperDuperAI config
 import { getAvailableVideoModels } from "@/lib/config/superduperai";
 
 export const listVideoModels = tool({
   description:
     "List all available video generation models from SuperDuperAI API with their capabilities, pricing, and requirements. Use this to see what models are available before generating videos.",
-  parameters: z.object({
+  inputSchema: z.object({
     format: z
       .enum(["detailed", "simple", "agent-friendly"])
       .optional()
@@ -150,7 +150,7 @@ export const listVideoModels = tool({
 export const findBestVideoModel = tool({
   description:
     "Find the best video model from SuperDuperAI based on specific requirements like price, duration, and VIP access. Use this to automatically select the optimal model for your needs.",
-  parameters: z.object({
+  inputSchema: z.object({
     maxPrice: z
       .number()
       .optional()

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { nanoBananaImageEditing } from "@/lib/ai/tools/nano-banana-image-editing";
 import { createDocument } from "@/lib/ai/tools/create-document";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Схема валидации для запроса редактирования
 const editRequestSchema = z.object({
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Вызываем инструмент редактирования
-    const result = await nanoBananaImageEditing(toolParams).execute(
+    const result = await nanoBananaImageEditing(toolParams).execute?.(
       validatedData,
       {
         toolCallId: "nano-banana-edit",
@@ -147,7 +147,7 @@ export async function GET() {
     };
 
     // Получаем конфигурацию без промпта
-    const config = await nanoBananaImageEditing(toolParams).execute(
+    const config = await nanoBananaImageEditing(toolParams).execute?.(
       {
         editType: "background-replacement",
         editPrompt: "Edit the background of the image",

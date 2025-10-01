@@ -1,6 +1,6 @@
 "use client";
 
-import type { Message } from "ai";
+import type { UIMessage } from "ai";
 import {
   type Dispatch,
   type SetStateAction,
@@ -9,14 +9,13 @@ import {
   useState,
 } from "react";
 import { deleteTrailingMessages } from "@/app/(chat)/actions";
-import type { UseChatHelpers } from "@ai-sdk/react";
 
-import { Button, Textarea } from '@turbo-super/ui';
+import { Button, Textarea } from "@turbo-super/ui";
 export type MessageEditorProps = {
-  message: Message;
+  message: UIMessage;
   setMode: Dispatch<SetStateAction<"view" | "edit">>;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: (messages: any) => void;
+  reload: () => void;
 };
 
 export function MessageEditor({
@@ -27,7 +26,9 @@ export function MessageEditor({
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const [draftContent, setDraftContent] = useState<string>(message.content);
+  const [draftContent, setDraftContent] = useState<string>(
+    message.parts?.find((p) => p.type === "text")?.text || ""
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -82,7 +83,7 @@ export function MessageEditor({
 
             // @ts-expect-error todo: support UIMessage in setMessages
             setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
+              const index = messages.findIndex((m: any) => m.id === message.id);
 
               if (index !== -1) {
                 const updatedMessage = {

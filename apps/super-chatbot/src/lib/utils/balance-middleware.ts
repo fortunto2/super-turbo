@@ -1,4 +1,4 @@
-import type { DataStreamWriter } from "ai";
+import type { UIMessageStreamWriter } from "ai";
 import type { NextResponse } from "next/server";
 import {
   validateOperationBalance,
@@ -18,7 +18,7 @@ export async function checkBalanceForArtifact(
   operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[],
-  dataStream: DataStreamWriter
+  dataStream: UIMessageStreamWriter
 ): Promise<{ valid: boolean; errorContent?: string }> {
   const balanceValidation = await validateOperationBalance(
     userId,
@@ -112,7 +112,7 @@ export async function withBalanceCheck<T>(
   operation: "image-generation" | "video-generation" | "script-generation",
   operationType: string,
   multipliers: string[],
-  dataStream: DataStreamWriter,
+  dataStream: UIMessageStreamWriter,
   callback: () => Promise<T>,
   operationDetails?: Record<string, any>
 ): Promise<T | string> {

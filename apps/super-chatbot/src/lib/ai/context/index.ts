@@ -100,7 +100,7 @@ export async function analyzeVideoContext(
     sourceId: videoResult.sourceImageId,
     mediaType: "video" as const,
     confidence: videoResult.confidence,
-    reasoning: videoResult.reasoning,
+    reasoningText: videoResult.reasoningText,
     metadata: videoResult.metadata,
   };
 }

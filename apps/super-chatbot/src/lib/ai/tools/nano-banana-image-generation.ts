@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { getImageGenerationConfig } from "@/lib/config/media-settings-factory";
 import {
   checkBalanceBeforeArtifact,
@@ -215,7 +215,7 @@ export const nanoBananaImageGeneration = (params?: CreateImageDocumentParams) =>
   tool({
     description:
       "Генерация изображений с помощью Gemini-2.5-Flash-Image (Nano Banana) - передовой модели Google для создания и редактирования изображений. Поддерживает text-to-image и image-to-image генерацию с контекстно-осознанным редактированием.",
-    parameters: z.object({
+    inputSchema: z.object({
       prompt: z
         .string()
         .describe(

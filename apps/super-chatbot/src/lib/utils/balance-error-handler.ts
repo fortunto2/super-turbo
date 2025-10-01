@@ -1,4 +1,4 @@
-import type { DataStreamWriter } from "ai";
+import type { UIMessageStreamWriter } from "ai";
 
 export interface BalanceError {
   type: "insufficient_balance" | "payment_required" | "quota_exceeded";
@@ -14,7 +14,7 @@ export interface BalanceError {
  */
 export function handleBalanceError(
   error: BalanceError,
-  dataStream: DataStreamWriter,
+  dataStream: UIMessageStreamWriter,
   operationType = "operation"
 ): string {
   const errorMessage = formatBalanceErrorMessage(error, operationType);
@@ -22,9 +22,11 @@ export function handleBalanceError(
   console.error(`💳 Balance error for ${operationType}:`, error);
 
   // Записываем ошибку в dataStream для показа пользователю
-  dataStream.writeData({
-    type: "error",
-    content: errorMessage,
+  dataStream.write({
+    type: "data-error",
+    data: {
+      content: errorMessage,
+    },
   });
 
   // Возвращаем JSON с ошибкой для сохранения в документе

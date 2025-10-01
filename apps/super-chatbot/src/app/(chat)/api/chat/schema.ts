@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const textPartSchema = z.object({
   text: z.string().optional(), // Сделаем text опциональным
@@ -13,10 +13,11 @@ const textPartSchema = z.object({
   ]), // Поддерживаем все типы частей
 });
 
+/* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
 const messageSchema = z
   .object({
     id: z.string().uuid(),
-    createdAt: z.coerce.date(),
+    createdAt: z.string().datetime(),
     role: z.enum(["user", "assistant"]),
     content: z.string().optional(), // Сделаем content опциональным
     parts: z.array(textPartSchema).optional(), // Сделаем parts опциональным
@@ -52,6 +53,7 @@ const messageSchema = z
         data.parts &&
         data.parts.length > 0 &&
         data.parts.some((part) => part.text && part.text.length > 0);
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       const hasAttachments =
         data.experimental_attachments &&
         data.experimental_attachments.length > 0;

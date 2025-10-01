@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     // Вызываем Gemini API
     const response = await callGeminiDirect(geminiMessages, apiKey, {
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     });
 
     console.log(

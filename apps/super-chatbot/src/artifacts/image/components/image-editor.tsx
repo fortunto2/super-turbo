@@ -21,15 +21,14 @@ import {
   getDisplayPrompt,
   type ImageState,
 } from "../utils/image-utils";
-import type { UseChatHelpers } from "@ai-sdk/react";
 import { DebugParameters } from "@/components/debug/debug-parameters";
 import { FileService, FileTypeEnum } from "@turbo-super/api";
 import { toast } from "sonner";
 
 interface ImageEditorProps {
   chatId?: string;
-  append?: UseChatHelpers["append"];
-  setMessages?: UseChatHelpers["setMessages"];
+  append?: (message: any) => void;
+  setMessages?: (messages: any) => void;
   initialState?: ImageState;
   setArtifact?: (fn: (prev: any) => any) => void;
   parsedContent?: any;

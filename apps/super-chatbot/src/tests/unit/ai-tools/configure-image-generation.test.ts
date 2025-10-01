@@ -38,7 +38,7 @@ describe("configureImageGeneration", () => {
       sourceId: undefined as any,
       mediaType: "image" as const,
       confidence: "high" as const,
-      reasoning: "Test reasoning",
+      reasoningText: "Test reasoning",
       metadata: undefined as any,
     });
   });
@@ -51,7 +51,7 @@ describe("configureImageGeneration", () => {
 
     expect(tool).toBeDefined();
     expect(tool.description).toContain("Configure image generation settings");
-    expect(tool.parameters).toBeDefined();
+    expect(tool.inputSchema).toBeDefined();
   });
 
   it("should handle text-to-image generation", async () => {
@@ -60,9 +60,10 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
+    expect(tool.execute).toBeDefined();
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains",
         style: "realistic",
@@ -92,7 +93,7 @@ describe("configureImageGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "Transform this image into a watercolor painting",
         sourceImageUrl: "https://example.com/image.jpg",
@@ -125,7 +126,7 @@ describe("configureImageGeneration", () => {
 
     // Test with missing prompt
     await expect(
-      tool.execute({}, { toolCallId: "test-call", messages: [] })
+      tool.execute?.({}, { toolCallId: "test-call", messages: [] })
     ).rejects.toThrow();
   });
 
@@ -140,7 +141,7 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains",
       },
@@ -162,7 +163,7 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    const result = await tool.execute(
+    const result = await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains",
       },
@@ -186,7 +187,7 @@ describe("configureImageGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    await tool.execute(
+    await tool.execute?.(
       {
         prompt: "A beautiful sunset over mountains",
       },
@@ -220,7 +221,7 @@ describe("configureImageGeneration", () => {
     ];
 
     for (const resolution of resolutions) {
-      await tool.execute(
+      await tool.execute?.(
         {
           prompt: "A beautiful sunset over mountains",
           resolution,
@@ -265,7 +266,7 @@ describe("configureImageGeneration", () => {
     ];
 
     for (const style of styles) {
-      await tool.execute(
+      await tool.execute?.(
         {
           prompt: "A beautiful sunset over mountains",
           style,

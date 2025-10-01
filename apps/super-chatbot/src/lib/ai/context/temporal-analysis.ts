@@ -26,7 +26,7 @@ interface TemporalContext {
 interface TemporalMatch {
   media: ChatMedia;
   confidence: number;
-  reasoning: string;
+  reasoningText: string;
   temporalDistance: number; // в миллисекундах
 }
 
@@ -244,7 +244,7 @@ export class TemporalAnalyzer {
           matches.push({
             media,
             confidence,
-            reasoning: `Временная ссылка: ${pattern.description}`,
+            reasoningText: `Временная ссылка: ${pattern.description}`,
             temporalDistance,
           });
 

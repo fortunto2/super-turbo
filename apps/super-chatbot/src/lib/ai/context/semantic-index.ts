@@ -14,7 +14,7 @@ export interface SearchResult {
   image: ChatImage;
   relevanceScore: number;
   matchedKeywords: string[];
-  reasoning: string;
+  reasoningText: string;
 }
 
 export class SemanticIndex {
@@ -357,7 +357,7 @@ export class SemanticIndex {
             image,
             relevanceScore: normalizedScore,
             matchedKeywords,
-            reasoning: `Найдено совпадение по ключевым словам: ${matchedKeywords.join(", ")}`,
+            reasoningText: `Найдено совпадение по ключевым словам: ${matchedKeywords.join(", ")}`,
           });
         }
       });

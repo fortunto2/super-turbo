@@ -9,7 +9,7 @@ async function testVideoTool() {
 
   try {
     const tool = configureVideoGeneration(undefined);
-    const result = await tool.execute({}, {} as any);
+    const result = await tool.execute?.({}, {} as any);
 
     console.log("✅ Video tool executed successfully");
     console.log("📋 Result type:", (result as any).type);
@@ -36,7 +36,7 @@ async function testImageTool() {
 
   try {
     const tool = configureImageGeneration(undefined);
-    const result = await tool.execute({}, {} as any);
+    const result = await tool.execute?.({}, {} as any);
 
     console.log("✅ Image tool executed successfully");
     console.log("📋 Result type:", (result as any).type);

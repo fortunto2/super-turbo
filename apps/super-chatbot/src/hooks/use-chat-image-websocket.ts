@@ -4,18 +4,18 @@ import { useCallback, useEffect, useRef } from "react";
 import { generateUUID } from "@/lib/utils";
 import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
 import { getSuperduperAIConfig, createWSURL } from "@/lib/config/superduperai";
-import type { UseChatHelpers } from "@ai-sdk/react";
 
 interface ChatImageWebSocketOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: (messages: any) => void;
   enabled?: boolean;
 }
 
 // Add function to save message to database
 const saveMessageToDatabase = async (chatId: string, message: any) => {
   try {
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     const messageToSave = {
       id: message.id,
       role: message.role,
@@ -139,7 +139,7 @@ export const useChatImageWebSocket = ({
           // Add small delay to ensure artifact is added to messages first
           setTimeout(() => {
             // Update messages using the current setMessages function
-            setMessages((prevMessages) => {
+            setMessages((prevMessages: any) => {
               const updatedMessages = [...prevMessages];
               let foundArtifact = false;
 
@@ -154,7 +154,7 @@ export const useChatImageWebSocket = ({
                 if (message?.role === "assistant") {
                   // Check if this message has image artifact content
                   const hasImageArtifact = message?.parts?.some(
-                    (part) =>
+                    (part: any) =>
                       part.type === "text" &&
                       "text" in part &&
                       part.text &&
@@ -296,7 +296,8 @@ export const useChatImageWebSocket = ({
 
                 // Check if any parts were actually updated
                 const wasUpdated = updatedParts?.some(
-                  (part, index) => part !== candidateMessage.parts?.[index]
+                  (part: any, index: number) =>
+                    part !== candidateMessage.parts?.[index]
                 );
 
                 if (wasUpdated) {
@@ -322,6 +323,7 @@ export const useChatImageWebSocket = ({
                   contentType: "image/webp",
                 };
 
+                /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
                 const newMessage = {
                   id: generateUUID(),
                   role: "assistant" as const,

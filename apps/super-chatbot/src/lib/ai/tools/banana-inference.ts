@@ -1,16 +1,16 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { runBananaInference, getBananaModels } from "@/lib/ai/banana-api";
 
 export const bananaInferenceTool = tool({
   description:
     "Запускает inference на Banana GPU платформе для обработки данных",
-  parameters: z.object({
+  inputSchema: z.object({
     modelId: z.string().describe("ID модели Banana для inference"),
     inputs: z.record(z.any()).describe("Входные данные для модели"),
     config: z
       .object({
-        maxTokens: z
+        maxOutputTokens: z
           .number()
           .optional()
           .describe("Максимальное количество токенов"),
@@ -39,8 +39,8 @@ export const bananaInferenceTool = tool({
         inputs,
         ...(config && {
           config: {
-            ...(config.maxTokens !== undefined && {
-              maxTokens: config.maxTokens,
+            ...(config.maxOutputTokens !== undefined && {
+              maxOutputTokens: config.maxOutputTokens,
             }),
             ...(config.temperature !== undefined && {
               temperature: config.temperature,
@@ -79,7 +79,7 @@ export const bananaInferenceTool = tool({
 
 export const listBananaModelsTool = tool({
   description: "Получает список доступных моделей Banana для inference",
-  parameters: z.object({
+  inputSchema: z.object({
     framework: z
       .string()
       .optional()

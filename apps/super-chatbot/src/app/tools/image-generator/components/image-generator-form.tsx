@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ImageIcon, Type } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { getImageGenerationConfig } from "@/lib/config/media-settings-factory";
 import type {
   MediaOption,

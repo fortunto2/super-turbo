@@ -13,7 +13,7 @@ import { sanitizeText } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { CustomUseChatHelpers } from "@/lib/types/use-chat-helpers";
 import { MediaSettings, PreviewAttachment, Markdown } from "../";
 import type {
   ImageGenerationConfig,
@@ -42,17 +42,18 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: CustomUseChatHelpers["setMessages"];
+  reload: () => void;
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   selectedChatModel: string;
   selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers["append"];
+  append?: (message: any) => void;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const { setArtifact } = useArtifactLegacy();
 
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   return (
     <AnimatePresence>
       <motion.div
@@ -84,19 +85,28 @@ const PurePreviewMessage = ({
               "min-h-96": message.role === "assistant" && requiresScrollPadding,
             })}
           >
-            {message.experimental_attachments &&
-              message.experimental_attachments.length > 0 && (
+            {message.parts?.filter((part) => part.type === "file") &&
+              message.parts?.filter((part) => part.type === "file").length >
+                0 && (
                 <div
                   data-testid={`message-attachments`}
                   className="flex flex-row justify-end gap-2"
                 >
-                  {message.experimental_attachments.map((attachment) => (
-                    <PreviewAttachment
-                      key={attachment.url}
-                      attachment={attachment}
-                      chatId={chatId}
-                    />
-                  ))}
+                  {message.parts
+                    ?.filter((part) => part.type === "file")
+                    .map((attachment) => (
+                      <PreviewAttachment
+                        key={attachment.url || (attachment as any).name}
+                        attachment={{
+                          ...attachment,
+                          name: (attachment as any).name || "File",
+                          contentType:
+                            (attachment as any).contentType ||
+                            "application/octet-stream",
+                        }}
+                        chatId={chatId}
+                      />
+                    ))}
                 </div>
               )}
 
@@ -109,7 +119,9 @@ const PurePreviewMessage = ({
                   <MessageReasoning
                     key={key}
                     isLoading={isLoading}
-                    reasoning={part.reasoning}
+                    reasoningText={
+                      (part as any).reasoningText || part.text || ""
+                    }
                   />
                 );
               }
@@ -268,16 +280,17 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === "tool-invocation") {
-                const { toolInvocation } = part;
-                const { toolName, toolCallId, state, args } = toolInvocation;
+              if (type.startsWith("tool-")) {
+                const toolCall = part as any;
+                const { toolCallId, state } = toolCall;
+                const toolName = type.replace("tool-", "");
 
                 if (state === "call") {
                   return null;
                 }
 
                 if (state === "result") {
-                  const { result } = toolInvocation;
+                  const { result } = toolCall;
 
                   if (
                     toolName === "configureScriptGeneration" &&

@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 
 // Стили и примеры из awesome-nano-banana репозитория
 const NANO_BANANA_STYLE_CATEGORIES = [
@@ -229,7 +229,7 @@ const POPULAR_TAGS = [
 export const nanoBananaStyleGuide = tool({
   description:
     "Руководство по стилям и техникам для Gemini-2.5-Flash-Image (Nano Banana). Предоставляет примеры, техники и советы из awesome-nano-banana репозитория для создания лучших промптов.",
-  parameters: z.object({
+  inputSchema: z.object({
     category: z
       .enum(
         NANO_BANANA_STYLE_CATEGORIES.map((c) => c.id) as [string, ...string[]]

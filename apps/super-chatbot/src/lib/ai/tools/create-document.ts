@@ -1,6 +1,6 @@
 import { generateUUID } from "@/lib/utils";
-import { type DataStreamWriter, tool } from "ai";
-import { z } from "zod";
+import { type UIMessageStreamWriter, tool } from "ai";
+import { z } from "zod/v3";
 import type { Session } from "next-auth";
 import {
   artifactKinds,
@@ -9,14 +9,14 @@ import {
 
 interface CreateDocumentProps {
   session: Session;
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
 }
 
 export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
   tool({
     description:
       "Create a document for a writing or content creation activities. This tool will call other functions that will generate the contents of the document based on the title and kind.",
-    parameters: z.object({
+    inputSchema: z.object({
       title: z.string(),
       kind: z.enum(artifactKinds),
       content: z.string().optional(),
@@ -32,27 +32,35 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       console.log("📄 GENERATED ID:", id);
 
       console.log("📄 ✅ WRITING KIND TO DATA STREAM...");
-      dataStream.writeData({
-        type: "kind",
-        content: kind,
+      dataStream.write({
+        type: "data-kind",
+        data: {
+          content: kind,
+        },
       });
 
       console.log("📄 ✅ WRITING ID TO DATA STREAM...");
-      dataStream.writeData({
-        type: "id",
-        content: id,
+      dataStream.write({
+        type: "data-id",
+        data: {
+          content: id,
+        },
       });
 
       console.log("📄 ✅ WRITING TITLE TO DATA STREAM...");
-      dataStream.writeData({
-        type: "title",
-        content: title,
+      dataStream.write({
+        type: "data-title",
+        data: {
+          content: title,
+        },
       });
 
       console.log("📄 ✅ WRITING CLEAR TO DATA STREAM...");
-      dataStream.writeData({
-        type: "clear",
-        content: "",
+      dataStream.write({
+        type: "data-clear",
+        data: {
+          content: "",
+        },
       });
 
       console.log("📄 🔍 LOOKING FOR DOCUMENT HANDLER FOR KIND:", kind);
@@ -92,7 +100,10 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       }
 
       console.log("📄 ✅ WRITING FINISH TO DATA STREAM...");
-      dataStream.writeData({ type: "finish", content: "" });
+      dataStream.write({
+        type: "data-finish",
+        data: { content: "" },
+      });
 
       const result = {
         id,

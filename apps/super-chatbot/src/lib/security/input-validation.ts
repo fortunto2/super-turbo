@@ -3,7 +3,7 @@
  * Защищает от XSS, SQL injection, path traversal и других атак
  */
 
-import { z } from "zod";
+import { z } from 'zod/v3';
 // Простая функция санитизации HTML без внешних зависимостей
 const sanitizeHTML = (html: string): string => {
   return html

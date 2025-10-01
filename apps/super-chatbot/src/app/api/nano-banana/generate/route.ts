@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { nanoBananaImageGeneration } from "@/lib/ai/tools/nano-banana-image-generation";
 import { createDocument } from "@/lib/ai/tools/create-document";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Схема валидации для запроса
 const generateRequestSchema = z.object({
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Вызываем инструмент генерации
-    const result = await nanoBananaImageGeneration(toolParams).execute(
+    const result = await nanoBananaImageGeneration(toolParams).execute?.(
       validatedData,
       {
         toolCallId: "nano-banana-generate",
@@ -122,7 +122,7 @@ export async function GET() {
     };
 
     // Получаем конфигурацию без промпта
-    const config = await nanoBananaImageGeneration(toolParams).execute(
+    const config = await nanoBananaImageGeneration(toolParams).execute?.(
       {
         prompt: "info",
         style: "realistic",

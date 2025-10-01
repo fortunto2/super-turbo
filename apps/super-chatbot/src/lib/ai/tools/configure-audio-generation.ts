@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import type { MediaOption } from "@/lib/types/media-settings";
 import { getAudioGenerationConfig } from "@/lib/config/media-settings-factory";
 import type { Session } from "next-auth";
@@ -18,7 +18,7 @@ export const configureAudioGeneration = (params?: CreateAudioDocumentParams) =>
   tool({
     description:
       "Configure audio generation settings or generate audio directly if prompt is provided. Supports text-to-speech, music generation, and audio-to-audio when a sourceAudioUrl is provided. When triggered, creates an audio artifact that shows generation progress in real-time.",
-    parameters: z.object({
+    inputSchema: z.object({
       prompt: z
         .string()
         .optional()

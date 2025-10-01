@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import {
   createVeo3Video,
   getVeo3VideoStatus,
@@ -8,7 +8,7 @@ import {
 
 export const createVeo3VideoTool = tool({
   description: "Создает видео с помощью VEO3 (Google Video Generation)",
-  parameters: z.object({
+  inputSchema: z.object({
     prompt: z.string().describe("Описание видео для генерации"),
     duration: z
       .number()
@@ -91,7 +91,7 @@ export const createVeo3VideoTool = tool({
 
 export const checkVeo3VideoStatusTool = tool({
   description: "Проверяет статус создания видео VEO3",
-  parameters: z.object({
+  inputSchema: z.object({
     videoId: z.string().describe("ID видео для проверки статуса"),
   }),
   execute: async ({ videoId }) => {
@@ -128,7 +128,7 @@ export const checkVeo3VideoStatusTool = tool({
 
 export const generateVeo3IdeasTool = tool({
   description: "Генерирует идеи для видео VEO3 на основе промпта",
-  parameters: z.object({
+  inputSchema: z.object({
     prompt: z.string().describe("Базовый промпт для генерации идей видео"),
   }),
   execute: async ({ prompt }) => {

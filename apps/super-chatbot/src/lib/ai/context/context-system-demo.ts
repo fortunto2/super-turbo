@@ -160,7 +160,7 @@ export async function testContextScenarios() {
         );
 
         console.log(`     Результат: ${context.confidence} уверенность`);
-        console.log(`     Обоснование: ${context.reasoning}`);
+        console.log(`     Обоснование: ${context.reasoningText}`);
         if (context.sourceUrl) {
           console.log(`     URL: ${context.sourceUrl}`);
         }

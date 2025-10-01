@@ -34,6 +34,7 @@ export async function generateTitleFromUserMessage({
     (message as any)?.content || (message as any)?.parts?.[0]?.text || "";
 
   // Если нет текста, но есть изображения, создаем заголовок на основе этого
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const hasImages = (message as any)?.experimental_attachments?.some(
     (att: any) => att.contentType?.startsWith("image/")
   );
@@ -46,6 +47,18 @@ export async function generateTitleFromUserMessage({
     console.warn("⚠️ No text found in message for title generation");
     return "New Chat";
   }
+
+  // ВРЕМЕННО ОТКЛЮЧАЕМ ГЕНЕРАЦИЮ ЗАГОЛОВКА ДЛЯ ТЕСТИРОВАНИЯ ОСНОВНОГО ЧАТА
+  console.log(
+    "🔧 TEMPORARILY DISABLED title generation - testing main chat functionality"
+  );
+  return "New Chat";
+
+  console.log("🔧 About to call generateText with title-model");
+  console.log(
+    "🔧 Azure API Version from env:",
+    process.env.AZURE_OPENAI_API_VERSION
+  );
 
   const { text: title } = await generateText({
     model: myProvider.languageModel("title-model"),

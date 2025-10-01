@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import type { MediaOption } from "@/lib/types/media-settings";
 import { getImageGenerationConfig } from "@/lib/config/media-settings-factory";
 import {
@@ -22,7 +22,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
   tool({
     description:
       "Configure image generation settings or generate an image directly if prompt is provided. Supports text-to-image by default, and image-to-image when a sourceImageUrl is provided. When triggered, creates an image artifact that shows generation progress in real-time.",
-    parameters: z.object({
+    inputSchema: z.object({
       prompt: z
         .string()
         .optional()

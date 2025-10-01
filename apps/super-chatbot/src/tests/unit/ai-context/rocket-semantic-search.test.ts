@@ -53,7 +53,7 @@ describe("Rocket Semantic Search", () => {
 
     expect(result.sourceImageUrl).toBe("https://example.com/rocket-launch.jpg");
     expect(result.confidence).toBe("high");
-    expect(result.reasoning).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("семантический поиск");
   });
 
   test("should find rocket image with different wording", async () => {

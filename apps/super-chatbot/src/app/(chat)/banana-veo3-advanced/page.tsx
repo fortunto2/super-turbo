@@ -12,26 +12,41 @@ import {
   List,
   Lightbulb,
 } from "lucide-react";
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 
 export default function BananaVeo3AdvancedPage() {
   const [chatId] = useState(() => crypto.randomUUID());
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    reload,
-    stop,
-  } = useChat({
+  const chatHelpers = useChat({
     id: chatId,
-    api: "/api/banana-veo3-advanced",
-    body: {
-      selectedVisibilityType: "private",
-    },
   });
+
+  const { messages, stop } = chatHelpers;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    setIsLoading(true);
+    try {
+      // Простая отправка сообщения через fetch
+      await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, { role: "user", content: input }],
+          id: chatId,
+        }),
+      });
+      setInput("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const quickActions = [
     {
@@ -94,7 +109,6 @@ export default function BananaVeo3AdvancedPage() {
           Chat ID: {chatId}
         </p>
       </div>
-
       {/* Quick Actions */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -114,7 +128,6 @@ export default function BananaVeo3AdvancedPage() {
           ))}
         </div>
       </div>
-
       {/* Chat Messages */}
       <div className="mb-8">
         <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -142,13 +155,14 @@ export default function BananaVeo3AdvancedPage() {
                     {message.role === "user" ? "Вы" : "Banana + VEO3"}
                   </span>
                 </div>
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div className="whitespace-pre-wrap">
+                  {message.parts?.find((p) => p.type === "text")?.text}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
-
       {/* Input Form */}
       <form
         onSubmit={handleSubmit}
@@ -164,7 +178,7 @@ export default function BananaVeo3AdvancedPage() {
           <textarea
             id="input"
             value={input}
-            onChange={handleInputChange}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Например: 'Создай видео с помощью VEO3 про AI технологии' или 'Запусти inference на Banana для анализа данных'"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
             rows={4}
@@ -204,7 +218,7 @@ export default function BananaVeo3AdvancedPage() {
           {messages.length > 0 && (
             <Button
               type="button"
-              onClick={() => reload()}
+              onClick={() => window.location.reload()}
               variant="outline"
             >
               Перезапустить
@@ -212,7 +226,6 @@ export default function BananaVeo3AdvancedPage() {
           )}
         </div>
       </form>
-
       {/* Features Info */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">

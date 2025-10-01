@@ -37,7 +37,7 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import { cn } from "@turbo-super/ui";
 import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
 import type {

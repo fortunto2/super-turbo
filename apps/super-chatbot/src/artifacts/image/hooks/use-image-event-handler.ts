@@ -194,9 +194,12 @@ export const useImageEventHandler = (
             }
           }
           // Handle direct file_id in eventData
-          else if (eventData.object?.file_id || (eventData as any).file_id) {
+          else if (
+            eventData.object?.file_id ||
+            (eventData as any).file?.file_id
+          ) {
             const fileId =
-              eventData.object?.file_id || (eventData as any).file_id;
+              eventData.object?.file_id || (eventData as any).file?.file_id;
             console.log(
               "📁 Direct file ID received, resolving to URL:",
               fileId
@@ -300,8 +303,9 @@ export const useImageEventHandler = (
 
         case "image_ready":
         case "image_completed":
-          if (eventData.imageUrl || eventData.data?.imageUrl) {
-            const imageUrl = eventData.imageUrl || eventData.data?.imageUrl;
+          if (eventData.imageUrl || (eventData as any).file.data?.imageUrl) {
+            const imageUrl =
+              eventData.imageUrl || (eventData as any).file.data?.imageUrl;
             // Validate image assignment
             const isValid = validateImageAssignment(
               eventData.projectId || projectId,
@@ -328,7 +332,7 @@ export const useImageEventHandler = (
             status: "failed",
             error:
               eventData.error ||
-              eventData.data?.error ||
+              (eventData as any).file.data?.error ||
               "Unknown error occurred",
             projectId: eventData.projectId || projectId,
             ...(eventData.requestId && { requestId: eventData.requestId }),
@@ -338,7 +342,8 @@ export const useImageEventHandler = (
         case "progress":
           onStateUpdate({
             status: "processing",
-            progress: eventData.progress || eventData.data?.progress || 0,
+            progress:
+              eventData.progress || (eventData as any).file.data?.progress || 0,
             projectId: eventData.projectId || projectId,
             ...(eventData.requestId && { requestId: eventData.requestId }),
           });
@@ -508,7 +513,8 @@ export const useImageEventHandler = (
         case "processing":
           onStateUpdate({
             status: "processing",
-            progress: eventData.progress || eventData.data?.progress,
+            progress:
+              eventData.progress || (eventData as any).file.data?.progress,
             projectId: eventData.projectId || projectId,
             ...(eventData.requestId && { requestId: eventData.requestId }),
           });
@@ -529,7 +535,9 @@ export const useImageEventHandler = (
           if (eventData.status) {
             onStateUpdate({
               status: eventData.status as ImageGenerationState["status"],
-              ...(eventData.progress !== undefined && { progress: eventData.progress }),
+              ...(eventData.progress !== undefined && {
+                progress: eventData.progress,
+              }),
               ...(eventData.imageUrl && { imageUrl: eventData.imageUrl }),
               ...(eventData.error && { error: eventData.error }),
               projectId: eventData.projectId || projectId,

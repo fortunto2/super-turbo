@@ -1,6 +1,7 @@
 "use client";
 
-import type { Attachment, UIMessage } from "ai";
+import type { UIMessage } from "ai";
+import type { Attachment } from "@/lib/types/attachment";
 import { formatDistance } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -26,7 +27,6 @@ import { sheetArtifact } from "@/artifacts/sheet/client";
 import { textArtifact } from "@/artifacts/text/client";
 import { videoArtifact } from "@/artifacts/video/client";
 import { scriptArtifact } from "@/artifacts/script/client";
-import type { UseChatHelpers } from "@ai-sdk/react";
 import { useSidebar, MultimodalInput, Toolbar, VersionFooter } from "../";
 import type { VisibilityType } from "../shared/visibility-selector";
 
@@ -115,17 +115,17 @@ function PureArtifact({
 }: {
   chatId: string;
   input: string;
-  setInput: UseChatHelpers["setInput"];
-  status: UseChatHelpers["status"];
-  stop: UseChatHelpers["stop"];
+  setInput: (input: string | ((prev: string) => string)) => void;
+  status: any;
+  stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: (messages: any) => void;
   votes: Array<Vote> | undefined;
-  append: UseChatHelpers["append"];
-  handleSubmit: UseChatHelpers["handleSubmit"];
-  reload: UseChatHelpers["reload"];
+  append: (message: any) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+  reload: () => void;
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   selectedChatModel: string;

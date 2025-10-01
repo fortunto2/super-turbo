@@ -30,7 +30,7 @@ export async function GET() {
 
     const testResponse = await callGeminiDirect(testMessages, apiKey, {
       temperature: 0.7,
-      maxTokens: 100,
+      maxOutputTokens: 100,
     });
 
     return NextResponse.json({

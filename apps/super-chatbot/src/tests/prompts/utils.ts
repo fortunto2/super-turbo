@@ -1,9 +1,9 @@
-import type { CoreMessage, LanguageModelV1StreamPart } from "ai";
+import type { ModelMessage } from "ai";
 import { TEST_PROMPTS } from "./basic";
 
 export function compareMessages(
-  firstMessage: CoreMessage,
-  secondMessage: CoreMessage
+  firstMessage: ModelMessage,
+  secondMessage: ModelMessage
 ): boolean {
   if (firstMessage.role !== secondMessage.role) return false;
 
@@ -46,7 +46,7 @@ export function compareMessages(
   return true;
 }
 
-const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+const textToDeltas = (text: string): any[] => {
   const deltas = text
     .split(" ")
     .map((char) => ({ type: "text-delta" as const, textDelta: `${char} ` }));
@@ -54,7 +54,7 @@ const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
   return deltas;
 };
 
-const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+const reasoningToDeltas = (text: string): any[] => {
   const deltas = text
     .split(" ")
     .map((char) => ({ type: "reasoning" as const, textDelta: `${char} ` }));
@@ -63,30 +63,30 @@ const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
 };
 
 export const getResponseChunksByPrompt = (
-  prompt: CoreMessage[],
+  prompt: ModelMessage[],
   isReasoningEnabled = false
-): Array<LanguageModelV1StreamPart> => {
+): Array<any> => {
   const recentMessage = prompt.at(-1);
 
   if (!recentMessage) {
     throw new Error("No recent message found!");
   }
 
-  const message = recentMessage as CoreMessage;
+  const message = recentMessage as ModelMessage;
 
   if (isReasoningEnabled) {
-    if (compareMessages(message, TEST_PROMPTS.USER_SKY as CoreMessage)) {
+    if (compareMessages(message, TEST_PROMPTS.USER_SKY as ModelMessage)) {
       return [
         ...reasoningToDeltas("The sky is blue because of rayleigh scattering!"),
         ...textToDeltas("It's just blue duh!"),
         {
           type: "finish",
           finishReason: "stop",
-          usage: { completionTokens: 10, promptTokens: 3 },
+          usage: { outputTokens: 10, inputTokens: 3 },
         },
       ];
     } else if (
-      compareMessages(message, TEST_PROMPTS.USER_GRASS as CoreMessage)
+      compareMessages(message, TEST_PROMPTS.USER_GRASS as ModelMessage)
     ) {
       return [
         ...reasoningToDeltas(
@@ -96,7 +96,7 @@ export const getResponseChunksByPrompt = (
         {
           type: "finish",
           finishReason: "stop",
-          usage: { completionTokens: 10, promptTokens: 3 },
+          usage: { outputTokens: 10, inputTokens: 3 },
         },
       ];
     }
@@ -104,42 +104,42 @@ export const getResponseChunksByPrompt = (
 
   if (
     recentMessage &&
-    compareMessages(recentMessage, TEST_PROMPTS.USER_THANKS as CoreMessage)
+    compareMessages(recentMessage, TEST_PROMPTS.USER_THANKS as ModelMessage)
   ) {
     return [
       ...textToDeltas("You're welcome!"),
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
     recentMessage &&
-    compareMessages(recentMessage, TEST_PROMPTS.USER_GRASS as CoreMessage)
+    compareMessages(recentMessage, TEST_PROMPTS.USER_GRASS as ModelMessage)
   ) {
     return [
       ...textToDeltas("It's just green duh!"),
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
     recentMessage &&
-    compareMessages(recentMessage, TEST_PROMPTS.USER_SKY as CoreMessage)
+    compareMessages(recentMessage, TEST_PROMPTS.USER_SKY as ModelMessage)
   ) {
     return [
       ...textToDeltas("It's just blue duh!"),
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
-    compareMessages(message, TEST_PROMPTS.USER_NEXTJS as CoreMessage)
+    compareMessages(message, TEST_PROMPTS.USER_NEXTJS as ModelMessage)
   ) {
     return [
       ...textToDeltas("With Next.js, you can ship fast!"),
@@ -147,22 +147,22 @@ export const getResponseChunksByPrompt = (
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
-    compareMessages(message, TEST_PROMPTS.USER_IMAGE_ATTACHMENT as CoreMessage)
+    compareMessages(message, TEST_PROMPTS.USER_IMAGE_ATTACHMENT as ModelMessage)
   ) {
     return [
       ...textToDeltas("This painting is by Monet!"),
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
-    compareMessages(message, TEST_PROMPTS.USER_TEXT_ARTIFACT as CoreMessage)
+    compareMessages(message, TEST_PROMPTS.USER_TEXT_ARTIFACT as ModelMessage)
   ) {
     return [
       {
@@ -178,13 +178,13 @@ export const getResponseChunksByPrompt = (
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
     compareMessages(
       message,
-      TEST_PROMPTS.CREATE_DOCUMENT_TEXT_CALL as CoreMessage
+      TEST_PROMPTS.CREATE_DOCUMENT_TEXT_CALL as ModelMessage
     )
   ) {
     return [
@@ -210,13 +210,13 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
     compareMessages(
       message,
-      TEST_PROMPTS.CREATE_DOCUMENT_TEXT_RESULT as CoreMessage
+      TEST_PROMPTS.CREATE_DOCUMENT_TEXT_RESULT as ModelMessage
     )
   ) {
     return [
@@ -227,11 +227,11 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       {
         type: "finish",
         finishReason: "tool-calls",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
-    compareMessages(message, TEST_PROMPTS.GET_WEATHER_CALL as CoreMessage)
+    compareMessages(message, TEST_PROMPTS.GET_WEATHER_CALL as ModelMessage)
   ) {
     return [
       {
@@ -244,18 +244,18 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   } else if (
-    compareMessages(message, TEST_PROMPTS.GET_WEATHER_RESULT as CoreMessage)
+    compareMessages(message, TEST_PROMPTS.GET_WEATHER_RESULT as ModelMessage)
   ) {
     return [
       ...textToDeltas("The current temperature in San Francisco is 17°C."),
       {
         type: "finish",
         finishReason: "stop",
-        usage: { completionTokens: 10, promptTokens: 3 },
+        usage: { outputTokens: 10, inputTokens: 3 },
       },
     ];
   }

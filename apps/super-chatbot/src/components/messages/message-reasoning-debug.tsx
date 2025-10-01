@@ -7,72 +7,74 @@ import { Markdown } from "../";
 
 interface MessageReasoningDebugProps {
   isLoading: boolean;
-  reasoning: any; // Изменяем тип на any, чтобы анализировать разные форматы
+  reasoningText: any; // Изменяем тип на any, чтобы анализировать разные форматы
   message?: any;
 }
 
 export function MessageReasoningDebug({
   isLoading,
-  reasoning,
+  reasoningText,
   message,
 }: MessageReasoningDebugProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Подготавливаем текст рассуждений
-  let reasoningText = "";
+  let processedReasoningText = "";
 
   // Попытка извлечь рассуждения из разных форматов
-  if (typeof reasoning === "string") {
-    reasoningText = reasoning;
+  if (typeof reasoningText === "string") {
+    processedReasoningText = reasoningText;
 
     // Для случая, когда think tags находятся в тексте
-    const thinkMatch = reasoning.match(/<think>(.*?)<\/think>/s);
+    const thinkMatch = reasoningText.match(/<think>(.*?)<\/think>/s);
     if (thinkMatch?.[1]) {
-      reasoningText = thinkMatch[1].trim();
+      processedReasoningText = thinkMatch[1].trim();
     }
-  } else if (reasoning && typeof reasoning === "object") {
+  } else if (reasoningText && typeof reasoningText === "object") {
     try {
-      reasoningText = JSON.stringify(reasoning, null, 2);
+      processedReasoningText = JSON.stringify(reasoningText, null, 2);
     } catch (e) {
-      reasoningText = "Unable to convert reasoning to string";
+      processedReasoningText = "Unable to convert reasoning to string";
     }
   }
 
   // Ищем рассуждения в разных местах
   if (message) {
-    if (!reasoningText && message.parts) {
+    if (!processedReasoningText && message.parts) {
       // Ищем в parts
       for (const part of message.parts) {
-        if (part.type === "reasoning" && part.reasoning) {
-          reasoningText = part.reasoning;
+        if (part.type === "reasoning" && (part as any).reasoningText) {
+          processedReasoningText = (part as any).reasoningText;
           break;
         } else if (part.type === "reasoning" && part.text) {
-          reasoningText = part.text;
+          processedReasoningText = part.text;
           break;
-        } else if (part.type === "reasoning" && part.textDelta) {
-          reasoningText = part.textDelta;
+        } else if (part.type === "reasoning" && (part as any).textDelta) {
+          processedReasoningText = (part as any).textDelta;
           break;
         }
       }
     }
 
     // Проверяем, есть ли рассуждения в свойстве reasoning
-    if (!reasoningText && message.reasoning) {
-      reasoningText =
-        typeof message.reasoning === "string"
-          ? message.reasoning
-          : JSON.stringify(message.reasoning, null, 2);
+    if (!processedReasoningText && (message as any).reasoningText) {
+      processedReasoningText =
+        typeof (message as any).reasoningText === "string"
+          ? (message as any).reasoningText
+          : JSON.stringify((message as any).reasoningText, null, 2);
     }
 
     // Ищем рассуждения в content
     if (
-      !reasoningText &&
-      message.content &&
-      typeof message.content === "string"
+      !processedReasoningText &&
+      (message as any).content &&
+      typeof (message as any).content === "string"
     ) {
-      const thinkMatch = message.content.match(/<think>(.*?)<\/think>/s);
+      const thinkMatch = (message as any).content.match(
+        /<think>(.*?)<\/think>/s
+      );
       if (thinkMatch?.[1]) {
-        reasoningText = thinkMatch[1].trim();
+        processedReasoningText = thinkMatch[1].trim();
       }
     }
   }
@@ -93,7 +95,7 @@ export function MessageReasoningDebug({
   };
 
   // Проверяем, есть ли содержимое в рассуждениях
-  if (!reasoningText || reasoningText.trim() === "") {
+  if (!processedReasoningText || processedReasoningText.trim() === "") {
     return (
       <div className="flex flex-col">
         <div className="text-xs p-2 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 rounded">
@@ -110,7 +112,7 @@ export function MessageReasoningDebug({
           AI reasoning debug
         </div>
         <span className="text-xs text-muted-foreground">
-          ({reasoningText.length} chars)
+          ({processedReasoningText.length} chars)
         </span>
         <button
           data-testid="message-reasoning-toggle"
@@ -123,7 +125,6 @@ export function MessageReasoningDebug({
           <ChevronDownIcon />
         </button>
       </div>
-
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
@@ -143,15 +144,15 @@ export function MessageReasoningDebug({
                 <pre>
                   {JSON.stringify(
                     {
-                      sourceType: typeof reasoning,
+                      sourceType: typeof reasoningText,
                       sourceKeys:
-                        reasoning && typeof reasoning === "object"
-                          ? Object.keys(reasoning)
+                        reasoningText && typeof reasoningText === "object"
+                          ? Object.keys(reasoningText)
                           : "not an object",
                       messageInfo: message
                         ? {
                             keys: Object.keys(message),
-                            hasReasoning: !!message.reasoning,
+                            hasReasoning: !!(message as any).reasoningText,
                             parts: message.parts ? message.parts.length : 0,
                           }
                         : "no message",
@@ -162,7 +163,7 @@ export function MessageReasoningDebug({
                 </pre>
               </details>
             </div>
-            <Markdown>{reasoningText}</Markdown>
+            <Markdown>{processedReasoningText}</Markdown>
           </motion.div>
         )}
       </AnimatePresence>

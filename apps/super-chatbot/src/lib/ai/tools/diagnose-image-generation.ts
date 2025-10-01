@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import {
   getAvailableImageModels,
   configureSuperduperAI,
@@ -10,7 +10,7 @@ import { SHOT_SIZES } from "@/lib/config/video-constants";
 export const diagnoseImageGeneration = tool({
   description:
     "Diagnose image generation issues by checking available models, styles, and configuration compatibility",
-  parameters: z.object({
+  inputSchema: z.object({
     checkModels: z
       .boolean()
       .optional()

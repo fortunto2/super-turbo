@@ -14,7 +14,7 @@ interface UserChoice {
   availableOptions: ChatMedia[];
   timestamp: Date;
   confidence: number;
-  reasoning: string;
+  reasoningText: string;
 }
 
 interface UserPreference {
@@ -73,7 +73,7 @@ export class UserPreferenceLearner {
       availableOptions,
       timestamp: new Date(),
       confidence,
-      reasoning,
+      reasoningText: reasoning,
     };
 
     this.userChoices.push(choice);
@@ -83,7 +83,7 @@ export class UserPreferenceLearner {
         message: `${userMessage.substring(0, 50)}...`,
         selectedMedia: selectedMedia.url,
         confidence,
-        reasoning,
+        reasoningText: reasoning,
       }
     );
 
@@ -403,7 +403,7 @@ export class UserPreferenceLearner {
         sourceUrl: bestCandidate.url,
         ...(bestCandidate.id && { sourceId: bestCandidate.id }),
         confidence: "high" as const,
-        reasoning: `${baseContext.reasoning} + пользовательские предпочтения (score: ${Math.round((scoredCandidates[0]?.score || 0) * 100)})`,
+        reasoningText: `${baseContext.reasoningText} + пользовательские предпочтения (score: ${Math.round((scoredCandidates[0]?.score || 0) * 100)})`,
       };
     }
 

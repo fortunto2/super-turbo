@@ -244,13 +244,13 @@ export function EnhancementResult({
           )}
 
           {/* AI Reasoning */}
-          {result.reasoning && (
+          {result.reasoningText && (
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 AI Reasoning
               </h4>
               <p className="text-xs text-gray-600 dark:text-gray-300 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md border border-blue-200 dark:border-blue-800">
-                {result.reasoning}
+                {result.reasoningText}
               </p>
             </div>
           )}

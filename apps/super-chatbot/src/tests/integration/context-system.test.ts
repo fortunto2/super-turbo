@@ -63,7 +63,7 @@ describe("Enhanced Context System Integration", () => {
     // Должно найти изображение с солнцем, а не последнее сгенерированное
     expect(result.sourceImageUrl).toBe("https://example.com/sunset-ocean.jpg");
     expect(result.confidence).toBe("high");
-    expect(result.reasoning).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("семантический поиск");
   });
 
   test("should find image with moon using semantic search", async () => {
@@ -74,7 +74,7 @@ describe("Enhanced Context System Integration", () => {
 
     expect(result.sourceImageUrl).toBe("https://example.com/moon-night.jpg");
     expect(result.confidence).toBe("high");
-    expect(result.reasoning).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("семантический поиск");
   });
 
   test("should find image with cat using semantic search", async () => {
@@ -85,7 +85,7 @@ describe("Enhanced Context System Integration", () => {
 
     expect(result.sourceImageUrl).toBe("https://example.com/cat-sunny.jpg");
     expect(result.confidence).toBe("high");
-    expect(result.reasoning).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("семантический поиск");
   });
 
   test("should handle complex semantic queries", async () => {
@@ -117,7 +117,7 @@ describe("Enhanced Context System Integration", () => {
     // Должно вернуться к последнему изображению, так как нет изображений с машиной
     expect(result.sourceImageUrl).toBe("https://example.com/latest-image.jpg");
     expect(result.confidence).toBe("low");
-    expect(result.reasoning).toContain("последнее изображение");
+    expect(result.reasoningText).toContain("последнее изображение");
   });
 
   test("should handle synonyms in semantic search", async () => {
@@ -149,8 +149,8 @@ describe("Enhanced Context System Integration", () => {
     );
 
     expect(result.sourceImageUrl).toBe("https://example.com/sunset-ocean.jpg");
-    expect(result.reasoning).toContain("семантический поиск");
-    expect(result.reasoning).toContain("солнцем");
+    expect(result.reasoningText).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("солнцем");
   });
 
   test("should handle multiple semantic matches and rank by relevance", async () => {

@@ -25,7 +25,6 @@ export default function DebugPage() {
       <h1 className="text-2xl font-bold mb-6">
         Тестовая страница отладки рассуждений
       </h1>
-
       <div className="p-4 border rounded mb-6">
         <h2 className="text-lg font-bold mb-4">Тест отображения рассуждений</h2>
 
@@ -44,12 +43,11 @@ export default function DebugPage() {
           </h3>
           <MessageReasoningDebug
             isLoading={false}
-            reasoning={exampleText}
+            reasoningText={exampleText}
             message={mockMessage}
           />
         </div>
       </div>
-
       <div className="p-4 border rounded mb-6">
         <h2 className="text-lg font-bold mb-4">Симуляция разных форматов</h2>
 
@@ -59,11 +57,11 @@ export default function DebugPage() {
           </h3>
           <MessageReasoningDebug
             isLoading={false}
-            reasoning="Это текст рассуждений как отдельное свойство"
+            reasoningText="Это текст рассуждений как отдельное свойство"
             message={{
               id: "test-reason-prop",
               role: "assistant",
-              reasoning: "Это текст рассуждений как отдельное свойство",
+              reasoningText: "Это текст рассуждений как отдельное свойство",
             }}
           />
         </div>
@@ -74,21 +72,20 @@ export default function DebugPage() {
           </h3>
           <MessageReasoningDebug
             isLoading={false}
-            reasoning="Текст не важен"
+            reasoningText="Текст не важен"
             message={{
               id: "test-parts",
               role: "assistant",
               parts: [
                 {
                   type: "reasoning",
-                  reasoning: "Это рассуждение в части сообщения",
+                  reasoningText: "Это рассуждение в части сообщения",
                 },
               ],
             }}
           />
         </div>
       </div>
-
       <div className="p-4 border rounded">
         <h2 className="text-lg font-bold mb-4">Вывод текущих логов</h2>
         <pre className="text-xs bg-gray-100 p-4 rounded overflow-auto max-h-48">

@@ -1,4 +1,4 @@
-import type { Attachment } from "ai";
+import type { Attachment } from "@/lib/types/attachment";
 
 import { LoaderIcon } from "../common/icons";
 import { useArtifactLegacy } from "@/hooks/use-artifact";

@@ -42,7 +42,7 @@ describe("Sun Semantic Search", () => {
 
     expect(result.confidence).toBe("high");
     expect(result.sourceImageUrl).toBe("https://example.com/sunset-beach.jpg");
-    expect(result.reasoning).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("семантический поиск");
   });
 
   test("should find image with sun by English pattern", async () => {
@@ -53,7 +53,7 @@ describe("Sun Semantic Search", () => {
 
     expect(result.confidence).toBe("high");
     expect(result.sourceImageUrl).toBe("https://example.com/sunset-beach.jpg");
-    expect(result.reasoning).toContain("семантический поиск");
+    expect(result.reasoningText).toContain("семантический поиск");
   });
 
   test("should prioritize semantic search over generated pattern", async () => {

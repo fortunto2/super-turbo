@@ -1,10 +1,10 @@
 import { tool, generateText } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { myProvider } from '../providers';
 
 export const enhancePrompt = tool({
   description: 'Enhance and improve user prompts for better AI generation results using LLM. Automatically translates text, applies prompt engineering best practices, and optimizes for specific media types (image, video) and AI models.',
-  parameters: z.object({
+  inputSchema: z.object({
     originalPrompt: z.string().describe('The original prompt text that needs enhancement. Can be in any language, simple or complex.'),
     mediaType: z.enum(['image', 'video', 'text', 'general']).optional().describe('The type of content being generated. Helps optimize the prompt for specific AI models.'),
     enhancementLevel: z.enum(['basic', 'detailed', 'creative']).optional().describe('Level of enhancement: basic (translation + cleanup), detailed (add structure + quality terms), creative (add artistic style + composition details)'),
@@ -49,7 +49,7 @@ export const enhancePrompt = tool({
         system: systemPrompt,
         prompt: userPrompt,
         temperature: 0.7,
-        maxTokens: 1000,
+        maxOutputTokens: 1000,
       });
 
       console.log('✅ LLM response received:', result.text);
@@ -65,7 +65,7 @@ export const enhancePrompt = tool({
         enhancementLevel,
         modelHint,
         improvements: parsedResult.improvements,
-        reasoning: parsedResult.reasoning,
+        reasoningText: parsedResult.reasoningText,
         usage: {
           copyPrompt: 'Copy the enhanced prompt to use in image/video generation tools',
           negativePrompt: parsedResult.negativePrompt ? 'Use the negative prompt to avoid unwanted elements' : undefined
@@ -197,7 +197,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
         enhancedPrompt: parsed.enhancedPrompt || originalPrompt,
         negativePrompt: parsed.negativePrompt || undefined,
         improvements: parsed.improvements || ['LLM enhancement applied'],
-        reasoning: parsed.reasoning || 'Enhanced using AI prompt engineering'
+        reasoningText: parsed.reasoningText || 'Enhanced using AI prompt engineering'
       };
     }
     
@@ -222,7 +222,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       enhancedPrompt,
       negativePrompt: undefined,
       improvements: ['LLM enhancement applied'],
-      reasoning: 'Enhanced using AI prompt engineering'
+      reasoningText: 'Enhanced using AI prompt engineering'
     };
     
   } catch (error) {
@@ -231,7 +231,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       enhancedPrompt: originalPrompt,
       negativePrompt: undefined,
       improvements: ['Enhancement failed, returned original'],
-      reasoning: 'Error in processing enhancement'
+      reasoningText: 'Error in processing enhancement'
     };
   }
 } 

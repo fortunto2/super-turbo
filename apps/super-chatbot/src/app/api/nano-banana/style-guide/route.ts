@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { nanoBananaStyleGuide } from "@/lib/ai/tools/nano-banana-style-guide";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Схема валидации для запроса руководства по стилям
 const styleGuideRequestSchema = z.object({
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     console.log("🍌 Validated style guide request data:", validatedData);
 
     // Вызываем инструмент руководства по стилям
-    const result = await nanoBananaStyleGuide.execute(validatedData, {
+    const result = await nanoBananaStyleGuide.execute?.(validatedData, {
       toolCallId: "nano-banana-style-guide",
       messages: [],
     });
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     console.log("🍌 Nano Banana style guide info API called");
 
     // Получаем полное руководство по стилям
-    const result = await nanoBananaStyleGuide.execute(
+    const result = await nanoBananaStyleGuide.execute?.(
       {
         includeTips: true,
         includeExamples: true,

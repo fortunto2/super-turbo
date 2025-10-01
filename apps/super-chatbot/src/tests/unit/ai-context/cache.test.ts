@@ -23,7 +23,7 @@ describe("ContextCache", () => {
         sourceId: "img123",
         mediaType: "image" as const,
         confidence: "high" as const,
-        reasoning: "Test context",
+        reasoningText: "Test context",
       };
 
       const chatId = "test-chat";
@@ -63,7 +63,7 @@ describe("ContextCache", () => {
         sourceId: "img123",
         mediaType: "image" as const,
         confidence: "high" as const,
-        reasoning: "Test context",
+        reasoningText: "Test context",
       };
 
       await shortCache.setCachedContext("chat", "hash", "image", mockContext);
@@ -83,7 +83,7 @@ describe("ContextCache", () => {
         sourceId: "img123",
         mediaType: "image" as const,
         confidence: "high" as const,
-        reasoning: "Test context",
+        reasoningText: "Test context",
       };
 
       // Cache miss
@@ -116,7 +116,7 @@ describe("ContextCache", () => {
         sourceId: "img123",
         mediaType: "image" as const,
         confidence: "high" as const,
-        reasoning: "Test context",
+        reasoningText: "Test context",
       };
 
       await cache.setCachedContext("chat1", "hash1", "image", mockContext);
@@ -142,7 +142,7 @@ describe("ContextCache", () => {
         sourceId: "img123",
         mediaType: "image" as const,
         confidence: "high" as const,
-        reasoning: "Test context",
+        reasoningText: "Test context",
       };
 
       // Добавляем больше записей, чем позволяет лимит

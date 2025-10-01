@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     });
 
     console.log("✅ LLM response received:", result.text);
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       enhancementLevel,
       modelHint,
       improvements: parsedResult.improvements,
-      reasoning: parsedResult.reasoning,
+      reasoningText: parsedResult.reasoningText,
       usage: {
         copyPrompt:
           "Copy the enhanced prompt to use in image/video generation tools",
@@ -214,7 +214,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
         enhancedPrompt: parsed.enhancedPrompt || originalPrompt,
         negativePrompt: parsed.negativePrompt || undefined,
         improvements: parsed.improvements || ["LLM enhancement applied"],
-        reasoning: parsed.reasoning || "Enhanced using AI prompt engineering",
+        reasoningText: parsed.reasoningText || "Enhanced using AI prompt engineering",
       };
     }
 
@@ -241,7 +241,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       enhancedPrompt,
       negativePrompt: undefined,
       improvements: ["LLM enhancement applied"],
-      reasoning: "Enhanced using AI prompt engineering",
+      reasoningText: "Enhanced using AI prompt engineering",
     };
   } catch (error) {
     console.error("Failed to parse LLM response:", error);
@@ -249,7 +249,7 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       enhancedPrompt: originalPrompt,
       negativePrompt: undefined,
       improvements: ["Enhancement failed, returned original"],
-      reasoning: "Error in processing enhancement",
+      reasoningText: "Error in processing enhancement",
     };
   }
 }

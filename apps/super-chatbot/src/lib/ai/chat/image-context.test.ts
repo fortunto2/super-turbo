@@ -43,7 +43,7 @@ describe("Image Context Analysis", () => {
 
     expect(result.confidence).toBe("high");
     expect(result.sourceImageUrl).toBe("https://example.com/current.jpg");
-    expect(result.reasoning).toContain("текущем сообщении");
+    expect(result.reasoningText).toContain("текущем сообщении");
   });
 
   test("should find last generated image when asking to edit", async () => {
@@ -54,7 +54,7 @@ describe("Image Context Analysis", () => {
 
     expect(result.confidence).toBe("medium");
     expect(result.sourceImageUrl).toBe("https://example.com/dog1.jpg");
-    expect(result.reasoning).toContain("эвристике");
+    expect(result.reasoningText).toContain("эвристике");
   });
 
   test("should find specific image by reference", async () => {
@@ -72,7 +72,7 @@ describe("Image Context Analysis", () => {
 
     expect(result.confidence).toBe("low");
     expect(result.sourceImageUrl).toBe("https://example.com/dog1.jpg");
-    expect(result.reasoning).toContain("последнее изображение");
+    expect(result.reasoningText).toContain("последнее изображение");
   });
 
   test("should handle Russian references", async () => {
@@ -99,7 +99,7 @@ describe("Image Context Analysis", () => {
     const result = await analyzeImageContext("Подправь изображение", []);
 
     expect(result.confidence).toBe("low");
-    expect(result.reasoning).toContain("не найдено изображений");
+    expect(result.reasoningText).toContain("не найдено изображений");
   });
 });
 

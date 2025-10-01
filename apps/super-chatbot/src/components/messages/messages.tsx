@@ -3,23 +3,23 @@ import { PreviewMessage, ThinkingMessage } from "./message";
 import { memo } from "react";
 import type { Vote } from "@/lib/db/schema";
 import equal from "fast-deep-equal";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import type { CustomUseChatHelpers } from "@/lib/types/use-chat-helpers";
 import { motion } from "framer-motion";
 import { useMessages } from "@/hooks/use-messages";
 import { Greeting } from "../chat";
 
 interface MessagesProps {
   chatId: string;
-  status: UseChatHelpers["status"];
+  status: CustomUseChatHelpers["status"];
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: CustomUseChatHelpers["setMessages"];
+  reload: () => void;
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedChatModel: string;
   selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers["append"];
+  append?: (message: any) => void;
 }
 
 function PureMessages({

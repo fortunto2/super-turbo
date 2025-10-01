@@ -2,18 +2,18 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { imageSSEStore } from "@/artifacts/image";
-import type { UseChatHelpers } from "@ai-sdk/react";
 
 interface ChatImageSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: (messages: any) => void;
   enabled?: boolean;
 }
 
 // Add function to save message to database
 const saveMessageToDatabase = async (chatId: string, message: any) => {
   try {
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     const messageToSave = {
       id: message.id,
       role: message.role,
@@ -135,7 +135,7 @@ export const useChatImageSSE = ({
 
           // Update messages with completed image
           setTimeout(() => {
-            setMessages((prevMessages) => {
+            setMessages((prevMessages: any) => {
               const updatedMessages = [...prevMessages];
               let foundArtifact = false;
 
@@ -146,7 +146,7 @@ export const useChatImageSSE = ({
                 if (message?.role === "assistant") {
                   // Check if this message has image artifact content
                   const hasImageArtifact = message.parts?.some(
-                    (part) =>
+                    (part: any) =>
                       part.type === "text" &&
                       "text" in part &&
                       part.text &&

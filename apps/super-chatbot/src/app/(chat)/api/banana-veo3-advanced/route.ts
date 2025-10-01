@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import { streamText } from "ai";
+import { streamText, } from "ai";
 import { myProvider } from "@/lib/ai/providers";
 import {
   bananaInferenceTool,
@@ -98,18 +98,17 @@ export async function POST(request: NextRequest) {
     const allMessages = convertDBMessagesToUIMessages(previousMessages);
 
     // Добавляем новое сообщение пользователя
-    allMessages.push({
+    const userMessage = {
       id: message.id || generateUUID(),
-      role: "user",
-      content: message.content || message.parts?.[0]?.text || "",
+      role: "user" as const,
       parts: [
         {
           text: message.content || message.parts?.[0]?.text || "",
-          type: "text",
+          type: "text" as const,
         },
       ],
-      createdAt: new Date(),
-    });
+    };
+    allMessages.push(userMessage as any);
 
     console.log(
       "🍌🎬 Advanced Banana+VEO3 API with tools:",
@@ -121,7 +120,11 @@ export async function POST(request: NextRequest) {
     const result = streamText({
       model: myProvider.languageModel("gemini-2.5-flash-lite"),
       system: advancedBananaVeo3SystemPrompt,
-      messages: allMessages,
+      messages: allMessages.map((msg: any) => ({
+        role: msg.role,
+        content: msg.parts?.find((p: any) => p.type === "text")?.text || "",
+      })),
+
       tools: {
         bananaInference: bananaInferenceTool,
         listBananaModels: listBananaModelsTool,
@@ -129,8 +132,9 @@ export async function POST(request: NextRequest) {
         checkVeo3VideoStatus: checkVeo3VideoStatusTool,
         generateVeo3Ideas: generateVeo3IdeasTool,
       },
-      maxSteps: 10,
-      experimental_generateMessageId: generateUUID,
+
+      // maxToolRoundtrips: 10, // Removed in AI SDK v5
+
       onFinish: async ({ response }) => {
         console.log("🍌🎬 Advanced Banana+VEO3 response finished");
 
@@ -141,11 +145,12 @@ export async function POST(request: NextRequest) {
             );
 
             for (const assistantMessage of assistantMessages) {
+              /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
               await saveMessages({
                 messages: [
                   {
                     chatId: id,
-                    id: assistantMessage.id,
+                    id: (assistantMessage as any).id || generateUUID(),
                     role: "assistant",
                     parts: (assistantMessage as any)?.parts,
                     attachments:
@@ -167,7 +172,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return result.toDataStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("🍌🎬 Advanced Banana+VEO3 API error:", error);
 

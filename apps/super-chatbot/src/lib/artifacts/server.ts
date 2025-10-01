@@ -20,7 +20,7 @@ import { sheetDocumentHandler } from "@/artifacts/sheet/server";
 import { textDocumentHandler } from "@/artifacts/text/server";
 import { videoDocumentHandler } from "@/artifacts/video/server";
 import type { ArtifactKind } from "@/components/artifacts/artifact";
-import type { DataStreamWriter } from "ai";
+import type { UIMessageStreamWriter } from "ai";
 import type { Document } from "../db/schema";
 import { saveDocument } from "../db/queries";
 import type { Session } from "next-auth";
@@ -39,14 +39,14 @@ export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
   content?: string; // Optional content for artifacts that generate their own content
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
   session: Session;
 }
 
 export interface UpdateDocumentCallbackProps {
   document: Document;
   description: string;
-  dataStream: DataStreamWriter;
+  dataStream: UIMessageStreamWriter;
   session: Session;
 }
 
@@ -80,9 +80,11 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
       console.log("📄 Draft content generated:", draftContent);
 
       // Send the content to the stream so it reaches the client
-      args.dataStream.writeData({
-        type: "text-delta",
-        content: draftContent,
+      args.dataStream.write({
+        type: "data-text-delta",
+        data: {
+          content: draftContent,
+        },
       });
 
       // AICODE-FIX: Only save to database if we have meaningful content
@@ -161,9 +163,11 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
       console.log("📄 Updated content generated:", draftContent);
 
       // Send the updated content to the stream
-      args.dataStream.writeData({
-        type: "text-delta",
-        content: draftContent,
+      args.dataStream.write({
+        type: "data-text-delta",
+        data: {
+          content: draftContent,
+        },
       });
 
       // AICODE-FIX: Only save to database if we have meaningful content

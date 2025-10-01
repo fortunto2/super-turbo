@@ -118,13 +118,13 @@ export async function testSemanticSearch() {
 
       if (result.sourceId === testCase.expectedImageId) {
         console.log(`   ✅ PASSED - Found image: ${result.sourceId}`);
-        console.log(`   Reasoning: ${result.reasoning}`);
+        console.log(`   Reasoning: ${result.reasoningText}`);
         passedTests++;
       } else {
         console.log(
           `   ❌ FAILED - Expected: ${testCase.expectedImageId}, Got: ${result.sourceId}`
         );
-        console.log(`   Reasoning: ${result.reasoning}`);
+        console.log(`   Reasoning: ${result.reasoningText}`);
       }
     } catch (error) {
       console.log(`   ❌ ERROR - ${error}`);

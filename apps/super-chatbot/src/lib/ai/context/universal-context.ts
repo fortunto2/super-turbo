@@ -14,7 +14,7 @@ export interface MediaContext {
   sourceId?: string;
   mediaType: MediaType;
   confidence: ConfidenceLevel;
-  reasoning: string;
+  reasoningText: string;
   metadata?: Record<string, any>;
 }
 
@@ -74,7 +74,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
         ...(currentMedia?.id && { sourceId: currentMedia.id }),
         mediaType: this.mediaType,
         confidence: "high",
-        reasoning: `Медиа найдено в текущем сообщении пользователя`,
+        reasoningText: `Медиа найдено в текущем сообщении пользователя`,
         ...(currentMedia?.metadata && { metadata: currentMedia.metadata }),
       };
     }
@@ -87,7 +87,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       return {
         mediaType: this.mediaType,
         confidence: "low",
-        reasoning: `В истории чата не найдено ${this.mediaType} файлов`,
+        reasoningText: `В истории чата не найдено ${this.mediaType} файлов`,
       };
     }
 
@@ -100,7 +100,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
         ...(bestMatch?.media?.id && { sourceId: bestMatch.media.id }),
         mediaType: this.mediaType,
         confidence: (bestMatch?.relevance || 0) > 0.7 ? "high" : "medium",
-        reasoning: `Найдена ссылка на ${this.mediaType}: ${bestMatch?.reasoning || ""}`,
+        reasoningText: `Найдена ссылка на ${this.mediaType}: ${bestMatch?.reasoningText || ""}`,
         ...(bestMatch?.media?.metadata && {
           metadata: bestMatch.media.metadata,
         }),
@@ -125,7 +125,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
           mediaType: this.mediaType,
           confidence:
             (bestSemanticMatch?.similarity || 0) > 0.8 ? "high" : "medium",
-          reasoning: `Семантический поиск: ${bestSemanticMatch?.reasoning || ""}`,
+          reasoningText: `Семантический поиск: ${bestSemanticMatch?.reasoningText || ""}`,
           metadata: {
             ...bestSemanticMatch?.media?.metadata,
             semanticSimilarity: bestSemanticMatch?.similarity,
@@ -157,7 +157,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
               : (bestTemporalMatch?.confidence || 0) > 0.5
                 ? "medium"
                 : "low",
-          reasoning: `Временной анализ: ${bestTemporalMatch?.reasoning || ""}`,
+          reasoningText: `Временной анализ: ${bestTemporalMatch?.reasoningText || ""}`,
           metadata: {
             ...bestTemporalMatch?.media?.metadata,
             temporalDistance: bestTemporalMatch?.temporalDistance,
@@ -176,7 +176,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
         ...(contentMatch?.media?.id && { sourceId: contentMatch.media.id }),
         mediaType: this.mediaType,
         confidence: (contentMatch?.relevance || 0) > 0.7 ? "high" : "medium",
-        reasoning: `Поиск по содержимому: ${contentMatch?.reasoning || ""}`,
+        reasoningText: `Поиск по содержимому: ${contentMatch?.reasoningText || ""}`,
         metadata: {
           ...contentMatch?.media?.metadata,
           contentRelevance: contentMatch?.relevance,
@@ -192,7 +192,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
         ...(heuristicMatch?.media?.id && { sourceId: heuristicMatch.media.id }),
         mediaType: this.mediaType,
         confidence: "medium",
-        reasoning: `Медиа выбрано по эвристике: ${heuristicMatch?.reasoning || ""}`,
+        reasoningText: `Медиа выбрано по эвристике: ${heuristicMatch?.reasoningText || ""}`,
         ...(heuristicMatch?.media?.metadata && {
           metadata: heuristicMatch.media.metadata,
         }),
@@ -203,7 +203,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     return {
       mediaType: this.mediaType,
       confidence: "low",
-      reasoning: `В истории чата не найдено подходящих ${this.mediaType} файлов для использования`,
+      reasoningText: `В истории чата не найдено подходящих ${this.mediaType} файлов для использования`,
     };
   }
 
@@ -234,12 +234,12 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
   private analyzeReferences(
     userMessage: string,
     chatMedia: ChatMedia[]
-  ): Array<{ media: ChatMedia; relevance: number; reasoning: string }> {
+  ): Array<{ media: ChatMedia; relevance: number; reasoningText: string }> {
     const messageLower = userMessage.toLowerCase();
     const references: Array<{
       media: ChatMedia;
       relevance: number;
-      reasoning: string;
+      reasoningText: string;
     }> = [];
 
     const patterns = this.getReferencePatterns();
@@ -251,7 +251,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
           references.push({
             media: targetMedia,
             relevance: weight,
-            reasoning: `Найдено совпадение с паттерном: ${pattern.source}`,
+            reasoningText: `Найдено совпадение с паттерном: ${pattern.source}`,
           });
         }
       }
@@ -263,7 +263,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
   private findByContent(
     userMessage: string,
     chatMedia: ChatMedia[]
-  ): { media: ChatMedia; relevance: number; reasoning: string } | null {
+  ): { media: ChatMedia; relevance: number; reasoningText: string } | null {
     const messageLower = userMessage.toLowerCase();
 
     // Извлекаем ключевые слова из сообщения пользователя
@@ -309,7 +309,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     console.log(`🔍 [${this.mediaType}] findByContent: Best match:`, {
       hasMatch: !!bestMatch,
       relevance: bestRelevance,
-      reasoning: bestReasoning,
+      reasoningText: bestReasoning,
       mediaUrl: bestMatch?.url,
       mediaPrompt: bestMatch?.prompt,
     });
@@ -318,7 +318,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       return {
         media: bestMatch,
         relevance: Math.min(bestRelevance, 1.0),
-        reasoning: bestReasoning,
+        reasoningText: bestReasoning,
       };
     }
 
@@ -449,7 +449,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
   private findByHeuristics(
     userMessage: string,
     chatMedia: ChatMedia[]
-  ): { media: ChatMedia; reasoning: string } | null {
+  ): { media: ChatMedia; reasoningText: string } | null {
     const messageLower = userMessage.toLowerCase();
 
     // Проверяем на контекст редактирования
@@ -481,7 +481,7 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
         reasoning = `контекст редактирования - используется последний ${this.mediaType} в чате`;
       }
 
-      return { media: targetMedia, reasoning };
+      return { media: targetMedia, reasoningText: reasoning };
     }
 
     return null;
@@ -571,7 +571,7 @@ export class UniversalContextManager {
               : context.confidence === "medium"
                 ? 0.7
                 : 0.5,
-            context.reasoning
+            context.reasoningText
           );
         }
       } catch (error) {

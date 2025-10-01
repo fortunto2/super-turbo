@@ -84,7 +84,7 @@ describe("Real-world Semantic Search Scenarios", () => {
         "https://example.com/rocket-launch.jpg"
       );
       expect(result.confidence).toBe("high");
-      expect(result.reasoning).toContain("семантический поиск");
+      expect(result.reasoningText).toContain("семантический поиск");
     });
 
     test("should find rocket image with different wording", async () => {
@@ -123,7 +123,7 @@ describe("Real-world Semantic Search Scenarios", () => {
         "https://example.com/sunset-beach.jpg"
       );
       expect(result.confidence).toBe("high");
-      expect(result.reasoning).toContain("семантический поиск");
+      expect(result.reasoningText).toContain("семантический поиск");
     });
 
     test("should find sun image with different wording", async () => {
@@ -148,7 +148,7 @@ describe("Real-world Semantic Search Scenarios", () => {
 
       expect(result.sourceImageUrl).toBe("https://example.com/cat-window.jpg");
       expect(result.confidence).toBe("high");
-      expect(result.reasoning).toContain("семантический поиск");
+      expect(result.reasoningText).toContain("семантический поиск");
     });
 
     test("should find cat image with different wording", async () => {
@@ -171,7 +171,7 @@ describe("Real-world Semantic Search Scenarios", () => {
 
       expect(result.sourceImageUrl).toBe("https://example.com/moon-night.jpg");
       expect(result.confidence).toBe("high");
-      expect(result.reasoning).toContain("семантический поиск");
+      expect(result.reasoningText).toContain("семантический поиск");
     });
 
     test("should find moon image with different wording", async () => {
@@ -224,7 +224,7 @@ describe("Real-world Semantic Search Scenarios", () => {
         "https://example.com/latest-abstract.jpg"
       );
       expect(result.confidence).toBe("low");
-      expect(result.reasoning).toContain("последнее изображение");
+      expect(result.reasoningText).toContain("последнее изображение");
     });
   });
 

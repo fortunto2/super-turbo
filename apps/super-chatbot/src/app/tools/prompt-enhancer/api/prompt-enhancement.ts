@@ -18,7 +18,7 @@ export interface EnhancementResult {
   enhancementLevel?: string;
   modelHint?: string;
   improvements?: string[];
-  reasoning?: string;
+  reasoningText?: string;
   usage?: {
     copyPrompt: string;
     negativePrompt?: string;
@@ -73,7 +73,7 @@ export async function enhancePromptApi(
       enhancementLevel: result.enhancementLevel,
       modelHint: result.modelHint,
       improvements: result.improvements || [],
-      reasoning: result.reasoning,
+      reasoningText: result.reasoningText,
       usage: result.usage,
       fallback: result.fallback,
     };

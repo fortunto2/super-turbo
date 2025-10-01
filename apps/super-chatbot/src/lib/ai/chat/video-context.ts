@@ -10,7 +10,7 @@ export interface VideoContext {
   sourceImageUrl?: string;
   sourceImageId?: string;
   confidence: "high" | "medium" | "low";
-  reasoning: string;
+  reasoningText: string;
   metadata?: Record<string, any>;
 }
 
@@ -76,7 +76,7 @@ export async function analyzeVideoContext(
           sourceImageId: cachedContext.sourceId,
         }),
         confidence: cachedContext?.confidence || "medium",
-        reasoning: `Кэшированный результат: ${cachedContext?.reasoning || ""}`,
+        reasoningText: `Кэшированный результат: ${cachedContext?.reasoningText || ""}`,
         ...(cachedContext?.metadata && { metadata: cachedContext.metadata }),
       };
     }
@@ -102,7 +102,7 @@ export async function analyzeVideoContext(
         sourceImageUrl: currentImage.url,
         sourceImageId: currentImage.id,
         confidence: "high" as const,
-        reasoning:
+        reasoningText:
           "Изображение найдено в текущем сообщении пользователя для image-to-video",
         metadata: {
           source: "current_message",
@@ -125,7 +125,7 @@ export async function analyzeVideoContext(
           ...(result.sourceImageId && { sourceId: result.sourceImageId }),
           mediaType: "video" as const,
           confidence: result.confidence,
-          reasoning: result.reasoning,
+          reasoningText: result.reasoningText,
           ...(result.metadata && { metadata: result.metadata }),
         });
       }
@@ -134,7 +134,7 @@ export async function analyzeVideoContext(
         sourceImageUrl: result?.sourceImageUrl || "",
         ...(result?.sourceImageId && { sourceImageId: result.sourceImageId }),
         confidence: result?.confidence || "medium",
-        reasoning: result?.reasoning || "",
+        reasoningText: result?.reasoningText || "",
         ...(result?.metadata && { metadata: result.metadata }),
       };
     }
@@ -145,7 +145,7 @@ export async function analyzeVideoContext(
     console.log("🎬 analyzeVideoContext: No images found in chat history");
     return {
       confidence: "low",
-      reasoning: "В истории чата не найдено изображений для image-to-video",
+      reasoningText: "В истории чата не найдено изображений для image-to-video",
       metadata: {
         source: "chat_history",
         totalImages: 0,
@@ -182,7 +182,7 @@ export async function analyzeVideoContext(
     console.log("🎬 analyzeVideoContext: No user uploaded images found");
     return {
       confidence: "low",
-      reasoning:
+      reasoningText:
         "В истории чата не найдено загруженных пользователем изображений для image-to-video",
       metadata: {
         source: "chat_history",
@@ -220,7 +220,7 @@ export async function analyzeVideoContext(
       console.log("🕒 VideoContext: Found temporal match:", {
         url: temporalMatch?.media?.url,
         confidence: temporalMatch?.confidence,
-        reasoning: temporalMatch?.reasoning,
+        reasoningText: temporalMatch?.reasoningText,
       });
     }
   } catch (error) {
@@ -242,7 +242,7 @@ export async function analyzeVideoContext(
       console.log("🔍 VideoContext: Found semantic match:", {
         url: semanticMatch?.image?.url,
         score: semanticMatch?.relevanceScore,
-        reasoning: semanticMatch?.reasoning,
+        reasoningText: semanticMatch?.reasoningText,
       });
     }
   } catch (error) {
@@ -269,7 +269,7 @@ export async function analyzeVideoContext(
   if (temporalMatch && temporalMatch.confidence > bestScore) {
     bestMatch = temporalMatch.media;
     bestScore = temporalMatch.confidence;
-    bestReasoning = `Временная ссылка: ${temporalMatch.reasoning}`;
+    bestReasoning = `Временная ссылка: ${temporalMatch.reasoningText}`;
     bestSource = "temporal";
   }
 
@@ -277,14 +277,14 @@ export async function analyzeVideoContext(
   if (semanticMatch && semanticMatch.relevanceScore > bestScore) {
     bestMatch = semanticMatch.image;
     bestScore = semanticMatch.relevanceScore;
-    bestReasoning = `Семантический поиск: ${semanticMatch.reasoning}`;
+    bestReasoning = `Семантический поиск: ${semanticMatch.reasoningText}`;
     bestSource = "semantic";
   }
 
   // Приоритет 3: ПОИСК ПО СОДЕРЖИМОМУ ИЗОБРАЖЕНИЙ (по ключевым словам в промпте)
   console.log("🎬 analyzeVideoContext: Searching by image content...");
   const contentMatch = findUserImageByKeywords(messageLower, userImages);
-  if (contentMatch?.reasoning) {
+  if (contentMatch?.reasoningText) {
     const matchedImage = userImages.find((img) => img.url === contentMatch.url);
     if (matchedImage) {
       // Вычисляем релевантность на основе количества совпавших ключевых слов
@@ -299,12 +299,12 @@ export async function analyzeVideoContext(
       if (relevance > bestScore) {
         bestMatch = matchedImage;
         bestScore = relevance;
-        bestReasoning = `Поиск по содержимому: ${contentMatch.reasoning}`;
+        bestReasoning = `Поиск по содержимому: ${contentMatch.reasoningText}`;
         bestSource = "content";
         console.log("🎬 analyzeVideoContext: Content match selected:", {
           url: matchedImage.url,
           relevance: `${Math.round(relevance * 100)}%`,
-          reasoning: bestReasoning,
+          reasoningText: bestReasoning,
         });
       }
     }
@@ -318,7 +318,7 @@ export async function analyzeVideoContext(
     if (keywordMatch?.relevance && keywordMatch.relevance > bestScore) {
       bestMatch = keywordMatch?.image;
       bestScore = keywordMatch.relevance;
-      bestReasoning = `Поиск по ключевым словам: ${keywordMatch?.reasoning || ""}`;
+      bestReasoning = `Поиск по ключевым словам: ${keywordMatch?.reasoningText || ""}`;
       bestSource = "keywords";
     }
   }
@@ -352,7 +352,7 @@ export async function analyzeVideoContext(
     if (keywordMatch) {
       bestMatch = keywordMatch;
       bestScore = 0.4;
-      bestReasoning = `Fallback поиск по ключевым словам: ${keywordMatch.reasoning}`;
+      bestReasoning = `Fallback поиск по ключевым словам: ${keywordMatch.reasoningText}`;
       bestSource = "fallback_keywords";
     }
 
@@ -365,7 +365,7 @@ export async function analyzeVideoContext(
       if (heuristicMatch) {
         bestMatch = heuristicMatch.image;
         bestScore = 0.3;
-        bestReasoning = `Fallback эвристики для видео: ${heuristicMatch.reasoning}`;
+        bestReasoning = `Fallback эвристики для видео: ${heuristicMatch.reasoningText}`;
         bestSource = "fallback_heuristics";
       }
     }
@@ -389,7 +389,7 @@ export async function analyzeVideoContext(
       sourceImageUrl: bestMatch.url,
       sourceImageId: bestMatch.id,
       confidence: confidence as "high" | "medium" | "low",
-      reasoning: bestReasoning,
+      reasoningText: bestReasoning,
       metadata: {
         source: bestSource,
         score: bestScore,
@@ -406,7 +406,7 @@ export async function analyzeVideoContext(
     console.log("🎬 analyzeVideoContext: Final result:", {
       sourceImageUrl: result.sourceImageUrl,
       confidence: result.confidence,
-      reasoning: result.reasoning,
+      reasoningText: result.reasoningText,
       metadata: result.metadata,
     });
 
@@ -424,7 +424,7 @@ export async function analyzeVideoContext(
         ...(result.sourceImageId && { sourceId: result.sourceImageId }),
         mediaType: "video" as const,
         confidence: result.confidence,
-        reasoning: result.reasoning,
+        reasoningText: result.reasoningText,
         ...(result.metadata && { metadata: result.metadata }),
       });
     }
@@ -461,7 +461,7 @@ export async function analyzeVideoContext(
       sourceImageUrl: result?.sourceImageUrl || "",
       ...(result?.sourceImageId && { sourceImageId: result.sourceImageId }),
       confidence: result?.confidence || "medium",
-      reasoning: result?.reasoning || "",
+      reasoningText: result?.reasoningText || "",
       ...(result?.metadata && { metadata: result.metadata }),
     };
   }
@@ -476,7 +476,7 @@ export async function analyzeVideoContext(
     sourceImageUrl: lastUserImage?.url || "",
     ...(lastUserImage?.id && { sourceImageId: lastUserImage.id }),
     confidence: "low" as const,
-    reasoning: `Fallback: используется последнее загруженное пользователем изображение для image-to-video`,
+    reasoningText: `Fallback: используется последнее загруженное пользователем изображение для image-to-video`,
     metadata: {
       source: "fallback_last",
       score: 0.1,
@@ -500,7 +500,9 @@ export async function analyzeVideoContext(
 async function analyzeVideoImageReferences(
   messageLower: string,
   userImages: ChatImage[]
-): Promise<Array<{ image: ChatImage; relevance: number; reasoning: string }>> {
+): Promise<
+  Array<{ image: ChatImage; relevance: number; reasoningText: string }>
+> {
   console.log(
     "🎬 analyzeVideoImageReferences: Starting pattern matching for:",
     messageLower
@@ -509,7 +511,7 @@ async function analyzeVideoImageReferences(
   const references: Array<{
     image: ChatImage;
     relevance: number;
-    reasoning: string;
+    reasoningText: string;
   }> = [];
 
   // Паттерны для ссылок на загруженные изображения
@@ -661,7 +663,7 @@ async function analyzeVideoImageReferences(
         references.push({
           image: targetImage,
           relevance: weight,
-          reasoning,
+          reasoningText: reasoning,
         });
       }
     }
@@ -700,7 +702,7 @@ async function findUserImageBySemanticContent(
         {
           url: bestMatch?.image?.url,
           score: `${Math.round((bestMatch?.relevanceScore || 0) * 100)}%`,
-          reasoning: bestMatch?.reasoning,
+          reasoningText: bestMatch?.reasoningText,
           matchedKeywords: bestMatch?.matchedKeywords,
         }
       );
@@ -1185,7 +1187,7 @@ function extractKeywords(message: string): string[] {
 function findUserImageByKeywords(
   messageLower: string,
   userImages: ChatImage[]
-): { url: string; id?: string; reasoning: string } | null {
+): { url: string; id?: string; reasoningText: string } | null {
   console.log(
     "🎬 findUserImageByKeywords: Starting keyword-based search for:",
     messageLower
@@ -1242,7 +1244,7 @@ function findUserImageByKeywords(
   console.log(`🎬 findUserImageByKeywords: Best match:`, {
     hasMatch: !!bestMatch,
     relevance: bestRelevance,
-    reasoning: bestReasoning,
+    reasoningText: bestReasoning,
     mediaUrl: bestMatch?.url,
     mediaPrompt: bestMatch?.prompt,
   });
@@ -1251,7 +1253,7 @@ function findUserImageByKeywords(
     return {
       url: bestMatch?.url || "",
       ...(bestMatch?.id && { id: bestMatch.id }),
-      reasoning: bestReasoning,
+      reasoningText: bestReasoning,
     };
   }
 
@@ -1265,7 +1267,7 @@ function findUserImageByKeywords(
 function findUserImageByVideoHeuristics(
   messageLower: string,
   userImages: ChatImage[]
-): { image: ChatImage; reasoning: string } | null {
+): { image: ChatImage; reasoningText: string } | null {
   console.log(
     "🎬 findUserImageByVideoHeuristics: Analyzing message for video heuristics:",
     messageLower
@@ -1317,7 +1319,7 @@ function findUserImageByVideoHeuristics(
         );
         return {
           image: matchedImage || undefined,
-          reasoning: `намерение создания видео + ${contentMatch?.reasoning || ""}`,
+          reasoningText: `намерение создания видео + ${contentMatch?.reasoningText || ""}`,
         };
       }
     }
@@ -1335,7 +1337,7 @@ function findUserImageByVideoHeuristics(
 
     return {
       image: lastUserImage,
-      reasoning:
+      reasoningText:
         "намерение создания видео - используется последнее загруженное изображение",
     };
   }

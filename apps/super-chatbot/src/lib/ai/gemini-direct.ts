@@ -39,7 +39,7 @@ export async function callGeminiDirect(
   apiKey: string,
   options: {
     temperature?: number;
-    maxTokens?: number;
+    maxOutputTokens?: number;
   } = {}
 ): Promise<string> {
   const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
@@ -48,7 +48,7 @@ export async function callGeminiDirect(
     contents: messages,
     generationConfig: {
       temperature: options.temperature || 0.7,
-      maxOutputTokens: options.maxTokens || 1000,
+      maxOutputTokens: options.maxOutputTokens || 1000,
       topP: 0.8,
       topK: 40,
     },

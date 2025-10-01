@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from 'zod/v3';
 import type { MediaOption } from "@/lib/types/media-settings";
 import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
 import {
@@ -23,7 +23,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
   tool({
     description:
       "Configure video generation settings or generate a video directly if prompt is provided. Supports text-to-video by default, video-to-video when a video sourceVideoUrl is provided, and image-to-video when an image sourceVideoUrl is provided. When triggered, creates a video artifact that shows generation progress in real-time.",
-    parameters: z.object({
+    inputSchema: z.object({
       prompt: z
         .string()
         .optional()
@@ -195,7 +195,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
                 "confidence:",
                 contextResult.confidence,
                 "reasoning:",
-                contextResult.reasoning,
+                contextResult.reasoningText,
                 "metadata:",
                 contextResult.metadata
               );

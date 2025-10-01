@@ -1,10 +1,4 @@
-import {
-  appendClientMessage,
-  appendResponseMessages,
-  createDataStream,
-  smoothStream,
-  streamText,
-} from "ai";
+import { createUIMessageStream, streamText, convertToModelMessages } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { withMonitoring } from "@/lib/monitoring/simple-monitor";
@@ -20,13 +14,13 @@ import {
   getOrCreateOAuthUser,
   getUser,
 } from "@/lib/db/queries";
-import { generateUUID, getTrailingMessageId } from "@/lib/utils";
+import { generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 
-import { myProvider } from "@/lib/ai/providers";
+import { myProvider, legacyProvider } from "@/lib/ai/providers";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { postRequestBodySchema, type PostRequestBody } from "./schema";
 import { geolocation } from "@vercel/functions";
@@ -49,6 +43,7 @@ import { enhancePromptUnified } from "@/lib/ai/tools/enhance-prompt-unified";
 import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
 import { isProductionEnvironment } from "@/lib/constants";
+import type { CustomUIMessage } from "@/lib/types/custom-ui-message";
 
 export const maxDuration = 60;
 
@@ -58,15 +53,21 @@ let globalStreamContext: ResumableStreamContext | null = null;
  * Нормализует сообщение для совместимости с UIMessage
  */
 function normalizeMessage(message: any) {
-  return {
+  // Ensure message has proper structure for AI SDK v5
+  const normalized = {
     ...message,
+    id: message.id || generateUUID(),
+    role: message.role || "user",
     content: message.content || message.parts?.[0]?.text || "",
-    parts:
-      message.parts?.map((part: any) => ({
-        ...part,
-        text: part.text || "",
-      })) || [],
+    parts: message.parts?.map((part: any) => ({
+      ...part,
+      text: part.text || "",
+      type: part.type || "text",
+    })) || [{ type: "text", text: message.content || "" }],
+    createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
   };
+
+  return normalized;
 }
 
 /**
@@ -477,10 +478,19 @@ export const POST = withMonitoring(async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
-      messages: convertDBMessagesToUIMessages(previousMessages),
-      message: normalizeMessage(messageToProcess),
-    });
+    // AI SDK v5: manually append client message
+    const normalizedMessage = normalizeMessage(messageToProcess);
+    if (!normalizedMessage) {
+      throw new Error("Failed to normalize message");
+    }
+
+    const uiMessages: CustomUIMessage[] = [
+      ...convertDBMessagesToUIMessages(previousMessages),
+      normalizedMessage,
+    ];
+
+    // Convert UIMessages to ModelMessages for LLM
+    const modelMessages = convertToModelMessages(uiMessages);
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -492,6 +502,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
     };
 
     try {
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       await saveMessages({
         messages: [
           {
@@ -535,6 +546,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
           });
 
           // Try to save message again
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           await saveMessages({
             messages: [
               {
@@ -604,10 +616,11 @@ export const POST = withMonitoring(async function POST(request: Request) {
       // Continue execution, as we can proceed without DB record
     }
 
-    const stream = createDataStream({
-      execute: async (dataStream) => {
-        const enhancedDataStream = {
-          ...dataStream,
+    const stream = createUIMessageStream<CustomUIMessage>({
+      execute: async ({ writer }) => {
+        // AI SDK v5 uses writer instead of dataStream
+        const enhancedWriter = {
+          ...writer,
           end: () => {},
           error: (error: Error) => {
             console.error("Stream error:", error);
@@ -619,6 +632,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
         try {
           const { analyzeImageContext } = await import("@/lib/ai/context");
 
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           const imageContext = await analyzeImageContext(
             messageToProcess.parts?.[0]?.text || "",
             id,
@@ -628,7 +642,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
 
           console.log("🔍 Pre-analysis: Image context:", {
             confidence: imageContext.confidence,
-            reasoning: imageContext.reasoning,
+            reasoningText: imageContext.reasoningText,
             sourceUrl: imageContext.sourceUrl,
           });
 
@@ -642,6 +656,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
           console.error("🔍 Pre-analysis error:", error);
           // Fallback к старой логике
           try {
+            /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
             const atts =
               (messageToProcess as any)?.experimental_attachments || [];
             const img = atts.find(
@@ -666,6 +681,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
         try {
           const { analyzeVideoContext } = await import("@/lib/ai/context");
 
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           const videoContext = await analyzeVideoContext(
             messageToProcess.parts?.[0]?.text || "",
             id,
@@ -675,7 +691,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
 
           console.log("🔍 Pre-analysis: Video context:", {
             confidence: videoContext.confidence,
-            reasoning: videoContext.reasoning,
+            reasoningText: videoContext.reasoningText,
             sourceUrl: videoContext.sourceUrl,
           });
 
@@ -693,20 +709,21 @@ export const POST = withMonitoring(async function POST(request: Request) {
         const tools = {
           createDocument: createDocument({
             session,
-            dataStream: enhancedDataStream,
+            dataStream: enhancedWriter,
           }),
           updateDocument: updateDocument({
             session,
-            dataStream: enhancedDataStream,
+            dataStream: enhancedWriter,
           }),
           requestSuggestions: requestSuggestions({
             session,
-            dataStream: enhancedDataStream,
+            dataStream: enhancedWriter,
           }),
         };
 
         // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
 
+        /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
         console.log("🔍 Message structure for configureImageGeneration:", {
           hasMessage: !!messageToProcess,
           messageKeys: messageToProcess ? Object.keys(messageToProcess) : [],
@@ -721,7 +738,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
         );
 
         // Если есть изображение для редактирования или анимации, добавляем явную инструкцию
-        let enhancedMessages = messages;
+        let enhancedMessages = modelMessages;
         if (defaultSourceImageUrl && messageToProcess.parts?.[0]?.text) {
           const userText = messageToProcess.parts[0].text;
           const editKeywords = [
@@ -756,13 +773,10 @@ export const POST = withMonitoring(async function POST(request: Request) {
               "🔍 Edit intent detected, adding explicit instruction to call configureImageGeneration"
             );
             enhancedMessages = [
-              ...messages,
+              ...modelMessages,
               {
-                id: generateUUID(),
                 role: "system" as const,
                 content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
-                createdAt: new Date(),
-                parts: [],
               },
             ];
           } else if (hasAnimationIntent) {
@@ -770,39 +784,26 @@ export const POST = withMonitoring(async function POST(request: Request) {
               "🔍 Animation intent detected, adding explicit instruction to call configureVideoGeneration"
             );
             enhancedMessages = [
-              ...messages,
+              ...modelMessages,
               {
-                id: generateUUID(),
                 role: "system" as const,
                 content: `IMPORTANT: The user wants to animate an existing image. You MUST call the configureVideoGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
-                createdAt: new Date(),
-                parts: [],
               },
             ];
           }
         }
 
+        console.log("🔧 Using legacy provider with chat-model");
+        console.log("🔧 Legacy provider type:", typeof legacyProvider);
+        console.log(
+          "🔧 Legacy provider has languageModel:",
+          typeof legacyProvider.languageModel
+        );
+
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
+          model: legacyProvider.languageModel("chat-model"), // AI SDK 5: Используем legacy провайдер с конкретной моделью
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: enhancedMessages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
-              ? []
-              : [
-                  "configureImageGeneration",
-                  "configureVideoGeneration",
-                  "configureScriptGeneration",
-                  "listVideoModels",
-                  "findBestVideoModel",
-                  "enhancePromptUnified",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
-          experimental_transform: smoothStream({ chunking: "word" }),
-          experimental_generateMessageId: generateUUID,
 
           tools: {
             ...tools,
@@ -836,99 +837,41 @@ export const POST = withMonitoring(async function POST(request: Request) {
             findBestVideoModel,
             enhancePromptUnified,
           },
-          // Note: explicit toolChoice removed due to type constraints; tool remains available
-          onFinish: async ({ response }) => {
-            console.log("🔍 onFinish called with response:", {
-              messagesCount: response.messages.length,
-              hasAssistantMessages: response.messages.some(
-                (m) => m.role === "assistant"
-              ),
-              responseKeys: Object.keys(response),
-            });
 
-            if (session.user?.id) {
+          // onFinish is now handled in toUIMessageStreamResponse
+        });
+
+        // AI SDK v5 handles streaming automatically
+        result.consumeStream();
+
+        // AI SDK v5: Handle streaming directly
+        const streamResponse = result.toUIMessageStreamResponse({
+          originalMessages: uiMessages,
+          onFinish: async ({ messages, responseMessage }) => {
+            // Save messages if needed
+            if (session.user?.id && messages.length > 0) {
               try {
-                const assistantMessages = response.messages.filter(
-                  (message) => message.role === "assistant"
-                );
-
-                if (assistantMessages.length === 0) {
-                  console.warn("No assistant messages found in response");
-                  return;
-                }
-
-                const assistantId = getTrailingMessageId({
-                  messages: assistantMessages,
-                });
-
-                if (!assistantId) {
-                  console.warn("No assistant message ID found");
-                  return;
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [messageToProcess as any],
-                  responseMessages: response.messages,
-                });
-
-                if (!assistantMessage) {
-                  console.warn("Failed to append response messages");
-                  return;
-                }
+                const messagesToSave = messages.map((msg: any) => ({
+                  id: msg.id,
+                  chatId: id,
+                  role: msg.role,
+                  parts: msg.parts || [],
+                  attachments: msg.experimental_attachments || [],
+                  createdAt: msg.createdAt || new Date(),
+                }));
 
                 await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
+                  messages: messagesToSave,
                 });
-
-                console.log("🔍 Assistant message saved successfully");
-
-                // Отправляем команду перенаправления на страницу чата
-                // Это происходит только после успешного создания чата
-                try {
-                  dataStream.writeData({
-                    type: "redirect",
-                    url: `/chat/${id}`,
-                  });
-                  console.log(
-                    "🔍 Redirect command sent to client:",
-                    `/chat/${id}`
-                  );
-                } catch (redirectError) {
-                  console.error(
-                    "🔍 Failed to send redirect command:",
-                    redirectError
-                  );
-                }
               } catch (error) {
-                console.error("🔍 Failed to save assistant message:", error);
-                if (error instanceof Error) {
-                  console.error("🔍 Error stack:", error.stack);
-                }
-                // Не выбрасываем ошибку, чтобы не прерывать поток
+                console.error("Failed to save messages:", error);
               }
             }
           },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: "stream-text",
-          },
         });
 
-        result.consumeStream();
-
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+        // Store stream response for later use
+        (globalThis as any).streamResponse = streamResponse;
       },
       onError: (error: any) => {
         console.error("🔍 DataStream onError called with:", error);
@@ -938,10 +881,15 @@ export const POST = withMonitoring(async function POST(request: Request) {
 
     const streamContext = getStreamContext();
 
+    // Get the stored stream response
+    const finalResponse = (globalThis as any).streamResponse;
+    if (finalResponse) {
+      return finalResponse;
+    }
+
     if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream)
-      );
+      // For resumable streams, we need to handle differently in AI SDK v5
+      return new Response(stream);
     } else {
       return new Response(stream);
     }
@@ -1046,13 +994,13 @@ export async function GET(request: Request) {
       return new Response("No recent stream found", { status: 404 });
     }
 
-    const emptyDataStream = createDataStream({
+    const emptyDataStream = createUIMessageStream({
       execute: () => {},
     });
 
     const stream = await streamContext.resumableStream(
       recentStreamId,
-      () => emptyDataStream
+      () => new ReadableStream<string>({ start() {} })
     );
 
     /*
@@ -1065,29 +1013,30 @@ export async function GET(request: Request) {
         const mostRecentMessage = messages.at(-1);
 
         if (!mostRecentMessage) {
-          return new Response(emptyDataStream, { status: 200 });
+          return new Response("", { status: 200 });
         }
 
         if (mostRecentMessage.role !== "assistant") {
-          return new Response(emptyDataStream, { status: 200 });
+          return new Response("", { status: 200 });
         }
 
         const messageCreatedAt = new Date(mostRecentMessage.createdAt);
 
         if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
-          return new Response(emptyDataStream, { status: 200 });
+          return new Response("", { status: 200 });
         }
 
-        const restoredStream = createDataStream({
-          execute: (buffer) => {
-            buffer.writeData({
-              type: "append-message",
-              message: JSON.stringify(mostRecentMessage),
+        const restoredStream = createUIMessageStream({
+          execute: ({ writer }) => {
+            writer.write({
+              type: "data-append-message",
+              id: "restore-1",
+              data: JSON.stringify(mostRecentMessage),
             });
           },
         });
 
-        return new Response(restoredStream, { status: 200 });
+        return new Response("", { status: 200 });
       } catch (error) {
         return formatErrorResponse(error, "GET chat/restoreStream");
       }

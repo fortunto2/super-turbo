@@ -53,7 +53,7 @@ describe("Sasuke Semantic Search", () => {
         prompt: r.image.prompt,
         relevanceScore: r.relevanceScore,
         matchedKeywords: r.matchedKeywords,
-        reasoning: r.reasoning,
+        reasoningText: r.reasoningText,
       })),
     });
 

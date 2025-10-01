@@ -9,7 +9,7 @@ import { semanticIndex } from "./semantic-index";
 interface SemanticMatch {
   media: ChatMedia;
   similarity: number;
-  reasoning: string;
+  reasoningText: string;
   matchedKeywords: string[];
 }
 
@@ -61,7 +61,7 @@ export class SemanticContextAnalyzer {
         matches.push({
           media,
           similarity,
-          reasoning: `Семантическое сходство: ${Math.round(similarity * 100)}% (${matchedKeywords.join(", ")})`,
+          reasoningText: `Семантическое сходство: ${Math.round(similarity * 100)}% (${matchedKeywords.join(", ")})`,
           matchedKeywords,
         });
       }

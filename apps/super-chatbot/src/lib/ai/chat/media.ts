@@ -11,6 +11,7 @@ export const saveImageToChat = async (
 
   let alreadyExists = false;
   setMessages((prev) => {
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     alreadyExists = prev.some((msg) =>
       msg.experimental_attachments?.some((att: any) => att.url === imageUrl)
     );
@@ -19,6 +20,7 @@ export const saveImageToChat = async (
 
   if (alreadyExists) return;
 
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const message = {
     id: generateUUID(),
     role: "assistant" as const,
@@ -65,6 +67,7 @@ export const saveMediaToChat = async (
     // Check for duplicates
     let videoExists = false;
     setMessages((prevMessages: any[]) => {
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       videoExists = prevMessages.some((message) =>
         message.experimental_attachments?.some(
           (attachment: any) => attachment.url === videoUrl
@@ -120,6 +123,7 @@ export const saveMediaToChat = async (
       displayPromptForAttachment: displayPromptForAttachment,
     });
 
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     const videoMessage = {
       id: generateUUID(),
       role: "assistant" as const,
@@ -141,6 +145,7 @@ export const saveMediaToChat = async (
 
     // Save to database
     try {
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       const response = await fetch("/api/save-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { nanoBananaPromptEnhancer } from "@/lib/ai/tools/nano-banana-prompt-enhancer";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Схема валидации для запроса улучшения промпта
 const enhancePromptRequestSchema = z.object({
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     console.log("🍌 Validated enhance prompt request data:", validatedData);
 
     // Вызываем инструмент улучшения промпта
-    const result = await nanoBananaPromptEnhancer.execute(validatedData, {
+    const result = await nanoBananaPromptEnhancer.execute?.(validatedData, {
       toolCallId: "nano-banana-enhance",
       messages: [],
     });
@@ -64,11 +64,11 @@ export async function POST(request: NextRequest) {
     console.log("🍌 Enhance prompt result:", result);
 
     // Проверяем на ошибки
-    if (result.error) {
+    if ((result as any).error) {
       return NextResponse.json(
         {
-          error: result.error,
-          fallback: result.fallback,
+          error: (result as any).error,
+          fallback: (result as any).fallback,
         },
         { status: 400 }
       );
@@ -109,7 +109,7 @@ export async function GET() {
     console.log("🍌 Nano Banana enhance prompt info API called");
 
     // Получаем информацию о техниках и стилях
-    const techniquesInfo = await nanoBananaPromptEnhancer.execute(
+    const techniquesInfo = await nanoBananaPromptEnhancer.execute?.(
       {
         originalPrompt: "info",
         includeTechnicalTerms: true,
@@ -126,7 +126,7 @@ export async function GET() {
 
     // Извлекаем нужные данные из конфигурации
     const techniques =
-      techniquesInfo.appliedTechniques?.map((t: any) => t.id) || [];
+      (techniquesInfo as any).appliedTechniques?.map((t: any) => t.id) || [];
 
     return NextResponse.json({
       success: true,

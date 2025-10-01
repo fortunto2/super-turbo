@@ -571,6 +571,7 @@ if (typeof window !== "undefined") {
 
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i];
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       console.log(`📨 Message ${i}:`, {
         role: message.role,
         id: message.id,
@@ -701,10 +702,10 @@ if (typeof window !== "undefined") {
       }
 
       // Also check attachments
-      if (
-        message.experimental_attachments &&
-        message.experimental_attachments.length > 0
-      ) {
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+      if (message.experimental_attachments &&
+      message.experimental_attachments.length > 0) {
+        /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
         console.log(
           `  📎 Attachments (${message.experimental_attachments.length}):`,
           message.experimental_attachments.map((att: any) => ({
@@ -908,6 +909,7 @@ if (typeof window !== "undefined") {
         contentType: "image/webp",
       };
 
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       const newMessage = {
         id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         role: "assistant" as const,
@@ -995,6 +997,7 @@ if (typeof window !== "undefined") {
         thumbnailUrl: effectiveThumbnailUrl,
       };
 
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       const newMessage = {
         id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         role: "assistant" as const,
