@@ -7,15 +7,12 @@ import { useState } from "react";
 import { Button } from "@turbo-super/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
 import {
   BookOpen,
   Lightbulb,
   Star,
   Tag,
   Eye,
-  Copy,
-  Filter,
   Search,
 } from "lucide-react";
 import type { NanoBananaStyleInfo } from "../api/nano-banana-api";
@@ -64,7 +61,7 @@ export function NanoBananaStyleGuideDisplay({
     return (
       <Card className="w-full">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Loading Style Guide...
           </h3>

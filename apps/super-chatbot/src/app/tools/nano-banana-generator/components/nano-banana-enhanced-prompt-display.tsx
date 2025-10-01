@@ -7,7 +7,6 @@ import { useState } from "react";
 import { Button } from "@turbo-super/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
 import {
   Copy,
   Trash2,

@@ -82,13 +82,10 @@ You are a professional scriptwriter AI. Generate a detailed scenario in Markdown
         }
 
         // 2. Create document artifact using the provided function
-        const documentResult = await params.createDocument({
-          session: params.session,
-          dataStream: {
-            title: prompt,
-            kind: "script",
-            content: script,
-          },
+        const documentResult = await params.createDocument.execute({
+          title: prompt,
+          kind: "script",
+          content: script,
         });
 
         // 3. Return the result which will be sent to the client

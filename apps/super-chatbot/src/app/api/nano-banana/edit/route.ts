@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { nanoBananaImageEditing } from "@/lib/ai/tools/nano-banana-image-editing";
 import { createDocument } from "@/lib/ai/tools/create-document";
@@ -147,7 +147,29 @@ export async function GET() {
     };
 
     // Получаем конфигурацию без промпта
-    const config = await nanoBananaImageEditing(toolParams).execute({});
+    const config = await nanoBananaImageEditing(toolParams).execute(
+      {
+        editType: "background-replacement",
+        editPrompt: "Edit the background of the image",
+        sourceImageUrl: "https://example.com/image.jpg",
+        precisionLevel: "automatic",
+        blendMode: "natural",
+        preserveOriginalStyle: true,
+        enhanceLighting: true,
+        preserveShadows: true,
+        seed: 0,
+        batchSize: 1,
+        objectToRemove: "background",
+        newBackground: "https://example.com/new-background.jpg",
+        textToAdd: "Add text to the image",
+        textStyle: "Arial",
+        targetStyle: "realistic",
+      },
+      {
+        toolCallId: "nano-banana-edit-info",
+        messages: [],
+      }
+    );
 
     // Извлекаем нужные данные из конфигурации
     const editTypes = config.nanoBananaEditTypes?.map((t: any) => t.id) || [];

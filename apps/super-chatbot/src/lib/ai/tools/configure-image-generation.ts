@@ -12,7 +12,7 @@ import { analyzeImageContext } from "@/lib/ai/context";
 interface CreateImageDocumentParams {
   createDocument: any;
   session?: Session | null;
-  defaultSourceImageUrl?: string;
+  defaultSourceImageUrl?: string | undefined;
   chatId?: string;
   userMessage?: string;
   currentAttachments?: any[];
@@ -320,12 +320,9 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         try {
           // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
           // TODO: Refactor to use proper parameter passing mechanism
-          const result = await params.createDocument({
-            session: params.session,
-            dataStream: {
-              title: JSON.stringify(imageParams),
-              kind: "image",
-            },
+          const result = await params.createDocument.execute({
+            title: JSON.stringify(imageParams),
+            kind: "image",
           });
 
           console.log("🔧 ✅ CREATE DOCUMENT RESULT:", result);

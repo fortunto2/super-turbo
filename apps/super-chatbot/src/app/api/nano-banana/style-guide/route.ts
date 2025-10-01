@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { nanoBananaStyleGuide } from "@/lib/ai/tools/nano-banana-style-guide";
 import { z } from "zod";
 
@@ -43,7 +43,10 @@ export async function POST(request: NextRequest) {
     console.log("🍌 Validated style guide request data:", validatedData);
 
     // Вызываем инструмент руководства по стилям
-    const result = await nanoBananaStyleGuide.execute(validatedData);
+    const result = await nanoBananaStyleGuide.execute(validatedData, {
+      toolCallId: "nano-banana-style-guide",
+      messages: [],
+    });
 
     console.log("🍌 Style guide result:", result);
 
@@ -93,11 +96,17 @@ export async function GET(request: NextRequest) {
     console.log("🍌 Nano Banana style guide info API called");
 
     // Получаем полное руководство по стилям
-    const result = await nanoBananaStyleGuide.execute({
-      includeTips: true,
-      includeExamples: true,
-      limit: 20,
-    });
+    const result = await nanoBananaStyleGuide.execute(
+      {
+        includeTips: true,
+        includeExamples: true,
+        limit: 20,
+      },
+      {
+        toolCallId: "nano-banana-style-guide",
+        messages: [],
+      }
+    );
 
     return NextResponse.json({
       success: true,

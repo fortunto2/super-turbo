@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, } from "react";
 import { Button } from "@turbo-super/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
 import { Input } from "@turbo-super/ui";
@@ -21,8 +21,6 @@ import {
 import { Switch } from "../../../../components/ui";
 import {
   Wand2,
-  ImageIcon,
-  Upload,
   Sparkles,
   Settings,
   Zap,
@@ -302,7 +300,7 @@ export function NanoBananaGeneratorForm({
                   onChange={(e) =>
                     updateFormData(
                       "seed",
-                      e.target.value ? parseInt(e.target.value) : undefined
+                      e.target.value ? Number.parseInt(e.target.value) : undefined
                     )
                   }
                   disabled={isGenerating}
@@ -319,7 +317,7 @@ export function NanoBananaGeneratorForm({
                 <Select
                   value={formData.batchSize?.toString() || "1"}
                   onValueChange={(value) =>
-                    updateFormData("batchSize", parseInt(value))
+                    updateFormData("batchSize", Number.parseInt(value))
                   }
                   disabled={isGenerating}
                 >

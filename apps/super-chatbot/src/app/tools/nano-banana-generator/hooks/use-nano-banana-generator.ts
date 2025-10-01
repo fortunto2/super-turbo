@@ -118,6 +118,9 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
           throw new Error("No data returned from generation");
         }
 
+        // Store data in a variable after null check
+        const generatedData = result.data;
+
         // Update status
         setGenerationStatus({
           status: "processing",
@@ -133,9 +136,9 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Update with result
-        setCurrentGeneration(result.data);
-        setGeneratedImages((prev) => [result.data!, ...prev]);
-        saveImages([result.data!, ...generatedImages]);
+        setCurrentGeneration(generatedData);
+        setGeneratedImages((prev) => [generatedData, ...prev]);
+        saveImages([generatedData, ...generatedImages]);
 
         setGenerationStatus({
           status: "completed",

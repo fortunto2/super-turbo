@@ -52,9 +52,12 @@ export function useNanoBananaPromptEnhancer(): UseNanoBananaPromptEnhancerReturn
           throw new Error("No data returned from enhancement");
         }
 
+        // Store data in a variable after null check
+        const enhancedData = result.data;
+
         // Update with result
-        setCurrentEnhancement(result.data);
-        setEnhancedPrompts((prev) => [result.data!, ...prev]);
+        setCurrentEnhancement(enhancedData);
+        setEnhancedPrompts((prev) => [enhancedData, ...prev]);
 
         toast.success("Prompt enhanced successfully!");
       } catch (error) {

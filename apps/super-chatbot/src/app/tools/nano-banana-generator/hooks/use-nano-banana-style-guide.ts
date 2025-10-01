@@ -73,8 +73,7 @@ export function useNanoBananaStyleGuide(): UseNanoBananaStyleGuideReturn {
 
         // Add examples as style infos
         if (
-          result.data &&
-          result.data.examples &&
+          result.data?.examples &&
           Array.isArray(result.data.examples)
         ) {
           result.data.examples.forEach((example: any) => {
@@ -92,8 +91,7 @@ export function useNanoBananaStyleGuide(): UseNanoBananaStyleGuideReturn {
 
         // Add techniques as style infos
         if (
-          result.data &&
-          result.data.techniques &&
+          result.data?.techniques &&
           Array.isArray(result.data.techniques)
         ) {
           result.data.techniques.forEach((technique: any) => {

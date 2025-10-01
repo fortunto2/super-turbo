@@ -30,7 +30,7 @@ function PureSuggestedActions({
       title: "Create a video",
       label: "showing ocean waves at the beach",
       action:
-        "Generate a 10-second video of ocean waves gently crashing on a sandy beach at golden hour, cinematic style, 30fps",
+        "Generate a 5-second video of ocean waves gently crashing on a sandy beach at golden hour, cinematic style, 30fps",
     },
     {
       title: "Write a screenplay",

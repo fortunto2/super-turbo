@@ -60,7 +60,7 @@ export class NanoBananaProvider {
         creativeMode: params.nanoBananaFeatures.creativeMode,
       },
       nanoBananaInfo: {
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash-image",
         capabilities: [
           "Контекстно-осознанное редактирование",
           "Хирургическая точность",
@@ -132,7 +132,7 @@ export class NanoBananaProvider {
         preserveShadows: params.preserveShadows,
       },
       nanoBananaEditInfo: {
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash-image",
         editType: {
           id: params.editType,
           label: params.editType,
@@ -267,46 +267,46 @@ export class NanoBananaProvider {
 
     // Обрезаем промпт для отображения
     const displayPrompt =
-      prompt.length > 100 ? prompt.substring(0, 100) + "..." : prompt;
+      prompt.length > 100 ? `${prompt.substring(0, 100)}...` : prompt;
 
     const svg = `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${colors.bg};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${colors.primary};stop-opacity:0.1" />
+            <stop offset="0%" style="stop-color:${colors?.bg};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:${colors?.primary};stop-opacity:0.1" />
           </linearGradient>
         </defs>
         <rect width="100%" height="100%" fill="url(#grad)"/>
         
         <!-- Декоративные элементы -->
-        <circle cx="10%" cy="10%" r="30" fill="${colors.primary}" opacity="0.1"/>
-        <circle cx="90%" cy="90%" r="40" fill="${colors.primary}" opacity="0.15"/>
-        <circle cx="80%" cy="20%" r="25" fill="${colors.primary}" opacity="0.1"/>
+        <circle cx="10%" cy="10%" r="30" fill="${colors?.primary}" opacity="0.1"/>
+            <circle cx="90%" cy="90%" r="40" fill="${colors?.primary}" opacity="0.15"/>
+        <circle cx="80%" cy="20%" r="25" fill="${colors?.primary}" opacity="0.1"/>
         
         <!-- Иконка Nano Banana -->
-        <text x="50%" y="35%" text-anchor="middle" font-size="60" fill="${colors.primary}">🍌</text>
+        <text x="50%" y="35%" text-anchor="middle" font-size="60" fill="${colors?.primary}">🍌</text>
         
         <!-- Заголовок -->
-        <text x="50%" y="45%" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="${colors.text}">
+        <text x="50%" y="45%" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="${colors?.text}">
           Nano Banana Generated
         </text>
         
         <!-- Промпт -->
-        <text x="50%" y="52%" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="${colors.text}" opacity="0.7">
+        <text x="50%" y="52%" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="${colors?.text}" opacity="0.7">
           ${displayPrompt.substring(0, 50)}
         </text>
-        <text x="50%" y="56%" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="${colors.text}" opacity="0.7">
+        <text x="50%" y="56%" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="${colors?.text}" opacity="0.7">
           ${displayPrompt.substring(50, 100)}
         </text>
         
         <!-- Стиль и размер -->
-        <text x="50%" y="65%" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="${colors.primary}">
+        <text x="50%" y="65%" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="${colors?.primary}">
           Style: ${style} • ${width}x${height}
         </text>
         
         <!-- Сообщение -->
-        <text x="50%" y="75%" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="${colors.text}" opacity="0.5">
+        <text x="50%" y="75%" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="${colors?.text}" opacity="0.5">
           Placeholder - Waiting for Gemini-2.5-Flash-Image API key
         </text>
       </svg>

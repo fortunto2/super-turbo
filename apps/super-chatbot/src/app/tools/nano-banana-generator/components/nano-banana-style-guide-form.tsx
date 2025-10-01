@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "../../../../components/ui";
 import { Switch } from "../../../../components/ui";
-import { BookOpen, Search, Filter, Lightbulb, Sparkles } from "lucide-react";
+import { BookOpen, Search, Filter, } from "lucide-react";
 import type { NanoBananaStyleGuideRequest } from "../api/nano-banana-api";
 
 interface NanoBananaStyleGuideFormProps {
@@ -288,7 +288,7 @@ export function NanoBananaStyleGuideForm({
               </Label>
               <Select
                 value={limit.toString()}
-                onValueChange={(value) => setLimit(parseInt(value))}
+                onValueChange={(value) => setLimit(Number.parseInt(value))}
                 disabled={isLoading}
               >
                 <SelectTrigger>

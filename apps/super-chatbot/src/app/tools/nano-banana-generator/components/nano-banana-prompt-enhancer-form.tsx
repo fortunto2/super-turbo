@@ -6,7 +6,6 @@
 import { useState } from "react";
 import { Button } from "@turbo-super/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
 import { Label } from "@turbo-super/ui";
 import { Textarea } from "@turbo-super/ui";
 import { Separator } from "@turbo-super/ui";
@@ -19,7 +18,7 @@ import {
   SelectValue,
 } from "../../../../components/ui";
 import { Switch } from "../../../../components/ui";
-import { Sparkles, Wand2, Settings, Zap, Lightbulb } from "lucide-react";
+import { Sparkles, Wand2, Settings, Zap, } from "lucide-react";
 import type { NanoBananaPromptEnhancementRequest } from "../api/nano-banana-api";
 
 interface NanoBananaPromptEnhancerFormProps {

@@ -20,6 +20,7 @@ export interface GeminiImageParams {
 export interface GeminiEditParams {
   editPrompt: string;
   sourceImageUrl: string; // Обязательно для редактирования
+  imageData?: string; // Base64 данные изображения
   editType: string;
   precisionLevel: string;
   blendMode: string;
@@ -29,6 +30,7 @@ export interface GeminiEditParams {
   nanoBananaEditFeatures: {
     enableContextAwareness: boolean;
     enableSurgicalPrecision: boolean;
+    creativeMode: boolean;
     preserveOriginalStyle: boolean;
     enhanceLighting: boolean;
     preserveShadows: boolean;
@@ -44,13 +46,13 @@ export interface GeminiImageResult {
     style: string;
     quality: string;
     aspectRatio: string;
-    seed?: number;
+    seed?: number | undefined;
     enableContextAwareness: boolean;
     enableSurgicalPrecision: boolean;
     creativeMode: boolean;
   };
   nanoBananaInfo: {
-    model: "gemini-1.5-flash";
+    model: "gemini-2.5-flash-image";
     capabilities: string[];
     style: {
       id: string;
@@ -106,6 +108,7 @@ export interface GeminiEditResult {
     };
     capabilities: string[];
   };
+  geminiResponse?: string; // Ответ от Gemini API
 }
 
 export interface GeminiConfig {

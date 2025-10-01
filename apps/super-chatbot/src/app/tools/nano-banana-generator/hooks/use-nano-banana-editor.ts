@@ -121,6 +121,9 @@ export function useNanoBananaEditor(): UseNanoBananaEditorReturn {
           throw new Error("No data returned from editing");
         }
 
+        // Store data in a variable after null check
+        const editedData = result.data;
+
         // Update status
         setEditingStatus({
           status: "processing",
@@ -136,9 +139,9 @@ export function useNanoBananaEditor(): UseNanoBananaEditorReturn {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Update with result
-        setCurrentEdit(result.data);
-        setEditedImages((prev) => [result.data!, ...prev]);
-        saveEditedImages([result.data!, ...editedImages]);
+        setCurrentEdit(editedData);
+        setEditedImages((prev) => [editedData, ...prev]);
+        saveEditedImages([editedData, ...editedImages]);
 
         setEditingStatus({
           status: "completed",

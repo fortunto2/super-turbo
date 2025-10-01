@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "../../../../components/ui";
 import { Switch } from "../../../../components/ui";
-import { Edit3, ImageIcon, Upload, Settings, Zap, Palette } from "lucide-react";
+import { Edit3, Settings, Zap, Palette } from "lucide-react";
 import type { NanoBananaImageEditingRequest } from "../api/nano-banana-api";
 
 interface NanoBananaEditorFormProps {
@@ -514,7 +514,7 @@ export function NanoBananaEditorForm({
                   onChange={(e) =>
                     updateFormData(
                       "seed",
-                      e.target.value ? parseInt(e.target.value) : undefined
+                      e.target.value ? Number.parseInt(e.target.value) : undefined
                     )
                   }
                   disabled={isEditing}
@@ -531,7 +531,7 @@ export function NanoBananaEditorForm({
                 <Select
                   value={formData.batchSize?.toString() || "1"}
                   onValueChange={(value) =>
-                    updateFormData("batchSize", parseInt(value))
+                    updateFormData("batchSize", Number.parseInt(value))
                   }
                   disabled={isEditing}
                 >
@@ -564,7 +564,7 @@ export function NanoBananaEditorForm({
                     Preserve Original Style
                   </Label>
                   <p className="text-xs text-gray-500">
-                    Maintains the original image's artistic style
+                    Maintains the original image&apos;s artistic style
                   </p>
                 </div>
                 <Switch
