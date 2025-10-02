@@ -234,7 +234,9 @@ export async function POST(req: NextRequest) {
       !process.env.AZURE_OPENAI_RESOURCE_NAME ||
       !process.env.AZURE_OPENAI_API_KEY ||
       process.env.AZURE_OPENAI_RESOURCE_NAME === "your-azure-resource-name" ||
-      process.env.AZURE_OPENAI_API_KEY === "your-azure-openai-api-key"
+      process.env.AZURE_OPENAI_API_KEY === "your-azure-openai-api-key" ||
+      process.env.AZURE_OPENAI_RESOURCE_NAME === "placeholder-resource" ||
+      process.env.AZURE_OPENAI_API_KEY === "placeholder-key"
     ) {
       console.error("Missing Azure OpenAI environment variables");
       return NextResponse.json(
