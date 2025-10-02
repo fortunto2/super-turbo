@@ -1,5 +1,5 @@
 {
-    "buildCommand": "pnpm --filter=landing run build",
+   "buildCommand": "pnpm build --filter=landing...^",
     "installCommand": "pnpm install --filter=landing --filter='@turbo-super/*' --recursive",
     "framework": null,
    
