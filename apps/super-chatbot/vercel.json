@@ -2,11 +2,6 @@
   "buildCommand": "pnpm run build",
   "installCommand": "pnpm install",
   "framework": null,
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
   "env": {
     "TURBO_DISABLE": "1"
   }
