@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter=super-chatbot run build",
+  "buildCommand": "pnpm --filter=ai-chatbot run build",
   "installCommand": "pnpm install",
   "framework": null,
   "env": {

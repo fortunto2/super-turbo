@@ -1,6 +1,6 @@
 {
-    "buildCommand": "pnpm --filter=super-landing run build",
-    "installCommand": "pnpm install",
+    "buildCommand": "pnpm --filter=landing run build",
+    "installCommand": "pnpm install --filter=landing --filter='@turbo-super/*' --recursive",
     "framework": null,
    
     "public": true,
