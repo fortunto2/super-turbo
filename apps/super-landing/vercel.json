@@ -1,4 +1,7 @@
 {
+    "buildCommand": "pnpm --filter=super-landing run build",
+    "installCommand": "pnpm install",
+    "framework": null,
     "functions": {
         "src/app/api/webhook-status/[sessionId]/route.ts": {
             "maxDuration": 30

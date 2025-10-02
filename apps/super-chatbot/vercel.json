@@ -1,8 +1,8 @@
 {
-  "buildCommand": "pnpm run build",
+  "buildCommand": "pnpm --filter=super-chatbot run build",
   "installCommand": "pnpm install",
   "framework": null,
   "env": {
-    "TURBO_DISABLE": "1"
+    "TURBO_DISABLE": "1" 
   }
 }
