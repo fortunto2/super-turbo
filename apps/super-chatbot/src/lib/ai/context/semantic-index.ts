@@ -253,7 +253,7 @@ export class SemanticIndex {
       if (!this.keywordIndex.has(keyword)) {
         this.keywordIndex.set(keyword, new Set());
       }
-      this.keywordIndex.get(keyword)!.add(imageId);
+      this.keywordIndex.get(keyword)?.add(imageId);
     });
 
     console.log("🔍 SemanticIndex: Added image to index", {

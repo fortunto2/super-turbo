@@ -23,8 +23,10 @@ describe("/api/generate/image/route", () => {
   };
 
   const mockConfig = {
-    baseURL: "https://api.example.com",
-    apiToken: "test-token",
+    url: "https://api.example.com",
+    token: "test-token",
+    wsURL: "wss://api.example.com",
+    isUserToken: true,
   };
 
   beforeEach(() => {
@@ -32,7 +34,7 @@ describe("/api/generate/image/route", () => {
 
     vi.mocked(auth).mockResolvedValue(mockSession);
     vi.mocked(getSuperduperAIConfigWithUserToken).mockResolvedValue(mockConfig);
-    vi.mocked(validateOperationBalance).mockResolvedValue(true);
+    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: true });
   });
 
   it("should return 401 for unauthenticated requests", async () => {
@@ -238,7 +240,10 @@ describe("/api/generate/image/route", () => {
   });
 
   it("should handle balance validation failure", async () => {
-    vi.mocked(validateOperationBalance).mockResolvedValue(false);
+    vi.mocked(validateOperationBalance).mockResolvedValue({
+      valid: false,
+      error: "Insufficient balance",
+    });
 
     const request = new NextRequest("http://localhost/api/generate/image", {
       method: "POST",

@@ -65,6 +65,9 @@ type ArtifactConfig<T extends string, M = any> = {
   actions: Array<ArtifactAction<M>>;
   toolbar: ArtifactToolbarItem[];
   initialize?: (parameters: InitializeParameters<M>) => void;
+  onCreateDocument?: (args: {
+    setArtifact: Dispatch<SetStateAction<UIArtifact>>;
+  }) => void;
   onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setArtifact: Dispatch<SetStateAction<UIArtifact>>;
@@ -79,6 +82,9 @@ export class Artifact<T extends string, M = any> {
   readonly actions: Array<ArtifactAction<M>>;
   readonly toolbar: ArtifactToolbarItem[];
   readonly initialize?: (parameters: InitializeParameters) => void;
+  readonly onCreateDocument?: (args: {
+    setArtifact: Dispatch<SetStateAction<UIArtifact>>;
+  }) => void;
   readonly onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
     setArtifact: Dispatch<SetStateAction<UIArtifact>>;
@@ -92,6 +98,7 @@ export class Artifact<T extends string, M = any> {
     this.actions = config.actions || [];
     this.toolbar = config.toolbar || [];
     this.initialize = config.initialize || (async () => ({}));
+    this.onCreateDocument = config.onCreateDocument || (() => {});
     this.onStreamPart = config.onStreamPart;
   }
 }

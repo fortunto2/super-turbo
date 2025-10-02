@@ -105,9 +105,9 @@ export function MoodboardUploader({
 
       return {
         id: img.id,
-        file: img.file,
-        url: img.url,
-        base64: img.base64,
+        ...(img.file && { file: img.file }),
+        ...(img.url && { url: img.url }),
+        ...(img.base64 && { base64: img.base64 }),
         preview,
       };
     });
@@ -134,9 +134,9 @@ export function MoodboardUploader({
         return (
           existingImg || {
             id: uploadedImg.id,
-            file: uploadedImg.file,
-            url: uploadedImg.url,
-            base64: uploadedImg.base64,
+            ...(uploadedImg.file && { file: uploadedImg.file }),
+            ...(uploadedImg.url && { url: uploadedImg.url }),
+            ...(uploadedImg.base64 && { base64: uploadedImg.base64 }),
             tags: [],
             description: "",
             weight: 1.0,

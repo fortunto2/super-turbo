@@ -35,8 +35,12 @@ export function useInpainting({
       formData.append("config", result.config);
       formData.append("generationType", "image-to-image");
       formData.append("mask", result.mask);
-      formData.append("sourceImageId", scene?.file?.id!);
-      formData.append("sourceImageUrl", scene?.file?.url!);
+      if (scene.file.id) {
+        formData.append("sourceImageId", scene.file.id);
+      }
+      if (scene.file.url) {
+        formData.append("sourceImageUrl", scene.file.url);
+      }
       formData.append("model", "comfyui/flux/inpainting");
       formData.append("projectId", projectId);
       formData.append("sceneId", scene.id);

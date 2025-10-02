@@ -2,7 +2,14 @@
 
 import useSWR from "swr";
 import type { UIArtifact } from "@/components/artifacts/artifact";
-import { useCallback, useMemo, useRef, useEffect } from "react";
+import { useCallback, useMemo, useEffect } from "react";
+import type { UIMessage } from "ai";
+import {
+  saveArtifactToStorage,
+  loadArtifactFromStorage,
+  clearArtifactFromStorage,
+  restoreArtifactFromData,
+} from "@/lib/utils/artifact-persistence";
 
 export const initialArtifactData: UIArtifact = {
   documentId: "init",
@@ -34,7 +41,13 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
   return selectedValue;
 }
 
-export const useArtifact = () => {
+// Простой хук для управления артефактами
+export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
+  console.log("🔍 useArtifact hook called with:", {
+    chatId,
+    initialMessagesLength: initialMessages?.length,
+  });
+
   const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
     "artifact",
     null,
@@ -43,27 +56,14 @@ export const useArtifact = () => {
     }
   );
 
-  // Throttle logging to prevent spam
-  const lastLogTime = useRef<number>(0);
-  const logWithThrottle = (message: string, data?: any) => {
-    if (process.env.NODE_ENV === "development") {
-      const now = Date.now();
-      if (now - lastLogTime.current > 500) {
-        // Log at most every 500ms
-        console.log(message, data);
-        lastLogTime.current = now;
-      }
-    }
-  };
-
   const artifact = useMemo(() => {
-    const result = localArtifact || initialArtifactData;
-    // Artifact state changed silently
-    return result;
+    return localArtifact || initialArtifactData;
   }, [localArtifact]);
 
   const setArtifact = useCallback(
     (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
+      console.log("🔍 setArtifact called with chatId:", chatId);
+
       setLocalArtifact((currentArtifact) => {
         const artifactToUpdate = currentArtifact || initialArtifactData;
 
@@ -74,10 +74,51 @@ export const useArtifact = () => {
           newArtifact = updaterFn;
         }
 
+        // Улучшенное сохранение в localStorage
+        if (chatId && typeof window !== "undefined") {
+          console.log("💾 Artifact state changed:", {
+            chatId,
+            documentId: newArtifact.documentId,
+            status: newArtifact.status,
+            isVisible: newArtifact.isVisible,
+            kind: newArtifact.kind,
+          });
+
+          // Сохраняем артефакт если он имеет реальный контент или статус
+          const shouldSave =
+            newArtifact.documentId !== "init" ||
+            (newArtifact.status !== "idle" && newArtifact.status !== "error") ||
+            newArtifact.content ||
+            newArtifact.title ||
+            newArtifact.isVisible;
+
+          if (shouldSave) {
+            // Используем утилиту для сохранения
+            console.log("💾 Saving artifact to storage:", {
+              chatId,
+              artifact: newArtifact,
+            });
+            saveArtifactToStorage(chatId, newArtifact);
+          } else {
+            // Очищаем только если это действительно инициализация
+            console.log(
+              "🗑️ Clearing artifact from storage (init state):",
+              chatId
+            );
+            clearArtifactFromStorage(chatId);
+          }
+        } else {
+          console.log("⚠️ Skipping save - no chatId or window:", {
+            chatId,
+            hasWindow: typeof window !== "undefined",
+            chatIdType: typeof chatId,
+          });
+        }
+
         return newArtifact;
       });
     },
-    [setLocalArtifact]
+    [setLocalArtifact, chatId]
   );
 
   const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
@@ -89,6 +130,75 @@ export const useArtifact = () => {
         fallbackData: null,
       }
     );
+
+  // Улучшенное восстановление при загрузке чата
+  useEffect(() => {
+    console.log("🔍 useArtifact useEffect triggered:", {
+      chatId,
+      window: typeof window,
+      chatIdType: typeof chatId,
+    });
+
+    if (chatId && typeof window !== "undefined") {
+      console.log("🔍 Loading artifact from storage for chatId:", chatId);
+      const savedData = loadArtifactFromStorage(chatId);
+      console.log("🔍 Loaded data from storage:", savedData);
+
+      if (savedData) {
+        // Определяем, нужно ли восстанавливать артефакт
+        const shouldRestore =
+          (savedData.documentId && savedData.documentId !== "init") ||
+          savedData.isVisible ||
+          savedData.status === "streaming" ||
+          savedData.status === "pending" ||
+          savedData.status === "completed" ||
+          savedData.content ||
+          savedData.title;
+
+        console.log("🔍 Should restore artifact:", shouldRestore, {
+          documentId: savedData.documentId,
+          isVisible: savedData.isVisible,
+          status: savedData.status,
+        });
+
+        if (shouldRestore) {
+          console.log("🔄 Restoring artifact:", {
+            ...savedData,
+            content: savedData.content
+              ? `${savedData.content.substring(0, 100)}...`
+              : "empty",
+          });
+
+          const restoredArtifact = restoreArtifactFromData(savedData);
+          setLocalArtifact((draft) => {
+            console.log("🔍 Setting restored artifact:", restoredArtifact);
+            return {
+              ...draft,
+              ...restoredArtifact,
+              boundingBox: draft?.boundingBox || {
+                top: 0,
+                left: 0,
+                width: 0,
+                height: 0,
+              },
+            };
+          });
+        } else {
+          // Очищаем неактивные артефакты
+          console.log("🗑️ Clearing inactive artifact for chatId:", chatId);
+          clearArtifactFromStorage(chatId);
+        }
+      } else {
+        console.log("🔍 No saved data found for chatId:", chatId);
+      }
+    } else {
+      console.log("🔍 Skipping restoration - no chatId or window:", {
+        chatId,
+        hasWindow: typeof window !== "undefined",
+        chatIdType: typeof chatId,
+      });
+    }
+  }, [chatId, setLocalArtifact]);
 
   // Expose artifact globally for debugging
   useEffect(() => {
@@ -102,13 +212,42 @@ export const useArtifact = () => {
     }
   }, [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata]);
 
+  const updateMessages = useCallback((newMessages: UIMessage[]) => {
+    // Не используется в упрощенной версии
+  }, []);
+
+  const metadata = localArtifactMetadata || null;
+
+  const setMetadata = useCallback(
+    (updaterFn: any | ((currentMetadata: any) => any)) => {
+      setLocalArtifactMetadata((currentMetadata: any) => {
+        if (typeof updaterFn === "function") {
+          return updaterFn(currentMetadata);
+        } else {
+          return updaterFn;
+        }
+      });
+    },
+    [setLocalArtifactMetadata]
+  );
+
   return useMemo(
     () => ({
       artifact,
       setArtifact,
-      metadata: localArtifactMetadata,
-      setMetadata: setLocalArtifactMetadata,
+      metadata,
+      setMetadata,
+      updateMessages,
     }),
-    [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata]
+    [artifact, setArtifact, metadata, setMetadata, updateMessages]
   );
 };
+
+// Хук для обратной совместимости (без chatId) - просто возвращает useArtifact
+export const useArtifactLegacy = () => {
+  console.log("🔍 useArtifactLegacy called - using fallback without chatId");
+  return useArtifact();
+};
+
+// Хук для использования в компонентах, которые должны использовать контекст
+// Используйте useArtifactContext напрямую в компонентах

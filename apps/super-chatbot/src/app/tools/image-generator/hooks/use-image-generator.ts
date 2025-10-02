@@ -13,9 +13,7 @@ import {
 } from "@/lib/utils/local-storage";
 import type { ImageGenerationFormData } from "../components/image-generator-form";
 import type { GenerationStatus } from "../components/generation-progress";
-import {
-  generateImageApi,
-} from "../api/image-generation";
+import { generateImageApi } from "../api/image-generation";
 
 // Legacy interfaces - MUST remain exactly the same for compatibility
 export interface GeneratedImage {
@@ -93,8 +91,8 @@ export function useImageGenerator(): UseImageGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.projectId,
-      requestId: stored.requestId,
+      projectId: stored.projectId ?? "",
+      requestId: stored.requestId ?? "",
       settings: stored.settings,
     }));
     setGeneratedImages(convertedImages);
@@ -128,7 +126,16 @@ export function useImageGenerator(): UseImageGeneratorReturn {
         }, 1000);
 
         // Call API using dedicated API function
-        const result = await generateImageApi(formData);
+        const apiData = {
+          prompt: formData.prompt,
+          model: formData.model ?? "",
+          style: formData.style ?? "",
+          resolution: formData.resolution ?? "",
+          shotSize: formData.shotSize ?? "",
+          ...(formData.seed !== undefined && { seed: formData.seed }),
+          ...(formData.file && { file: formData.file }),
+        };
+        const result = await generateImageApi(apiData);
 
         if (!result.success) {
           throw new Error(result.error || "Generation failed");
@@ -173,13 +180,13 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   prompt: formData.prompt,
                   timestamp: Date.now(),
                   projectId: result.projectId || "",
-                  requestId: result.requestId,
+                  requestId: result.requestId ?? "",
                   settings: {
                     model: formData.model || "",
                     style: formData.style || "",
                     resolution: formData.resolution || "",
                     shotSize: formData.shotSize || "",
-                    seed: formData.seed,
+                    ...(formData.seed !== undefined && { seed: formData.seed }),
                   },
                 };
 
@@ -192,8 +199,8 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   url: generatedImage.url,
                   prompt: generatedImage.prompt,
                   timestamp: generatedImage.timestamp,
-                  projectId: generatedImage.projectId,
-                  requestId: generatedImage.requestId,
+                  projectId: generatedImage.projectId || "",
+                  requestId: generatedImage.requestId || "",
                   settings: generatedImage.settings,
                 });
 
@@ -330,19 +337,19 @@ export function useImageGenerator(): UseImageGeneratorReturn {
               if (fileData.url) {
                 // Success!
                 const generatedImage: GeneratedImage = {
-                  id: projectId,
+                  id: projectId || "",
                   url: fileData.url,
                   prompt: prompt,
                   timestamp: Date.now(),
-                  projectId: projectId,
-                  requestId: projectId,
+                  projectId: projectId || "",
+                  requestId: projectId || "",
                   settings: {
                     model: "comfyui/flux/inpainting",
                     style: "inpainting",
                     resolution: "1024x1024",
                     shotSize: "medium_shot",
                   },
-                  fileId: fileId || projectId,
+                  fileId: fileId || projectId || "",
                 };
 
                 setCurrentGeneration(generatedImage);
@@ -354,8 +361,8 @@ export function useImageGenerator(): UseImageGeneratorReturn {
                   url: generatedImage.url,
                   prompt: generatedImage.prompt,
                   timestamp: generatedImage.timestamp,
-                  projectId: generatedImage.projectId,
-                  requestId: generatedImage.requestId,
+                  projectId: generatedImage.projectId ?? "",
+                  requestId: generatedImage.requestId ?? "",
                   settings: generatedImage.settings,
                   fileId: fileId || projectId,
                 });

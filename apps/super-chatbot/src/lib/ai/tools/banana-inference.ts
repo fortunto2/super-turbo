@@ -37,7 +37,17 @@ export const bananaInferenceTool = tool({
       const result = await runBananaInference({
         modelId,
         inputs,
-        config,
+        ...(config && {
+          config: {
+            ...(config.maxTokens !== undefined && {
+              maxTokens: config.maxTokens,
+            }),
+            ...(config.temperature !== undefined && {
+              temperature: config.temperature,
+            }),
+            ...(config.topP !== undefined && { topP: config.topP }),
+          },
+        }),
       });
 
       if (result.status === "error") {

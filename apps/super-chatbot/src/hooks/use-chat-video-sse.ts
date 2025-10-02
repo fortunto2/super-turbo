@@ -175,7 +175,7 @@ export const useChatVideoSSE = ({
                 for (let i = updatedMessages.length - 1; i >= 0; i--) {
                   const message = updatedMessages[i];
 
-                  if (message.role === "assistant") {
+                  if (message?.role === "assistant") {
                     // Check if this message has video artifact content
                     const hasVideoArtifact = message.parts?.some(
                       (part) =>
@@ -189,7 +189,7 @@ export const useChatVideoSSE = ({
 
                     if (hasVideoArtifact) {
                       // Try to find and parse video artifact content
-                      for (const part of message.parts || []) {
+                      for (const part of message?.parts || []) {
                         if (
                           part.type === "text" &&
                           "text" in part &&
@@ -204,7 +204,9 @@ export const useChatVideoSSE = ({
                                 /```json\\s*({[\\s\\S]*?})\\s*```/
                               );
                               if (jsonMatch) {
-                                artifactContent = JSON.parse(jsonMatch[1]);
+                                artifactContent = JSON.parse(
+                                  jsonMatch[1] || ""
+                                );
                               }
                             } else if (
                               part.text.startsWith("{") &&

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const image = formData.get("image") as File;
 
-    if (!image) {
+    if (!image || image.size === 0) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
     // Генерируем уникальное имя файла
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
-    const extension = image.name.split(".").pop() || "jpg";
+    const extension = image.name.split(".").pop() ?? "jpg";
     const fileName = `${timestamp}_${randomString}.${extension}`;
     const filePath = join(UPLOAD_DIR, fileName);
 
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, buffer);
 
     // Возвращаем полный URL изображения
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
     const imageUrl = `${baseUrl}/uploads/images/${fileName}`;
 
     console.log("✅ Image uploaded successfully:", {

@@ -12,7 +12,7 @@ export const useProjectScript2Storyboard = (mutationKey?: MutationKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey,
+    ...(mutationKey && { mutationKey }),
     mutationFn: (payload: IProjectVideoScript2Storyboard) =>
       ProjectService.projectScript2Storyboard(payload),
     onSuccess: async () => {

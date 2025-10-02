@@ -57,11 +57,11 @@ export const useImageEventHandler = (
       // Log the request for monitoring
       imageMonitor.logRequest({
         projectId: eventData.projectId || projectId,
-        requestId: eventData.requestId || requestId,
+        requestId: eventData.requestId || requestId || "",
         status: eventData.type,
         timestamp: Date.now(),
-        imageUrl: eventData.imageUrl || eventData.url,
-        error: eventData.error,
+        imageUrl: eventData.imageUrl || eventData.url || "",
+        error: eventData.error || "",
       });
 
       switch (eventData.type) {
@@ -96,7 +96,9 @@ export const useImageEventHandler = (
                   imageUrl: fileObject.url,
                   progress: 100,
                   projectId: eventData.projectId || projectId,
-                  requestId: eventData.requestId,
+                  ...(eventData.requestId && {
+                    requestId: eventData.requestId,
+                  }),
                 });
               }
             }
@@ -140,7 +142,9 @@ export const useImageEventHandler = (
                           imageUrl: fileResponse.url,
                           progress: 100,
                           projectId: eventData.projectId || projectId,
-                          requestId: eventData.requestId,
+                          ...(eventData.requestId && {
+                            requestId: eventData.requestId,
+                          }),
                         });
                       }
                     } else {
@@ -182,7 +186,9 @@ export const useImageEventHandler = (
                   imageUrl: eventData.url,
                   progress: 100,
                   projectId: eventData.projectId || projectId,
-                  requestId: eventData.requestId,
+                  ...(eventData.requestId && {
+                    requestId: eventData.requestId,
+                  }),
                 });
               }
             }
@@ -229,7 +235,9 @@ export const useImageEventHandler = (
                         imageUrl: fileResponse.url,
                         progress: 100,
                         projectId: eventData.projectId || projectId,
-                        requestId: eventData.requestId,
+                        ...(eventData.requestId && {
+                          requestId: eventData.requestId,
+                        }),
                       });
                     }
                   } else {
@@ -271,7 +279,7 @@ export const useImageEventHandler = (
                 imageUrl: eventData.url,
                 progress: 100,
                 projectId: eventData.projectId || projectId,
-                requestId: eventData.requestId,
+                ...(eventData.requestId && { requestId: eventData.requestId }),
               });
             }
           }
@@ -282,9 +290,11 @@ export const useImageEventHandler = (
             status:
               (eventData.status as ImageGenerationState["status"]) ||
               "processing",
-            progress: eventData.progress,
+            ...(eventData.progress !== undefined && {
+              progress: eventData.progress,
+            }),
             projectId: eventData.projectId || projectId,
-            requestId: eventData.requestId,
+            ...(eventData.requestId && { requestId: eventData.requestId }),
           });
           break;
 
@@ -306,7 +316,7 @@ export const useImageEventHandler = (
                 imageUrl,
                 progress: 100,
                 projectId: eventData.projectId || projectId,
-                requestId: eventData.requestId,
+                ...(eventData.requestId && { requestId: eventData.requestId }),
               });
             }
           }
@@ -321,7 +331,7 @@ export const useImageEventHandler = (
               eventData.data?.error ||
               "Unknown error occurred",
             projectId: eventData.projectId || projectId,
-            requestId: eventData.requestId,
+            ...(eventData.requestId && { requestId: eventData.requestId }),
           });
           break;
 
@@ -330,7 +340,7 @@ export const useImageEventHandler = (
             status: "processing",
             progress: eventData.progress || eventData.data?.progress || 0,
             projectId: eventData.projectId || projectId,
-            requestId: eventData.requestId,
+            ...(eventData.requestId && { requestId: eventData.requestId }),
           });
           break;
 
@@ -340,7 +350,7 @@ export const useImageEventHandler = (
             status: "processing",
             progress: eventData.object?.progress || 0,
             projectId: eventData.projectId || projectId,
-            requestId: eventData.requestId,
+            ...(eventData.requestId && { requestId: eventData.requestId }),
           });
           break;
 
@@ -363,7 +373,7 @@ export const useImageEventHandler = (
                 imageUrl,
                 progress: 100,
                 projectId: eventData.projectId || projectId,
-                requestId: eventData.requestId,
+                ...(eventData.requestId && { requestId: eventData.requestId }),
               });
             }
           }
@@ -429,7 +439,9 @@ export const useImageEventHandler = (
                       imageUrl,
                       progress: 100,
                       projectId: eventData.projectId || projectId,
-                      requestId: eventData.requestId,
+                      ...(eventData.requestId && {
+                        requestId: eventData.requestId,
+                      }),
                     });
                   }
                 }
@@ -478,7 +490,9 @@ export const useImageEventHandler = (
                         imageUrl: fileResponse.url,
                         progress: 100,
                         projectId: eventData.projectId || projectId,
-                        requestId: eventData.requestId,
+                        ...(eventData.requestId && {
+                          requestId: eventData.requestId,
+                        }),
                       });
                     }
                   }
@@ -496,7 +510,7 @@ export const useImageEventHandler = (
             status: "processing",
             progress: eventData.progress || eventData.data?.progress,
             projectId: eventData.projectId || projectId,
-            requestId: eventData.requestId,
+            ...(eventData.requestId && { requestId: eventData.requestId }),
           });
           break;
 
@@ -506,7 +520,7 @@ export const useImageEventHandler = (
             status: "pending",
             progress: 0,
             projectId: eventData.projectId || projectId,
-            requestId: eventData.requestId,
+            ...(eventData.requestId && { requestId: eventData.requestId }),
           });
           break;
 
@@ -515,11 +529,11 @@ export const useImageEventHandler = (
           if (eventData.status) {
             onStateUpdate({
               status: eventData.status as ImageGenerationState["status"],
-              progress: eventData.progress,
-              imageUrl: eventData.imageUrl,
-              error: eventData.error,
+              ...(eventData.progress !== undefined && { progress: eventData.progress }),
+              ...(eventData.imageUrl && { imageUrl: eventData.imageUrl }),
+              ...(eventData.error && { error: eventData.error }),
               projectId: eventData.projectId || projectId,
-              requestId: eventData.requestId,
+              ...(eventData.requestId && { requestId: eventData.requestId }),
             });
           } else {
             console.log("❓ Unknown event type:", eventData.type);

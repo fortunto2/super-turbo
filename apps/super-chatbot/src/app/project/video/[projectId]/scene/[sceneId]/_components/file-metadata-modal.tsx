@@ -74,9 +74,9 @@ export function FileMetadataModal({
     return (
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-muted-foreground">
+          <div className="text-sm font-medium text-muted-foreground">
             {label}
-          </label>
+          </div>
           {copyable && (
             <button
               onClick={() => copyToClipboard(displayValue, fieldName)}

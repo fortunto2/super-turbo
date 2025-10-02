@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import PaymentSuccessClient from "@/components/payment/payment-success-client";
 
 interface PaymentSuccessPageProps {
@@ -10,11 +10,7 @@ interface PaymentSuccessPageProps {
   }>;
 }
 
-export async function generateMetadata({
-  params,
-}: PaymentSuccessPageProps): Promise<Metadata> {
-  const { sessionId } = await params;
-
+export function generateMetadata(): Metadata {
   return {
     title: "Payment Successful - Processing Your Video",
     description:
@@ -29,13 +25,13 @@ export default async function PaymentSuccessPage({
   const { locale, sessionId } = await params;
 
   // Validate sessionId format (Stripe session ID starts with cs_)
-  if (!sessionId || !sessionId.startsWith("cs_")) {
+  if (!sessionId.startsWith("cs_")) {
     notFound();
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container py-8">
         <div className="max-w-2xl mx-auto">
           <Suspense
             fallback={

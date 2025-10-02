@@ -97,11 +97,11 @@ export class ContextPerformanceMonitor {
       endTime: 0,
       duration: 0,
       success: false,
-      metadata,
+      ...(metadata && { metadata }),
     };
 
     // Возвращаем функцию для завершения измерения
-    return (success: boolean = true, error?: string) => {
+    return (success = true, error?: string) => {
       metric.endTime = performance.now();
       metric.duration = metric.endTime - startTime;
       metric.success = success;
@@ -412,7 +412,7 @@ export class ContextPerformanceMonitor {
   /**
    * Очищает старые метрики
    */
-  cleanup(daysToKeep: number = 7): void {
+  cleanup(daysToKeep = 7): void {
     const cutoffTime = Date.now() - daysToKeep * 24 * 60 * 60 * 1000;
     const initialCount = this.metrics.length;
 

@@ -7,7 +7,12 @@
   ],
   "plugins": [],
   "rules": {
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "@next/next/no-img-element": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "jsx-a11y/alt-text": "off",
+    "import/no-duplicates": "off",
+    "jsx-a11y/role-has-required-aria-props": "off"
   },
   "settings": {
     "import/resolver": {

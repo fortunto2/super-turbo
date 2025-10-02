@@ -22,38 +22,38 @@ describe("TemporalAnalyzer", () => {
       {
         url: "https://example.com/image1.jpg",
         id: "img1",
-        role: "user",
+        role: "user" as const,
         timestamp: new Date("2024-01-15T11:00:00Z"), // 1 час назад
         prompt: "first image",
         messageIndex: 0,
-        mediaType: "image",
+        mediaType: "image" as const,
       },
       {
         url: "https://example.com/image2.jpg",
         id: "img2",
-        role: "assistant",
+        role: "assistant" as const,
         timestamp: new Date("2024-01-15T10:00:00Z"), // 2 часа назад
         prompt: "second image",
         messageIndex: 1,
-        mediaType: "image",
+        mediaType: "image" as const,
       },
       {
         url: "https://example.com/image3.jpg",
         id: "img3",
-        role: "user",
+        role: "user" as const,
         timestamp: new Date("2024-01-14T12:00:00Z"), // вчера
         prompt: "yesterday image",
         messageIndex: 2,
-        mediaType: "image",
+        mediaType: "image" as const,
       },
       {
         url: "https://example.com/image4.jpg",
         id: "img4",
-        role: "assistant",
+        role: "assistant" as const,
         timestamp: new Date("2024-01-15T11:30:00Z"), // 30 минут назад
         prompt: "recent image",
         messageIndex: 3,
-        mediaType: "image",
+        mediaType: "image" as const,
       },
     ];
   });
@@ -67,8 +67,9 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].media.url).toBe("https://example.com/image1.jpg");
-      expect(matches[0].confidence).toBeGreaterThan(0.8);
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.media.url).toBe("https://example.com/image1.jpg");
+      expect(matches[0]?.confidence).toBeGreaterThan(0.8);
     });
 
     it("should find media from 2 hours ago", async () => {
@@ -79,7 +80,8 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].media.url).toBe("https://example.com/image2.jpg");
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.media.url).toBe("https://example.com/image2.jpg");
     });
 
     it("should find yesterday's media", async () => {
@@ -90,7 +92,8 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].media.url).toBe("https://example.com/image3.jpg");
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.media.url).toBe("https://example.com/image3.jpg");
     });
 
     it("should find recent media", async () => {
@@ -101,8 +104,9 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
+      expect(matches[0]).toBeDefined();
       // Должен найти самый недавний файл
-      expect(matches[0].media.url).toBe("https://example.com/image4.jpg");
+      expect(matches[0]?.media.url).toBe("https://example.com/image4.jpg");
     });
 
     it("should find first media", async () => {
@@ -113,8 +117,9 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
+      expect(matches[0]).toBeDefined();
       // Первое по времени
-      expect(matches[0].media.url).toBe("https://example.com/image2.jpg");
+      expect(matches[0]?.media.url).toBe("https://example.com/image2.jpg");
     });
 
     it("should find last media", async () => {
@@ -125,7 +130,8 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].media.url).toBe("https://example.com/image4.jpg");
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.media.url).toBe("https://example.com/image4.jpg");
     });
 
     it("should find previous media", async () => {
@@ -136,8 +142,9 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
+      expect(matches[0]).toBeDefined();
       // Предыдущее от последнего
-      expect(matches[0].media.url).toBe("https://example.com/image1.jpg");
+      expect(matches[0]?.media.url).toBe("https://example.com/image1.jpg");
     });
 
     it("should handle English patterns", async () => {
@@ -148,7 +155,8 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].media.url).toBe("https://example.com/image3.jpg");
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.media.url).toBe("https://example.com/image3.jpg");
     });
 
     it("should return empty array for no temporal references", async () => {
@@ -182,11 +190,11 @@ describe("TemporalAnalyzer", () => {
         {
           url: "https://example.com/morning.jpg",
           id: "morning",
-          role: "user",
+          role: "user" as const,
           timestamp: new Date("2024-01-15T07:00:00Z"), // сегодня утром
           prompt: "morning image",
           messageIndex: 4,
-          mediaType: "image",
+          mediaType: "image" as const,
         },
       ];
 
@@ -197,7 +205,8 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].media.url).toBe("https://example.com/morning.jpg");
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.media.url).toBe("https://example.com/morning.jpg");
     });
 
     it("should find media by message offset", async () => {
@@ -208,8 +217,9 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
+      expect(matches[0]).toBeDefined();
       // Должен найти медиа-файл с индексом length - 2 - 1
-      expect(matches[0].media.messageIndex).toBe(1);
+      expect(matches[0]?.media.messageIndex).toBe(1);
     });
   });
 
@@ -222,7 +232,8 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].confidence).toBeGreaterThan(0.8);
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.confidence).toBeGreaterThan(0.8);
     });
 
     it("should calculate lower confidence for less precise matches", async () => {
@@ -233,8 +244,9 @@ describe("TemporalAnalyzer", () => {
       );
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0].confidence).toBeGreaterThan(0.5);
-      expect(matches[0].confidence).toBeLessThan(0.9);
+      expect(matches[0]).toBeDefined();
+      expect(matches[0]?.confidence).toBeGreaterThan(0.5);
+      expect(matches[0]?.confidence).toBeLessThan(0.9);
     });
 
     it("should sort matches by confidence", async () => {
@@ -246,8 +258,10 @@ describe("TemporalAnalyzer", () => {
 
       if (matches.length > 1) {
         for (let i = 1; i < matches.length; i++) {
-          expect(matches[i - 1].confidence).toBeGreaterThanOrEqual(
-            matches[i].confidence
+          expect(matches[i - 1]).toBeDefined();
+          expect(matches[i]).toBeDefined();
+          expect(matches[i - 1]?.confidence ?? 0).toBeGreaterThanOrEqual(
+            matches[i]?.confidence ?? 0
           );
         }
       }

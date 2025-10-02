@@ -142,25 +142,25 @@ export const MODELS_CONFIG: Record<string, ModelConfig> = {
 
 // Функция для получения конфигурации модели по названию
 export function getModelConfig(modelName: string): ModelConfig | null {
-  return MODELS_CONFIG[modelName] || null;
+  return MODELS_CONFIG[modelName] ?? null;
 }
 
 // Функция для проверки, поддерживает ли модель image-to-video
 export function supportsImageToVideo(modelName: string): boolean {
   const config = getModelConfig(modelName);
-  return config?.supportsImageToVideo || false;
+  return config?.supportsImageToVideo ?? false;
 }
 
 // Функция для проверки, поддерживает ли модель text-to-video
 export function supportsTextToVideo(modelName: string): boolean {
   const config = getModelConfig(modelName);
-  return config?.supportsTextToVideo || false;
+  return config?.supportsTextToVideo ?? false;
 }
 
 // Функция для получения типа модели
 export function getModelType(modelName: string): "video" | "image" {
   const config = getModelConfig(modelName);
-  return config?.type || "image";
+  return config?.type ?? "image";
 }
 
 // Функция для получения всех видео моделей

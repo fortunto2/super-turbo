@@ -3,8 +3,8 @@
 import { useParams } from "next/navigation";
 import {
   Veo3PromptGenerator,
-  PromptDataType,
-  MoodboardImageType,
+  type PromptDataType,
+  type MoodboardImageType,
 } from "@turbo-super/features";
 import { getValidLocale } from "@/lib/get-valid-locale";
 
@@ -56,7 +56,6 @@ export function SimpleVeo3Generator() {
 
       <Veo3PromptGenerator
         enhancePromptFunction={enhancePromptFunction}
-        MoodboardUploader={undefined}
         showInfoBanner={true}
         locale={locale}
       />

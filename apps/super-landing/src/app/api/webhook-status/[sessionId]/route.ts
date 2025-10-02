@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getSessionData, updateSessionData, type SessionData } from "@/lib/kv";
 import {
   configureSuperduperAI,
@@ -57,8 +58,7 @@ async function checkAndUpdateFileStatus(sessionData: SessionData) {
 
     // Check if file failed
     if (
-      fileData.tasks &&
-      fileData.tasks.some(
+      fileData.tasks?.some(
         (task: { status: string }) =>
           task.status === "failed" || task.status === "error"
       )
@@ -142,7 +142,7 @@ export async function GET(
       );
       await updateSessionData(sessionId, {
         status: updatedSessionData.status,
-        error: updatedSessionData.error,
+        error: updatedSessionData.error ?? "",
       });
       console.log(
         `✅ Updated session ${sessionId} status to: ${updatedSessionData.status}`
@@ -180,7 +180,7 @@ export async function POST(
     const { sessionId } = await params;
     const updates = await request.json();
 
-    if (!sessionId || !sessionId.startsWith("cs_")) {
+    if (!sessionId?.startsWith("cs_")) {
       return NextResponse.json(
         { error: "Invalid session ID" },
         { status: 400 }

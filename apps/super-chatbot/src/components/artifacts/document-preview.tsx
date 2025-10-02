@@ -25,7 +25,7 @@ import useSWR from "swr";
 import { Editor } from "../editors/text-editor";
 import { DocumentToolCall, DocumentToolResult } from "./document";
 
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 import equal from "fast-deep-equal";
 import { SpreadsheetEditor } from "../editors/sheet-editor";
 import { Markdown } from "../common/markdown";
@@ -41,7 +41,7 @@ export function DocumentPreview({
   result,
   args,
 }: DocumentPreviewProps) {
-  const { artifact, setArtifact } = useArtifact();
+  const { artifact, setArtifact } = useArtifactLegacy();
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<
     Array<Document>
@@ -249,7 +249,7 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 });
 
 const DocumentContent = ({ document }: { document: Document }) => {
-  const { artifact } = useArtifact();
+  const { artifact } = useArtifactLegacy();
 
   const containerClassName = cn(
     "h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700",
@@ -263,7 +263,10 @@ const DocumentContent = ({ document }: { document: Document }) => {
     content: document.content ?? "",
     isCurrentVersion: true,
     currentVersionIndex: 0,
-    status: artifact.status,
+    status:
+      artifact.status === "completed" || artifact.status === "pending"
+        ? "idle"
+        : artifact.status,
     saveContent: () => {},
     suggestions: [],
   };

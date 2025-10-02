@@ -18,7 +18,9 @@ test.describe("Admin Panel E2E Tests", () => {
       window.localStorage.setItem("user-role", "admin");
 
       // Mock для API
-      window.fetch = async (url: string, options?: any) => {
+      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === "string" ? input : input.toString();
+        const options = init;
         if (url.includes("/api/admin/users")) {
           if (options?.method === "GET") {
             return new Response(
@@ -51,7 +53,7 @@ test.describe("Admin Panel E2E Tests", () => {
             return new Response(
               JSON.stringify({
                 success: true,
-                user: JSON.parse(options.body),
+                user: options.body ? JSON.parse(options.body as string) : {},
               }),
               { status: 200 }
             );
@@ -147,7 +149,7 @@ test.describe("Admin Panel E2E Tests", () => {
     await page.click("[data-testid='users-tab']");
 
     // Нажимаем кнопку редактирования первого пользователя
-    await page.click("[data-testid='edit-user-button']").first();
+    await page.locator("[data-testid='edit-user-button']").first().click();
 
     // Проверяем, что открылось модальное окно редактирования
     await expect(page.locator("[data-testid='edit-user-modal']")).toBeVisible();
@@ -182,7 +184,7 @@ test.describe("Admin Panel E2E Tests", () => {
     await page.click("[data-testid='users-tab']");
 
     // Нажимаем кнопку удаления второго пользователя
-    await page.click("[data-testid='delete-user-button']").nth(1);
+    await page.locator("[data-testid='delete-user-button']").nth(1).click();
 
     // Проверяем, что появилось подтверждение удаления
     await expect(
@@ -206,7 +208,7 @@ test.describe("Admin Panel E2E Tests", () => {
     await page.click("[data-testid='users-tab']");
 
     // Нажимаем кнопку изменения баланса первого пользователя
-    await page.click("[data-testid='balance-button']").first();
+    await page.locator("[data-testid='balance-button']").first().click();
 
     // Проверяем, что открылось модальное окно изменения баланса
     await expect(page.locator("[data-testid='balance-modal']")).toBeVisible();
@@ -235,7 +237,7 @@ test.describe("Admin Panel E2E Tests", () => {
     await page.click("[data-testid='users-tab']");
 
     // Нажимаем кнопку добавления кредитов
-    await page.click("[data-testid='add-credits-button']").first();
+    await page.locator("[data-testid='add-credits-button']").first().click();
 
     // Проверяем, что открылось модальное окно добавления кредитов
     await expect(
@@ -314,8 +316,8 @@ test.describe("Admin Panel E2E Tests", () => {
     await page.click("[data-testid='users-tab']");
 
     // Выбираем несколько пользователей
-    await page.check("[data-testid='user-checkbox']").nth(0);
-    await page.check("[data-testid='user-checkbox']").nth(1);
+    await page.locator("[data-testid='user-checkbox']").nth(0).check();
+    await page.locator("[data-testid='user-checkbox']").nth(1).check();
 
     // Проверяем, что появились кнопки массовых операций
     await expect(page.locator("[data-testid='bulk-actions']")).toBeVisible();
@@ -382,9 +384,13 @@ test.describe("Admin Panel E2E Tests", () => {
   test("should handle pagination", async () => {
     // Настраиваем мок для большого количества пользователей
     await page.addInitScript(() => {
-      window.fetch = async (url: string, options?: any) => {
+      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === "string" ? input : input.toString();
+        const options = init;
         if (url.includes("/api/admin/users")) {
-          const page = Number.parseInt(new URL(url).searchParams.get("page") || "1");
+          const page = Number.parseInt(
+            new URL(url).searchParams.get("page") || "1"
+          );
           const limit = Number.parseInt(
             new URL(url).searchParams.get("limit") || "10"
           );

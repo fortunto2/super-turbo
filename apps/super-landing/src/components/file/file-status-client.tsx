@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import ImageNext from "next/image";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+} from "@turbo-super/ui";
 import {
   Loader2,
   CheckCircle,
@@ -78,12 +84,12 @@ interface FileData {
     };
     generation_config_name?: string;
   };
-  tasks: Array<{
+  tasks: {
     type: string;
     status: "pending" | "in_progress" | "completed" | "failed";
     id: string;
     file_id: string;
-  }>;
+  }[];
 }
 
 export default function FileStatusClient({
@@ -152,18 +158,18 @@ export default function FileStatusClient({
   };
 
   const copyFileId = () => {
-    navigator.clipboard.writeText(fileId);
+    void navigator.clipboard.writeText(fileId);
     toast.success("File ID copied to clipboard");
   };
 
   const copyUrl = (url: string) => {
-    navigator.clipboard.writeText(url);
+    void navigator.clipboard.writeText(url);
     toast.success("URL copied to clipboard");
   };
 
   useEffect(() => {
-    fetchFileStatus();
-    fetchToolInfo();
+    void fetchFileStatus();
+    void fetchToolInfo();
   }, [fetchFileStatus, fetchToolInfo]);
 
   // Auto-refresh for in-progress files
@@ -171,8 +177,8 @@ export default function FileStatusClient({
     // Check if file is still processing
     const isProcessing =
       // For videos: check tasks status
-      (fileData?.tasks &&
-        fileData.tasks.some((task) => task.status === "in_progress")) ||
+      (fileData?.tasks?.some((task) => task.status === "in_progress") ??
+        false) ||
       // For images: check if URL is not ready yet
       (fileData?.type === "image" && !fileData.url) ||
       // For any file: check if URL is not ready yet
@@ -182,8 +188,12 @@ export default function FileStatusClient({
       return;
     }
 
-    const interval = setInterval(fetchFileStatus, 5000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      void fetchFileStatus();
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    };
   }, [fileData, fetchFileStatus]);
 
   const getFileIcon = (type: string) => {
@@ -309,7 +319,7 @@ export default function FileStatusClient({
       {/* Tool Info & Back Button */}
       {showToolInfo &&
         toolInfo &&
-        (toolInfo.toolSlug || toolInfo.toolTitle) && (
+        (toolInfo.toolSlug ?? toolInfo.toolTitle) && (
           <Card className="bg-muted/50">
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -319,7 +329,7 @@ export default function FileStatusClient({
                   </div>
                   <div>
                     <h3 className="font-semibold">
-                      {toolInfo.toolTitle || "AI Tool"}
+                      {toolInfo.toolTitle ?? "AI Tool"}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Generated from {toolInfo.toolSlug?.replace(/-/g, " ")}
@@ -381,11 +391,17 @@ export default function FileStatusClient({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
+              <label
+                htmlFor="file-id"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 File ID
               </label>
               <div className="flex items-center gap-2 mt-1">
-                <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
+                <code
+                  id="file-id"
+                  className="text-sm bg-muted px-2 py-1 rounded font-mono"
+                >
                   {fileId}
                 </code>
                 <Button
@@ -400,11 +416,17 @@ export default function FileStatusClient({
             </div>
 
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
+              <label
+                htmlFor="status-badge"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 Status
               </label>
               <div className="mt-1">
-                <Badge className={`${getStatusColor(actualStatus)} gap-1`}>
+                <Badge
+                  id="status-badge"
+                  className={`${getStatusColor(actualStatus)} gap-1`}
+                >
                   {getStatusIcon(actualStatus)}
                   {actualStatus}
                 </Badge>
@@ -414,12 +436,18 @@ export default function FileStatusClient({
             {generationData && (
               <>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <label
+                    htmlFor="generator-info"
+                    className="text-sm font-medium text-muted-foreground"
+                  >
                     Generator
                   </label>
-                  <p className="text-sm mt-1">
-                    {generationData.generation_config?.label ||
-                      generationData?.generation_config_name ||
+                  <p
+                    id="generator-info"
+                    className="text-sm mt-1"
+                  >
+                    {generationData.generation_config?.label ??
+                      generationData?.generation_config_name ??
                       "Unknown"}
                   </p>
                 </div>
@@ -428,10 +456,16 @@ export default function FileStatusClient({
                   "width" in generationData &&
                   generationData.width && (
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">
+                      <label
+                        htmlFor="resolution-info"
+                        className="text-sm font-medium text-muted-foreground"
+                      >
                         Resolution
                       </label>
-                      <p className="text-sm mt-1">
+                      <p
+                        id="resolution-info"
+                        className="text-sm mt-1"
+                      >
                         {generationData.width}x{generationData.height}
                       </p>
                     </div>
@@ -439,10 +473,18 @@ export default function FileStatusClient({
 
                 {"duration" in generationData && generationData.duration && (
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label
+                      htmlFor="duration-info"
+                      className="text-sm font-medium text-muted-foreground"
+                    >
                       Duration
                     </label>
-                    <p className="text-sm mt-1">{generationData.duration}s</p>
+                    <p
+                      id="duration-info"
+                      className="text-sm mt-1"
+                    >
+                      {generationData.duration}s
+                    </p>
                   </div>
                 )}
               </>
@@ -451,10 +493,16 @@ export default function FileStatusClient({
 
           {generationData?.prompt && (
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
+              <label
+                htmlFor="prompt-info"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 Prompt
               </label>
-              <p className="text-sm mt-1 bg-muted p-3 rounded-md">
+              <p
+                id="prompt-info"
+                className="text-sm mt-1 bg-muted p-3 rounded-md"
+              >
                 {generationData.prompt}
               </p>
             </div>
@@ -473,11 +521,19 @@ export default function FileStatusClient({
                       controls
                       className="w-full h-full object-cover"
                       title={`Generated ${fileData.type} preview`}
-                    />
+                    >
+                      <track
+                        kind="captions"
+                        srcLang="en"
+                        label="English captions"
+                      />
+                    </video>
                   ) : fileData.type === "image" ? (
-                    <img
+                    <ImageNext
                       src={fileData.url}
                       alt={`Generated ${fileData.type} preview`}
+                      width={400}
+                      height={400}
                       className="w-full h-full object-contain"
                     />
                   ) : (
@@ -508,7 +564,9 @@ export default function FileStatusClient({
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => copyUrl(fileData.url!)}
+                    onClick={() => {
+                      copyUrl(fileData.url!);
+                    }}
                     className="gap-2"
                   >
                     <Copy className="w-4 h-4" />

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripeConfig } from "@turbo-super/shared";
 
-export async function GET() {
+export function GET() {
   try {
     const config = getStripeConfig();
 

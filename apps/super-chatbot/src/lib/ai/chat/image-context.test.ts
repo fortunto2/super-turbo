@@ -164,9 +164,9 @@ describe("Get Chat Images", () => {
     const images = await getChatImages("chat1");
 
     expect(images).toHaveLength(2);
-    expect(images[0].url).toBe("https://example.com/cat1.jpg");
-    expect(images[0].role).toBe("assistant");
-    expect(images[1].url).toBe("https://example.com/dog1.jpg");
-    expect(images[1].role).toBe("assistant");
+    expect(images[0]?.url).toBe("https://example.com/cat1.jpg");
+    expect(images[0]?.role).toBe("assistant");
+    expect(images[1]?.url).toBe("https://example.com/dog1.jpg");
+    expect(images[1]?.role).toBe("assistant");
   });
 });

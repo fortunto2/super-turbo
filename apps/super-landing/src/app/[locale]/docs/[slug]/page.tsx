@@ -39,11 +39,11 @@ export default async function DocPage({ params }: DocPageProps) {
   );
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   const paths: { locale: string; slug: string }[] = [];
-  
+
   const locales = ["en", "ru", "es", "hi", "tr"];
-  
+
   for (const locale of locales) {
     const docs = allDocs.filter((doc) => doc.locale === locale);
     for (const doc of docs) {
@@ -53,7 +53,7 @@ export async function generateStaticParams() {
       });
     }
   }
-  
+
   return paths;
 }
 
@@ -72,16 +72,16 @@ export async function generateMetadata({ params }: DocPageProps) {
   }
 
   return {
-    title: doc.seo?.title || `${doc.title} | SuperDuperAI Documentation`,
-    description: doc.seo?.description || doc.description,
+    title: doc.seo?.title ?? `${doc.title} | SuperDuperAI Documentation`,
+    description: doc.seo?.description ?? doc.description,
     keywords: doc.seo?.keywords,
     alternates: {
       canonical: doc.url,
     },
     openGraph: {
-      title: doc.seo?.title || doc.title,
-      description: doc.seo?.description || doc.description,
+      title: doc.seo?.title ?? doc.title,
+      description: doc.seo?.description ?? doc.description,
       type: "article",
     },
   };
-} 
+}

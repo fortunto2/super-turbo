@@ -101,9 +101,9 @@ export default function BananaVeo3AdvancedPage() {
           Быстрые действия:
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => (
+          {quickActions.map((action) => (
             <Button
-              key={index}
+              key={action.action}
               onClick={() => handleQuickAction(action.action)}
               disabled={isLoading}
               className={`${action.color} text-white`}

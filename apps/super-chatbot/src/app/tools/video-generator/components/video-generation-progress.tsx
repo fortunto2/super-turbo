@@ -88,6 +88,7 @@ export function VideoGenerationProgress({
       }, 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [generationStatus.progress]);
 
   // AICODE-NOTE: Track elapsed time during generation

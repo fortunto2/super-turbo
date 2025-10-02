@@ -33,35 +33,42 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
   if (file.image_generation) {
     const imgGen = file.image_generation;
     metadata.prompt = imgGen.prompt;
-    metadata.negativePrompt = imgGen.negative_prompt || undefined;
-    metadata.seed = imgGen.seed;
-    metadata.generationConfig = imgGen.generation_config_name || undefined;
-    metadata.styleName = imgGen.style_name || undefined;
-    metadata.width = imgGen.width;
-    metadata.height = imgGen.height;
-    metadata.steps = imgGen.steps;
-    metadata.shotSize = imgGen.shot_size || undefined;
+    if (imgGen.negative_prompt)
+      metadata.negativePrompt = imgGen.negative_prompt;
+    if (imgGen.seed !== undefined) metadata.seed = imgGen.seed;
+    if (imgGen.generation_config_name)
+      metadata.generationConfig = imgGen.generation_config_name;
+    if (imgGen.style_name) metadata.styleName = imgGen.style_name;
+    if (imgGen.width !== undefined) metadata.width = imgGen.width;
+    if (imgGen.height !== undefined) metadata.height = imgGen.height;
+    if (imgGen.steps !== undefined) metadata.steps = imgGen.steps;
+    if (imgGen.shot_size) metadata.shotSize = imgGen.shot_size;
 
     // Извлекаем references
     if (imgGen.references && imgGen.references.length > 0) {
       metadata.references = imgGen.references.map((ref) => ({
         type: "image",
-        url: ref.reference?.url || undefined,
-        name: ref.reference?.id || undefined,
+        ...(ref.reference?.url && { url: ref.reference.url }),
+        ...(ref.reference?.id && { name: ref.reference.id }),
       }));
     }
   }
 
   if (file.video_generation) {
     const vidGen = file.video_generation;
-    metadata.prompt = vidGen.prompt;
-    metadata.negativePrompt = vidGen.negative_prompt || undefined;
-    metadata.seed = vidGen.seed;
-    metadata.generationConfig = vidGen.generation_config_name || undefined;
-    metadata.duration = vidGen.duration;
-    metadata.width = vidGen.width || undefined;
-    metadata.height = vidGen.height || undefined;
-    metadata.aspectRatio = vidGen.aspect_ratio || undefined;
+    metadata.prompt = vidGen.prompt ?? "";
+    if (vidGen.negative_prompt)
+      metadata.negativePrompt = vidGen.negative_prompt;
+    if (vidGen.seed !== undefined) metadata.seed = vidGen.seed;
+    if (vidGen.generation_config_name)
+      metadata.generationConfig = vidGen.generation_config_name;
+    if (vidGen.duration !== undefined && vidGen.duration !== null)
+      metadata.duration = vidGen.duration;
+    if (vidGen.width !== undefined && vidGen.width !== null)
+      metadata.width = vidGen.width;
+    if (vidGen.height !== undefined && vidGen.height !== null)
+      metadata.height = vidGen.height;
+    if (vidGen.aspect_ratio) metadata.aspectRatio = vidGen.aspect_ratio;
 
     // Извлекаем model_sid из generation_config
     if (vidGen.generation_config?.params?.model_sid) {
@@ -75,8 +82,8 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
     if (vidGen.references && vidGen.references.length > 0) {
       metadata.references = vidGen.references.map((ref) => ({
         type: "video",
-        url: ref.reference?.url || undefined,
-        name: ref.reference?.id || undefined,
+        ...(ref.reference?.url && { url: ref.reference.url }),
+        ...(ref.reference?.id && { name: ref.reference.id }),
       }));
     }
   }
@@ -84,15 +91,18 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
   if (file.audio_generation) {
     const audGen = file.audio_generation;
     metadata.prompt = audGen.prompt;
-    metadata.modelName = audGen.model || undefined;
-    metadata.generationConfig = audGen.generation_config_name || undefined;
-    metadata.voiceName = audGen.voice_name || undefined;
+    if (audGen.model) metadata.modelName = audGen.model;
+    if (audGen.generation_config_name)
+      metadata.generationConfig = audGen.generation_config_name;
+    if (audGen.voice_name) metadata.voiceName = audGen.voice_name;
     metadata.audioType = audGen.type;
-    metadata.duration = audGen.duration ?? undefined;
+    if (audGen.duration) metadata.duration = audGen.duration;
   }
 
   // Общие метаданные файла
-  metadata.duration = file.duration ?? metadata.duration;
+  if (file.duration !== undefined && file.duration !== null) {
+    metadata.duration = file.duration;
+  }
 
   return metadata;
 }

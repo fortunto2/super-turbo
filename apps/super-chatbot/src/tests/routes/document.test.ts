@@ -1,13 +1,13 @@
 import type { Document } from "@/lib/db/schema";
 import { generateUUID } from "@/lib/utils";
-import { expect, test } from "../fixtures";
+import { expect, test } from "@playwright/test";
 
 const documentsCreatedByAda: Array<Document> = [];
 
 test.describe.serial("/api/document", () => {
   test("Ada cannot retrieve a document without specifying an id", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const response = await adaContext.request.get("/api/document");
     expect(response.status()).toBe(400);
 
@@ -17,7 +17,7 @@ test.describe.serial("/api/document", () => {
 
   test("Ada cannot retrieve a document that does not exist", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const documentId = generateUUID();
 
     const response = await adaContext.request.get(
@@ -29,7 +29,7 @@ test.describe.serial("/api/document", () => {
     expect(text).toEqual("Not found");
   });
 
-  test("Ada can create a document", async ({ adaContext }) => {
+  test("Ada can create a document", async ({ adaContext }: any) => {
     const documentId = generateUUID();
 
     const draftDocument = {
@@ -52,8 +52,11 @@ test.describe.serial("/api/document", () => {
     documentsCreatedByAda.push(createdDocument);
   });
 
-  test("Ada can retrieve a created document", async ({ adaContext }) => {
+  test("Ada can retrieve a created document", async ({ adaContext }: any) => {
     const [document] = documentsCreatedByAda;
+    if (!document) {
+      throw new Error("No document found");
+    }
 
     const response = await adaContext.request.get(
       `/api/document?id=${document.id}`
@@ -67,8 +70,13 @@ test.describe.serial("/api/document", () => {
     expect(retrievedDocument).toMatchObject(document);
   });
 
-  test("Ada can save a new version of the document", async ({ adaContext }) => {
+  test("Ada can save a new version of the document", async ({
+    adaContext,
+  }: any) => {
     const [firstDocument] = documentsCreatedByAda;
+    if (!firstDocument) {
+      throw new Error("No document found");
+    }
 
     const draftDocument = {
       title: "Ada's Document",
@@ -92,8 +100,11 @@ test.describe.serial("/api/document", () => {
 
   test("Ada can retrieve all versions of her documents", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const [firstDocument, secondDocument] = documentsCreatedByAda;
+    if (!firstDocument || !secondDocument) {
+      throw new Error("No documents found");
+    }
 
     const response = await adaContext.request.get(
       `/api/document?id=${firstDocument.id}`
@@ -111,7 +122,7 @@ test.describe.serial("/api/document", () => {
 
   test("Ada cannot delete a document without specifying an id", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const response = await adaContext.request.delete(`/api/document`);
     expect(response.status()).toBe(400);
 
@@ -121,8 +132,11 @@ test.describe.serial("/api/document", () => {
 
   test("Ada cannot delete a document without specifying a timestamp", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const [firstDocument] = documentsCreatedByAda;
+    if (!firstDocument) {
+      throw new Error("No document found");
+    }
 
     const response = await adaContext.request.delete(
       `/api/document?id=${firstDocument.id}`
@@ -135,8 +149,11 @@ test.describe.serial("/api/document", () => {
 
   test("Ada can delete a document by specifying id and timestamp", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const [firstDocument, secondDocument] = documentsCreatedByAda;
+    if (!firstDocument || !secondDocument) {
+      throw new Error("No documents found");
+    }
 
     const response = await adaContext.request.delete(
       `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`
@@ -152,8 +169,11 @@ test.describe.serial("/api/document", () => {
 
   test("Ada can retrieve documents without deleted versions", async ({
     adaContext,
-  }) => {
+  }: any) => {
     const [firstDocument] = documentsCreatedByAda;
+    if (!firstDocument) {
+      throw new Error("No document found");
+    }
 
     const response = await adaContext.request.get(
       `/api/document?id=${firstDocument.id}`
@@ -167,8 +187,13 @@ test.describe.serial("/api/document", () => {
     expect(firstRetrievedDocument).toMatchObject(firstDocument);
   });
 
-  test("Babbage cannot update Ada's document", async ({ babbageContext }) => {
+  test("Babbage cannot update Ada's document", async ({
+    babbageContext,
+  }: any) => {
     const [firstDocument] = documentsCreatedByAda;
+    if (!firstDocument) {
+      throw new Error("No document found");
+    }
 
     const draftDocument = {
       title: "Babbage's Document",
@@ -188,8 +213,11 @@ test.describe.serial("/api/document", () => {
     expect(text).toEqual("Forbidden");
   });
 
-  test("Ada's documents did not get updated", async ({ adaContext }) => {
+  test("Ada's documents did not get updated", async ({ adaContext }: any) => {
     const [firstDocument] = documentsCreatedByAda;
+    if (!firstDocument) {
+      throw new Error("No document found");
+    }
 
     const response = await adaContext.request.get(
       `/api/document?id=${firstDocument.id}`

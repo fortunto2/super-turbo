@@ -183,8 +183,10 @@ function PureMultimodalInput({
       }
       const { error } = await response.json();
       toast.error(error);
+      return null;
     } catch (error) {
       toast.error("Failed to upload file, please try again!");
+      return null;
     }
   };
 
@@ -200,8 +202,8 @@ function PureMultimodalInput({
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined
-        );
+          (attachment) => attachment !== undefined && attachment !== null
+        ) as Attachment[];
 
         setAttachments((currentAttachments) => [
           ...currentAttachments,
@@ -382,8 +384,8 @@ function PureMultimodalInput({
             submitForm={submitForm}
             uploadQueue={uploadQueue}
             status={status}
-            isSubmitting={isSubmitting}
-            isSubmittingRef={isSubmittingRef}
+            {...(isSubmitting !== undefined && { isSubmitting })}
+            {...(isSubmittingRef && { isSubmittingRef })}
           />
         )}
       </div>

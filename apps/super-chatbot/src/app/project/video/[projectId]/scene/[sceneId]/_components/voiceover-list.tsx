@@ -1,4 +1,4 @@
-import { FileTypeEnum, } from "@turbo-super/api";
+import { FileTypeEnum } from "@turbo-super/api";
 import { AudioFile } from "./audio-file";
 import { EmptyAudioFile } from "./empty-audio-file";
 import {
@@ -82,7 +82,7 @@ export function VoiceoverList({
               <EmptyAudioFile
                 onSelect={handleSelectPlaceholder}
                 isActive={!scene?.voiceover_id}
-                onCreateAudio={onCreateAudio}
+                onCreateAudio={onCreateAudio ?? (() => {})}
                 isPending={isPending}
               />
 
@@ -92,7 +92,7 @@ export function VoiceoverList({
                   key={file.id}
                   file={file}
                   isActive={scene?.voiceover_id === file.id}
-                  scene={scene}
+                  {...(scene && { scene })}
                 />
               ))}
             </>

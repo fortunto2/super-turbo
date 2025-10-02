@@ -340,7 +340,7 @@ export const VideoArtifactWrapper = memo(
         defaultSettings,
         append: otherProps.append,
         setMessages: otherProps.setMessages,
-        initialState,
+        ...(initialState && { initialState }),
         setArtifact,
         parsedContent,
       }),

@@ -3,7 +3,15 @@
  * Тестируют реальные HTTP запросы к API эндпоинтам
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  vi,
+} from "vitest";
 import { NextRequest } from "next/server";
 
 // Mock для Next.js сервера
@@ -13,7 +21,7 @@ const mockRequest = (url: string, method = "GET", body?: any) => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? JSON.stringify(body) : null,
   });
 };
 
@@ -29,7 +37,7 @@ describe("API Routes Integration Tests", () => {
 
   beforeAll(async () => {
     // Настройка тестовой среды
-    process.env.NODE_ENV = "test";
+    (process.env as any).NODE_ENV = "test";
     process.env.SUPERDUPERAI_TOKEN = "test-token";
     process.env.SUPERDUPERAI_URL = "https://test-api.example.com";
   });

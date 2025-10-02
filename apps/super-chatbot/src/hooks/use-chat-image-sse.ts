@@ -143,7 +143,7 @@ export const useChatImageSSE = ({
               for (let i = updatedMessages.length - 1; i >= 0; i--) {
                 const message = updatedMessages[i];
 
-                if (message.role === "assistant") {
+                if (message?.role === "assistant") {
                   // Check if this message has image artifact content
                   const hasImageArtifact = message.parts?.some(
                     (part) =>
@@ -167,7 +167,7 @@ export const useChatImageSSE = ({
                             const jsonMatch = part.text.match(
                               /```json\s*({[\s\S]*?})\s*```/
                             );
-                            if (jsonMatch) {
+                            if (jsonMatch?.[1]) {
                               artifactContent = JSON.parse(jsonMatch[1]);
                             }
                           } else if (

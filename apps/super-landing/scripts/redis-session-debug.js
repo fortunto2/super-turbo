@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 
 /**
  * Redis Session Debug Script for SuperDuperAI
@@ -36,7 +37,7 @@ async function connectRedis() {
   }
 }
 
-async function generateVideoWithSuperDuperAI(prompt, duration = 8, resolution = '1280x720', style = 'cinematic') {
+async function generateVideoWithSuperDuperAI(prompt, duration = 8, _resolution = '1280x720', _style = 'cinematic') {
   const token = process.env.SUPERDUPERAI_TOKEN;
   if (!token) {
     throw new Error('SUPERDUPERAI_TOKEN environment variable is not set');

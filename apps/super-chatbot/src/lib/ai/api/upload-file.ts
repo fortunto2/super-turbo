@@ -5,7 +5,7 @@ export const uploadFile = async (file: File, type?: FileTypeEnum) => {
     console.log("🖼️ Attempting direct file upload...", file);
 
     const uploadResult = await FileService.fileUpload({
-      type,
+      ...(type && { type }),
       formData: {
         payload: file,
       },

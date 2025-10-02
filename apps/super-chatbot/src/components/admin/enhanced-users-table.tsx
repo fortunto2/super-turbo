@@ -18,7 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { EditUserDialog } from "./edit-user-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
 
-interface User {
+interface UserData {
   id: string;
   email: string;
   balance: number;
@@ -27,7 +27,7 @@ interface User {
 
 interface UsersResponse {
   success: boolean;
-  users: User[];
+  users: UserData[];
   pagination: {
     page: number;
     limit: number;
@@ -39,7 +39,7 @@ interface UsersResponse {
 }
 
 export function EnhancedUsersTable() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [pagination, setPagination] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export function EnhancedUsersTable() {
   >("all");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -132,12 +132,12 @@ export function EnhancedUsersTable() {
     router.push(`/admin/users/enhanced?${params.toString()}`);
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: UserData) => {
     setSelectedUser(user);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteUser = (user: User) => {
+  const handleDeleteUser = (user: UserData) => {
     setSelectedUser(user);
     setDeleteDialogOpen(true);
   };
@@ -168,7 +168,7 @@ export function EnhancedUsersTable() {
       if (data.success) {
         const csvContent = [
           ["Email", "Type", "Balance"],
-          ...data.users.map((user: User) => [
+          ...data.users.map((user: UserData) => [
             user.email,
             user.type,
             user.balance,

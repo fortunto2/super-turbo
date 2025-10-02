@@ -1,114 +1,4 @@
 "use client";
-"use strict";
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  AI_MODELS: () => AI_MODELS,
-  API_ENDPOINTS: () => API_ENDPOINTS,
-  APP_URLS: () => APP_URLS,
-  ARTIFACT_TYPES: () => ARTIFACT_TYPES,
-  CURRENT_PRICES: () => CURRENT_PRICES,
-  ERROR_CODES: () => ERROR_CODES,
-  FILE_FORMATS: () => FILE_FORMATS,
-  IMAGE_SIZES: () => IMAGE_SIZES,
-  LIMITS: () => LIMITS,
-  MESSAGE_ROLES: () => MESSAGE_ROLES,
-  NOTIFICATION_TYPES: () => NOTIFICATION_TYPES,
-  PAGINATION: () => PAGINATION,
-  STATUS: () => STATUS,
-  STRIPE_PRICES: () => STRIPE_PRICES,
-  TIME: () => TIME,
-  USER_ROLES: () => USER_ROLES,
-  VIDEO_SIZES: () => VIDEO_SIZES,
-  capitalizeFirst: () => capitalizeFirst,
-  en: () => en,
-  es: () => es,
-  formatCurrency: () => formatCurrency,
-  formatDate: () => formatDate,
-  formatDateTime: () => formatDateTime,
-  formatDuration: () => formatDuration,
-  formatFileSize: () => formatFileSize,
-  formatNumber: () => formatNumber,
-  formatPercentage: () => formatPercentage,
-  formatRelativeTime: () => formatRelativeTime,
-  getAllTranslationKeys: () => getAllTranslationKeys,
-  getClientSuperLandingTranslation: () => getClientSuperLandingTranslation,
-  getCurrentMode: () => getCurrentMode,
-  getCurrentPrices: () => getCurrentPrices,
-  getNestedValue: () => getNestedValue,
-  getServerSuperLandingTranslation: () => getServerSuperLandingTranslation,
-  getSingleVideoPrice: () => getSingleVideoPrice,
-  getStripeConfig: () => getStripeConfig,
-  getSuperLandingDictionary: () => getSuperLandingDictionary,
-  getSuperLandingDictionaryServer: () => getSuperLandingDictionaryServer,
-  getTranslation: () => getTranslation,
-  getTranslationWithInterpolation: () => getTranslationWithInterpolation,
-  getTripleVideoPrice: () => getTripleVideoPrice,
-  guestRegex: () => guestRegex,
-  hasErrors: () => hasErrors,
-  hasTranslation: () => hasTranslation,
-  hi: () => hi,
-  i18n: () => i18n,
-  i18nServer: () => i18nServer,
-  interpolateTranslation: () => interpolateTranslation,
-  isStrongPassword: () => isStrongPassword,
-  isValidArray: () => isValidArray,
-  isValidDate: () => isValidDate,
-  isValidEmail: () => isValidEmail,
-  isValidFileSize: () => isValidFileSize,
-  isValidFileType: () => isValidFileType,
-  isValidId: () => isValidId,
-  isValidNumberRange: () => isValidNumberRange,
-  isValidPassword: () => isValidPassword,
-  isValidPhone: () => isValidPhone,
-  isValidTextLength: () => isValidTextLength,
-  isValidUUID: () => isValidUUID,
-  isValidUrl: () => isValidUrl,
-  localeCookieName: () => localeCookieName,
-  localeMap: () => localeMap,
-  localeMapServer: () => localeMapServer,
-  ru: () => ru,
-  slugify: () => slugify,
-  superLandingDictionaries: () => superLandingDictionaries,
-  tr: () => tr,
-  translationConfig: () => translationConfig,
-  translationConfigServer: () => translationConfigServer,
-  truncateText: () => truncateText,
-  useAppTranslations: () => useAppTranslations,
-  useChatbotTranslations: () => useChatbotTranslations,
-  useClickOutside: () => useClickOutside,
-  useDebounce: () => useDebounce,
-  useIsDarkMode: () => useIsDarkMode,
-  useIsDesktop: () => useIsDesktop,
-  useIsMobile: () => useIsMobile,
-  useIsReducedMotion: () => useIsReducedMotion,
-  useIsTablet: () => useIsTablet,
-  useLandingTranslations: () => useLandingTranslations,
-  useLocalStorage: () => useLocalStorage,
-  useMediaQuery: () => useMediaQuery,
-  useTranslations: () => useTranslations,
-  validateObject: () => validateObject,
-  validateRequired: () => validateRequired
-});
-module.exports = __toCommonJS(src_exports);
 
 // src/utils/format.ts
 function formatDate(date, options) {
@@ -289,10 +179,10 @@ function isValidArray(array, minLength = 0, maxLength) {
 }
 
 // src/hooks/use-debounce.ts
-var import_react = require("react");
+import { useEffect, useState } from "react";
 function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = (0, import_react.useState)(value);
-  (0, import_react.useEffect)(() => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -304,9 +194,9 @@ function useDebounce(value, delay) {
 }
 
 // src/hooks/use-local-storage.ts
-var import_react2 = require("react");
+import { useState as useState2 } from "react";
 function useLocalStorage(key, initialValue) {
-  const [storedValue, setStoredValue] = (0, import_react2.useState)(() => {
+  const [storedValue, setStoredValue] = useState2(() => {
     if (typeof window === "undefined") {
       return initialValue;
     }
@@ -343,10 +233,10 @@ function useLocalStorage(key, initialValue) {
 }
 
 // src/hooks/use-media-query.ts
-var import_react3 = require("react");
+import { useState as useState3, useEffect as useEffect3 } from "react";
 function useMediaQuery(query) {
-  const [matches, setMatches] = (0, import_react3.useState)(false);
-  (0, import_react3.useEffect)(() => {
+  const [matches, setMatches] = useState3(false);
+  useEffect3(() => {
     if (typeof window === "undefined") return;
     const media = window.matchMedia(query);
     setMatches(media.matches);
@@ -365,9 +255,9 @@ var useIsDarkMode = () => useMediaQuery("(prefers-color-scheme: dark)");
 var useIsReducedMotion = () => useMediaQuery("(prefers-reduced-motion: reduce)");
 
 // src/hooks/use-click-outside.ts
-var import_react4 = require("react");
+import { useEffect as useEffect4 } from "react";
 function useClickOutside(ref, handler) {
-  (0, import_react4.useEffect)(() => {
+  useEffect4(() => {
     const listener = (event) => {
       const el = ref == null ? void 0 : ref.current;
       if (!el || el.contains((event == null ? void 0 : event.target) || null)) {
@@ -560,10 +450,25 @@ if (process.env.NODE_ENV === "development") {
 var localeCookieName = "NEXT_LOCALE";
 var i18n = {
   defaultLocale: "en",
-  locales: ["en", "ru", "tr", "es", "hi"],
+  locales: [
+    "en",
+    "ru",
+    "tr",
+    "es",
+    "hi",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "pl",
+    "uk",
+    "zh",
+    "ja",
+    "ko",
+    "ar"
+  ],
   localeDetection: true,
   // automatic detection by headers
-  domains: void 0,
   cookieName: localeCookieName,
   cookieMaxAge: 31536e3,
   // 1 year in seconds
@@ -575,7 +480,17 @@ var localeMap = {
   ru: "Russian",
   tr: "Turkish",
   es: "Spanish",
-  hi: "Hindi"
+  hi: "Hindi",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  pl: "Polish",
+  uk: "Ukrainian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic"
 };
 var translationConfig = {
   i18n,
@@ -586,10 +501,25 @@ var translationConfig = {
 var localeCookieName2 = "NEXT_LOCALE";
 var i18nServer = {
   defaultLocale: "en",
-  locales: ["en", "ru", "tr", "es", "hi"],
+  locales: [
+    "en",
+    "ru",
+    "tr",
+    "es",
+    "hi",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "pl",
+    "uk",
+    "zh",
+    "ja",
+    "ko",
+    "ar"
+  ],
   localeDetection: true,
   // automatic detection by headers
-  domains: void 0,
   cookieName: localeCookieName2,
   cookieMaxAge: 31536e3,
   // 1 year in seconds
@@ -601,7 +531,17 @@ var localeMapServer = {
   ru: "Russian",
   tr: "Turkish",
   es: "Spanish",
-  hi: "Hindi"
+  hi: "Hindi",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  pl: "Polish",
+  uk: "Ukrainian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic"
 };
 var translationConfigServer = {
   i18n: i18nServer,
@@ -2869,7 +2809,27 @@ var superLandingDictionaries = {
   ru,
   tr,
   es,
-  hi
+  hi,
+  fr: en,
+  // Fallback to English
+  de: en,
+  // Fallback to English
+  it: en,
+  // Fallback to English
+  pt: en,
+  // Fallback to English
+  pl: en,
+  // Fallback to English
+  uk: en,
+  // Fallback to English
+  zh: en,
+  // Fallback to English
+  ja: en,
+  // Fallback to English
+  ko: en,
+  // Fallback to English
+  ar: en
+  // Fallback to English
 };
 function getSuperLandingDictionary(locale) {
   return superLandingDictionaries[locale] || en;
@@ -2898,7 +2858,27 @@ var superLandingDictionaries2 = {
   ru,
   tr,
   es,
-  hi
+  hi,
+  fr: en,
+  // Fallback to English
+  de: en,
+  // Fallback to English
+  it: en,
+  // Fallback to English
+  pt: en,
+  // Fallback to English
+  pl: en,
+  // Fallback to English
+  uk: en,
+  // Fallback to English
+  zh: en,
+  // Fallback to English
+  ja: en,
+  // Fallback to English
+  ko: en,
+  // Fallback to English
+  ar: en
+  // Fallback to English
 };
 function getSuperLandingDictionaryServer(locale) {
   return superLandingDictionaries2[locale] || en;
@@ -2922,7 +2902,7 @@ function getServerSuperLandingTranslation(locale) {
 }
 
 // src/translation/hooks.ts
-var import_react5 = require("react");
+import { useCallback, useMemo } from "react";
 
 // src/translation/utils.ts
 function getNestedValue(dictionary, key) {
@@ -2971,25 +2951,25 @@ function getAllTranslationKeys(dictionary, prefix = "") {
 
 // src/translation/hooks.ts
 function useTranslations(dictionary) {
-  const t = (0, import_react5.useCallback)(
+  const t = useCallback(
     (key, fallback) => {
       return getTranslation(dictionary, key, fallback);
     },
     [dictionary]
   );
-  const tWithVars = (0, import_react5.useCallback)(
+  const tWithVars = useCallback(
     (key, variables = {}, fallback) => {
       return getTranslationWithInterpolation(dictionary, key, variables, fallback);
     },
     [dictionary]
   );
-  const has = (0, import_react5.useCallback)(
+  const has = useCallback(
     (key) => {
       return hasTranslation(dictionary, key);
     },
     [dictionary]
   );
-  const keys = (0, import_react5.useMemo)(() => {
+  const keys = useMemo(() => {
     return getAllTranslationKeys(dictionary);
   }, [dictionary]);
   return {
@@ -3001,10 +2981,10 @@ function useTranslations(dictionary) {
   };
 }
 function useAppTranslations(app, locale) {
-  const getDictionary = (0, import_react5.useCallback)(() => {
+  const getDictionary = useCallback(() => {
     return {};
   }, [app, locale]);
-  const dictionary = (0, import_react5.useMemo)(() => getDictionary(), [getDictionary]);
+  const dictionary = useMemo(() => getDictionary(), [getDictionary]);
   return useTranslations(dictionary);
 }
 function useLandingTranslations(locale) {
@@ -3013,8 +2993,7 @@ function useLandingTranslations(locale) {
 function useChatbotTranslations(locale) {
   return useAppTranslations("super-chatbot", locale);
 }
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
+export {
   AI_MODELS,
   API_ENDPOINTS,
   APP_URLS,
@@ -3101,5 +3080,5 @@ function useChatbotTranslations(locale) {
   useTranslations,
   validateObject,
   validateRequired
-});
+};
 //# sourceMappingURL=index.js.map

@@ -113,7 +113,9 @@ export function VideoPreview({
         currentTime.current += 0.1;
 
         if (currentTime.current >= duration) {
-          clearInterval(durationTimer.current!);
+          if (durationTimer.current) {
+            clearInterval(durationTimer.current);
+          }
           handleEnded();
         }
       }, 100);

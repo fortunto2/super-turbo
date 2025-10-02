@@ -1,8 +1,4 @@
-/**
- * Упрощенная система мониторинга для API endpoints
- */
 
-import { NextRequest, NextResponse } from "next/server";
 
 // Простые метрики в памяти
 const metrics = {

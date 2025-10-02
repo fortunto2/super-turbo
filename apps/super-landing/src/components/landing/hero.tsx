@@ -30,7 +30,9 @@ export function Hero() {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, [slides.length]);
 
   // Функции переключения слайдов
@@ -166,7 +168,9 @@ export function Hero() {
                   className={`h-2 w-2 rounded-full transition-colors ${
                     index === currentSlide ? "bg-white" : "bg-white/30"
                   }`}
-                  onClick={() => setCurrentSlide(index)}
+                  onClick={() => {
+                    setCurrentSlide(index);
+                  }}
                   aria-label={`Go to slide ${index + 1}`}
                   suppressHydrationWarning
                 />

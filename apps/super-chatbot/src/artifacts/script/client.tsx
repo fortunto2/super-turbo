@@ -7,7 +7,14 @@ import { toast } from "sonner";
 export const scriptArtifact = new Artifact<"script">({
   kind: "script",
   description: "Useful for script/scenario content in markdown.",
-
+  onCreateDocument: ({ setArtifact }) => {
+    // Устанавливаем статус streaming при создании артефакта
+    setArtifact((draft) => ({
+      ...draft,
+      status: "streaming",
+      isVisible: true,
+    }));
+  },
   onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === "text-delta") {
       setArtifact((draftArtifact) => {
@@ -24,6 +31,10 @@ export const scriptArtifact = new Artifact<"script">({
               : draftArtifact.isVisible,
         };
       });
+    }
+
+    if (streamPart.type === "finish") {
+      setArtifact((draft) => ({ ...draft, status: "completed" }));
     }
 
     // Make artifact visible when kind is set to script

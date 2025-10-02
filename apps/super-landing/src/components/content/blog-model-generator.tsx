@@ -1,6 +1,6 @@
 "use client";
 
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { ModelVideoGenerator } from "./model-video-generator";
 import { EnhancedModelVideoGenerator } from "./enhanced-model-video-generator";
 import { ModelImageGenerator } from "./model-image-generator";
@@ -31,7 +31,7 @@ export function BlogModelGenerator({
         return (
           <EnhancedModelVideoGenerator
             modelName={modelName}
-            modelConfig={modelConfig}
+            modelConfig={modelConfig as any}
             locale={locale}
           />
         );
@@ -40,7 +40,7 @@ export function BlogModelGenerator({
           <ModelVideoGenerator
             modelName={modelName}
             locale={locale}
-            modelConfig={modelConfig}
+            modelConfig={modelConfig as any}
           />
         );
       }
@@ -51,7 +51,7 @@ export function BlogModelGenerator({
         <ModelImageGenerator
           modelName={modelName}
           locale={locale}
-          modelConfig={modelConfig}
+          modelConfig={modelConfig as any}
         />
       );
   }

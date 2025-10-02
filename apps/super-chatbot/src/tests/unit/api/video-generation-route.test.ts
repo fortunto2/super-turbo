@@ -29,8 +29,10 @@ describe("/api/generate/video/route", () => {
     vi.clearAllMocks();
 
     vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(getSuperduperAIConfigWithUserToken).mockResolvedValue(mockConfig);
-    vi.mocked(validateOperationBalance).mockResolvedValue(true);
+    vi.mocked(getSuperduperAIConfigWithUserToken).mockResolvedValue(
+      mockConfig as any
+    );
+    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: true });
   });
 
   it("should return 401 for unauthenticated requests", async () => {
@@ -98,7 +100,7 @@ describe("/api/generate/video/route", () => {
 
     // Verify that file is NOT passed for text-to-video
     const callArgs = vi.mocked(generateVideoWithStrategy).mock.calls[0];
-    expect(callArgs[1]).not.toHaveProperty("file");
+    expect(callArgs?.[1]).not.toHaveProperty("file");
   });
 
   it("should handle image-to-video generation with source image URL", async () => {
@@ -211,7 +213,7 @@ describe("/api/generate/video/route", () => {
   });
 
   it("should handle balance validation failure", async () => {
-    vi.mocked(validateOperationBalance).mockResolvedValue(false);
+    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: false });
 
     const request = new NextRequest("http://localhost/api/generate/video", {
       method: "POST",

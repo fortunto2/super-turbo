@@ -12,8 +12,8 @@ import { analyzeVideoContext } from "@/lib/ai/context";
 interface CreateVideoDocumentParams {
   createDocument: any;
   session?: Session | null;
-  defaultSourceVideoUrl?: string;
-  defaultSourceImageUrl?: string;
+  defaultSourceVideoUrl?: string | undefined;
+  defaultSourceImageUrl?: string | undefined;
   chatId?: string;
   userMessage?: string;
   currentAttachments?: any[];

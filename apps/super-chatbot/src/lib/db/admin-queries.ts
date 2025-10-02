@@ -184,7 +184,7 @@ export async function getUserById(userId: string) {
     const userData = users[0];
     return {
       ...userData,
-      type: userData.email.includes("guest") ? "guest" : "regular",
+      type: userData?.email?.includes("guest") ? "guest" : "regular",
     };
   } catch (error) {
     console.error("Error fetching user by ID:", error);

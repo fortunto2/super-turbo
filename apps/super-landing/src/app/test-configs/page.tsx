@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
 import {
-  getModelConfig,
-  getVideoModels,
-  getImageModels,
-} from "@/lib/models-config";
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+} from "@turbo-super/ui";
+import { getVideoModels, getImageModels } from "@/lib/models-config";
 
 export default function TestConfigsPage() {
   const [testResults, setTestResults] = useState<
@@ -39,7 +40,7 @@ export default function TestConfigsPage() {
         ...prev,
         [modelName]: {
           status: response.ok ? "success" : "error",
-          error: result.error || "Unknown error",
+          error: result.error ?? "Unknown error",
         },
       }));
     } catch (error) {
@@ -124,20 +125,20 @@ export default function TestConfigsPage() {
                   </p>
                   <p>
                     <strong>Config:</strong>{" "}
-                    {model.generationConfigName || "None"}
+                    {model.generationConfigName ?? "None"}
                   </p>
 
                   {testResults[model.name] && (
                     <div className="mt-2">
                       <Badge
-                        className={`${getStatusColor(testResults[model.name].status)} gap-1`}
+                        className={`${getStatusColor(testResults[model.name]?.status ?? "")} gap-1`}
                       >
-                        {getStatusIcon(testResults[model.name].status)}
-                        {testResults[model.name].status}
+                        {getStatusIcon(testResults[model.name]?.status ?? "")}
+                        {testResults[model.name]?.status}
                       </Badge>
-                      {testResults[model.name].error && (
+                      {testResults[model.name]?.error && (
                         <p className="text-xs text-red-300 mt-1">
-                          {testResults[model.name].error}
+                          {testResults[model.name]?.error}
                         </p>
                       )}
                     </div>

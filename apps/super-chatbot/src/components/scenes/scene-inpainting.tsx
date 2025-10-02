@@ -107,7 +107,7 @@ export function SceneInpainting({
             canvas={canvas}
             setCanvas={setCanvas}
             onComplete={onComplete}
-            loading={loading}
+            loading={loading || false}
             initialPrompt=""
             onActiveChange={handleActiveChange}
           />

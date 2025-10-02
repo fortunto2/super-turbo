@@ -90,7 +90,7 @@ export default function ScenePage() {
             <AnimatingTool
               sceneId={sceneId}
               projectId={projectId}
-              imageUrl={scene?.file?.url}
+              imageUrl={scene?.file?.url ?? null}
               onStarted={handleStarted}
             />
           ) : (
@@ -100,7 +100,7 @@ export default function ScenePage() {
       </div>
 
       <Toolbar
-        scene={scene}
+        scene={scene ?? null}
         isPlaying={isPlaying}
         activeTool={activeTool}
         onChangeTool={handleChangeTool}

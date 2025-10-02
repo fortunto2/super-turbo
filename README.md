@@ -1,46 +1,84 @@
 # Super Turbo Monorepo
 
-Universal AGENTS.md - Canonical guidance for AI assistants and human contributors across the monorepo.
+Монорепозиторий для AI чат-бота и маркетингового сайта с унифицированной системой компонентов.
 
-## Quick Start
+## 🚀 Быстрый старт
 
-### Translation Types Generation
-
-The project includes an **automatic translation types generation system** that creates TypeScript types for all translation keys:
+### Установка
 
 ```bash
-# Generate translation types from the dictionary
-npm run generate-translation-types
+# Клонирование репозитория
+git clone <repository-url>
+cd turbo-super
 
-# This will:
-# 1. Parse packages/shared/src/translation/dictionaries/super-landing/en.ts
-# 2. Extract all 318+ translation keys (including nested ones)
-# 3. Generate SuperLandingTranslationKey union type
-# 4. Update packages/shared/src/translation/types.ts
+# Установка зависимостей
+pnpm install
+
+# Настройка переменных окружения
+cp .env.example .env.local
 ```
 
-**Benefits:**
-- ✅ **Zero manual work** - types update automatically
-- ✅ **Full autocompletion** in IDE for all translation keys
-- ✅ **Type safety** - TypeScript checks all keys at compile time
-- ✅ **Live system** - new keys automatically appear in types
+### Запуск
 
-**Usage:**
+```bash
+# Все приложения
+pnpm dev
+
+# Только чат-бот
+pnpm dev --filter=super-chatbot
+
+# Только лендинг
+pnpm dev --filter=super-landing
+```
+
+### Генерация типов переводов
+
+Проект включает **автоматическую систему генерации типов переводов**:
+
+```bash
+# Генерация типов переводов
+npm run generate-translation-types
+
+# Это:
+# 1. Парсит packages/shared/src/translation/dictionaries/super-landing/en.ts
+# 2. Извлекает все 318+ ключей переводов (включая вложенные)
+# 3. Генерирует SuperLandingTranslationKey union type
+# 4. Обновляет packages/shared/src/translation/types.ts
+```
+
+**Преимущества:**
+
+- ✅ **Нулевая ручная работа** - типы обновляются автоматически
+- ✅ **Полное автодополнение** в IDE для всех ключей переводов
+- ✅ **Type safety** - TypeScript проверяет все ключи при компиляции
+- ✅ **Живая система** - новые ключи автоматически появляются в типах
+
+**Использование:**
+
 ```typescript
 import { useTranslation } from "@/hooks/use-translation";
 
 export function MyComponent() {
   const { t } = useTranslation("en");
-  
-  // IDE will autocomplete all available keys!
+
+  // IDE будет автодополнять все доступные ключи!
   return <h1>{t("hero.title")}</h1>;
 }
 ```
 
-## Quick entry points
+## 📚 Документация
 
-- apps/super-chatbot/README.md
-- apps/super-chatbot/docs/README.md
+### Главные точки входа
+
+- [Документация проекта](./docs/README.md) - Общая документация
+- [Мастер-документация](./docs/MASTER_DOCUMENTATION.md) - Полная централизованная документация
+- [Индекс документации](./docs/INDEX.md) - Быстрый доступ ко всем документам
+- [AGENTS.md](./AGENTS.md) - Руководство для AI ассистентов
+
+### Приложения
+
+- [Super Chatbot](./apps/super-chatbot/README.md) - AI чат-бот
+- [Super Landing](./apps/super-landing/README.md) - Маркетинговый сайт
 
 ## 🚀 Структура проекта
 

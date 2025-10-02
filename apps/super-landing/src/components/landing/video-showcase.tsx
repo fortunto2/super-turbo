@@ -8,17 +8,16 @@ import {
   InstagramIcon,
 } from "@/components/ui/icons";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
 import { useParams } from "next/navigation";
 import { getValidLocale } from "@/lib/get-valid-locale";
 
 export function VideoShowcase() {
   const params = useParams();
   const locale = getValidLocale(params.locale);
-  const { t } = useTranslation(locale as Locale);
+  const { t } = useTranslation(locale);
   return (
     <section className="py-16 w-full">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <h2 className="text-5xl font-bold text-center mb-8">{t("ui.look")}</h2>
         <div className="flex justify-center gap-8 mt-16">
           <a

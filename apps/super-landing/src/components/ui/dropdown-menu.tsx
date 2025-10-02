@@ -2,8 +2,8 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
-import { cn } from '@turbo-super/ui';
-import { ReactNode } from "react";
+import { cn } from "@turbo-super/ui";
+import type { ReactNode } from "react";
 
 interface DropdownOption {
   value: string;
@@ -39,7 +39,9 @@ export const Dropdown = ({
         {options.map((option) => (
           <DropdownMenu.Item
             key={option.value}
-            onSelect={() => onChange(option.value)}
+            onSelect={() => {
+              onChange(option.value);
+            }}
             className={cn(
               "cursor-pointer px-2 py-2 text-sm rounded-md transition-colors",
               option.value === value

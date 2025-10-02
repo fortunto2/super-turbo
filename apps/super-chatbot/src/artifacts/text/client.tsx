@@ -19,6 +19,14 @@ import type { TextArtifactMetadata } from "@/types/artifact-types";
 export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   kind: "text",
   description: "Useful for text content, like drafting essays and emails.",
+  onCreateDocument: ({ setArtifact }) => {
+    // Устанавливаем статус streaming при создании артефакта
+    setArtifact((draft) => ({
+      ...draft,
+      status: "streaming",
+      isVisible: true,
+    }));
+  },
   initialize: async ({ documentId, setMetadata }) => {
     if (documentId && documentId !== "init") {
       const suggestions = await getSuggestions({ documentId });
@@ -53,6 +61,10 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
           status: "streaming",
         };
       });
+    }
+
+    if (streamPart.type === "finish") {
+      setArtifact((draft) => ({ ...draft, status: "completed" }));
     }
   },
   content: ({

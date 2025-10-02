@@ -944,6 +944,7 @@ if (typeof window !== "undefined") {
     const chatSSEInstance =
       (window as any).chatSSEInstance || (window as any).chatWebSocketInstance;
     let effectiveVideoUrl = videoUrl || chatSSEInstance?.lastVideoUrl;
+    let effectiveThumbnailUrl = thumbnailUrl;
 
     // If no URL provided, try to get from current artifact
     if (!effectiveVideoUrl) {
@@ -953,7 +954,8 @@ if (typeof window !== "undefined") {
           const content = JSON.parse(artifactInstance.artifact.content);
           if (content.videoUrl) {
             effectiveVideoUrl = content.videoUrl;
-            thumbnailUrl = thumbnailUrl || content.thumbnailUrl;
+            effectiveThumbnailUrl =
+              effectiveThumbnailUrl || content.thumbnailUrl;
             console.log(
               "💡 Using video URL from current artifact:",
               `${effectiveVideoUrl.substring(0, 50)}...`
@@ -990,7 +992,7 @@ if (typeof window !== "undefined") {
         name: `generated-video-${Date.now()}.mp4`,
         url: effectiveVideoUrl,
         contentType: "video/mp4",
-        thumbnailUrl: thumbnailUrl,
+        thumbnailUrl: effectiveThumbnailUrl,
       };
 
       const newMessage = {

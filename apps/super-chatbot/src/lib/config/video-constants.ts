@@ -164,13 +164,18 @@ export function getDefaultResolutionForModel(
   const compatibleResolutions = getModelCompatibleResolutions(modelName);
 
   // Always prefer 16:9 HD as default
-  return (
+  const result =
     compatibleResolutions.find(
       (r) => r.aspectRatio === "16:9" && r.qualityType === "hd"
     ) ||
     compatibleResolutions[0] ||
-    DEFAULT_VIDEO_RESOLUTION
-  );
+    DEFAULT_VIDEO_RESOLUTION;
+
+  if (!result) {
+    throw new Error("No compatible resolution found for model");
+  }
+
+  return result;
 }
 
 export enum ShotSizeEnum {
@@ -185,8 +190,8 @@ export enum ShotSizeEnum {
 }
 
 // AICODE-NOTE: Default economical settings
-export const DEFAULT_VIDEO_RESOLUTION = VIDEO_RESOLUTIONS.find(
-  (r) => r.width === 1344 && r.height === 768
-)!; // HD 16:9
+export const DEFAULT_VIDEO_RESOLUTION =
+  VIDEO_RESOLUTIONS.find((r) => r.width === 1344 && r.height === 768) ||
+  VIDEO_RESOLUTIONS[0]; // HD 16:9
 export const DEFAULT_VIDEO_QUALITY = "hd"; // Instead of full_hd
 export const DEFAULT_VIDEO_DURATION = 5; // Shorter duration for cost savings

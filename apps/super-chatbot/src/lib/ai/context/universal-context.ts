@@ -3,7 +3,7 @@
  * Поддерживает изображения, видео, аудио и другие типы медиа
  */
 
-import { contextCache, generateMessageHash, CacheUtils } from "./cache";
+import { contextCache, generateMessageHash } from "./cache";
 
 export type MediaType = "image" | "video" | "audio" | "document";
 
@@ -70,12 +70,12 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     const currentMedia = this.checkCurrentMessage(currentAttachments);
     if (currentMedia) {
       return {
-        sourceUrl: currentMedia.url,
-        sourceId: currentMedia.id,
+        sourceUrl: currentMedia?.url || "",
+        ...(currentMedia?.id && { sourceId: currentMedia.id }),
         mediaType: this.mediaType,
         confidence: "high",
         reasoning: `Медиа найдено в текущем сообщении пользователя`,
-        metadata: currentMedia.metadata,
+        ...(currentMedia?.metadata && { metadata: currentMedia.metadata }),
       };
     }
 
@@ -96,12 +96,14 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     if (references.length > 0) {
       const bestMatch = references.sort((a, b) => b.relevance - a.relevance)[0];
       return {
-        sourceUrl: bestMatch.media.url,
-        sourceId: bestMatch.media.id,
+        sourceUrl: bestMatch?.media?.url || "",
+        ...(bestMatch?.media?.id && { sourceId: bestMatch.media.id }),
         mediaType: this.mediaType,
-        confidence: bestMatch.relevance > 0.7 ? "high" : "medium",
-        reasoning: `Найдена ссылка на ${this.mediaType}: ${bestMatch.reasoning}`,
-        metadata: bestMatch.media.metadata,
+        confidence: (bestMatch?.relevance || 0) > 0.7 ? "high" : "medium",
+        reasoning: `Найдена ссылка на ${this.mediaType}: ${bestMatch?.reasoning || ""}`,
+        ...(bestMatch?.media?.metadata && {
+          metadata: bestMatch.media.metadata,
+        }),
       };
     }
 
@@ -116,14 +118,17 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       if (semanticMatches.length > 0) {
         const bestSemanticMatch = semanticMatches[0];
         return {
-          sourceUrl: bestSemanticMatch.media.url,
-          sourceId: bestSemanticMatch.media.id,
+          sourceUrl: bestSemanticMatch?.media?.url || "",
+          ...(bestSemanticMatch?.media?.id && {
+            sourceId: bestSemanticMatch.media.id,
+          }),
           mediaType: this.mediaType,
-          confidence: bestSemanticMatch.similarity > 0.8 ? "high" : "medium",
-          reasoning: `Семантический поиск: ${bestSemanticMatch.reasoning}`,
+          confidence:
+            (bestSemanticMatch?.similarity || 0) > 0.8 ? "high" : "medium",
+          reasoning: `Семантический поиск: ${bestSemanticMatch?.reasoning || ""}`,
           metadata: {
-            ...bestSemanticMatch.media.metadata,
-            semanticSimilarity: bestSemanticMatch.similarity,
+            ...bestSemanticMatch?.media?.metadata,
+            semanticSimilarity: bestSemanticMatch?.similarity,
           },
         };
       }
@@ -141,19 +146,21 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       if (temporalMatches.length > 0) {
         const bestTemporalMatch = temporalMatches[0];
         return {
-          sourceUrl: bestTemporalMatch.media.url,
-          sourceId: bestTemporalMatch.media.id,
+          sourceUrl: bestTemporalMatch?.media?.url || "",
+          ...(bestTemporalMatch?.media?.id && {
+            sourceId: bestTemporalMatch.media.id,
+          }),
           mediaType: this.mediaType,
           confidence:
-            bestTemporalMatch.confidence > 0.7
+            (bestTemporalMatch?.confidence || 0) > 0.7
               ? "high"
-              : bestTemporalMatch.confidence > 0.5
+              : (bestTemporalMatch?.confidence || 0) > 0.5
                 ? "medium"
                 : "low",
-          reasoning: `Временной анализ: ${bestTemporalMatch.reasoning}`,
+          reasoning: `Временной анализ: ${bestTemporalMatch?.reasoning || ""}`,
           metadata: {
-            ...bestTemporalMatch.media.metadata,
-            temporalDistance: bestTemporalMatch.temporalDistance,
+            ...bestTemporalMatch?.media?.metadata,
+            temporalDistance: bestTemporalMatch?.temporalDistance,
           },
         };
       }
@@ -165,14 +172,14 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     const contentMatch = this.findByContent(userMessage, filteredMedia);
     if (contentMatch) {
       return {
-        sourceUrl: contentMatch.media.url,
-        sourceId: contentMatch.media.id,
+        sourceUrl: contentMatch?.media?.url || "",
+        ...(contentMatch?.media?.id && { sourceId: contentMatch.media.id }),
         mediaType: this.mediaType,
-        confidence: contentMatch.relevance > 0.7 ? "high" : "medium",
-        reasoning: `Поиск по содержимому: ${contentMatch.reasoning}`,
+        confidence: (contentMatch?.relevance || 0) > 0.7 ? "high" : "medium",
+        reasoning: `Поиск по содержимому: ${contentMatch?.reasoning || ""}`,
         metadata: {
-          ...contentMatch.media.metadata,
-          contentRelevance: contentMatch.relevance,
+          ...contentMatch?.media?.metadata,
+          contentRelevance: contentMatch?.relevance,
         },
       };
     }
@@ -181,24 +188,22 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
     const heuristicMatch = this.findByHeuristics(userMessage, filteredMedia);
     if (heuristicMatch) {
       return {
-        sourceUrl: heuristicMatch.media.url,
-        sourceId: heuristicMatch.media.id,
+        sourceUrl: heuristicMatch?.media?.url || "",
+        ...(heuristicMatch?.media?.id && { sourceId: heuristicMatch.media.id }),
         mediaType: this.mediaType,
         confidence: "medium",
-        reasoning: `Медиа выбрано по эвристике: ${heuristicMatch.reasoning}`,
-        metadata: heuristicMatch.media.metadata,
+        reasoning: `Медиа выбрано по эвристике: ${heuristicMatch?.reasoning || ""}`,
+        ...(heuristicMatch?.media?.metadata && {
+          metadata: heuristicMatch.media.metadata,
+        }),
       };
     }
 
-    // 6. По умолчанию используем последнее медиа
-    const lastMedia = filteredMedia[filteredMedia.length - 1];
+    // 6. По умолчанию НЕ используем медиа, если пользователь не просил явно
     return {
-      sourceUrl: lastMedia.url,
-      sourceId: lastMedia.id,
       mediaType: this.mediaType,
       confidence: "low",
-      reasoning: `Используется последний ${this.mediaType} файл из чата`,
-      metadata: lastMedia.metadata,
+      reasoning: `В истории чата не найдено подходящих ${this.mediaType} файлов для использования`,
     };
   }
 
@@ -460,13 +465,19 @@ export abstract class BaseContextAnalyzer implements ContextAnalyzer {
       let reasoning: string;
 
       if (generatedMedia.length > 0) {
-        targetMedia = generatedMedia[generatedMedia.length - 1];
+        const lastGenerated = generatedMedia[generatedMedia.length - 1];
+        if (!lastGenerated) return null;
+        targetMedia = lastGenerated;
         reasoning = `контекст редактирования - используется последнее сгенерированное ${this.mediaType}`;
       } else if (uploadedMedia.length > 0) {
-        targetMedia = uploadedMedia[uploadedMedia.length - 1];
+        const lastUploaded = uploadedMedia[uploadedMedia.length - 1];
+        if (!lastUploaded) return null;
+        targetMedia = lastUploaded;
         reasoning = `контекст редактирования - используется последнее загруженное ${this.mediaType}`;
       } else {
-        targetMedia = chatMedia[chatMedia.length - 1];
+        const lastChat = chatMedia[chatMedia.length - 1];
+        if (!lastChat) return null;
+        targetMedia = lastChat;
         reasoning = `контекст редактирования - используется последний ${this.mediaType} в чате`;
       }
 
@@ -501,7 +512,8 @@ export class UniversalContextManager {
     userId?: string
   ): Promise<MediaContext> {
     // Проверяем кэш, если доступен chatId
-    if (chatId && CacheUtils.shouldUseCache(userMessage, currentAttachments)) {
+    if (chatId && true) {
+      // CacheUtils.shouldUseCache(userMessage, currentAttachments)
       const messageHash = generateMessageHash(userMessage, currentAttachments);
       const cachedContext = await contextCache.getCachedContext(
         chatId,
@@ -529,7 +541,8 @@ export class UniversalContextManager {
     );
 
     // Сохраняем в кэш, если доступен chatId
-    if (chatId && CacheUtils.shouldUseCache(userMessage, currentAttachments)) {
+    if (chatId && true) {
+      // CacheUtils.shouldUseCache(userMessage, currentAttachments)
       const messageHash = generateMessageHash(userMessage, currentAttachments);
       await contextCache.setCachedContext(
         chatId,

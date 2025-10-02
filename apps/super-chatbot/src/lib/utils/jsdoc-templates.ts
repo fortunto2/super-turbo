@@ -204,86 +204,84 @@ export const CLASS_TEMPLATE = `
 `;
 
 /**
- * Утилита для генерации JSDoc комментариев
+ * Генерирует JSDoc для компонента
  */
-export class JSDocGenerator {
-  /**
-   * Генерирует JSDoc для компонента
-   */
-  static component(name: string, description: string): string {
-    return COMPONENT_TEMPLATE.replace(/{componentName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+export function generateComponentDoc(
+  name: string,
+  description: string
+): string {
+  return COMPONENT_TEMPLATE.replace(/{componentName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для хука
-   */
-  static hook(name: string, description: string): string {
-    return HOOK_TEMPLATE.replace(/{hookName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для хука
+ */
+export function generateHookDoc(name: string, description: string): string {
+  return HOOK_TEMPLATE.replace(/{hookName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для утилиты
-   */
-  static utility(name: string, description: string): string {
-    return UTILITY_TEMPLATE.replace(/{functionName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для утилиты
+ */
+export function generateUtilityDoc(name: string, description: string): string {
+  return UTILITY_TEMPLATE.replace(/{functionName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для API функции
-   */
-  static api(name: string, description: string): string {
-    return API_TEMPLATE.replace(/{functionName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для API функции
+ */
+export function generateApiDoc(name: string, description: string): string {
+  return API_TEMPLATE.replace(/{functionName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для типа
-   */
-  static type(name: string, description: string): string {
-    return TYPE_TEMPLATE.replace(/{typeName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для типа
+ */
+export function generateTypeDoc(name: string, description: string): string {
+  return TYPE_TEMPLATE.replace(/{typeName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для константы
-   */
-  static constant(name: string, description: string): string {
-    return CONSTANT_TEMPLATE.replace(/{constantName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для константы
+ */
+export function generateConstantDoc(name: string, description: string): string {
+  return CONSTANT_TEMPLATE.replace(/{constantName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для enum
-   */
-  static enum(name: string, description: string): string {
-    return ENUM_TEMPLATE.replace(/{enumName}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для enum
+ */
+export function generateEnumDoc(name: string, description: string): string {
+  return ENUM_TEMPLATE.replace(/{enumName}/g, name).replace(
+    /{description}/g,
+    description
+  );
+}
 
-  /**
-   * Генерирует JSDoc для класса
-   */
-  static class(name: string, description: string): string {
-    return CLASS_TEMPLATE.replace(/{className}/g, name).replace(
-      /{description}/g,
-      description
-    );
-  }
+/**
+ * Генерирует JSDoc для класса
+ */
+export function generateClassDoc(name: string, description: string): string {
+  return CLASS_TEMPLATE.replace(/{className}/g, name).replace(
+    /{description}/g,
+    description
+  );
 }

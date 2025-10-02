@@ -1,5 +1,5 @@
 import { getSuperLandingDictionary } from "@turbo-super/shared";
-import { Locale } from "@/config/i18n-client";
+import type { Locale } from "@/config/i18n-client";
 import type { SuperLandingTranslationKey } from "@/types/translations";
 
 export function useTranslation(locale: Locale) {
@@ -8,10 +8,7 @@ export function useTranslation(locale: Locale) {
   // Перегрузка функции для лучшего автодополнения
   function t<T = string>(key: SuperLandingTranslationKey, fallback?: T): T;
   function t<T = string>(key: string, fallback?: T): T;
-  function t<T = string>(
-    key: SuperLandingTranslationKey | string,
-    fallback?: T
-  ): T {
+  function t<T = string>(key: string, fallback?: T): T {
     // Ищем в словаре по ключу
     const keys = key.split(".");
     let value: unknown = dict;

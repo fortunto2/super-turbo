@@ -137,6 +137,9 @@ export class ChatPage {
       .getByTestId("message-assistant")
       .all();
     const lastMessageElement = messageElements[messageElements.length - 1];
+    if (!lastMessageElement) {
+      throw new Error("No message elements found");
+    }
 
     const content = await lastMessageElement
       .getByTestId("message-content")
@@ -160,15 +163,14 @@ export class ChatPage {
       content,
       reasoning: reasoningElement,
       async toggleReasoningVisibility() {
-        await lastMessageElement
-          .getByTestId("message-reasoning-toggle")
+        await lastMessageElement?.getByTestId("message-reasoning-toggle")
           .click();
       },
       async upvote() {
-        await lastMessageElement.getByTestId("message-upvote").click();
+        await lastMessageElement?.getByTestId("message-upvote").click();
       },
       async downvote() {
-        await lastMessageElement.getByTestId("message-downvote").click();
+        await lastMessageElement?.getByTestId("message-downvote").click();
       },
     };
   }

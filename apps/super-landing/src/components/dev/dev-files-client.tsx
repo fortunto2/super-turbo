@@ -80,7 +80,7 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
         toast.success("Session found!");
       } else {
         const error = await response.json();
-        toast.error(error.error || "Session not found");
+        toast.error(error.error ?? "Session not found");
         setFiles([]);
       }
     } catch (error) {
@@ -174,8 +174,10 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                     type="text"
                     placeholder="Enter session ID (cs_test_xxx or cs_live_xxx)"
                     value={searchSessionId}
-                    onChange={(e) => setSearchSessionId(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && searchSession()}
+                    onChange={(e) => {
+                      setSearchSessionId(e.target.value);
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && searchSession()}
                     className="flex-1 font-mono"
                   />
                   <Button
@@ -216,7 +218,10 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                       {file.webhookData && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">
+                            <label
+                              htmlFor={`status-${file.sessionId}`}
+                              className="text-xs font-medium text-muted-foreground"
+                            >
                               Status
                             </label>
                             <div
@@ -231,7 +236,10 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
 
                           {file.webhookData.fileId && (
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">
+                              <label
+                                htmlFor={`file-id-${file.sessionId}`}
+                                className="text-xs font-medium text-muted-foreground"
+                              >
                                 File ID
                               </label>
                               <div className="font-mono text-sm mt-1 break-all">
@@ -242,7 +250,10 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
 
                           {file.webhookData.toolTitle && (
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">
+                              <label
+                                htmlFor={`tool-${file.sessionId}`}
+                                className="text-xs font-medium text-muted-foreground"
+                              >
                                 Tool
                               </label>
                               <div className="text-sm mt-1">
@@ -258,7 +269,10 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
 
                           {file.webhookData.timestamp && (
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">
+                              <label
+                                htmlFor={`created-${file.sessionId}`}
+                                className="text-xs font-medium text-muted-foreground"
+                              >
                                 Created
                               </label>
                               <div className="text-sm mt-1">
@@ -287,9 +301,9 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            router.push(`/${locale}/session/${file.sessionId}`)
-                          }
+                          onClick={() => {
+                            router.push(`/${locale}/session/${file.sessionId}`);
+                          }}
                           className="gap-2"
                         >
                           <Eye className="w-4 h-4" />
@@ -300,11 +314,11 @@ export default function DevFilesClient({ locale }: DevFilesClientProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
+                            onClick={() => {
                               router.push(
                                 `/${locale}/file/${file.webhookData!.fileId}`
-                              )
-                            }
+                              );
+                            }}
                             className="gap-2"
                           >
                             <FileText className="w-4 h-4" />

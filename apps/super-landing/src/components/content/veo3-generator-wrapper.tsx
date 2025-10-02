@@ -36,9 +36,9 @@ export function Veo3GeneratorWrapper({
         // Small delay to ensure scroll completes before focusing
         setTimeout(() => {
           // Try to find and click the enhance tab
-          const enhanceTab = document.querySelector(
+          const enhanceTab: HTMLElement = document.querySelector(
             '[data-value="enhance"]'
-          ) as HTMLElement;
+          )!;
           if (enhanceTab) {
             enhanceTab.click();
           }
@@ -75,9 +75,8 @@ function SimpleVeo3GeneratorWithPrompt({
     if (externalPrompt && !promptInjected) {
       // Inject the prompt into the enhance tab textarea
       setTimeout(() => {
-        const enhanceTextarea = document.querySelector(
-          "[placeholder*=\"Click 'Enhance with AI'\"]"
-        ) as HTMLTextAreaElement;
+        const enhanceTextarea: HTMLTextAreaElement | null =
+          document.querySelector("[placeholder*=\"Click 'Enhance with AI'\"]");
         if (enhanceTextarea) {
           // Create and dispatch input event to update React state
           const inputEvent = new Event("input", { bubbles: true });

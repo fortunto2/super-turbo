@@ -17,23 +17,41 @@ import { InteractiveAPIDocs } from "./interactive-api-docs";
 
 // Минимальное определение компонентов для проверки работоспособности
 const components = {
-  h1: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  h1: ({
+    className,
+    children,
+    ...props
+  }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1
       className={`text-4xl font-bold mt-8 mb-4 ${className ?? ""}`}
       {...props}
-    />
+    >
+      {children}
+    </h1>
   ),
-  h2: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  h2: ({
+    className,
+    children,
+    ...props
+  }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h2
       className={`text-3xl font-bold mt-8 mb-4 ${className ?? ""}`}
       {...props}
-    />
+    >
+      {children}
+    </h2>
   ),
-  h3: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  h3: ({
+    className,
+    children,
+    ...props
+  }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3
       className={`text-2xl font-bold mt-8 mb-4 ${className ?? ""}`}
       {...props}
-    />
+    >
+      {children}
+    </h3>
   ),
   p: ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
     <p
@@ -67,7 +85,7 @@ const components = {
     children,
     ..._props
   }: React.HTMLAttributes<HTMLPreElement>) => (
-    <CodeBlock className={className}>{children}</CodeBlock>
+    <CodeBlock className={className || ""}>{children}</CodeBlock>
   ),
   FeatureGrid,
   Feature,

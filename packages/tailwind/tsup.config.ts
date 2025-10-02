@@ -13,6 +13,10 @@ export default defineConfig({
   external: ["tailwindcss"],
   outDir: "dist",
   treeshake: true,
+  // Исправляем предупреждения о mixed exports
+  output: {
+    exports: "named"
+  },
   // Копируем CSS файлы
   loader: {
     ".css": "copy",

@@ -77,7 +77,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
         await documentHandler.onCreateDocument({
           id,
           title,
-          content,
+          content: content || "",
           dataStream,
           session,
         });

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+/* eslint-env node */
+/* eslint-disable no-console, no-undef */
 
 /**
  * Environment Variables Check Script

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 import { getSessionData, updateSessionData } from "@/lib/kv";
@@ -20,8 +21,8 @@ const configureSuperduperAI = () => {
 };
 
 const getSuperduperAIConfig = () => ({
-  url: process.env.SUPERDUPERAI_URL || "https://api.superduperai.com",
-  token: process.env.SUPERDUPERAI_TOKEN || "your_superduperai_token",
+  url: process.env.SUPERDUPERAI_URL ?? "https://api.superduperai.com",
+  token: process.env.SUPERDUPERAI_TOKEN ?? "your_superduperai_token",
 });
 
 const API_ENDPOINTS = {
@@ -44,7 +45,7 @@ function enhanceVideoPrompt(prompt: string, style: string): string {
       fantasy: "fantastical, magical, otherworldly, dreamlike",
     };
 
-    const enhancement = styleEnhancements[style] || styleEnhancements.cinematic;
+    const enhancement = styleEnhancements[style] ?? styleEnhancements.cinematic;
     return `${prompt}, ${enhancement}`;
   }
 
@@ -62,7 +63,7 @@ function getNegativePrompt(style: string): string {
     fantasy: "realistic, mundane, ordinary, everyday, realistic",
   };
 
-  return negativePrompts[style] || negativePrompts.cinematic;
+  return negativePrompts[style] ?? negativePrompts.cinematic ?? "";
 }
 
 const uploadImage = async (imageFile: {
@@ -112,11 +113,11 @@ const uploadImage = async (imageFile: {
     body: uploadFormData,
   });
 
-  console.log("📡 Upload response status:", uploadResponse.status);
-  console.log(
-    "📡 Upload response headers:",
-    Object.fromEntries(uploadResponse.headers.entries())
-  );
+  // console.log("📡 Upload response status:", uploadResponse.status);
+  // console.log(
+  //   "📡 Upload response headers:",
+  //   Object.fromEntries(uploadResponse.headers.entries())
+  // );
 
   if (!uploadResponse.ok) {
     const errorText = await uploadResponse.text();
@@ -136,9 +137,9 @@ const uploadImage = async (imageFile: {
 async function generateVideoWithSuperDuperAI(
   prompt: string,
   modelName: string,
-  duration: number = 8,
-  resolution: string = "1280x720",
-  style: string = "cinematic",
+  duration = 8,
+  resolution = "1280x720",
+  style = "cinematic",
   generationType: "text-to-video" | "image-to-video" = "text-to-video",
   imageId?: string
 ): Promise<string> {
@@ -186,11 +187,11 @@ async function generateVideoWithSuperDuperAI(
     const { MODELS_CONFIG } = await import("@/lib/models-config");
 
     // Find model in config
-    const modelConfig = MODELS_CONFIG[model] || MODELS_CONFIG["Veo3"]; // fallback to Veo3
+    const modelConfig = MODELS_CONFIG[model] ?? MODELS_CONFIG.Veo3; // fallback to Veo3
 
     if (
       generationType === "image-to-video" &&
-      modelConfig.imageToVideoConfigName
+      modelConfig?.imageToVideoConfigName
     ) {
       console.log(
         "🎨 Using image-to-video config:",
@@ -198,11 +199,13 @@ async function generateVideoWithSuperDuperAI(
       );
       return modelConfig.imageToVideoConfigName;
     } else {
-      console.log(
-        "📝 Using text-to-video config:",
-        modelConfig.generationConfigName
+      // console.log(
+      //   "📝 Using text-to-video config:",
+      //   modelConfig?.generationConfigName
+      // );
+      return (
+        modelConfig?.generationConfigName ?? "google-cloud/veo3-text2video"
       );
-      return modelConfig.generationConfigName || "google-cloud/veo3-text2video";
     }
   };
 
@@ -215,7 +218,14 @@ async function generateVideoWithSuperDuperAI(
       negative_prompt: getNegativePrompt(style),
       width,
       height,
-      aspect_ratio: width > height ? "16:9" : height > width ? "9:16" : "1:1",
+      aspect_ratio:
+        width && height
+          ? width > height
+            ? "16:9"
+            : height > width
+              ? "9:16"
+              : "1:1"
+          : "1:1",
       duration: getModelDuration(modelName, duration),
       seed: Math.floor(Math.random() * 1000000),
       generation_config_name: await getModelConfig(modelName, generationType),
@@ -295,17 +305,17 @@ async function generateVideoWithSuperDuperAI(
 async function generateImageWithSuperDuperAI(
   prompt: string,
   modelName: string,
-  width: number = 1024,
-  height: number = 1024,
-  style: string = "realistic"
+  width = 1024,
+  height = 1024,
+  _style = "realistic"
 ): Promise<string> {
-  console.log("🎨 Starting SuperDuperAI image generation:", {
-    prompt,
-    modelName,
-    width,
-    height,
-    style,
-  });
+  // console.log("🎨 Starting SuperDuperAI image generation:", {
+  //   prompt,
+  //   modelName,
+  //   width,
+  //   height,
+  //   style,
+  // });
 
   // Configure SuperDuperAI client
   configureSuperduperAI();
@@ -456,13 +466,11 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session
-        );
+        await handleCheckoutCompleted(event.data.object);
         break;
 
       case "payment_intent.payment_failed":
-        await handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
+        handlePaymentFailed(event.data.object);
         break;
 
       default:
@@ -488,7 +496,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Get session data from Redis (no more dependency on Stripe metadata)
   const sessionData = await getSessionData(sessionId);
 
-  console.log("🔍 Session data:", sessionData);
+  // console.log("🔍 Session data:", sessionData);
 
   if (!sessionData) {
     console.error("❌ No session data found in Redis for:", sessionId);
@@ -496,22 +504,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  console.log("📊 Retrieved session data:", {
-    promptLength: sessionData.prompt.length,
-    videoCount: sessionData.videoCount,
-    tool: sessionData.toolSlug,
-    cancelUrl: sessionData.cancelUrl,
-    modelName: sessionData.modelName,
-    generationType: sessionData.generationType,
-    imageFile: sessionData.imageFile
-      ? {
-          name: sessionData.imageFile.name,
-          size: sessionData.imageFile.size,
-          type: sessionData.imageFile.type,
-          contentLength: sessionData.imageFile.content.length,
-        }
-      : null,
-  });
+  // console.log("📊 Retrieved session data:", {
+  //   promptLength: sessionData.prompt.length,
+  //   videoCount: sessionData.videoCount,
+  //   tool: sessionData.toolSlug,
+  //   cancelUrl: sessionData.cancelUrl,
+  //   modelName: sessionData.modelName,
+  //   generationType: sessionData.generationType,
+  //   imageFile: sessionData.imageFile
+  //     ? {
+  //         name: sessionData.imageFile.name,
+  //         size: sessionData.imageFile.size,
+  //         type: sessionData.imageFile.type,
+  //         contentLength: sessionData.imageFile.content.length,
+  //       }
+  //     : null,
+  // });
 
   // Update status to processing (starting generation)
   await updateSessionData(sessionId, { status: "processing" });
@@ -531,10 +539,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
       fileId = await generateImageWithSuperDuperAI(
         sessionData.prompt,
-        sessionData.modelName || "veo3", // Use modelName from session data
-        sessionData.width || 1024,
-        sessionData.height || 1024,
-        sessionData.style || "realistic"
+        sessionData.modelName ?? "veo3", // Use modelName from session data
+        sessionData.width ?? 1024,
+        sessionData.height ?? 1024,
+        sessionData.style ?? "realistic"
       );
 
       console.log("🎨 Image generation started successfully:", fileId);
@@ -547,8 +555,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       // Check if we have an image file for image-to-video generation
       if (
         sessionData.generationType === "image-to-video" &&
-        sessionData.imageFile &&
-        sessionData.imageFile.content
+        sessionData.imageFile?.content
       ) {
         try {
           console.log("🎨 Uploading image for image-to-video generation...");
@@ -560,7 +567,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         }
       } else if (
         sessionData.generationType === "image-to-video" &&
-        (!sessionData.imageFile || !sessionData.imageFile.content)
+        !sessionData.imageFile?.content
       ) {
         console.log(
           "🔄 Image-to-video requested but no image provided, switching to text-to-video"
@@ -571,10 +578,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
       fileId = await generateVideoWithSuperDuperAI(
         sessionData.prompt,
-        sessionData.modelName || "veo3", // Use modelName from session data
-        sessionData.duration || 8,
-        sessionData.resolution || "1280x720",
-        sessionData.style || "cinematic",
+        sessionData.modelName ?? "veo3", // Use modelName from session data
+        sessionData.duration ?? 8,
+        sessionData.resolution ?? "1280x720",
+        sessionData.style ?? "cinematic",
         sessionData.generationType as "text-to-video" | "image-to-video",
         imageId
       );
@@ -601,10 +608,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const email = session.customer_details?.email;
   if (email) {
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";
-    const returnUrl =
-      sessionData.cancelUrl || `${baseUrl}/en/tool/veo3-prompt-generator`;
-    console.log("📧 TODO: Send email to", email, "with return URL:", returnUrl);
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://superduperai.co";
+    const _returnUrl =
+      sessionData.cancelUrl ?? `${baseUrl}/en/tool/veo3-prompt-generator`;
+    // console.log("📧 TODO: Send email to", email, "with return URL:", returnUrl);
   }
 }
 
@@ -627,11 +634,11 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     }
 
     const session = sessions.data[0];
-    const sessionId = session.id;
+    const sessionId = session?.id;
     console.log("🔍 Found checkout session:", sessionId);
 
     // Get session data from Redis
-    const sessionData = await getSessionData(sessionId);
+    const sessionData = await getSessionData(sessionId ?? "");
 
     if (!sessionData) {
       console.error("❌ No session data found in Redis for:", sessionId);
@@ -639,19 +646,19 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     }
 
     // Update status to completed (payment successful, ready for generation)
-    await updateSessionData(sessionId, { status: "completed" });
+    await updateSessionData(sessionId!, { status: "completed" });
 
     console.log(
       "✅ Payment completed successfully. Generation can now proceed with paymentSessionId."
     );
 
     // TODO: Send email notification
-    const email = session.customer_details?.email;
+    const email = session?.customer_details?.email;
     if (email) {
       const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "https://superduperai.co";
+        process.env.NEXT_PUBLIC_APP_URL ?? "https://superduperai.co";
       const returnUrl =
-        sessionData.cancelUrl || `${baseUrl}/en/tool/veo3-prompt-generator`;
+        sessionData.cancelUrl ?? `${baseUrl}/en/tool/veo3-prompt-generator`;
       console.log(
         "📧 TODO: Send email to",
         email,
@@ -668,7 +675,7 @@ async function _handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   }
 }
 
-async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
+function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
   console.log("❌ Payment failed:", paymentIntent.id);
 
   const { customer_email } = paymentIntent.metadata;
@@ -731,7 +738,7 @@ function createImprovedPrompt(originalPrompt: string, style: string): string {
         "A fantastical scene with magical elements and otherworldly atmosphere",
     };
 
-    const context = styleContexts[style] || styleContexts.cinematic;
+    const context = styleContexts[style] ?? styleContexts.cinematic;
     return `${context} featuring ${originalPrompt}`;
   }
 
@@ -746,6 +753,6 @@ function createImprovedPrompt(originalPrompt: string, style: string): string {
     fantasy: "magical atmosphere, fantastical elements",
   };
 
-  const enhancement = enhancements[style] || enhancements.cinematic;
+  const enhancement = enhancements[style] ?? enhancements.cinematic;
   return `${originalPrompt}, ${enhancement}`;
 }

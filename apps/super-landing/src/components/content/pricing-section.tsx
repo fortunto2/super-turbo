@@ -6,7 +6,7 @@ import { Zap, X, Check, Users, ArrowRight } from "lucide-react";
 import { useParams } from "next/navigation";
 import { getValidLocale } from "@/lib/get-valid-locale";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 import { APP_URLS } from "@/lib/constants";
 
 // Определение типов для данных о тарифах
@@ -105,7 +105,7 @@ export function PricingSection() {
             </CardHeader>
             <CardContent className="pt-3 px-4">
               <ul className="space-y-2 text-sm text-gray-300">
-                {pricingData[0].features.map((feature: string) => (
+                {pricingData[0]?.features.map((feature: string) => (
                   <li
                     key={feature}
                     className="flex items-center gap-2"
@@ -130,7 +130,7 @@ export function PricingSection() {
             </CardHeader>
             <CardContent className="pt-3 px-4">
               <ul className="space-y-2 text-sm text-gray-300">
-                {pricingData[2].features.map((feature: string) => (
+                {pricingData[2]?.features.map((feature: string) => (
                   <li
                     key={feature}
                     className="flex items-center gap-2"

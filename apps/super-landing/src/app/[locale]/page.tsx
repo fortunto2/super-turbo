@@ -33,13 +33,13 @@ export async function generateMetadata({
       };
     }
 
-    const title = home.seo?.title || home.title;
-    const description = home.seo?.description || home.description;
+    const title = home.seo?.title ?? home.title;
+    const description = home.seo?.description ?? home.description;
 
     return generatePageMetadata({
       title,
       description,
-      keywords: home.seo?.keywords || [],
+      keywords: home.seo?.keywords ?? [],
       url: "/",
       ogImage: HOME_BANNER_PATH,
       meta: {
@@ -82,7 +82,7 @@ export default async function Home({
           <VideoShowcase />
           <ApprovedBy locale={locale} />
           <FAQ
-            items={homeData.faq}
+            items={homeData.faq ?? []}
             locale={locale}
           />
           <CTA />

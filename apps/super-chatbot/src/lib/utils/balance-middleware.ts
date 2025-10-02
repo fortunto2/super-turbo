@@ -126,7 +126,7 @@ export async function withBalanceCheck<T>(
   );
 
   if (!valid) {
-    return errorContent!;
+    return errorContent || "Insufficient balance";
   }
 
   // Выполнение операции

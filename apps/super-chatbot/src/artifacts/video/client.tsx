@@ -18,6 +18,14 @@ export default function ArtifactContentVideo(props: any) {
 export const videoArtifact = new Artifact({
   kind: "video",
   description: "Useful for video generation with real-time progress tracking",
+  onCreateDocument: ({ setArtifact }) => {
+    // Устанавливаем статус streaming при создании артефакта
+    setArtifact((draft) => ({
+      ...draft,
+      status: "streaming",
+      isVisible: true,
+    }));
+  },
   content: ArtifactContentVideo,
   actions: [
     {
@@ -90,12 +98,24 @@ export const videoArtifact = new Artifact({
   onStreamPart: ({ streamPart, setArtifact }) => {
     // Handle text-delta with JSON content from server
     if (streamPart.type === "text-delta") {
-      setArtifact((draftArtifact) => ({
-        ...draftArtifact,
-        content: streamPart.content as string,
-        isVisible: true,
-        status: "streaming",
-      }));
+      const newContent = streamPart.content as string;
+      try {
+        const parsedContent = JSON.parse(newContent);
+        setArtifact((draftArtifact) => ({
+          ...draftArtifact,
+          content: newContent,
+          status: parsedContent.status || "streaming", // Обновляем статус из контента
+          // Открываем артефакт если генерация завершена, в процессе или только началась
+          isVisible:
+            parsedContent.status === "completed" ||
+            parsedContent.status === "pending" ||
+            parsedContent.status === "streaming" ||
+            draftArtifact.status === "streaming",
+        }));
+      } catch {
+        // Invalid JSON - don't overwrite existing content
+        console.log("🎬 ⚠️ Skipping invalid JSON content in stream part");
+      }
     }
 
     // Handle finish event to complete generation
@@ -107,7 +127,10 @@ export const videoArtifact = new Artifact({
 
           // Check for error status
           if (parsedContent.status === "error" || parsedContent.error) {
-            console.error("🎬 ❌ Video generation error in artifact:", parsedContent.error);
+            console.error(
+              "🎬 ❌ Video generation error in artifact:",
+              parsedContent.error
+            );
             return {
               ...draftArtifact,
               content: JSON.stringify({
@@ -115,7 +138,7 @@ export const videoArtifact = new Artifact({
                 status: "error",
                 timestamp: Date.now(),
               }),
-              status: "idle",
+              status: "completed",
             };
           }
 
@@ -129,14 +152,14 @@ export const videoArtifact = new Artifact({
             return {
               ...draftArtifact,
               content: JSON.stringify(updatedContent),
-              status: "idle",
+              status: "completed",
             };
           }
 
           // For other content, just mark as idle
           return {
             ...draftArtifact,
-            status: "idle",
+            status: "completed",
           };
         } catch (error) {
           console.error("🎬 ❌ Error parsing video artifact content:", error);
@@ -148,7 +171,7 @@ export const videoArtifact = new Artifact({
               error: "Failed to parse video generation result",
               timestamp: Date.now(),
             }),
-            status: "idle",
+            status: "completed",
           };
         }
       });

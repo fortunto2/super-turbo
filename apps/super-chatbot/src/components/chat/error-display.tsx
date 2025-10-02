@@ -33,6 +33,9 @@ export function ErrorDisplay({
     }
   };
 
+  // Use the same error filtering for general errors
+  const userFriendlyError = getUserFriendlyError(error);
+
   return (
     <Card className={`border-red-200 bg-red-50 ${className}`}>
       <CardHeader className="pb-3">
@@ -42,7 +45,9 @@ export function ErrorDisplay({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-red-700 text-sm leading-relaxed">{error}</div>
+        <div className="text-red-700 text-sm leading-relaxed">
+          {userFriendlyError}
+        </div>
 
         {showRetry && (
           <div className="flex gap-2">
@@ -76,17 +81,54 @@ interface VideoErrorDisplayProps {
   onRetry?: () => void;
 }
 
+// Function to filter and clean error messages for user display
+function getUserFriendlyError(error: string): string {
+  // Check for 521 Cloudflare error
+  if (error.includes("521") && error.includes("Web server is down")) {
+    return "Server is down. Please try again later.";
+  }
+
+  // Check for API errors with HTML content
+  if (error.includes("<!DOCTYPE html>") || error.includes("API Error:")) {
+    return "An error occurred while generating video. Please try again.";
+  }
+
+  // Check for network errors
+  if (
+    error.includes("fetch") ||
+    error.includes("network") ||
+    error.includes("timeout")
+  ) {
+    return "Connection error. Please check your internet connection and try again.";
+  }
+
+  // Check for server errors
+  if (
+    error.includes("500") ||
+    error.includes("502") ||
+    error.includes("503") ||
+    error.includes("504")
+  ) {
+    return "Server error. Please try again later.";
+  }
+
+  // For other errors, return a generic message
+  return "An error occurred while generating video. Please try again.";
+}
+
 export function VideoErrorDisplay({
   error,
   prompt,
   onRetry,
 }: VideoErrorDisplayProps) {
+  const userFriendlyError = getUserFriendlyError(error);
+
   return (
     <div className="max-w-2xl mx-auto">
       <ErrorDisplay
-        error={error}
+        error={userFriendlyError}
         title="Video generation error"
-        onRetry={onRetry}
+        {...(onRetry && { onRetry })}
       />
       {prompt && (
         <div className="mt-3 p-3 bg-red-100 rounded-md border border-red-200">
@@ -114,7 +156,7 @@ export function ImageErrorDisplay({
       <ErrorDisplay
         error={error}
         title="Image generation error"
-        onRetry={onRetry}
+        {...(onRetry && { onRetry })}
       />
       {prompt && (
         <div className="mt-3 p-3 bg-red-100 rounded-md border border-red-200">

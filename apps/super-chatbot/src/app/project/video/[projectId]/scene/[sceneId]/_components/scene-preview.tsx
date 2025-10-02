@@ -5,8 +5,8 @@ import {
 } from "@turbo-super/features";
 import type { ToolType } from "./toolbar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FileTypeEnum, } from "@turbo-super/api";
-import { EmptyPreview, } from "./helper";
+import { FileTypeEnum } from "@turbo-super/api";
+import { EmptyPreview } from "./helper";
 import { CanvasContainer } from "./canvas-container";
 import { InpaintingPanel } from "./inpainting-panel";
 import { ScenePreviewSkeleton } from "./scene-preview-skeleton";
@@ -44,16 +44,16 @@ export const ScenePreview = ({
   const { controller } = useToolbarStore();
 
   const { canvasSize, updateCanvasSize } = useCanvasSize({
-    scene,
+    scene: scene ?? null,
     activeTool,
     containerRef,
     toolbarRef,
   });
 
   const { isInpainting, canvas, setCanvas, handleInpainting } = useInpainting({
-    scene,
+    scene: scene ?? null,
     projectId,
-    onActiveToolChange,
+    onActiveToolChange: onActiveToolChange ?? (() => {}),
     onStarted,
   });
 
@@ -105,13 +105,13 @@ export const ScenePreview = ({
     >
       {isLoading ? (
         <ScenePreviewSkeleton />
-      ) : scene?.file?.url ? (
+      ) : scene?.file?.url && scene ? (
         <CanvasContainer
-          scene={scene!}
+          scene={scene}
           canvasSize={canvasSize}
           activeTool={activeTool}
-          onPlayingChange={onPlayingChange}
-          isPlaying={isPlaying}
+          onPlayingChange={onPlayingChange ?? (() => {})}
+          isPlaying={isPlaying ?? false}
           isReady={isReady}
           updateCanvasSize={updateCanvasSize}
           onToolbarUpdate={updateToolbarAnchorFromTarget}

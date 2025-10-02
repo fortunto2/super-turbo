@@ -1,6 +1,5 @@
 import {
   analyzeImageContext,
-  getChatImages,
   type ChatImage,
 } from "../../lib/ai/chat/image-context";
 import { semanticIndex } from "../../lib/ai/context/semantic-index";

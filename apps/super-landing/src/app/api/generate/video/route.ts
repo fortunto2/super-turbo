@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 // Video generation request schema
@@ -22,26 +23,30 @@ const videoGenerationSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     let body: Record<string, unknown>;
-    const contentType = request.headers.get("content-type") || "";
+    const contentType = request.headers.get("content-type") ?? "";
 
     // Handle both FormData and JSON requests
     if (contentType.includes("multipart/form-data")) {
       console.log("🎬 Processing FormData request");
       const formData = await request.formData();
 
+      const getStringValue = (key: string, defaultValue: string): string => {
+        const value = formData.get(key);
+        return value instanceof File ? defaultValue : value! || defaultValue;
+      };
+
       body = {
-        prompt: formData.get("prompt")?.toString() || "",
-        negativePrompt: formData.get("negativePrompt")?.toString() || "",
-        style: formData.get("style")?.toString() || "cinematic",
-        resolution: formData.get("resolution")?.toString() || "1920x1080",
-        shotSize: formData.get("shotSize")?.toString() || "medium_shot",
-        model: formData.get("model")?.toString() || "veo3",
+        prompt: getStringValue("prompt", ""),
+        negativePrompt: getStringValue("negativePrompt", ""),
+        style: getStringValue("style", "cinematic"),
+        resolution: getStringValue("resolution", "1920x1080"),
+        shotSize: getStringValue("shotSize", "medium_shot"),
+        model: getStringValue("model", "veo3"),
         frameRate: Number(formData.get("frameRate")) || 30,
         duration: Number(formData.get("duration")) || 8,
         seed: formData.get("seed") ? Number(formData.get("seed")) : undefined,
-        generationType:
-          formData.get("generationType")?.toString() || "text-to-video",
-        chatId: formData.get("chatId")?.toString() || "video-generator",
+        generationType: getStringValue("generationType", "text-to-video"),
+        chatId: getStringValue("chatId", "video-generator"),
         file: formData.get("file") as File | null,
       };
     } else {
@@ -62,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate unique file ID for tracking
-    const fileId = `video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const fileId = `video_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     // TODO: Implement actual video generation
     // For now, simulate the process
@@ -109,7 +114,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET endpoint to check generation status
-export async function GET(request: NextRequest) {
+export function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get("fileId");

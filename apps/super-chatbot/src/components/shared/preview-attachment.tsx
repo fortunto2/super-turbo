@@ -1,7 +1,7 @@
 import type { Attachment } from "ai";
 
 import { LoaderIcon } from "../common/icons";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 
 export const PreviewAttachment = ({
   attachment,
@@ -13,7 +13,7 @@ export const PreviewAttachment = ({
   chatId?: string;
 }) => {
   const { name, url, contentType } = attachment;
-  const { setArtifact } = useArtifact();
+  const { setArtifact } = useArtifactLegacy();
 
   const handleAttachmentClick = () => {
     if (contentType?.startsWith("image")) {
@@ -25,7 +25,7 @@ export const PreviewAttachment = ({
 
       if (match) {
         extractedFileId = match[1]; // Извлекаем fileId
-        displayPrompt = match[2].trim(); // Остальная часть имени - это prompt
+        displayPrompt = match[2]?.trim() || ""; // Остальная часть имени - это prompt
       } else {
         // AICODE-DEBUG: Попробуем извлечь fileId из URL изображения
         console.log(
@@ -102,7 +102,7 @@ export const PreviewAttachment = ({
         title: name || "Video",
       }));
     } else if (contentType === "text/markdown") {
-      let documentId;
+      let documentId: string | undefined;
       if (url) {
         const urlParts = url.split("/");
         documentId = urlParts[urlParts.length - 1];
@@ -114,7 +114,7 @@ export const PreviewAttachment = ({
         ...prev,
         isVisible: true,
         kind,
-        documentId,
+        ...(documentId && { documentId }),
         title: name || (kind === "script" ? "Script" : "Document"),
       }));
     }

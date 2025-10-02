@@ -122,7 +122,7 @@ export function SceneAnimating({
             canvas={canvas}
             setCanvas={setCanvas}
             onComplete={handleComplete}
-            loading={loading}
+            loading={loading || false}
             initialPrompt="move"
             onActiveChange={handleActiveChange}
           />

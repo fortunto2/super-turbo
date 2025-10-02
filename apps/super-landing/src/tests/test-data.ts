@@ -83,7 +83,7 @@ export const testBlogPosts: TestBlogPost[] = [
       ogImage: "/test-image.jpg",
     },
     modelName: "dall_e_3",
-    modelConfig: testModelConfigs.dall_e_3,
+    modelConfig: testModelConfigs.dall_e_3!,
   },
   {
     slug: "video-blog-post",
@@ -101,7 +101,7 @@ export const testBlogPosts: TestBlogPost[] = [
       ogImage: "/video-image.jpg",
     },
     modelName: "veo_3",
-    modelConfig: testModelConfigs.veo_3,
+    modelConfig: testModelConfigs.veo_3!,
   },
   {
     slug: "enhanced-video-post",
@@ -119,7 +119,7 @@ export const testBlogPosts: TestBlogPost[] = [
       ogImage: "/enhanced-video.jpg",
     },
     modelName: "enhanced_veo_3",
-    modelConfig: testModelConfigs.enhanced_veo_3,
+    modelConfig: testModelConfigs.enhanced_veo_3!,
   },
   {
     slug: "no-model-post",
@@ -176,17 +176,17 @@ export const testGeneratorProps: Record<string, TestGeneratorProps> = {
   imageGenerator: {
     modelName: "dall_e_3",
     locale: "en",
-    modelConfig: testModelConfigs.dall_e_3,
+    modelConfig: testModelConfigs.dall_e_3!,
   },
   videoGenerator: {
     modelName: "veo_3",
     locale: "en",
-    modelConfig: testModelConfigs.veo_3,
+    modelConfig: testModelConfigs.veo_3!,
   },
   enhancedVideoGenerator: {
     modelName: "enhanced_veo_3",
     locale: "en",
-    modelConfig: testModelConfigs.enhanced_veo_3,
+    modelConfig: testModelConfigs.enhanced_veo_3!,
   },
   minimalGenerator: {
     modelName: "minimal_model",
@@ -195,12 +195,12 @@ export const testGeneratorProps: Record<string, TestGeneratorProps> = {
   partialGenerator: {
     modelName: "partial_model",
     locale: "en",
-    modelConfig: testModelConfigs.partial_model,
+    modelConfig: testModelConfigs.partial_model!,
   },
   extremeGenerator: {
     modelName: "extreme_model",
     locale: "en",
-    modelConfig: testModelConfigs.extreme_model,
+    modelConfig: testModelConfigs.extreme_model!,
   },
 };
 
@@ -299,27 +299,27 @@ export const testEdgeCases = {
   emptyModelName: {
     modelName: "",
     locale: "en",
-    modelConfig: testModelConfigs.dall_e_3,
+    modelConfig: testModelConfigs.dall_e_3!,
   },
   nullModelConfig: {
     modelName: "test_model",
     locale: "en",
-    modelConfig: null as any,
+    modelConfig: null as unknown,
   },
   undefinedLocale: {
     modelName: "dall_e_3",
-    locale: undefined as any,
-    modelConfig: testModelConfigs.dall_e_3,
+    locale: undefined as unknown,
+    modelConfig: testModelConfigs.dall_e_3!,
   },
   specialCharacters: {
     modelName: "dall-e-3",
     locale: "en",
-    modelConfig: testModelConfigs.dall_e_3,
+    modelConfig: testModelConfigs.dall_e_3!,
   },
   spacesInName: {
     modelName: "Google Veo 3",
     locale: "en",
-    modelConfig: testModelConfigs.veo_3,
+    modelConfig: testModelConfigs.veo_3!,
   },
 };
 

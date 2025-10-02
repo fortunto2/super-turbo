@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { UserCircle } from "lucide-react";
 import { Icons } from "@/components/ui/icons";
 import { SafeIcon } from "@/components/ui/safe-icon";
-import { LucideIcon } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 import { useParams } from "next/navigation";
 import { getValidLocale } from "@/lib/get-valid-locale";
@@ -30,17 +29,11 @@ const itemVariants = {
   },
 };
 
-interface FeatureItem {
-  title: string;
-  description: string;
-  icon?: string;
-}
-
 export function Features() {
   const params = useParams();
   const locale = getValidLocale(params.locale);
   const { t } = useTranslation(locale);
-  const features = t("features.list") as FeatureItem[];
+  const features: any[] = t("features.list");
 
   return (
     <section className="py-24 bg-muted/30 gradient-section">
@@ -61,9 +54,10 @@ export function Features() {
           viewport={{ once: true, margin: "-100px" }}
         >
           {features.map((feature, index) => {
-            const IconComponent = feature.icon
-              ? (Icons as Record<string, LucideIcon>)[feature.icon]
-              : UserCircle;
+            const IconComponent =
+              feature.icon && feature.icon in Icons
+                ? Icons[feature.icon]
+                : UserCircle;
             return (
               <motion.div
                 key={index}

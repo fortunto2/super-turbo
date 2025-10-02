@@ -38,17 +38,19 @@ export function CanvasContainer({
         <MediaPreview
           scene={scene}
           canvasSize={canvasSize}
-          onPlayingChange={onPlayingChange}
-          isPlaying={isPlaying}
+          onPlayingChange={onPlayingChange ?? (() => {})}
+          isPlaying={isPlaying ?? false}
           isReady={isReady}
           updateCanvasSize={updateCanvasSize}
         />
 
-        <Layer
-          active={activeTool === "inpainting"}
-          setCanvas={setCanvas}
-          imageUrl={scene.file?.url!}
-        />
+        {scene.file?.url && (
+          <Layer
+            active={activeTool === "inpainting"}
+            setCanvas={setCanvas}
+            imageUrl={scene.file.url}
+          />
+        )}
 
         {activeTool !== "inpainting" &&
           canvasSize.width > 0 &&

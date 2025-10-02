@@ -143,19 +143,14 @@ async function testWebSocketWithProject(projectId) {
   
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(wsUrl);
-    let connectionTimeout;
-    let messageTimeout;
-    const receivedMessages = [];
-    
-    // Set connection timeout
-    connectionTimeout = setTimeout(() => {
+    const connectionTimeout = setTimeout(() => {
       console.log('⏰ Connection timeout (30s)');
       ws.close();
       reject(new Error('Connection timeout'));
     }, 30000);
     
     // Set message timeout (wait for result)
-    messageTimeout = setTimeout(() => {
+    const messageTimeout = setTimeout(() => {
       console.log('⏰ Message timeout (60s) - no result received');
       ws.close();
       resolve({ success: false, messages: receivedMessages, reason: 'timeout' });

@@ -16,15 +16,30 @@ type Metadata = any;
 export const sheetArtifact = new Artifact<"sheet", Metadata>({
   kind: "sheet",
   description: "Useful for working with spreadsheets",
+  onCreateDocument: ({ setArtifact }) => {
+    // Устанавливаем статус streaming при создании артефакта
+    setArtifact((draft) => ({
+      ...draft,
+      status: "streaming",
+      isVisible: true,
+    }));
+  },
   initialize: async () => {},
   onStreamPart: ({ setArtifact, streamPart }) => {
     if (streamPart.type === "sheet-delta") {
       setArtifact((draftArtifact) => ({
         ...draftArtifact,
         content: streamPart.content as string,
-        isVisible: true,
+        // Открываем артефакт только если контент достаточно большой
+        isVisible:
+          (streamPart.content as string).length > 100 ||
+          draftArtifact.isVisible,
         status: "streaming",
       }));
+    }
+
+    if (streamPart.type === "finish") {
+      setArtifact((draft) => ({ ...draft, status: "completed" }));
     }
   },
   content: ({

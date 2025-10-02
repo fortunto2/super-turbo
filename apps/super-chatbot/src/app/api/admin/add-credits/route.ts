@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Вычисляем новый баланс
-    const newBalance = currentUser.balance + creditsToAdd;
+    const newBalance = (currentUser.balance || 0) + creditsToAdd;
 
     // Обновляем баланс пользователя
     const updatedUser = await updateUserBalance(userId, newBalance);

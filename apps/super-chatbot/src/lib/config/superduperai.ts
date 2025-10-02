@@ -351,7 +351,7 @@ export async function getDefaultImageModel(): Promise<ImageModel | undefined> {
   );
 
   if (safeModels.length > 0) {
-    console.log("✅ Selected safe fallback image model:", safeModels[0].name);
+    console.log("✅ Selected safe fallback image model:", safeModels[0]?.name);
     return safeModels[0];
   }
 

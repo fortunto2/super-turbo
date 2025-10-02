@@ -48,7 +48,8 @@ class ImageSSEStore {
       this.projectHandlers.set(projectId, []);
     }
 
-    const projectHandlerList = this.projectHandlers.get(projectId)!;
+    const projectHandlerList = this.projectHandlers.get(projectId);
+    if (!projectHandlerList) return;
 
     // Check project-specific handler limit
     if (projectHandlerList.length >= this.maxHandlersPerProject) {
@@ -65,7 +66,7 @@ class ImageSSEStore {
         projectHandlerList.push({
           projectId,
           handler,
-          requestId,
+          ...(requestId && { requestId }),
           timestamp,
         });
       }
@@ -96,7 +97,8 @@ class ImageSSEStore {
       handlersToRemove.length
     );
 
-    const projectHandlerList = this.projectHandlers.get(projectId)!;
+    const projectHandlerList = this.projectHandlers.get(projectId);
+    if (!projectHandlerList) return;
 
     handlersToRemove.forEach((handlerToRemove) => {
       const index = projectHandlerList.findIndex(
@@ -436,7 +438,9 @@ class ImageSSEStore {
         const messageWithContext = {
           ...message,
           projectId,
-          requestId: message.requestId || requestId,
+          ...(message.requestId || requestId
+            ? { requestId: message.requestId || requestId }
+            : {}),
         };
 
         handler(messageWithContext);

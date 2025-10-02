@@ -17,16 +17,30 @@ export default function ArtifactContentImage(props: any) {
 export const imageArtifact = new Artifact({
   kind: "image",
   description: "Useful for image generation with real-time progress tracking",
+  onCreateDocument: ({ setArtifact }) => {
+    // Устанавливаем статус streaming при создании артефакта
+    setArtifact((draft) => ({
+      ...draft,
+      status: "streaming",
+      isVisible: true,
+    }));
+  },
   onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === "text-delta") {
       // AICODE-FIX: Validate JSON content before overwriting to prevent skeleton disappearing
       const newContent = streamPart.content as string;
       try {
-        JSON.parse(newContent);
+        const parsedContent = JSON.parse(newContent);
         setArtifact((draft) => ({
           ...draft,
           content: newContent,
-          isVisible: true,
+          status: parsedContent.status || "streaming", // Обновляем статус из контента
+          // Открываем артефакт если генерация завершена, в процессе или только началась
+          isVisible:
+            parsedContent.status === "completed" ||
+            parsedContent.status === "pending" ||
+            parsedContent.status === "streaming" ||
+            draft.status === "streaming",
         }));
       } catch {
         // Invalid JSON - don't overwrite existing content
@@ -34,7 +48,7 @@ export const imageArtifact = new Artifact({
       }
     }
     if (streamPart.type === "finish") {
-      setArtifact((draft) => ({ ...draft, status: "idle" }));
+      setArtifact((draft) => ({ ...draft, status: "completed" }));
     }
   },
   content: ImageArtifactWrapper,

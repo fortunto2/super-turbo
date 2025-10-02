@@ -12,7 +12,7 @@ import { analyzeImageContext } from "@/lib/ai/context";
 interface CreateImageDocumentParams {
   createDocument: any;
   session?: Session | null;
-  defaultSourceImageUrl?: string;
+  defaultSourceImageUrl?: string | undefined;
   chatId?: string;
   userMessage?: string;
   currentAttachments?: any[];

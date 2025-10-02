@@ -1,57 +1,72 @@
-# Super Chatbot - Documentation Center
+# Super Chatbot - Документация
 
-Comprehensive documentation for the Super Chatbot project, featuring advanced AI capabilities, media generation, and unified architecture.
+AI чат-бот с продвинутыми возможностями генерации медиа контента и унифицированной архитектурой.
 
-## 🏗️ Architecture Status
+## 🏗️ Статус архитектуры
 
-### ✅ Media Generation Framework (Production Ready)
+### ✅ Фреймворк генерации медиа (Production Ready)
 
-**Major Achievement**: Successfully migrated to unified Media Generation Framework with **94% code reduction** and enhanced maintainability.
+**Основное достижение**: Успешная миграция на унифицированный фреймворк генерации медиа с **сокращением кода на 94%** и улучшенной поддерживаемостью.
 
-**Current Status** (2025-01-27):
+**Текущий статус** (2025-01-27):
 
-- 🎯 **Production Tools**: Now using framework architecture
-- 🛡️ **Chat Generation**: Legacy implementation (proven, safe) with optional framework integration
-- 🚀 **Performance**: Massive improvement in code maintainability and user experience
-- 📦 **Framework**: Complete with image/video generators, hooks, and components
+- 🎯 **Production Tools**: Используется архитектура фреймворка
+- 🛡️ **Chat Generation**: Legacy реализация (проверенная, безопасная) с опциональной интеграцией фреймворка
+- 🚀 **Производительность**: Значительное улучшение поддерживаемости кода и пользовательского опыта
+- 📦 **Фреймворк**: Полный с генераторами изображений/видео, хуками и компонентами
 
-**Key Benefits**:
+**Ключевые преимущества**:
 
-- From 1,150+ lines to 50 lines per tool (with adapter)
-- Unified patterns across all media types
-- Better error handling and timeout management
-- Easy addition of future media types (audio, text, 3D)
+- От 1,150+ строк до 50 строк на инструмент (с адаптером)
+- Унифицированные паттерны для всех типов медиа
+- Лучшая обработка ошибок и управление таймаутами
+- Легкое добавление будущих типов медиа (аудио, текст, 3D)
 
-See: [Migration Completion](./maintenance/changelog/production-migration-complete.md)
+См.: [Завершение миграции](./maintenance/changelog/production-migration-complete.md)
 
-## 📂 Documentation Structure
+## 📂 Структура документации
 
-### Getting Started
+### 🚀 Основные разделы
 
-- [Environment Setup](./getting-started/environment-setup.md) - Development environment configuration
-- [Quick Start Guide](./getting-started/README.md) - Get up and running quickly
+- [**Архитектура системы**](./ARCHITECTURE.md) - Обзор архитектуры, компонентов и потоков данных
+- [**AI Возможности**](./AI_CAPABILITIES.md) - Генерация изображений, видео, текста и система контекста
+- [**API Интеграция**](./API_INTEGRATION.md) - SuperDuperAI, Azure OpenAI, база данных и мониторинг
+- [**Разработка**](./DEVELOPMENT.md) - AI-First методология, AICODE система, тестирование и деплой
 
-### API Integration Tasks
+### 🔧 Детальная документация
 
-1. Review [SuperDuperAI Integration](./api-integration/superduperai/README.md)
-2. **NEW**: [Image Generation API Guide](./api-integration/superduperai/image-generation-api-guide.md) - Complete cURL examples and testing
-3. **NEW**: [Video Generation API Guide](./api-integration/superduperai/video-generation-api-guide.md) - Complete video API with model pricing
-4. Check [Environment Setup](./getting-started/environment-setup.md)
-5. Use [Dynamic API Integration](./api-integration/superduperai/dynamic-integration.md)
+#### Быстрый старт
 
-### Architecture & Development
+- [Настройка окружения](./getting-started/environment-setup.md) - Конфигурация среды разработки
+- [Руководство по быстрому старту](./getting-started/README.md) - Быстрое начало работы
 
-- [AI Development Methodology](./development/ai-development-methodology.md) - Two-phase development process
-- [Media Generation Framework](./architecture/media-generation-framework.md) - Unified media generation architecture
-- [Unified Tools Navigation System](./development/unified-tools-navigation-system.md) - Centralized tool configuration and navigation
-- [API Architecture](./architecture/api-architecture.md) - Backend API design and patterns
-- [Implementation Plans](./development/implementation-plans/) - Structured development planning
-- [DebugParameters Component](./maintenance/changelog/debug-parameters-component.md) - Reusable debug display
+#### AI Возможности
 
-### AI Capabilities
+- [Обзор AI](./ai-capabilities/overview.md) - AI функции и возможности
+- [Генерация изображений](./ai-capabilities/image-generation/) - Система генерации изображений
+- [Генерация видео](./ai-capabilities/video-generation/) - Система генерации видео
+- [Универсальная контекстная система](./ai-capabilities/universal-context-system.md) - Система понимания контекста
 
-- [Overview](./ai-capabilities/overview.md) - AI features and capabilities
-- [Image Generation](./ai-capabilities/image-generation/) - Image generation system
+#### API Интеграция
+
+- [SuperDuperAI интеграция](./api-integration/superduperai/README.md) - Основная AI интеграция
+- [Динамическая интеграция](./api-integration/superduperai/dynamic-integration.md) - Гибкая система интеграций
+- [Руководство по API генерации изображений](./api-integration/superduperai/image-generation-api-guide.md) - Полные примеры cURL
+- [Руководство по API генерации видео](./api-integration/superduperai/video-generation-api-guide.md) - Полный видео API
+
+#### Архитектура
+
+- [Media Generation Framework](./architecture/media-generation-framework.md) - Унифицированная архитектура генерации медиа
+- [API Architecture](./architecture/api-architecture.md) - Backend API дизайн и паттерны
+- [WebSocket Architecture](./architecture/websocket-architecture.md) - Real-time коммуникация
+- [System Overview](./architecture/system-overview.md) - Обзор системы
+
+#### Разработка
+
+- [AI методология разработки](./development/ai-development-methodology.md) - Двухфазный процесс разработки
+- [Unified Tools Navigation System](./development/unified-tools-navigation-system.md) - Централизованная навигация инструментов
+- [Implementation Plans](./development/implementation-plans/) - Структурированное планирование разработки
+- [AICODE Examples](./development/aicode-examples.md) - Примеры AICODE комментариев
 - [Video Generation](./ai-capabilities/video-generation/) - Video generation system with **Strategy Pattern + Fallback System** ⭐
 - [Prompt Enhancement](./ai-capabilities/prompt-enhancement/) - AI-powered prompt improvement system
 

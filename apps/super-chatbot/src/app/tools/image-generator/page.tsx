@@ -99,7 +99,7 @@ export default function ImageGeneratorPage() {
           </Suspense>
           <GenerationProgress
             generationStatus={generationStatus}
-            prompt={generationStatus.message}
+            prompt={generationStatus.message ?? ""}
             onForceCheck={forceCheckResults}
           />
         </div>

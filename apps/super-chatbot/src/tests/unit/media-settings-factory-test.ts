@@ -118,12 +118,12 @@ async function testMediaSettingsFactory() {
       "price",
     ];
 
-    const imageModelHasAllFields = requiredFields.every(
-      (field) => field in sampleImageModel
-    );
-    const videoModelHasAllFields = requiredFields.every(
-      (field) => field in sampleVideoModel
-    );
+    const imageModelHasAllFields = sampleImageModel
+      ? requiredFields.every((field) => field in sampleImageModel)
+      : false;
+    const videoModelHasAllFields = sampleVideoModel
+      ? requiredFields.every((field) => field in sampleVideoModel)
+      : false;
 
     console.log(
       `✅ Image model has all required fields: ${imageModelHasAllFields}`
@@ -135,14 +135,18 @@ async function testMediaSettingsFactory() {
     if (!imageModelHasAllFields) {
       console.log(
         "❌ Missing image model fields:",
-        requiredFields.filter((field) => !(field in sampleImageModel))
+        sampleImageModel
+          ? requiredFields.filter((field) => !(field in sampleImageModel))
+          : "No image model available"
       );
     }
 
     if (!videoModelHasAllFields) {
       console.log(
         "❌ Missing video model fields:",
-        requiredFields.filter((field) => !(field in sampleVideoModel))
+        sampleVideoModel
+          ? requiredFields.filter((field) => !(field in sampleVideoModel))
+          : "No video model available"
       );
     }
 

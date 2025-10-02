@@ -1,4 +1,7 @@
-import { analyzeImageContext, type ChatImage } from "../../../lib/ai/chat/image-context";
+import {
+  analyzeImageContext,
+  type ChatImage,
+} from "../../../lib/ai/chat/image-context";
 
 describe("Sun Semantic Search", () => {
   const mockChatImages: ChatImage[] = [
@@ -13,7 +16,7 @@ describe("Sun Semantic Search", () => {
     },
     {
       url: "https://example.com/sunset-beach.jpg",
-      id: "img2", 
+      id: "img2",
       role: "assistant",
       timestamp: new Date("2024-01-01T10:05:00Z"),
       prompt: "закат на пляже с солнцем",
@@ -23,7 +26,7 @@ describe("Sun Semantic Search", () => {
     {
       url: "https://example.com/cat-portrait.jpg",
       id: "img3",
-      role: "assistant", 
+      role: "assistant",
       timestamp: new Date("2024-01-01T10:10:00Z"),
       prompt: "портрет кота",
       messageIndex: 5,
@@ -60,11 +63,11 @@ describe("Sun Semantic Search", () => {
       {
         url: "https://example.com/recent-cat.jpg",
         id: "img4",
-        role: "assistant",
+        role: "assistant" as const,
         timestamp: new Date("2024-01-01T10:15:00Z"),
         prompt: "кот в солнечном свете",
         messageIndex: 7,
-        mediaType: "image",
+        mediaType: "image" as const,
       },
     ];
 
@@ -75,6 +78,6 @@ describe("Sun Semantic Search", () => {
 
     // Должно найти изображение с солнцем, а не последнее сгенерированное
     expect(result.sourceImageUrl).toMatch(/sunset-beach|recent-cat/);
-    expect(result.confidence).toBeGreaterThanOrEqual("medium");
+    expect(result.confidence).toBeGreaterThanOrEqual(0.5);
   });
 });

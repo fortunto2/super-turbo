@@ -11,7 +11,7 @@ import {
 import { Coins } from "lucide-react";
 import { StripePaymentButton } from "@turbo-super/payment";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface CreditBalanceData {
   balance: number;
@@ -36,7 +36,7 @@ export function CreditBalance({
   showPurchaseButton = true,
   locale = "tr",
 }: CreditBalanceProps) {
-  const { t } = useTranslation(locale);
+  const { t } = useTranslation(locale as any);
 
   // Обертка для функции перевода с поддержкой параметров
   const [data, setData] = useState<CreditBalanceData | null>(null);
@@ -62,12 +62,14 @@ export function CreditBalance({
       }
     }
 
-    fetchBalance();
+    void fetchBalance();
 
     // Обновлять каждые 30 секунд
-    const interval = setInterval(fetchBalance, 30 * 1000);
+    const interval = setInterval(() => void fetchBalance(), 30 * 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   if (loading) {
@@ -100,7 +102,7 @@ export function CreditBalance({
               <Coins className="size-5 text-red-400" />
             </div>
             <span className="text-red-300">
-              {error || t("credit_balance.error")}
+              {error ?? t("credit_balance.error")}
             </span>
           </div>
         </CardContent>
@@ -208,7 +210,9 @@ export function CreditBalance({
             checkoutEndpoint="/api/create-checkout"
             className="border-0 shadow-none"
             locale={locale}
-            onPaymentClick={() => {}}
+            onPaymentClick={() => {
+              /* Payment click handler */
+            }}
           />
         )}
       </CardContent>

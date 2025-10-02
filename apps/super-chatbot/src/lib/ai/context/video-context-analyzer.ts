@@ -9,7 +9,7 @@ import {
   type ChatMedia,
   type ReferencePattern,
 } from "./universal-context";
-import { analyzeVideoContext } from "../chat/video-context";
+import { analyzeVideoContext, type ChatImage } from "../chat/video-context";
 
 export class VideoContextAnalyzer extends BaseContextAnalyzer {
   mediaType: MediaType = "video";
@@ -502,7 +502,7 @@ export class VideoContextAnalyzer extends BaseContextAnalyzer {
     // Используем нашу улучшенную функцию анализа видео-контекста
     const result = await analyzeVideoContext(
       userMessage,
-      chatImages,
+      chatImages.filter((img) => img?.url && img.id) as ChatImage[],
       currentAttachments
     );
 

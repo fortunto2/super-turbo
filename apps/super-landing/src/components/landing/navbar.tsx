@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { Button } from "@turbo-super/ui";
+import { Button, cn } from "@turbo-super/ui";
 import { default as Link } from "@/components/ui/optimized-link";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Dropdown } from "../ui/dropdown-menu";
 import { i18nClient, type Locale } from "@/config/i18n-client";
-import { cn } from "@turbo-super/ui";
 import { useTranslation } from "@/hooks/use-translation";
 import { getValidLocale } from "@/lib/get-valid-locale";
 import { APP_URLS } from "@/lib/constants";
@@ -27,6 +26,7 @@ export function Navbar() {
     const segments = path.split("/").filter(Boolean);
     if (
       segments.length > 0 &&
+      segments[0] &&
       i18nClient.locales.includes(segments[0] as Locale)
     ) {
       return segments[0];
@@ -35,7 +35,7 @@ export function Navbar() {
   }, []);
 
   // Получаем локаль с приоритетом URL
-  const getLocale = useCallback(async () => {
+  const getLocale = useCallback(() => {
     try {
       let localeValue: Locale = i18nClient.defaultLocale as Locale;
 
@@ -57,7 +57,7 @@ export function Navbar() {
           typeof localeParam === "object" &&
           "then" in localeParam
         ) {
-          const resolvedLocale = await localeParam;
+          const resolvedLocale = localeParam;
           if (
             typeof resolvedLocale === "string" &&
             i18nClient.locales.includes(resolvedLocale as Locale)
@@ -113,7 +113,7 @@ export function Navbar() {
     }
   }, [pathname, isClient, getLocale]);
 
-  const locale = currentLocale || getValidLocale(params.locale);
+  const locale = currentLocale ?? getValidLocale(params.locale);
   const { t } = useTranslation(locale);
 
   useEffect(() => {
@@ -224,7 +224,9 @@ export function Navbar() {
         {/* Мобильное меню */}
         <button
           className="block md:hidden text-foreground hover:text-accent transition-colors"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onClick={() => {
+            setIsMobileMenuOpen(!isMobileMenuOpen);
+          }}
           aria-label={
             isMobileMenuOpen ? t("navbar.close_menu") : t("navbar.open_menu")
           }
@@ -249,7 +251,9 @@ export function Navbar() {
               <Link
                 href="/"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.home") + " - SuperDuperAI"}
               >
                 {t("navbar.home")}
@@ -257,7 +261,9 @@ export function Navbar() {
               <Link
                 href="/about"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.about") + " - SuperDuperAI"}
               >
                 {t("navbar.about")}
@@ -265,7 +271,9 @@ export function Navbar() {
               <Link
                 href="/pricing"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.pricing") + " - SuperDuperAI"}
               >
                 {t("navbar.pricing")}
@@ -273,7 +281,9 @@ export function Navbar() {
               <Link
                 href="/blog"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.blog") + " - SuperDuperAI"}
               >
                 {t("navbar.blog")}
@@ -281,7 +291,9 @@ export function Navbar() {
               <Link
                 href="/tool"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.tools") + " - SuperDuperAI"}
               >
                 {t("navbar.tools")}
@@ -289,7 +301,9 @@ export function Navbar() {
               <Link
                 href="/terms"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.terms") + " - SuperDuperAI"}
               >
                 {t("navbar.terms")}
@@ -297,7 +311,9 @@ export function Navbar() {
               <Link
                 href="/privacy"
                 className="text-muted-foreground hover:text-accent transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
                 title={t("navbar.privacy") + " - SuperDuperAI"}
               >
                 {t("navbar.privacy")}
@@ -364,6 +380,7 @@ export const LanguageSwitcher = () => {
     const segments = path.split("/").filter(Boolean);
     if (
       segments.length > 0 &&
+      segments[0] &&
       i18nClient.locales.includes(segments[0] as Locale)
     ) {
       return segments[0];
@@ -372,7 +389,7 @@ export const LanguageSwitcher = () => {
   }, []);
 
   // Используем useCallback для получения локали
-  const getLocale = useCallback(async () => {
+  const getLocale = useCallback(() => {
     try {
       // Приоритет: сначала URL, потом params, потом cookie, потом default
       let localeValue: Locale = i18nClient.defaultLocale as Locale;
@@ -396,7 +413,7 @@ export const LanguageSwitcher = () => {
           typeof localeParam === "object" &&
           "then" in localeParam
         ) {
-          const resolvedLocale = await localeParam;
+          const resolvedLocale = localeParam;
           if (
             typeof resolvedLocale === "string" &&
             i18nClient.locales.includes(resolvedLocale as Locale)

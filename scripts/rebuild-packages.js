@@ -8,6 +8,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 console.log('🔧 Пересборка всех пакетов в правильном порядке...\n');
 
@@ -26,16 +27,30 @@ function packageExists(packagePath) {
   return fs.existsSync(packagePath) && fs.existsSync(path.join(packagePath, 'package.json'));
 }
 
+// Кроссплатформенная функция для удаления папки
+function removeDirectory(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+  
+  try {
+    if (os.platform() === 'win32') {
+      execSync(`rmdir /s /q "${dirPath}"`, { stdio: 'inherit' });
+    } else {
+      execSync(`rm -rf "${dirPath}"`, { stdio: 'inherit' });
+    }
+  } catch (error) {
+    console.warn(`⚠️ Не удалось удалить папку ${dirPath}:`, error.message);
+  }
+}
+
 // Функция для очистки и пересборки пакета
 function rebuildPackage(packagePath) {
   const packageName = path.basename(packagePath);
   console.log(`📦 Пересборка ${packageName}...`);
   
   try {
-    // Очищаем dist и node_modules
-    if (fs.existsSync(path.join(packagePath, 'dist'))) {
-      execSync('rm -rf dist', { cwd: packagePath, stdio: 'inherit' });
-    }
+    // Очищаем dist папку
+    const distPath = path.join(packagePath, 'dist');
+    removeDirectory(distPath);
     
     // Устанавливаем зависимости
     execSync('pnpm install', { cwd: packagePath, stdio: 'inherit' });

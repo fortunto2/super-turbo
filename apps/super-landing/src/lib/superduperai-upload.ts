@@ -16,7 +16,7 @@ export interface UploadResult {
  */
 export async function uploadFileToSuperduperAI(
   file: File,
-  type: string = "image"
+  type = "image"
 ): Promise<UploadResult> {
   try {
     console.log("🖼️ Uploading file to SuperDuperAI:", {
@@ -56,9 +56,9 @@ export async function uploadFileToSuperduperAI(
     return {
       id: result.id,
       url: result.url,
-      filename: result.filename || file.name,
-      size: result.size || file.size,
-      type: result.type || file.type,
+      filename: result.filename ?? file.name,
+      size: result.size ?? file.size,
+      type: result.type ?? file.type,
     };
   } catch (error) {
     console.error("❌ Error uploading file to SuperDuperAI:", error);
@@ -77,7 +77,7 @@ export async function uploadImageUrlToSuperduperAI(
 
     // Конфигурируем SuperDuperAI клиент
     configureSuperduperAI();
-    const config = getSuperduperAIConfig();
+    const _config = getSuperduperAIConfig();
 
     // Сначала получаем изображение по URL
     const imageResponse = await fetch(imageUrl);
@@ -88,8 +88,10 @@ export async function uploadImageUrlToSuperduperAI(
     }
 
     const imageBlob = await imageResponse.blob();
-    const filename = imageUrl.split("/").pop() || "image.jpg";
-    const file = new File([imageBlob], filename, { type: imageBlob.type });
+    const filename = imageUrl.split("/").pop() ?? "image.jpg";
+    const file = new File([imageBlob], filename, {
+      type: imageBlob.type ?? "image/jpeg",
+    });
 
     // Загружаем файл на SuperDuperAI
     return await uploadFileToSuperduperAI(file, "image");

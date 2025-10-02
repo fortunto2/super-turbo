@@ -100,7 +100,10 @@ export default function PreviewPage() {
     const videoProject = project as IProjectVideoRead;
     const value = videoProject.config.aspect_ratio ?? "16:9";
     const [numerator, denominator] = value.split(":").map(Number);
-    return numerator / denominator;
+    if (numerator && denominator) {
+      return numerator / denominator;
+    }
+    return 16 / 9; // default aspect ratio
   }, [project]);
 
   // Function for exporting video
@@ -223,7 +226,7 @@ export default function PreviewPage() {
                             scenes={scenes?.items as any}
                             music={music}
                             isLoading={!isLoaded}
-                            aspectRatio={aspectRatio}
+                            aspectRatio={aspectRatio ?? 16/9}
                           />
                         </div>
                       </div>

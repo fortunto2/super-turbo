@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, ReactNode, isValidElement } from "react";
+import { useState, isValidElement } from "react";
+import type { ReactNode } from "react";
 import { Copy, Check } from "lucide-react";
 import { Button } from "@turbo-super/ui";
 
@@ -21,7 +22,9 @@ export const CodeBlock = ({
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     } catch (err) {
       console.error("Failed to copy code:", err);
     }
@@ -61,7 +64,9 @@ export const CodeBlock = ({
         variant="ghost"
         size="sm"
         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-600"
-        onClick={() => copyToClipboard(codeText)}
+        onClick={() => {
+          void copyToClipboard(codeText);
+        }}
         title={copied ? "Copied!" : "Copy code"}
       >
         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

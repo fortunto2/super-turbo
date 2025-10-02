@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable no-undef, @typescript-eslint/no-require-imports */
 const { baseConfig } = require("@turbo-super/tailwind/config");
 
 /** @type {import('tailwindcss').Config} */

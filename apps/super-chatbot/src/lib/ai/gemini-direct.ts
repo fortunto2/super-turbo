@@ -83,16 +83,16 @@ export async function callGeminiDirect(
       throw new Error("No response from Gemini API");
     }
 
-    const candidate = data.candidates[0];
+    const candidate = data.candidates?.[0];
     if (
-      !candidate.content ||
+      !candidate?.content ||
       !candidate.content.parts ||
       candidate.content.parts.length === 0
     ) {
       throw new Error("Empty response from Gemini API");
     }
 
-    return candidate.content.parts[0].text;
+    return candidate.content.parts[0]?.text || "";
   } catch (error) {
     console.error("Gemini direct API error:", error);
     throw error;

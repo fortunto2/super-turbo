@@ -26,7 +26,10 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
     if (!scene) return;
     if (!scene.file_id) return;
 
-    let id;
+    let id:
+      | { voiceover_id: string | null }
+      | { sound_effect_id: string | null }
+      | undefined;
     if (type === "voiceover") {
       id = { voiceover_id: file?.id ?? null };
     } else if (type === "soundeffect") {

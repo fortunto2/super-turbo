@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+} from "@turbo-super/ui";
 import { CreditCard, Loader2, Sparkles, Zap } from "lucide-react";
 import { StripePaymentButton } from "@turbo-super/payment";
 import { useTranslation } from "@/hooks/use-translation";
-import { Locale } from "@/config/i18n-config";
+import type { Locale } from "@/config/i18n-config";
 
 interface DirectPaymentButtonProps {
   modelName: string;
@@ -39,7 +44,7 @@ export function DirectPaymentButton({
   generationType = "text-to-video",
   imageFile = null,
 }: DirectPaymentButtonProps) {
-  const { t } = useTranslation(locale);
+  const { t } = useTranslation(locale as any);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const _handlePaymentSuccess = (sessionId: string) => {
@@ -79,21 +84,21 @@ export function DirectPaymentButton({
         <CardTitle className="text-xl font-bold text-green-300 flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5" />
           {modelType === "image"
-            ? t("direct_payment.generate_image").replace(
+            ? (t("direct_payment.generate_image").replace(
                 "{model}",
                 modelName
-              ) || `Generate Image with ${modelName}`
-            : t("direct_payment.generate_video").replace(
+              ) ?? `Generate Image with ${modelName}`)
+            : (t("direct_payment.generate_video").replace(
                 "{model}",
                 modelName
-              ) || `Generate Video with ${modelName}`}
+              ) ?? `Generate Video with ${modelName}`)}
         </CardTitle>
         <p className="text-muted-foreground text-sm">
           {modelType === "image"
-            ? t("direct_payment.image_description") ||
-              "Create stunning images with AI"
-            : t("direct_payment.video_description") ||
-              "Create amazing videos with AI"}
+            ? (t("direct_payment.image_description") ??
+              "Create stunning images with AI")
+            : (t("direct_payment.video_description") ??
+              "Create amazing videos with AI")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -103,7 +108,7 @@ export function DirectPaymentButton({
             <div className="flex items-center gap-2 mb-2">
               <Zap className="w-4 h-4 text-blue-400" />
               <span className="text-sm font-medium text-blue-300">
-                {t("direct_payment.your_prompt") || "Your prompt"}:
+                {t("direct_payment.your_prompt") ?? "Your prompt"}:
               </span>
             </div>
             <p className="text-sm text-muted-foreground line-clamp-2">
@@ -121,11 +126,12 @@ export function DirectPaymentButton({
             <div>
               <p className="text-sm font-medium text-green-300">
                 {modelType === "image"
-                  ? t("direct_payment.image_generation") || "Image Generation"
-                  : t("direct_payment.video_generation") || "Video Generation"}
+                  ? (t("direct_payment.image_generation") ?? "Image Generation")
+                  : (t("direct_payment.video_generation") ??
+                    "Video Generation")}
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("direct_payment.one_time_payment") || "One-time payment"}
+                {t("direct_payment.one_time_payment") ?? "One-time payment"}
               </p>
             </div>
           </div>
@@ -157,7 +163,7 @@ export function DirectPaymentButton({
           <div className="flex items-center justify-center gap-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
             <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
             <span className="text-sm text-blue-300">
-              {t("direct_payment.processing_payment") ||
+              {t("direct_payment.processing_payment") ??
                 "Processing payment..."}
             </span>
           </div>

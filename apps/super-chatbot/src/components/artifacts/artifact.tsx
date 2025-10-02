@@ -19,7 +19,7 @@ import { fetcher } from "@/lib/utils";
 import { ArtifactActions } from "./artifact-actions";
 import { ArtifactCloseButton } from "./artifact-close-button";
 import { ArtifactMessages } from "./artifact-messages";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactContext } from "@/contexts/artifact-context";
 import { imageArtifact } from "@/artifacts/image/client";
 
 import { sheetArtifact } from "@/artifacts/sheet/client";
@@ -45,13 +45,14 @@ export interface UIArtifact {
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
-  status: "streaming" | "idle" | "error";
+  status: "streaming" | "idle" | "error" | "completed" | "pending";
   boundingBox: {
     top: number;
     left: number;
     width: number;
     height: number;
   };
+  timestamp?: number;
 }
 
 // Function to convert JSON title to human-readable format
@@ -129,7 +130,7 @@ function PureArtifact({
   selectedVisibilityType: VisibilityType;
   selectedChatModel: string;
 }) {
-  const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
+  const { artifact, setArtifact, metadata, setMetadata } = useArtifactContext();
 
   // Only log in development and with throttling to avoid spam
   const logIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -161,7 +162,15 @@ function PureArtifact({
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
-  const { open: isSidebarOpen } = useSidebar();
+  // Безопасное использование useSidebar с fallback
+  let isSidebarOpen = false;
+  try {
+    const sidebarContext = useSidebar();
+    isSidebarOpen = sidebarContext.open;
+  } catch (error) {
+    // SidebarProvider недоступен, используем значение по умолчанию
+    console.warn("SidebarProvider not available, using default sidebar state");
+  }
 
   // Memoize effect dependencies to prevent unnecessary reruns
   const documentsLength = documents?.length || 0;
@@ -180,7 +189,7 @@ function PureArtifact({
         }));
       }
     }
-  }, [documentsLength, lastDocumentId, setArtifact]);
+  }, [documents, documentsLength, lastDocumentId, setArtifact]);
 
   // Memoize mutateDocuments call to prevent unnecessary API calls
   const stableArtifactStatus = useRef(artifact.status);
@@ -534,7 +543,12 @@ function PureArtifact({
                         : getDocumentContentById(currentVersionIndex)
                     }
                     mode={mode}
-                    status={artifact.status}
+                    status={
+                      artifact.status === "completed" ||
+                      artifact.status === "pending"
+                        ? "idle"
+                        : artifact.status
+                    }
                     currentVersionIndex={currentVersionIndex}
                     suggestions={[]}
                     onSaveContent={saveContent}

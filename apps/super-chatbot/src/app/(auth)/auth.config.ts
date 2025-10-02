@@ -13,7 +13,10 @@ export const authConfig = {
   // Добавляем конфигурацию для правильной работы в продакшене
   trustHost: true,
   // Добавляем секрет NextAuth - используем AUTH_AUTH0_SECRET если NEXTAUTH_SECRET не установлен
-  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_AUTH0_SECRET,
+  secret:
+    process.env.NEXTAUTH_SECRET ||
+    process.env.AUTH_AUTH0_SECRET ||
+    "fallback-secret",
   // Настройки для сохранения сессий
   session: {
     strategy: "jwt",

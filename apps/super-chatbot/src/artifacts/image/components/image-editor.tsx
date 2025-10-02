@@ -276,18 +276,21 @@ export function ImageEditor({
     : imageGeneration.status;
 
   useImageEffects({
-    imageUrl: effectiveImageUrlForEffects,
+    ...(effectiveImageUrlForEffects && {
+      imageUrl: effectiveImageUrlForEffects,
+    }),
     status: effectiveStatusForEffects || "",
-    append,
+    ...(append && { append }),
     prompt: prompt || initialState?.prompt || "",
     hasInitialized,
-    setArtifact,
+    ...(setArtifact && { setArtifact }),
     chatId,
     resetState: imageGeneration.resetState,
     setPrompt,
-    initialPrompt: initialState?.prompt,
-    setMessages,
-    fileId: initialState?.fileId || imageGeneration.fileId,
+    ...(initialState?.prompt && { initialPrompt: initialState.prompt }),
+    ...(setMessages && { setMessages }),
+    ...(initialState?.fileId && { fileId: initialState.fileId }),
+    ...(imageGeneration.fileId && { fileId: imageGeneration.fileId }),
   });
 
   // Get connection status - prioritize SSE over WebSocket
@@ -572,25 +575,24 @@ export function ImageEditor({
         {imageGeneration.error && (
           <ImageErrorDisplay
             error={imageGeneration.error}
-            prompt={initialState?.prompt}
+            {...(initialState?.prompt && { prompt: initialState.prompt })}
             onRetry={handleRetry}
           />
         )}
 
         {showSkeleton && (
           <GenerationSkeleton
-            prompt={initialState?.prompt}
-            onForceCheck={
-              imageGeneration.isGenerating ? handleForceCheck : undefined
-            }
-            isChecking={isForceChecking}
+            {...(initialState?.prompt && { prompt: initialState.prompt })}
+            {...(imageGeneration.isGenerating &&
+              handleForceCheck && { onForceCheck: handleForceCheck })}
+            {...(isForceChecking && { isChecking: isForceChecking })}
           />
         )}
 
         {showImage && displayImageUrl && (
           <ImageDisplay
             imageUrl={displayImageUrl}
-            prompt={displayPrompt}
+            {...(displayPrompt && { prompt: displayPrompt })}
             onCopyUrl={handleCopyUrl}
             onGenerateNew={handleGenerateNew}
             apiPayload={parsedContent} // Pass parsed content for debug display

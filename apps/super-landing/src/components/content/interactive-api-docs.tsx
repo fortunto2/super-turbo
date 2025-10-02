@@ -1,280 +1,317 @@
- 'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
-
-import { Tabs, TabsList, TabsTrigger } from '@turbo-super/ui';
-import { Badge } from '@turbo-super/ui';
-import { Copy, Check, Settings, Code, Zap } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Badge,
+} from "@turbo-super/ui";
+import { Copy, Check, Settings, Code, Zap } from "lucide-react";
 
 // Типы данных
 interface Model {
   id: string;
   name: string;
-  type: 'text-to-image' | 'image-to-image' | 'text-to-video' | 'image-to-video' | 'video-enhancement';
+  type:
+    | "text-to-image"
+    | "image-to-image"
+    | "text-to-video"
+    | "image-to-video"
+    | "video-enhancement";
   price: number;
-  priceUnit: 'per_image' | 'per_second';
+  priceUnit: "per_image" | "per_second";
   vipRequired: boolean;
   provider: string;
   description: string;
 }
 
 interface APIConfig {
-  language: 'typescript' | 'python' | 'curl';
+  language: "typescript" | "python" | "curl";
   model: string;
-  fetchMethod: 'polling' | 'sse';
-  apiType: 'image' | 'video';
+  fetchMethod: "polling" | "sse";
+  apiType: "image" | "video";
   category: string;
 }
 
 interface InteractiveAPIDocsProps {
-  apiType?: 'image' | 'video';
+  apiType?: "image" | "video";
 }
 
 // Данные моделей (реальные из документации)
 const imageModels: Model[] = [
   // Text-to-Image модели
   {
-    id: 'comfyui/flux',
-    name: 'ComfyUI Flux',
-    type: 'text-to-image',
-    price: 1.00,
-    priceUnit: 'per_image',
+    id: "comfyui/flux",
+    name: "ComfyUI Flux",
+    type: "text-to-image",
+    price: 1.0,
+    priceUnit: "per_image",
     vipRequired: false,
-    provider: 'ComfyUI',
-    description: 'Budget-friendly general image generation'
+    provider: "ComfyUI",
+    description: "Budget-friendly general image generation",
   },
   {
-    id: 'fal-ai/flux-pro/v1.1-ultra',
-    name: 'Flux Pro Ultra',
-    type: 'text-to-image',
-    price: 1.00,
-    priceUnit: 'per_image',
+    id: "fal-ai/flux-pro/v1.1-ultra",
+    name: "Flux Pro Ultra",
+    type: "text-to-image",
+    price: 1.0,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'FAL AI',
-    description: 'Fast high-quality generation'
+    provider: "FAL AI",
+    description: "Fast high-quality generation",
   },
   {
-    id: 'google-cloud/imagen3',
-    name: 'Google Imagen 3',
-    type: 'text-to-image',
-    price: 1.50,
-    priceUnit: 'per_image',
+    id: "google-cloud/imagen3",
+    name: "Google Imagen 3",
+    type: "text-to-image",
+    price: 1.5,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Balanced quality and cost'
+    provider: "Google Cloud",
+    description: "Balanced quality and cost",
   },
   {
-    id: 'google-cloud/imagen4',
-    name: 'Google Imagen 4',
-    type: 'text-to-image',
-    price: 2.00,
-    priceUnit: 'per_image',
+    id: "google-cloud/imagen4",
+    name: "Google Imagen 4",
+    type: "text-to-image",
+    price: 2.0,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Latest Google technology'
+    provider: "Google Cloud",
+    description: "Latest Google technology",
   },
   {
-    id: 'azure-openai/gpt-image-1',
-    name: 'GPT-Image-1',
-    type: 'text-to-image',
-    price: 2.00,
-    priceUnit: 'per_image',
+    id: "azure-openai/gpt-image-1",
+    name: "GPT-Image-1",
+    type: "text-to-image",
+    price: 2.0,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'Azure OpenAI',
-    description: 'OpenAI image generation'
+    provider: "Azure OpenAI",
+    description: "OpenAI image generation",
   },
   {
-    id: 'google-cloud/imagen4-ultra',
-    name: 'Google Imagen 4 Ultra',
-    type: 'text-to-image',
-    price: 3.00,
-    priceUnit: 'per_image',
+    id: "google-cloud/imagen4-ultra",
+    name: "Google Imagen 4 Ultra",
+    type: "text-to-image",
+    price: 3.0,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Highest quality image generation'
+    provider: "Google Cloud",
+    description: "Highest quality image generation",
   },
-  
+
   // Image-to-Image модели (редактирование)
   {
-    id: 'comfyui/flux/inpainting',
-    name: 'ComfyUI Flux Inpainting',
-    type: 'image-to-image',
-    price: 1.00,
-    priceUnit: 'per_image',
+    id: "comfyui/flux/inpainting",
+    name: "ComfyUI Flux Inpainting",
+    type: "image-to-image",
+    price: 1.0,
+    priceUnit: "per_image",
     vipRequired: false,
-    provider: 'ComfyUI',
-    description: 'Budget-friendly image editing and inpainting'
+    provider: "ComfyUI",
+    description: "Budget-friendly image editing and inpainting",
   },
   {
-    id: 'google-cloud/imagen3-edit',
-    name: 'Google Imagen 3 Edit',
-    type: 'image-to-image',
-    price: 2.00,
-    priceUnit: 'per_image',
+    id: "google-cloud/imagen3-edit",
+    name: "Google Imagen 3 Edit",
+    type: "image-to-image",
+    price: 2.0,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Professional image editing'
+    provider: "Google Cloud",
+    description: "Professional image editing",
   },
   {
-    id: 'fal-ai/flux-pro/kontext',
-    name: 'Flux Pro Kontext',
-    type: 'image-to-image',
-    price: 2.00,
-    priceUnit: 'per_image',
+    id: "fal-ai/flux-pro/kontext",
+    name: "Flux Pro Kontext",
+    type: "image-to-image",
+    price: 2.0,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'FAL AI',
-    description: 'Context-aware image editing'
+    provider: "FAL AI",
+    description: "Context-aware image editing",
   },
   {
-    id: 'azure-openai/gpt-image-1-edit',
-    name: 'GPT-Image-1 Edit',
-    type: 'image-to-image',
-    price: 2.50,
-    priceUnit: 'per_image',
+    id: "azure-openai/gpt-image-1-edit",
+    name: "GPT-Image-1 Edit",
+    type: "image-to-image",
+    price: 2.5,
+    priceUnit: "per_image",
     vipRequired: true,
-    provider: 'Azure OpenAI',
-    description: 'Premium image editing capabilities'
-  }
+    provider: "Azure OpenAI",
+    description: "Premium image editing capabilities",
+  },
 ];
 
 const videoModels: Model[] = [
   // Text-to-Video модели
   {
-    id: 'google-cloud/veo2-text2video',
-    name: 'Google VEO2 Text-to-Video',
-    type: 'text-to-video',
-    price: 2.00,
-    priceUnit: 'per_second',
+    id: "google-cloud/veo2-text2video",
+    name: "Google VEO2 Text-to-Video",
+    type: "text-to-video",
+    price: 2.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Text-to-video generation'
+    provider: "Google Cloud",
+    description: "Text-to-video generation",
   },
   {
-    id: 'azure-openai/sora',
-    name: 'OpenAI Sora',
-    type: 'text-to-video',
-    price: 2.00,
-    priceUnit: 'per_second',
+    id: "azure-openai/sora",
+    name: "OpenAI Sora",
+    type: "text-to-video",
+    price: 2.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'Azure OpenAI',
-    description: 'Premium text-to-video generation'
+    provider: "Azure OpenAI",
+    description: "Premium text-to-video generation",
   },
   {
-    id: 'google-cloud/veo3-text2video',
-    name: 'Google VEO3 Text-to-Video',
-    type: 'text-to-video',
-    price: 3.00,
-    priceUnit: 'per_second',
+    id: "google-cloud/veo3-text2video",
+    name: "Google VEO3 Text-to-Video",
+    type: "text-to-video",
+    price: 3.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Latest text-to-video technology'
+    provider: "Google Cloud",
+    description: "Latest text-to-video technology",
   },
-  
+
   // Image-to-Video модели
   {
-    id: 'comfyui/ltx',
-    name: 'ComfyUI LTX',
-    type: 'image-to-video',
-    price: 0.40,
-    priceUnit: 'per_second',
+    id: "comfyui/ltx",
+    name: "ComfyUI LTX",
+    type: "image-to-video",
+    price: 0.4,
+    priceUnit: "per_second",
     vipRequired: false,
-    provider: 'ComfyUI',
-    description: 'Budget-friendly image animation'
+    provider: "ComfyUI",
+    description: "Budget-friendly image animation",
   },
   {
-    id: 'fal-ai/kling-video/v2.1/standard/image-to-video',
-    name: 'Kling Video 2.1 Standard',
-    type: 'image-to-video',
-    price: 1.00,
-    priceUnit: 'per_second',
+    id: "fal-ai/kling-video/v2.1/standard/image-to-video",
+    name: "Kling Video 2.1 Standard",
+    type: "image-to-video",
+    price: 1.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'FAL AI',
-    description: 'Standard quality image animation'
+    provider: "FAL AI",
+    description: "Standard quality image animation",
   },
   {
-    id: 'fal-ai/minimax/video-01/image-to-video',
-    name: 'Minimax Video-01',
-    type: 'image-to-video',
-    price: 1.20,
-    priceUnit: 'per_second',
+    id: "fal-ai/minimax/video-01/image-to-video",
+    name: "Minimax Video-01",
+    type: "image-to-video",
+    price: 1.2,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'FAL AI',
-    description: 'High-quality image animation'
+    provider: "FAL AI",
+    description: "High-quality image animation",
   },
   {
-    id: 'google-cloud/veo2',
-    name: 'Google VEO2 Image-to-Video',
-    type: 'image-to-video',
-    price: 2.00,
-    priceUnit: 'per_second',
+    id: "google-cloud/veo2",
+    name: "Google VEO2 Image-to-Video",
+    type: "image-to-video",
+    price: 2.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Professional image animation'
+    provider: "Google Cloud",
+    description: "Professional image animation",
   },
   {
-    id: 'fal-ai/kling-video/v2.1/pro/image-to-video',
-    name: 'Kling Video 2.1 Pro',
-    type: 'image-to-video',
-    price: 2.00,
-    priceUnit: 'per_second',
+    id: "fal-ai/kling-video/v2.1/pro/image-to-video",
+    name: "Kling Video 2.1 Pro",
+    type: "image-to-video",
+    price: 2.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'FAL AI',
-    description: 'Premium image animation'
+    provider: "FAL AI",
+    description: "Premium image animation",
   },
   {
-    id: 'google-cloud/veo3',
-    name: 'Google VEO3 Image-to-Video',
-    type: 'image-to-video',
-    price: 3.00,
-    priceUnit: 'per_second',
+    id: "google-cloud/veo3",
+    name: "Google VEO3 Image-to-Video",
+    type: "image-to-video",
+    price: 3.0,
+    priceUnit: "per_second",
     vipRequired: true,
-    provider: 'Google Cloud',
-    description: 'Latest image animation technology'
+    provider: "Google Cloud",
+    description: "Latest image animation technology",
   },
-  
+
   // Video Enhancement модели
   {
-    id: 'comfyui/lip-sync',
-    name: 'ComfyUI Lip Sync',
-    type: 'video-enhancement',
-    price: 0.40,
-    priceUnit: 'per_second',
+    id: "comfyui/lip-sync",
+    name: "ComfyUI Lip Sync",
+    type: "video-enhancement",
+    price: 0.4,
+    priceUnit: "per_second",
     vipRequired: false,
-    provider: 'ComfyUI',
-    description: 'Budget-friendly lip synchronization'
-  }
+    provider: "ComfyUI",
+    description: "Budget-friendly lip synchronization",
+  },
 ];
 
-export const InteractiveAPIDocs: React.FC<InteractiveAPIDocsProps> = ({ apiType = 'image' }) => {
+export const InteractiveAPIDocs: React.FC<InteractiveAPIDocsProps> = ({
+  apiType = "image",
+}) => {
   const [config, setConfig] = useState<APIConfig>({
-    language: 'typescript',
-    model: apiType === 'image' ? 'comfyui/flux' : 'google-cloud/veo2-text2video',
-    fetchMethod: 'polling',
+    language: "typescript",
+    model:
+      apiType === "image" ? "comfyui/flux" : "google-cloud/veo2-text2video",
+    fetchMethod: "polling",
     apiType: apiType,
-    category: apiType === 'image' ? 'text-to-image' : 'text-to-video'
+    category: apiType === "image" ? "text-to-image" : "text-to-video",
   });
-  
+
   const [copied, setCopied] = useState(false);
   const [selectedModel, setSelectedModel] = useState<Model | null>(null);
 
   // Получаем текущие модели в зависимости от типа API
-  const allModels = config.apiType === 'image' ? imageModels : videoModels;
-  const currentModels = allModels.filter(model => model.type === config.category);
+  const allModels = config.apiType === "image" ? imageModels : videoModels;
+  const currentModels = allModels.filter(
+    (model) => model.type === config.category
+  );
 
   // Получаем доступные категории для текущего типа API
   const getCategories = () => {
-    if (config.apiType === 'image') {
+    if (config.apiType === "image") {
       return [
-        { id: 'text-to-image', label: '🎨 Generate', description: 'Create from text' },
-        { id: 'image-to-image', label: '✏️ Edit', description: 'Process images' }
+        {
+          id: "text-to-image",
+          label: "🎨 Generate",
+          description: "Create from text",
+        },
+        {
+          id: "image-to-image",
+          label: "✏️ Edit",
+          description: "Process images",
+        },
       ];
     } else {
       return [
-        { id: 'text-to-video', label: '📝 From Text', description: 'Create from description' },
-        { id: 'image-to-video', label: '🖼️ From Image', description: 'Animate images' },
-        { id: 'video-enhancement', label: '🎬 Enhance', description: 'Improve videos' }
+        {
+          id: "text-to-video",
+          label: "📝 From Text",
+          description: "Create from description",
+        },
+        {
+          id: "image-to-video",
+          label: "🖼️ From Image",
+          description: "Animate images",
+        },
+        {
+          id: "video-enhancement",
+          label: "🎬 Enhance",
+          description: "Improve videos",
+        },
       ];
     }
   };
@@ -282,57 +319,65 @@ export const InteractiveAPIDocs: React.FC<InteractiveAPIDocsProps> = ({ apiType 
   // Обновляем выбранную модель при изменении категории
   useEffect(() => {
     const defaultModel = currentModels[0];
-    if (defaultModel && !currentModels.find(m => m.id === config.model)) {
-      setConfig(prev => ({ ...prev, model: defaultModel.id }));
+    if (defaultModel && !currentModels.find((m) => m.id === config.model)) {
+      setConfig((prev) => ({ ...prev, model: defaultModel.id }));
     }
   }, [config.category, currentModels, config.model]);
 
   // Обновляем selectedModel при изменении выбранной модели
   useEffect(() => {
-    const model = currentModels.find(m => m.id === config.model);
-    setSelectedModel(model || null);
+    const model = currentModels.find((m) => m.id === config.model);
+    setSelectedModel(model ?? null);
   }, [config.model, currentModels]);
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     } catch (err) {
-      console.error('Failed to copy code:', err);
+      console.error("Failed to copy code:", err);
     }
   };
 
   const generateCode = () => {
-    const isVideo = config.apiType === 'video';
-    const endpoint = isVideo ? 'generate-video' : 'generate-image';
-    const prompt = isVideo ? 'A bird flying over a serene lake at sunset' : 'A beautiful sunset over mountains';
-    
+    const isVideo = config.apiType === "video";
+    const endpoint = isVideo ? "generate-video" : "generate-image";
+    const prompt = isVideo
+      ? "A bird flying over a serene lake at sunset"
+      : "A beautiful sunset over mountains";
+
     switch (config.language) {
-      case 'typescript':
+      case "typescript":
         return generateTypeScriptCode(endpoint, prompt, isVideo);
-      case 'python':
+      case "python":
         return generatePythonCode(endpoint, prompt, isVideo);
-      case 'curl':
+      case "curl":
         return generateCurlCode(endpoint, prompt, isVideo);
       default:
-        return '';
+        return "";
     }
   };
 
-  const generateTypeScriptCode = (endpoint: string, prompt: string, isVideo: boolean) => {
-    const waitFunction = isVideo ? 'waitForVideo' : 'waitForImage';
-    const timeout = isVideo ? '15 * 60 * 1000' : '300000';
-    const pollInterval = isVideo ? '5000' : '2000';
-    
+  const generateTypeScriptCode = (
+    endpoint: string,
+    prompt: string,
+    isVideo: boolean
+  ) => {
+    const waitFunction = isVideo ? "waitForVideo" : "waitForImage";
+    const timeout = isVideo ? "15 * 60 * 1000" : "300000";
+    const pollInterval = isVideo ? "5000" : "2000";
+
     return `const API_BASE = 'https://editor.superduperai.co/api/v1';
 const headers = {
   'Authorization': 'Bearer YOUR_API_TOKEN',
   'Content-Type': 'application/json'
 };
 
-// Generate ${isVideo ? 'video' : 'image'}
-const generate${isVideo ? 'Video' : 'Image'} = async (prompt: string) => {
+// Generate ${isVideo ? "video" : "image"}
+const generate${isVideo ? "Video" : "Image"} = async (prompt: string) => {
   const response = await fetch(\`\${API_BASE}/file/${endpoint}\`, {
     method: 'POST',
     headers,
@@ -340,22 +385,28 @@ const generate${isVideo ? 'Video' : 'Image'} = async (prompt: string) => {
       config: {
         prompt: prompt,
         generation_config_name: '${config.model}',
-        params: {${isVideo ? `
+        params: {${
+          isVideo
+            ? `
           duration: 8,
-          aspect_ratio: '16:9'` : `
+          aspect_ratio: '16:9'`
+            : `
           width: 1024,
           height: 1024,
-          quality: 'hd'`}
+          quality: 'hd'`
+        }
         }
       }
     })
   });
   
-  const ${isVideo ? 'fileData' : '[fileData]'} = await response.json();
+  const ${isVideo ? "fileData" : "[fileData]"} = await response.json();
   return fileData.id;
 };
 
-${config.fetchMethod === 'polling' ? `
+${
+  config.fetchMethod === "polling"
+    ? `
 // Polling method
 const ${waitFunction} = async (fileId: string) => {
   const timeout = ${timeout};
@@ -372,7 +423,8 @@ const ${waitFunction} = async (fileId: string) => {
   }
   
   throw new Error('Generation timeout');
-};` : `
+};`
+    : `
 // Server-Sent Events method
 const ${waitFunction} = async (fileId: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -397,14 +449,15 @@ const ${waitFunction} = async (fileId: string): Promise<string> => {
       reject(new Error('SSE connection failed'));
     };
   });
-};`}
+};`
+}
 
 // Usage
 const main = async () => {
   try {
-    const ${isVideo ? 'video' : 'image'}Id = await generate${isVideo ? 'Video' : 'Image'}("${prompt}");
-    const ${isVideo ? 'video' : 'image'}Url = await ${waitFunction}(${isVideo ? 'video' : 'image'}Id);
-    console.log('Generated ${isVideo ? 'video' : 'image'}:', ${isVideo ? 'video' : 'image'}Url);
+    const ${isVideo ? "video" : "image"}Id = await generate${isVideo ? "Video" : "Image"}("${prompt}");
+    const ${isVideo ? "video" : "image"}Url = await ${waitFunction}(${isVideo ? "video" : "image"}Id);
+    console.log('Generated ${isVideo ? "video" : "image"}:', ${isVideo ? "video" : "image"}Url);
   } catch (error) {
     console.error('Error:', error);
   }
@@ -413,15 +466,19 @@ const main = async () => {
 main();`;
   };
 
-  const generatePythonCode = (endpoint: string, prompt: string, isVideo: boolean) => {
-    const waitFunction = isVideo ? 'wait_for_video' : 'wait_for_image';
-    const timeout = isVideo ? '15 * 60' : '300';
-    const pollInterval = isVideo ? '5' : '2';
-    
+  const generatePythonCode = (
+    endpoint: string,
+    prompt: string,
+    isVideo: boolean
+  ) => {
+    const waitFunction = isVideo ? "wait_for_video" : "wait_for_image";
+    const timeout = isVideo ? "15 * 60" : "300";
+    const pollInterval = isVideo ? "5" : "2";
+
     return `import requests
 import json
 import time
-${config.fetchMethod === 'sse' ? 'import sseclient' : ''}
+${config.fetchMethod === "sse" ? "import sseclient" : ""}
 
 API_BASE = 'https://editor.superduperai.co/api/v1'
 headers = {
@@ -429,7 +486,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-def generate_${isVideo ? 'video' : 'image'}(prompt):
+def generate_${isVideo ? "video" : "image"}(prompt):
     response = requests.post(
         f'{API_BASE}/file/${endpoint}',
         headers=headers,
@@ -437,12 +494,16 @@ def generate_${isVideo ? 'video' : 'image'}(prompt):
             'config': {
                 'prompt': prompt,
                 'generation_config_name': '${config.model}',
-                'params': {${isVideo ? `
+                'params': {${
+                  isVideo
+                    ? `
                     'duration': 8,
-                    'aspect_ratio': '16:9'` : `
+                    'aspect_ratio': '16:9'`
+                    : `
                     'width': 1024,
                     'height': 1024,
-                    'quality': 'hd'`}
+                    'quality': 'hd'`
+                }
                 }
             }
         }
@@ -451,7 +512,9 @@ def generate_${isVideo ? 'video' : 'image'}(prompt):
     data = response.json()
     return data${isVideo ? "['id']" : "[0]['id']"}
 
-${config.fetchMethod === 'polling' ? `
+${
+  config.fetchMethod === "polling"
+    ? `
 # Polling method
 def ${waitFunction}(file_id, timeout=${timeout}):
     start_time = time.time()
@@ -472,7 +535,8 @@ def ${waitFunction}(file_id, timeout=${timeout}):
             
         time.sleep(${pollInterval})  # Wait ${pollInterval} seconds
     
-    raise Exception('Generation timeout')` : `
+    raise Exception('Generation timeout')`
+    : `
 # Server-Sent Events method
 def ${waitFunction}(file_id, timeout=${timeout}):
     """
@@ -526,31 +590,36 @@ def ${waitFunction}_polling(file_id, timeout=${timeout}):
             
         time.sleep(${pollInterval})
     
-    raise Exception('Generation timeout')`}
+    raise Exception('Generation timeout')`
+}
 
 # Usage
 if __name__ == '__main__':
     try:
-        ${isVideo ? 'video' : 'image'}_id = generate_${isVideo ? 'video' : 'image'}("${prompt}")
-        print(f'Generated ${isVideo ? 'video' : 'image'} ID: {${isVideo ? 'video' : 'image'}_id}')
+        ${isVideo ? "video" : "image"}_id = generate_${isVideo ? "video" : "image"}("${prompt}")
+        print(f'Generated ${isVideo ? "video" : "image"} ID: {${isVideo ? "video" : "image"}_id}')
         
-        ${isVideo ? 'video' : 'image'}_url = ${waitFunction}(${isVideo ? 'video' : 'image'}_id)
-        print(f'Generated ${isVideo ? 'video' : 'image'}: {${isVideo ? 'video' : 'image'}_url}')
+        ${isVideo ? "video" : "image"}_url = ${waitFunction}(${isVideo ? "video" : "image"}_id)
+        print(f'Generated ${isVideo ? "video" : "image"}: {${isVideo ? "video" : "image"}_url}')
     except Exception as error:
         print(f'Error: {error}')`;
   };
 
-  const generateCurlCode = (endpoint: string, prompt: string, isVideo: boolean) => {
-    const timeout = isVideo ? '900' : '300';
-    const pollInterval = isVideo ? '5' : '2';
-    
+  const generateCurlCode = (
+    endpoint: string,
+    prompt: string,
+    isVideo: boolean
+  ) => {
+    const timeout = isVideo ? "900" : "300";
+    const pollInterval = isVideo ? "5" : "2";
+
     return `#!/bin/bash
 
 API_BASE="https://editor.superduperai.co/api/v1"
 API_TOKEN="YOUR_API_TOKEN"
 
-# Generate ${isVideo ? 'video' : 'image'}
-echo "Starting ${isVideo ? 'video' : 'image'} generation..."
+# Generate ${isVideo ? "video" : "image"}
+echo "Starting ${isVideo ? "video" : "image"} generation..."
 RESPONSE=$(curl -s -X POST "$API_BASE/file/${endpoint}" \\
   -H "Authorization: Bearer $API_TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -558,30 +627,36 @@ RESPONSE=$(curl -s -X POST "$API_BASE/file/${endpoint}" \\
     "config": {
       "prompt": "${prompt}",
       "generation_config_name": "${config.model}",
-      "params": {${isVideo ? `
+      "params": {${
+        isVideo
+          ? `
         "duration": 8,
-        "aspect_ratio": "16:9"` : `
+        "aspect_ratio": "16:9"`
+          : `
         "width": 1024,
         "height": 1024,
-        "quality": "hd"`}
+        "quality": "hd"`
+      }
       }
     }
   }')
 
 # Extract file ID from response
-${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}=$(echo "$RESPONSE" | jq -r '.${isVideo ? 'id' : '[0].id'}')
+${isVideo ? "VIDEO_ID" : "IMAGE_ID"}=$(echo "$RESPONSE" | jq -r '.${isVideo ? "id" : "[0].id"}')
 
-if [ "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}" == "null" ] || [ "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}" == "" ]; then
-    echo "Error: Failed to get ${isVideo ? 'video' : 'image'} ID"
+if [ "$${isVideo ? "VIDEO_ID" : "IMAGE_ID"}" == "null" ] || [ "$${isVideo ? "VIDEO_ID" : "IMAGE_ID"}" == "" ]; then
+    echo "Error: Failed to get ${isVideo ? "video" : "image"} ID"
     echo "Response: $RESPONSE"
     exit 1
 fi
 
-echo "Generated ${isVideo ? 'video' : 'image'} ID: $${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"
+echo "Generated ${isVideo ? "video" : "image"} ID: $${isVideo ? "VIDEO_ID" : "IMAGE_ID"}"
 
-${config.fetchMethod === 'polling' ? `
+${
+  config.fetchMethod === "polling"
+    ? `
 # Polling method
-wait_for_${isVideo ? 'video' : 'image'}() {
+wait_for_${isVideo ? "video" : "image"}() {
     local file_id=$1
     local timeout=${timeout}
     local start_time=$(date +%s)
@@ -603,7 +678,7 @@ wait_for_${isVideo ? 'video' : 'image'}() {
         URL=$(echo "$STATUS" | jq -r '.url // empty')
         if [ -n "$URL" ] && [ "$URL" != "null" ]; then
             echo "✅ Generation complete!"
-            echo "Generated ${isVideo ? 'video' : 'image'}: $URL"
+            echo "Generated ${isVideo ? "video" : "image"}: $URL"
             return 0
         fi
         
@@ -625,9 +700,10 @@ wait_for_${isVideo ? 'video' : 'image'}() {
 }
 
 # Wait for completion
-wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"` : `
+wait_for_${isVideo ? "video" : "image"} "$${isVideo ? "VIDEO_ID" : "IMAGE_ID"}"`
+    : `
 # Server-Sent Events method
-wait_for_${isVideo ? 'video' : 'image'}() {
+wait_for_${isVideo ? "video" : "image"}() {
     local file_id=$1
     local timeout=${timeout}
     
@@ -648,7 +724,7 @@ wait_for_${isVideo ? 'video' : 'image'}() {
             url=$(echo "$data_content" | jq -r '.url // empty' 2>/dev/null)
             if [ -n "$url" ] && [ "$url" != "null" ]; then
                 echo "✅ Generation complete!"
-                echo "Generated ${isVideo ? 'video' : 'image'}: $url"
+                echo "Generated ${isVideo ? "video" : "image"}: $url"
                 return 0
             fi
             
@@ -669,10 +745,10 @@ wait_for_${isVideo ? 'video' : 'image'}() {
     
     # If SSE fails, fallback to polling
     echo "SSE connection ended, falling back to polling..."
-    wait_for_${isVideo ? 'video' : 'image'}_polling "$file_id"
+    wait_for_${isVideo ? "video" : "image"}_polling "$file_id"
 }
 
-wait_for_${isVideo ? 'video' : 'image'}_polling() {
+wait_for_${isVideo ? "video" : "image"}_polling() {
     local file_id=$1
     local timeout=${timeout}
     local start_time=$(date +%s)
@@ -691,7 +767,7 @@ wait_for_${isVideo ? 'video' : 'image'}_polling() {
         
         URL=$(echo "$STATUS" | jq -r '.url // empty')
         if [ -n "$URL" ] && [ "$URL" != "null" ]; then
-            echo "Generated ${isVideo ? 'video' : 'image'}: $URL"
+            echo "Generated ${isVideo ? "video" : "image"}: $URL"
             return 0
         fi
         
@@ -706,7 +782,8 @@ wait_for_${isVideo ? 'video' : 'image'}_polling() {
 }
 
 # Wait for completion using SSE
-wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"` }`;
+wait_for_${isVideo ? "video" : "image"} "$${isVideo ? "VIDEO_ID" : "IMAGE_ID"}"`
+}`;
   };
 
   return (
@@ -725,22 +802,54 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
         <CardContent className="space-y-4">
           {/* Category Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {config.apiType === 'image' ? 'Image Task Type' : 'Video Task Type'}
+            <label
+              htmlFor="task-category"
+              className="text-sm font-medium"
+            >
+              {config.apiType === "image"
+                ? "Image Task Type"
+                : "Video Task Type"}
             </label>
-            <Tabs value={config.category} onValueChange={(value: string) => {
-              setConfig(prev => ({ ...prev, category: value }));
-              // Выбираем первую модель из новой категории
-              const newCategoryModels = allModels.filter(model => model.type === value);
-              if (newCategoryModels.length > 0) {
-                setConfig(prev => ({ ...prev, model: newCategoryModels[0].id }));
-              }
-            }}>
-              <TabsList className={getCategories().length === 2 ? 'grid w-full grid-cols-2' : getCategories().length === 3 ? 'grid w-full grid-cols-3' : 'grid w-full grid-cols-1'}>
-                {getCategories().map(category => (
-                  <TabsTrigger key={category.id} value={category.id} className="flex flex-col items-center gap-1 p-3">
-                    <span className="text-sm font-medium">{category.label}</span>
-                    <span className="text-xs text-muted-foreground">{category.description}</span>
+            <Tabs
+              value={config.category}
+              onValueChange={(value: string) => {
+                setConfig((prev) => ({ ...prev, category: value }));
+                // Выбираем первую модель из новой категории
+                const newCategoryModels = allModels.filter(
+                  (model) => model.type === value
+                );
+                if (newCategoryModels.length > 0) {
+                  if (!newCategoryModels[0]?.id) {
+                    return;
+                  }
+                  setConfig((prev) => ({
+                    ...prev,
+                    model: newCategoryModels[0]!.id,
+                  }));
+                }
+              }}
+            >
+              <TabsList
+                className={
+                  getCategories().length === 2
+                    ? "grid w-full grid-cols-2"
+                    : getCategories().length === 3
+                      ? "grid w-full grid-cols-3"
+                      : "grid w-full grid-cols-1"
+                }
+              >
+                {getCategories().map((category) => (
+                  <TabsTrigger
+                    key={category.id}
+                    value={category.id}
+                    className="flex flex-col items-center gap-1 p-3"
+                  >
+                    <span className="text-sm font-medium">
+                      {category.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {category.description}
+                    </span>
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -749,18 +858,40 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
 
           {/* Language Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Programming Language</label>
-            <Tabs value={config.language} onValueChange={(value: string) => setConfig(prev => ({ ...prev, language: value as APIConfig['language'] }))}>
+            <label
+              htmlFor="programming-language"
+              className="text-sm font-medium"
+            >
+              Programming Language
+            </label>
+            <Tabs
+              value={config.language}
+              onValueChange={(value: string) => {
+                setConfig((prev) => ({
+                  ...prev,
+                  language: value as APIConfig["language"],
+                }));
+              }}
+            >
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="typescript" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="typescript"
+                  className="flex items-center gap-2"
+                >
                   <Code className="w-4 h-4" />
                   TypeScript
                 </TabsTrigger>
-                <TabsTrigger value="python" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="python"
+                  className="flex items-center gap-2"
+                >
                   <Code className="w-4 h-4" />
                   Python
                 </TabsTrigger>
-                <TabsTrigger value="curl" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="curl"
+                  className="flex items-center gap-2"
+                >
                   <Code className="w-4 h-4" />
                   cURL
                 </TabsTrigger>
@@ -770,8 +901,21 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
 
           {/* Fetch Method Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Data Fetching Method</label>
-            <Tabs value={config.fetchMethod} onValueChange={(value) => setConfig(prev => ({ ...prev, fetchMethod: value as 'polling' | 'sse' }))}>
+            <label
+              htmlFor="fetch-method"
+              className="text-sm font-medium"
+            >
+              Data Fetching Method
+            </label>
+            <Tabs
+              value={config.fetchMethod}
+              onValueChange={(value) => {
+                setConfig((prev) => ({
+                  ...prev,
+                  fetchMethod: value as "polling" | "sse",
+                }));
+              }}
+            >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="polling">
                   <div className="flex items-center gap-2">
@@ -791,25 +935,43 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
 
           {/* Model Selection */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">AI Model ({currentModels.length} available)</label>
+            <label
+              htmlFor="ai-model"
+              className="text-sm font-medium"
+            >
+              AI Model ({currentModels.length} available)
+            </label>
             {currentModels.length > 0 ? (
               <div className="grid grid-cols-1 gap-2">
                 {currentModels.map((model) => (
                   <div
                     key={model.id}
+                    role="button"
+                    tabIndex={0}
                     className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                       config.model === model.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
                     }`}
-                    onClick={() => setConfig(prev => ({ ...prev, model: model.id }))}
+                    onClick={() => {
+                      setConfig((prev) => ({ ...prev, model: model.id }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setConfig((prev) => ({ ...prev, model: model.id }));
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{model.name}</span>
                           {model.vipRequired && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs"
+                            >
                               VIP Required
                             </Badge>
                           )}
@@ -823,7 +985,9 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
                           ${model.price.toFixed(2)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {model.priceUnit === 'per_image' ? 'per image' : 'per second'}
+                          {model.priceUnit === "per_image"
+                            ? "per image"
+                            : "per second"}
                         </div>
                       </div>
                     </div>
@@ -851,9 +1015,12 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
               <CardDescription>
                 {selectedModel && (
                   <>
-                    Using <strong>{selectedModel.name}</strong> • 
-                    ${selectedModel.price.toFixed(2)} {selectedModel.priceUnit === 'per_image' ? 'per image' : 'per second'}
-                    {selectedModel.vipRequired && ' • VIP Required'}
+                    Using <strong>{selectedModel.name}</strong> • $
+                    {selectedModel.price.toFixed(2)}{" "}
+                    {selectedModel.priceUnit === "per_image"
+                      ? "per image"
+                      : "per second"}
+                    {selectedModel.vipRequired && " • VIP Required"}
                   </>
                 )}
               </CardDescription>
@@ -861,11 +1028,17 @@ wait_for_${isVideo ? 'video' : 'image'} "$${isVideo ? 'VIDEO_ID' : 'IMAGE_ID'}"`
             <Button
               variant="outline"
               size="sm"
-              onClick={() => copyToClipboard(generateCode())}
+              onClick={() => {
+                void copyToClipboard(generateCode());
+              }}
               className="flex items-center gap-2"
             >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? 'Copied!' : 'Copy Code'}
+              {copied ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              {copied ? "Copied!" : "Copy Code"}
             </Button>
           </div>
         </CardHeader>

@@ -12,7 +12,8 @@ vi.mock("@/lib/ai/context");
 describe("configureVideoGeneration", () => {
   const mockCreateDocument = vi.fn();
   const mockSession = {
-    user: { id: "test-user", email: "test@example.com" },
+    user: { id: "test-user", email: "test@example.com", type: "user" as any },
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
   };
 
   beforeEach(() => {
@@ -20,19 +21,27 @@ describe("configureVideoGeneration", () => {
 
     // Mock successful responses
     vi.mocked(getVideoGenerationConfig).mockResolvedValue({
-      styles: [{ id: "cinematic", label: "Cinematic" }],
-      resolutions: [{ width: 1920, height: 1080, label: "1920x1080" }],
-      models: [{ id: "ltx", label: "LTX Video" }],
-      durations: [5, 10, 15, 30],
+      type: "video" as any,
+      availableResolutions: ["1024x1024" as any],
+      availableStyles: ["realistic" as any],
+      availableShotSizes: ["close-up" as any],
+      availableModels: [] as any,
+      availableFrameRates: [24, 30, 60] as any,
+      availableDurations: [5, 10, 15, 30] as any,
+      defaultSettings: {} as any,
     });
 
-    vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue(true);
+    vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
+      valid: true,
+      cost: 0,
+    });
     vi.mocked(analyzeVideoContext).mockResolvedValue({
-      hasVideo: false,
-      hasImage: false,
-      videoCount: 0,
-      imageCount: 0,
-      context: "text-only",
+      sourceUrl: undefined as any,
+      sourceId: undefined as any,
+      mediaType: "video" as const,
+      confidence: "high" as const,
+      reasoning: "Test reasoning",
+      metadata: undefined as any,
     });
   });
 
@@ -55,12 +64,15 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute({
-      prompt: "A beautiful sunset over mountains with gentle wind",
-      style: "cinematic",
-      resolution: "1920x1080",
-      duration: 10,
-    });
+    const result = await tool.execute(
+      {
+        prompt: "A beautiful sunset over mountains with gentle wind",
+        style: "cinematic",
+        resolution: "1920x1080",
+        duration: "10",
+      },
+      { toolCallId: "test-call", messages: [] }
+    );
 
     expect(mockCreateDocument).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -72,7 +84,7 @@ describe("configureVideoGeneration", () => {
           generationType: "text-to-video",
           style: "cinematic",
           resolution: "1920x1080",
-          duration: 10,
+          duration: "10",
         }),
       })
     );
@@ -86,13 +98,16 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute({
-      prompt: "Animate this image with gentle movement",
-      sourceVideoUrl: "https://example.com/image.jpg",
-      style: "cinematic",
-      resolution: "1920x1080",
-      duration: 8,
-    });
+    const result = await tool.execute(
+      {
+        prompt: "Animate this image with gentle movement",
+        sourceVideoUrl: "https://example.com/image.jpg",
+        style: "cinematic",
+        resolution: "1920x1080",
+        duration: "8",
+      },
+      { toolCallId: "test-call", messages: [] }
+    );
 
     expect(mockCreateDocument).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -117,13 +132,16 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    const result = await tool.execute({
-      prompt: "Transform this video into a different style",
-      sourceVideoUrl: "https://example.com/video.mp4",
-      style: "artistic",
-      resolution: "1920x1080",
-      duration: 15,
-    });
+    const result = await tool.execute(
+      {
+        prompt: "Transform this video into a different style",
+        sourceVideoUrl: "https://example.com/video.mp4",
+        style: "artistic",
+        resolution: "1920x1080",
+        duration: "15",
+      },
+      { toolCallId: "test-call", messages: [] }
+    );
 
     expect(mockCreateDocument).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -147,20 +165,28 @@ describe("configureVideoGeneration", () => {
     });
 
     // Test with missing prompt
-    await expect(tool.execute({})).rejects.toThrow();
+    await expect(
+      tool.execute({}, { toolCallId: "test-call", messages: [] })
+    ).rejects.toThrow();
   });
 
   it("should handle balance check failure", async () => {
-    vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue(false);
+    vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
+      valid: false,
+      cost: 0,
+    });
 
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
     });
 
-    const result = await tool.execute({
-      prompt: "A beautiful sunset over mountains with gentle wind",
-    });
+    const result = await tool.execute(
+      {
+        prompt: "A beautiful sunset over mountains with gentle wind",
+      },
+      { toolCallId: "test-call", messages: [] }
+    );
 
     expect(result).toEqual({
       success: false,
@@ -177,9 +203,12 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    const result = await tool.execute({
-      prompt: "A beautiful sunset over mountains with gentle wind",
-    });
+    const result = await tool.execute(
+      {
+        prompt: "A beautiful sunset over mountains with gentle wind",
+      },
+      { toolCallId: "test-call", messages: [] }
+    );
 
     expect(result).toEqual({
       success: false,
@@ -198,9 +227,12 @@ describe("configureVideoGeneration", () => {
 
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
-    await tool.execute({
-      prompt: "A beautiful sunset over mountains with gentle wind",
-    });
+    await tool.execute(
+      {
+        prompt: "A beautiful sunset over mountains with gentle wind",
+      },
+      { toolCallId: "test-call", messages: [] }
+    );
 
     expect(analyzeVideoContext).toHaveBeenCalledWith([
       { type: "video", url: "https://example.com/video.mp4" },
@@ -230,10 +262,13 @@ describe("configureVideoGeneration", () => {
     ];
 
     for (const resolution of resolutions) {
-      await tool.execute({
-        prompt: "A beautiful sunset over mountains with gentle wind",
-        resolution,
-      });
+      await tool.execute(
+        {
+          prompt: "A beautiful sunset over mountains with gentle wind",
+          resolution,
+        },
+        { toolCallId: "test-call", messages: [] }
+      );
 
       expect(mockCreateDocument).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -254,13 +289,16 @@ describe("configureVideoGeneration", () => {
     mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     // Test various duration values
-    const durations = [5, 8, 10, 15, 30];
+    const durations = ["5", "8", "10", "15", "30"];
 
     for (const duration of durations) {
-      await tool.execute({
-        prompt: "A beautiful sunset over mountains with gentle wind",
-        duration,
-      });
+      await tool.execute(
+        {
+          prompt: "A beautiful sunset over mountains with gentle wind",
+          duration,
+        },
+        { toolCallId: "test-call", messages: [] }
+      );
 
       expect(mockCreateDocument).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -296,10 +334,13 @@ describe("configureVideoGeneration", () => {
     ];
 
     for (const style of styles) {
-      await tool.execute({
-        prompt: "A beautiful sunset over mountains with gentle wind",
-        style,
-      });
+      await tool.execute(
+        {
+          prompt: "A beautiful sunset over mountains with gentle wind",
+          style,
+        },
+        { toolCallId: "test-call", messages: [] }
+      );
 
       expect(mockCreateDocument).toHaveBeenCalledWith(
         expect.objectContaining({

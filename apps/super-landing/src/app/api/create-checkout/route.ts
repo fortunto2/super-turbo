@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { storeSessionData, type SessionData } from "@/lib/kv";
 
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
     let modelName: string | undefined;
     let imageFile: File | undefined;
 
-    if (contentType && contentType.includes("multipart/form-data")) {
+    if (contentType?.includes("multipart/form-data")) {
       // Обрабатываем FormData
       const formData = await request.formData();
       priceId = formData.get("priceId") as string;
@@ -64,15 +65,13 @@ export async function POST(request: NextRequest) {
 
       // Получаем файл изображения
       const file = formData.get("imageFile") as File;
-      if (file) {
-        imageFile = file;
-        console.log("📁 Received image file:", file.name, file.size, file.type);
-      }
+      imageFile = file;
+      console.log("📁 Received image file:", file.name, file.size, file.type);
     } else {
       // Обрабатываем JSON (для обратной совместимости)
       const body = await request.json();
       priceId = body.priceId;
-      quantity = body.quantity || 1;
+      quantity = body.quantity ?? 1;
       prompt = body.prompt;
       toolSlug = body.toolSlug;
       toolTitle = body.toolTitle;
@@ -114,54 +113,54 @@ export async function POST(request: NextRequest) {
     };
 
     const appUrl = getAppUrl();
-    console.log("🔗 Using app URL:", appUrl);
+    // console.log("🔗 Using app URL:", appUrl);
 
     // Логируем полученные данные
-    console.log("📥 Received checkout data:", {
-      priceId,
-      quantity,
-      prompt:
-        prompt?.substring(0, 50) + (prompt && prompt.length > 50 ? "..." : ""),
-      toolSlug,
-      toolTitle,
-      generationType,
-      modelName,
-      imageFile: imageFile
-        ? {
-            name: imageFile.name,
-            size: imageFile.size,
-            type: imageFile.type,
-          }
-        : null,
-    });
+    // console.log("📥 Received checkout data:", {
+    //   priceId,
+    //   quantity,
+    //   prompt:
+    //     prompt?.substring(0, 50) + (prompt && prompt.length > 50 ? "..." : ""),
+    //   toolSlug,
+    //   toolTitle,
+    //   generationType,
+    //   modelName,
+    //   imageFile: imageFile
+    //     ? {
+    //         name: imageFile.name,
+    //         size: imageFile.size,
+    //         type: imageFile.type,
+    //       }
+    //     : null,
+    // });
 
     // Store everything in Redis, keep Stripe metadata minimal
     const sessionData: SessionData = {
-      prompt: prompt || "",
+      prompt: prompt ?? "",
       videoCount: quantity,
       duration: 8,
       resolution: "1920x1080",
       style: "cinematic",
-      toolSlug: toolSlug || "veo3-prompt-generator",
-      toolTitle: toolTitle || "Free VEO3 Viral Prompt Generator",
-      cancelUrl: cancelUrl || "",
+      toolSlug: toolSlug ?? "veo3-prompt-generator",
+      toolTitle: toolTitle ?? "Free VEO3 Viral Prompt Generator",
+      cancelUrl: cancelUrl ?? "",
       createdAt: new Date().toISOString(),
       status: "pending" as const,
       // Добавляем информацию для перенаправления на страницу генерации
-      modelName,
+      modelName: modelName ?? "",
       // Новые поля для поддержки image-to-video
       generationType,
-      // Преобразуем File в сериализуемый объект
-      imageFile: imageFile
-        ? {
-            name: imageFile.name,
-            size: imageFile.size,
-            type: imageFile.type,
-            lastModified: imageFile.lastModified,
-            // Сохраняем содержимое файла как base64 для передачи в webhook
-            content: await fileToBase64(imageFile),
-          }
-        : undefined,
+      // Преобразуем File в сериализуемый объект только если файл существует
+      ...(imageFile && {
+        imageFile: {
+          name: imageFile.name,
+          size: imageFile.size,
+          type: imageFile.type,
+          lastModified: imageFile.lastModified,
+          // Сохраняем содержимое файла как base64 для передачи в webhook
+          content: await fileToBase64(imageFile),
+        },
+      }),
     };
 
     // Minimal Stripe metadata - only essential info
@@ -182,15 +181,15 @@ export async function POST(request: NextRequest) {
       ],
       mode: "payment",
       success_url:
-        successUrl || `${appUrl}/en/payment-success/{CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${appUrl}/en/tool/veo3-prompt-generator`,
+        successUrl ?? `${appUrl}/en/payment-success/{CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl ?? `${appUrl}/en/tool/veo3-prompt-generator`,
       metadata,
     });
 
     // Store complete session data in Redis
     try {
       await storeSessionData(session.id, sessionData);
-      console.log("💾 Session data stored in Redis:", session.id);
+      // console.log("💾 Session data stored in Redis:", session.id);
     } catch (error) {
       console.error("❌ Failed to store session data in Redis:", error);
       // This is critical - if we can't store session data, webhook will fail
@@ -201,8 +200,8 @@ export async function POST(request: NextRequest) {
       sessionId: session.id,
       url: session.url,
     });
-  } catch (error) {
-    console.error("Error creating checkout session:", error);
+  } catch {
+    // console.error("Error creating checkout session:", error);
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }

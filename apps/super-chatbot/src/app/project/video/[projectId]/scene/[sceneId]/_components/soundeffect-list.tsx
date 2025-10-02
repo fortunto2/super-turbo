@@ -81,7 +81,7 @@ export function SoundEffectList({
               {/* Пустая карточка для сброса выбора */}
               <EmptyAudioFile
                 onSelect={handleSelect}
-                onCreateAudio={onCreateAudio}
+                onCreateAudio={onCreateAudio ?? (() => {})}
                 isActive={!scene?.sound_effect_id}
                 isPending={isPending}
               />
@@ -92,7 +92,7 @@ export function SoundEffectList({
                   key={file.id}
                   file={file}
                   isActive={scene?.sound_effect_id === file.id}
-                  scene={scene}
+                  {...(scene && { scene })}
                 />
               ))}
             </>

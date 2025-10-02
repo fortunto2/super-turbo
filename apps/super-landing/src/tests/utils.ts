@@ -1,68 +1,75 @@
-import { render, RenderOptions } from '@testing-library/react';
-import { ReactElement } from 'react';
-import { vi } from 'vitest';
+import { render, RenderOptions } from "@testing-library/react";
+import React, { ReactElement } from "react";
+import { vi } from "vitest";
 
 // Типы для утилит
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   wrapper?: React.ComponentType<{ children: React.ReactNode }>;
 }
 
 // Кастомная функция рендеринга с провайдерами
 export function customRender(
   ui: ReactElement,
-  options: CustomRenderOptions = {}
-) {
+  options: CustomRenderOptions = {} as CustomRenderOptions
+): ReturnType<typeof render> {
   const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-    return <>{children}</>;
+    return React.createElement(React.Fragment, null, children);
   };
 
   return render(ui, { wrapper: AllTheProviders, ...options });
 }
 
 // Утилита для создания моков
-export function createMock<T>(defaultImplementation: Partial<T> = {}): T {
+export function createMock<T>(defaultImplementation: Partial<T>): T {
   return {
     ...defaultImplementation,
   } as T;
 }
 
 // Утилита для создания spy функций
-export function createSpy<T extends (...args: any[]) => any>(
+export function createSpy<T extends (...args: unknown[]) => unknown>(
   implementation?: T
-): T & { mock: { calls: any[]; results: any[] } } {
-  const spy = vi.fn(implementation) as any;
+): T & { mock: { calls: unknown[][]; results: unknown[] } } {
+  const spy = vi.fn(implementation || (() => {})) as unknown as T & {
+    mock: { calls: unknown[][]; results: unknown[] };
+  };
   spy.mock = {
     calls: [],
     results: [],
   };
-  
+
   const originalFn = spy;
-  spy.mockImplementation = (...args: any[]) => {
+  (
+    spy as unknown as { mockImplementation: (...args: unknown[]) => unknown }
+  ).mockImplementation = (...args: unknown[]) => {
     spy.mock.calls.push(args);
     const result = originalFn(...args);
-    spy.mock.results.push({ type: 'return', value: result });
+    spy.mock.results.push({ type: "return", value: result });
     return result;
   };
-  
+
   return spy;
 }
 
 // Утилита для создания моков компонентов
 export function createMockComponent(
   displayName: string,
-  defaultProps: Record<string, any> = {}
+  defaultProps: Record<string, unknown> = {}
 ) {
-  const MockComponent = (props: any) => {
-    return (
-      <div data-testid={`mock-${displayName.toLowerCase()}`} {...props}>
-        {props.children}
-      </div>
+  const MockComponent = (props: Record<string, unknown>) => {
+    return React.createElement(
+      "div",
+      {
+        "data-testid": `mock-${displayName.toLowerCase()}`,
+        ...props,
+      },
+      props.children as React.ReactNode
     );
   };
-  
+
   MockComponent.displayName = displayName;
   MockComponent.defaultProps = defaultProps;
-  
+
   return MockComponent;
 }
 
@@ -86,9 +93,9 @@ export function createMockApi() {
 export function createMockWebSocket() {
   const mockWs = {
     readyState: 1, // OPEN
-    url: 'wss://test.com',
-    protocol: '',
-    extensions: '',
+    url: "wss://test.com",
+    protocol: "",
+    extensions: "",
     bufferedAmount: 0,
     onopen: null,
     onclose: null,
@@ -100,14 +107,14 @@ export function createMockWebSocket() {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   };
-  
+
   return mockWs;
 }
 
 // Утилита для создания моков localStorage
 export function createMockLocalStorage() {
   const store: Record<string, string> = {};
-  
+
   return {
     getItem: vi.fn((key: string) => store[key] || null),
     setItem: vi.fn((key: string, value: string) => {
@@ -117,7 +124,7 @@ export function createMockLocalStorage() {
       delete store[key];
     }),
     clear: vi.fn(() => {
-      Object.keys(store).forEach(key => delete store[key]);
+      Object.keys(store).forEach((key) => delete store[key]);
     }),
     key: vi.fn((index: number) => Object.keys(store)[index] || null),
     length: Object.keys(store).length,
@@ -132,10 +139,10 @@ export function createMockSessionStorage() {
 // Утилита для создания моков cookies
 export function createMockCookies() {
   const cookies: Record<string, string> = {};
-  
+
   return {
     get: vi.fn((name: string) => cookies[name]),
-    set: vi.fn((name: string, value: string, options?: any) => {
+    set: vi.fn((name: string, value: string, _options?: unknown) => {
       cookies[name] = value;
     }),
     remove: vi.fn((name: string) => {
@@ -146,28 +153,29 @@ export function createMockCookies() {
 }
 
 // Утилита для создания моков window
-export function createMockWindow() {
+export function createMockWindow(): Partial<Window> {
   const originalWindow = global.window;
-  
+
   const mockWindow = {
     ...originalWindow,
     location: {
-      href: '',
-      origin: 'http://localhost:3000',
-      protocol: 'http:',
-      host: 'localhost:3000',
-      hostname: 'localhost',
-      port: '3000',
-      pathname: '/',
-      search: '',
-      hash: '',
+      href: "",
+      origin: "http://localhost:3000",
+      protocol: "http:",
+      host: "localhost:3000",
+      hostname: "localhost",
+      port: "3000",
+      pathname: "/",
+      search: "",
+      hash: "",
       assign: vi.fn(),
       replace: vi.fn(),
       reload: vi.fn(),
+      ancestorOrigins: [] as unknown as DOMStringList,
     },
     history: {
       length: 1,
-      scrollRestoration: 'auto',
+      scrollRestoration: "auto" as ScrollRestoration,
       state: null,
       back: vi.fn(),
       forward: vi.fn(),
@@ -176,13 +184,13 @@ export function createMockWindow() {
       replaceState: vi.fn(),
     },
     navigator: {
-      userAgent: 'test-user-agent',
-      language: 'en-US',
-      languages: ['en-US', 'en'],
+      userAgent: "test-user-agent",
+      language: "en-US",
+      languages: ["en-US", "en"],
       cookieEnabled: true,
       onLine: true,
-      platform: 'Win32',
-      vendor: 'test-vendor',
+      platform: "Win32",
+      vendor: "test-vendor",
     },
     screen: {
       availHeight: 1080,
@@ -192,12 +200,12 @@ export function createMockWindow() {
       width: 1920,
       orientation: {
         angle: 0,
-        type: 'landscape-primary',
+        type: "landscape-primary",
       },
     },
     matchMedia: vi.fn(() => ({
       matches: false,
-      media: '',
+      media: "",
       onchange: null,
       addListener: vi.fn(),
       removeListener: vi.fn(),
@@ -220,24 +228,24 @@ export function createMockWindow() {
     requestIdleCallback: vi.fn((callback) => setTimeout(callback, 0)),
     cancelIdleCallback: vi.fn(),
   };
-  
-  return mockWindow;
+
+  return mockWindow as unknown as Partial<Window>;
 }
 
 // Утилита для создания моков fetch
 export function createMockFetch() {
   const mockFetch = vi.fn();
-  
+
   // Устанавливаем глобальный fetch
   global.fetch = mockFetch;
-  
+
   return mockFetch;
 }
 
 // Утилита для создания моков console
 export function createMockConsole() {
   const originalConsole = { ...console };
-  
+
   const mockConsole = {
     log: vi.fn(),
     info: vi.fn(),
@@ -261,17 +269,17 @@ export function createMockConsole() {
     profile: vi.fn(),
     profileEnd: vi.fn(),
   };
-  
+
   // Заменяем глобальный console
-  Object.defineProperty(global, 'console', {
+  Object.defineProperty(global, "console", {
     value: mockConsole,
     writable: true,
   });
-  
+
   return {
     mockConsole,
     restore: () => {
-      Object.defineProperty(global, 'console', {
+      Object.defineProperty(global, "console", {
         value: originalConsole,
         writable: true,
       });
@@ -285,29 +293,29 @@ export function createMockTimers() {
   const originalSetInterval = global.setInterval;
   const originalClearTimeout = global.clearTimeout;
   const originalClearInterval = global.clearInterval;
-  
+
   const mockSetTimeout = vi.fn((callback, delay) => {
     return originalSetTimeout(callback, delay);
   });
-  
+
   const mockSetInterval = vi.fn((callback, delay) => {
     return originalSetInterval(callback, delay);
   });
-  
+
   const mockClearTimeout = vi.fn((id) => {
     return originalClearTimeout(id);
   });
-  
+
   const mockClearInterval = vi.fn((id) => {
     return originalClearInterval(id);
   });
-  
+
   // Заменяем глобальные таймеры
-  global.setTimeout = mockSetTimeout;
-  global.setInterval = mockSetInterval;
-  global.clearTimeout = mockClearTimeout;
-  global.clearInterval = mockClearInterval;
-  
+  global.setTimeout = mockSetTimeout as unknown as typeof setTimeout;
+  global.setInterval = mockSetInterval as unknown as typeof setInterval;
+  global.clearTimeout = mockClearTimeout as unknown as typeof clearTimeout;
+  global.clearInterval = mockClearInterval as unknown as typeof clearInterval;
+
   return {
     mockSetTimeout,
     mockSetInterval,
@@ -325,9 +333,9 @@ export function createMockTimers() {
 // Утилита для создания моков Math.random
 export function createMockMathRandom(returnValue: number = 0.5) {
   const originalRandom = Math.random;
-  
+
   Math.random = vi.fn(() => returnValue);
-  
+
   return {
     restore: () => {
       Math.random = originalRandom;
@@ -336,22 +344,24 @@ export function createMockMathRandom(returnValue: number = 0.5) {
 }
 
 // Утилита для создания моков Date
-export function createMockDate(fixedDate: Date | string | number = new Date('2024-01-01T00:00:00Z')) {
+export function createMockDate(
+  fixedDate: Date | string | number = new Date("2024-01-01T00:00:00Z")
+) {
   const originalDate = global.Date;
-  const mockDate = vi.fn((...args: any[]) => {
+  const mockDate = vi.fn((...args: unknown[]) => {
     if (args.length === 0) {
       return new originalDate(fixedDate);
     }
-    return new originalDate(...args);
+    return new originalDate(...(args as ConstructorParameters<typeof Date>));
   });
-  
+
   // Копируем статические методы
   Object.setPrototypeOf(mockDate, originalDate);
   Object.assign(mockDate, originalDate);
-  
+
   // Заменяем глобальный Date
-  global.Date = mockDate as any;
-  
+  global.Date = mockDate as unknown as typeof Date;
+
   return {
     restore: () => {
       global.Date = originalDate;
@@ -362,7 +372,7 @@ export function createMockDate(fixedDate: Date | string | number = new Date('202
 // Утилита для создания моков crypto
 export function createMockCrypto() {
   const originalCrypto = global.crypto;
-  
+
   const mockCrypto = {
     getRandomValues: vi.fn((array) => {
       for (let i = 0; i < array.length; i++) {
@@ -370,7 +380,7 @@ export function createMockCrypto() {
       }
       return array;
     }),
-    randomUUID: vi.fn(() => 'test-uuid-1234-5678-9012-345678901234'),
+    randomUUID: vi.fn(() => "test-uuid-1234-5678-9012-345678901234"),
     subtle: {
       digest: vi.fn(),
       generateKey: vi.fn(),
@@ -386,10 +396,10 @@ export function createMockCrypto() {
       unwrapKey: vi.fn(),
     },
   };
-  
+
   // Заменяем глобальный crypto
-  global.crypto = mockCrypto as any;
-  
+  global.crypto = mockCrypto as typeof crypto;
+
   return {
     restore: () => {
       global.crypto = originalCrypto;
@@ -411,7 +421,23 @@ export function restoreAllMocks() {
 }
 
 // Утилита для создания тестового окружения
-export function createTestEnvironment() {
+export function createTestEnvironment(): {
+  mocks: {
+    console: ReturnType<typeof createMockConsole>;
+    timers: ReturnType<typeof createMockTimers>;
+    mathRandom: ReturnType<typeof createMockMathRandom>;
+    date: ReturnType<typeof createMockDate>;
+    crypto: ReturnType<typeof createMockCrypto>;
+    fetch: ReturnType<typeof createMockFetch>;
+    webSocket: ReturnType<typeof createMockWebSocket>;
+    localStorage: ReturnType<typeof createMockLocalStorage>;
+    sessionStorage: ReturnType<typeof createMockSessionStorage>;
+    cookies: ReturnType<typeof createMockCookies>;
+    window: ReturnType<typeof createMockWindow>;
+  };
+  setup: () => Promise<void>;
+  teardown: () => Promise<void>;
+} {
   const mocks = {
     console: createMockConsole(),
     timers: createMockTimers(),
@@ -425,7 +451,7 @@ export function createTestEnvironment() {
     cookies: createMockCookies(),
     window: createMockWindow(),
   };
-  
+
   return {
     mocks,
     setup: async () => {
@@ -444,5 +470,5 @@ export function createTestEnvironment() {
 }
 
 // Экспортируем все утилиты
-export * from './types';
-export * from './test-data';
+export * from "./types";
+export * from "./test-data";

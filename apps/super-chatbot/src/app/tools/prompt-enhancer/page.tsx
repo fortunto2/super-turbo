@@ -127,7 +127,6 @@ export default function PromptEnhancerPage() {
       {mode === "veo3" ? (
         <Veo3PromptGenerator
           enhancePromptFunction={enhancePromptFunction}
-          MoodboardUploader={undefined}
           showInfoBanner={true}
           showPaymentButton={false}
         />

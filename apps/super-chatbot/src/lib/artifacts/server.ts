@@ -72,7 +72,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
       const draftContent = await config.onCreateDocument({
         id: args.id,
         title: args.title,
-        content: args.content, // Now properly typed
+        content: args.content || "", // Now properly typed
         dataStream: args.dataStream,
         session: args.session,
       });
@@ -113,7 +113,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
               // Handle video format: 'Video: "prompt" {...}'
               const match = args.title.match(/Video: "([^"]+)"/);
               if (match) {
-                readableTitle = match[1];
+                readableTitle = match[1] || "";
               }
             }
           }

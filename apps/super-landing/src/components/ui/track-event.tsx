@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { sendGTMEvent } from '@next/third-parties/google';
+import { useCallback } from "react";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 /**
  * Компонент для отправки событий в Google Tag Manager
  * Использование:
- * 
+ *
  * <TrackEvent
  *   event="button_click"
  *   properties={{ button_id: 'hero_cta', page_section: 'hero' }}
@@ -30,26 +30,37 @@ export default function TrackEvent({
   className,
   onClick,
 }: TrackEventProps) {
-  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    // Отправляем событие в GTM
-    sendGTMEvent({
-      event,
-      ...properties,
-    });
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // Отправляем событие в GTM
+      sendGTMEvent({
+        event,
+        ...properties,
+      });
 
-    // Вызываем дополнительный обработчик, если он предоставлен
-    if (onClick) {
-      onClick(e);
-    }
-  }, [event, properties, onClick]);
+      // Вызываем дополнительный обработчик, если он предоставлен
+      if (onClick) {
+        onClick(e);
+      }
+    },
+    [event, properties, onClick]
+  );
 
   return (
-    <div 
-      onClick={handleClick} 
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick(e as any);
+        }
+      }}
       className={className}
-      style={{ display: 'contents' }} // Не создаёт дополнительную обертку в DOM
+      style={{ display: "contents" }} // Не создаёт дополнительную обертку в DOM
     >
       {children}
     </div>
   );
-} 
+}

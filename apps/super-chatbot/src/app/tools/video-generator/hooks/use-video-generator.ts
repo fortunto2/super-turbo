@@ -210,8 +210,8 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.projectId || stored.fileId,
-      requestId: stored.requestId,
+      projectId: stored.projectId || stored.fileId || "",
+      requestId: stored.requestId ?? "",
       settings: stored.settings,
     }));
     setGeneratedVideos(convertedVideos);
@@ -235,24 +235,28 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         mostRecent
       );
 
-      setCurrentFileId(mostRecent.fileId);
-      requestIdRef.current = mostRecent.requestId || "";
-      setIsGenerating(true);
-      setGenerationStatus({
-        status: "processing",
-        progress: mostRecent.progress || 10,
-        message: "Checking video generation status...",
-        estimatedTime: mostRecent.estimatedTime || 60000,
-        projectId: mostRecent.projectId || "",
-        requestId: mostRecent.requestId || "",
-        fileId: mostRecent.fileId,
-      });
+      if (mostRecent) {
+        setCurrentFileId(mostRecent.fileId);
+        requestIdRef.current = mostRecent.requestId || "";
+        setIsGenerating(true);
+        setGenerationStatus({
+          status: "processing",
+          progress: mostRecent.progress || 10,
+          message: "Checking video generation status...",
+          estimatedTime: mostRecent.estimatedTime || 60000,
+          projectId: mostRecent.projectId || "",
+          requestId: mostRecent.requestId || "",
+          fileId: mostRecent.fileId,
+        });
+      }
 
       toast.info("Recovering video generation...");
 
       // AICODE-NOTE: Immediately check file status on recovery
       setTimeout(async () => {
         try {
+          if (!mostRecent) return;
+
           const { pollFileCompletion } = await import(
             "@/lib/utils/smart-polling-manager"
           );
@@ -284,8 +288,8 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
               url: result.data.url,
               prompt: mostRecent.prompt || "Recovered Video",
               timestamp: Date.now(),
-              projectId: mostRecent.projectId,
-              requestId: mostRecent.requestId,
+              projectId: mostRecent.projectId ?? "",
+              requestId: mostRecent.requestId ?? "",
               settings: mostRecent.settings || {
                 model: "unknown",
                 style: "base",
@@ -314,7 +318,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
               prompt: newVideo.prompt,
               timestamp: newVideo.timestamp,
               fileId: mostRecent.fileId,
-              requestId: newVideo.requestId,
+              requestId: newVideo.requestId ?? "",
               settings: newVideo.settings,
             };
             saveVideo(storedVideo);
@@ -513,7 +517,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
                   prompt: formData.prompt,
                   timestamp: Date.now(),
                   projectId: fileId,
-                  requestId,
+                  requestId: requestId ?? "",
                   settings: {
                     model: formData.model || "unknown",
                     style: formData.style || "base",
@@ -521,7 +525,9 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
                     shotSize: formData.shotSize || "medium_shot",
                     duration: formData.duration || 5,
                     frameRate: formData.frameRate || 30,
-                    negativePrompt: formData.negativePrompt,
+                    ...(formData.negativePrompt && {
+                      negativePrompt: formData.negativePrompt,
+                    }),
                   },
                 };
 
@@ -718,8 +724,8 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
               "Video"
             : "Video",
           timestamp: Date.now(),
-          projectId: generationStatus.projectId,
-          requestId: generationStatus.requestId,
+          projectId: generationStatus.projectId ?? "",
+          requestId: generationStatus.requestId ?? "",
           settings: {
             model: "unknown",
             style: "base",
@@ -740,7 +746,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
           prompt: newVideo.prompt,
           timestamp: newVideo.timestamp,
           fileId: currentFileId,
-          requestId: newVideo.requestId,
+          requestId: newVideo.requestId ?? "",
           settings: newVideo.settings,
         };
         saveVideo(storedVideo);

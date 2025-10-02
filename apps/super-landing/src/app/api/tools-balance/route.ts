@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentDemoBalance } from "@/lib/utils/tools-balance";
 
 export async function GET(request: NextRequest) {
@@ -6,7 +7,7 @@ export async function GET(request: NextRequest) {
   const cookieUid = request.cookies.get("superduperai_uid")?.value;
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
-  const ip = forwarded?.split(",")[0]?.trim() || realIp || "unknown";
+  const ip = forwarded?.split(",")[0]?.trim() ?? realIp ?? "unknown";
   const userId = cookieUid ? `demo-user-${cookieUid}` : `demo-user-${ip}`;
 
   console.log(

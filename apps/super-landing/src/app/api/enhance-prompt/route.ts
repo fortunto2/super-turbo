@@ -1,15 +1,16 @@
 import { generateObject } from "ai";
 import { createAzure } from "@ai-sdk/azure";
 import { z } from "zod";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { AISDKExporter } from "langsmith/vercel";
 
 // Initialize Azure provider
 const azure = createAzure({
   resourceName:
-    process.env.AZURE_OPENAI_RESOURCE_NAME || "your-azure-resource-name",
-  apiKey: process.env.AZURE_OPENAI_API_KEY || "your-azure-openai-api-key",
-  apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
+    process.env.AZURE_OPENAI_RESOURCE_NAME ?? "your-azure-resource-name",
+  apiKey: process.env.AZURE_OPENAI_API_KEY ?? "your-azure-openai-api-key",
+  apiVersion: process.env.AZURE_OPENAI_API_VERSION ?? "2024-12-01-preview",
 });
 
 // Available models with their character limits and capabilities
@@ -218,7 +219,7 @@ const enhancePromptSchema = z.object({
             weight: z.number().min(0.1).max(1.0).default(1.0), // Influence weight
           })
         )
-        .refine((images) => images.every((img) => img.url || img.base64), {
+        .refine((images) => images.every((img) => img.url ?? img.base64), {
           message: "Each image must have either url or base64",
         }),
       enabled: z.boolean().default(false),
@@ -263,8 +264,8 @@ export async function POST(req: NextRequest) {
       model,
       focusType,
       includeAudio,
-      moodboardEnabled: moodboard?.enabled || false,
-      imageCount: moodboard?.images?.length || 0,
+      moodboardEnabled: moodboard?.enabled,
+      imageCount: moodboard?.images?.length ?? 0,
     });
 
     // Process focus types
@@ -275,32 +276,39 @@ export async function POST(req: NextRequest) {
     // Check if we have characters with speech
     const hasCharacterSpeech =
       (includeAudio &&
-        promptData?.characters?.some((char) => char.speech.trim())) ||
+        promptData?.characters?.some((char) => char.speech.trim())) ??
       false;
 
     // Process moodboard images
     let moodboardContext = "";
-    let moodboardImages: Array<{ type: "image"; image: string }> = [];
+    let moodboardImages: { type: "image"; image: string }[] = [];
 
-    if (moodboard?.enabled && moodboard.images?.length > 0) {
+    if (
+      moodboard?.enabled &&
+      moodboard?.images &&
+      moodboard?.images.length > 0
+    ) {
       // Group images by tags for better organization
       const imagesByTag: Record<
         string,
-        Array<{
+        {
           id: string;
           description?: string;
           weight: number;
           index: number;
           tags: string[];
-        }>
+        }[]
       > = {};
 
       moodboard.images.forEach((img, index) => {
         img.tags.forEach((tag) => {
-          if (!imagesByTag[tag]) imagesByTag[tag] = [];
+          imagesByTag[tag] ??= [];
           imagesByTag[tag].push({
-            ...img,
+            id: img.id,
+            weight: img.weight,
             index: index + 1,
+            tags: img.tags,
+            ...(img.description && { description: img.description }),
           });
         });
       });
@@ -333,10 +341,10 @@ export async function POST(req: NextRequest) {
 
       // Prepare images for multimodal API call - ensure we have valid image data
       moodboardImages = moodboard.images
-        .filter((img) => img.url || img.base64) // Only include images with valid data
+        .filter((img) => img.url ?? img.base64) // Only include images with valid data
         .map((img) => ({
           type: "image" as const,
-          image: img.url || `data:image/jpeg;base64,${img.base64}`,
+          image: img.url ?? `data:image/jpeg;base64,${img.base64}`,
         }));
     }
 
@@ -415,7 +423,7 @@ ${includeAudio ? "- Audio Cue: Sound design, dialogue, ambient sounds, music" : 
 ${
   moodboard?.enabled
     ? `MOODBOARD INTEGRATION INSTRUCTIONS:
-- Analyze the provided ${moodboard.images?.length || 0} reference image(s)
+- Analyze the provided ${moodboard.images?.length ?? 0} reference image(s)
 - Extract visual elements relevant to each VEO3 section
 - Prioritize images with higher weight values
 - Maintain consistency with the original prompt intent
@@ -488,7 +496,7 @@ Your output will be automatically formatted for VEO3 usage.`,
       schema: veo3Schema,
       // Explicitly specify schema name and description for better LLM guidance
       schemaName: "VEO3VideoPromptEnhancement",
-      schemaDescription: `Enhanced VEO3 video prompt with dynamic structured output. Contains ${includeAudio ? "audio-enabled" : "audio-disabled"} sections${hasCharacterSpeech ? " with character speech extraction" : ""}${focusTypes.length > 0 ? ` and focus enhancements for: ${focusTypes.join(", ")}` : ""}${moodboard?.enabled ? ` with ${moodboard.images?.length || 0} moodboard image references` : ""}. Target length: ${targetChars} characters.`,
+      schemaDescription: `Enhanced VEO3 video prompt with dynamic structured output. Contains ${includeAudio ? "audio-enabled" : "audio-disabled"} sections${hasCharacterSpeech ? " with character speech extraction" : ""}${focusTypes.length > 0 ? ` and focus enhancements for: ${focusTypes.join(", ")}` : ""}${moodboard?.enabled ? ` with ${moodboard.images?.length ?? 0} moodboard image references` : ""}. Target length: ${targetChars} characters.`,
       // LangSmith telemetry integration via AI SDK
       experimental_telemetry: AISDKExporter.getSettings({
         runName: "VEO3_Prompt_Enhancement",
@@ -498,7 +506,7 @@ Your output will be automatically formatted for VEO3 usage.`,
           model_used: model,
           focus_types: focusTypes.join(","),
           character_limit: customLimit,
-          has_moodboard: moodboard?.enabled || false,
+          has_moodboard: moodboard?.enabled ?? false,
         },
       }),
     });
@@ -536,7 +544,7 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
       characterLimit: maxChars,
       targetCharacters: targetChars,
       model: modelConfig.name,
-      focusTypes: structuredData.focus_areas || focusTypes,
+      focusTypes: structuredData.focus_areas ?? focusTypes,
       includeAudio,
       metadata: {
         structuredData,
@@ -561,12 +569,12 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
         moodboard: moodboard?.enabled
           ? {
               enabled: true,
-              imageCount: moodboard.images?.length || 0,
+              imageCount: moodboard.images?.length ?? 0,
               tags: [
-                ...new Set(moodboard.images?.flatMap((img) => img.tags) || []),
+                ...new Set(moodboard.images?.flatMap((img) => img.tags) ?? []),
               ],
               totalWeight:
-                moodboard.images?.reduce((sum, img) => sum + img.weight, 0) ||
+                moodboard.images?.reduce((sum, img) => sum + img.weight, 0) ??
                 0,
             }
           : {
@@ -598,14 +606,14 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
       );
     }
 
-    if (error instanceof Error && error.message?.includes("rate limit")) {
+    if (error instanceof Error && error.message.includes("rate limit")) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again in a moment." },
         { status: 429 }
       );
     }
 
-    if (error instanceof Error && error.message?.includes("content filter")) {
+    if (error instanceof Error && error.message.includes("content filter")) {
       return NextResponse.json(
         {
           error:

@@ -1,32 +1,38 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
-import { Button } from '@turbo-super/ui';
-import { Badge } from '@turbo-super/ui';
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+} from "@turbo-super/ui";
 // Simple Progress component since it's not available in UI library
 function Progress({ value, className }: { value: number; className?: string }) {
   return (
     <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
-      <div 
+      <div
         className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out"
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
       />
     </div>
   );
 }
-import { 
-  Loader2, 
-  CheckCircle, 
-  XCircle, 
-  Download, 
-  Copy, 
+import {
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Download,
+  Copy,
   RefreshCw,
   Video,
   Clock,
-  AlertCircle
-} from 'lucide-react';
-import { toast } from 'sonner';
+  AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
 
 interface Veo3StatusClientProps {
   generationId: string;
@@ -41,26 +47,32 @@ interface GenerationData {
   videoCount: number;
   createdAt: string;
   fileIds: string[]; // Array of file IDs from SuperDuperAI
-  status: 'pending' | 'processing' | 'completed' | 'error';
+  status: "pending" | "processing" | "completed" | "error";
   progress: number;
-  videos: Array<{
+  videos: {
     fileId: string;
     url?: string;
     thumbnailUrl?: string;
-    status: 'pending' | 'processing' | 'completed' | 'error';
-  }>;
+    status: "pending" | "processing" | "completed" | "error";
+  }[];
 }
 
 interface FileStatus {
   id: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'error';
+  status: "pending" | "in_progress" | "completed" | "error";
   url?: string;
   thumbnailUrl?: string;
   error?: string;
 }
 
-export default function Veo3StatusClient({ generationId, sessionId, locale }: Veo3StatusClientProps) {
-  const [generationData, setGenerationData] = useState<GenerationData | null>(null);
+export default function Veo3StatusClient({
+  generationId,
+  sessionId,
+  locale,
+}: Veo3StatusClientProps) {
+  const [generationData, setGenerationData] = useState<GenerationData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,131 +80,161 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
   // Load generation data from localStorage
   const loadGenerationData = useCallback(() => {
     try {
-      console.log('🔍 Loading generation data for:', generationId);
-      console.log('🔍 SessionId:', sessionId);
-      console.log('🔍 LocalStorage key:', `veo3_generation_${generationId}`);
-      
+      console.log("🔍 Loading generation data for:", generationId);
+      console.log("🔍 SessionId:", sessionId);
+      console.log("🔍 LocalStorage key:", `veo3_generation_${generationId}`);
+
       const stored = localStorage.getItem(`veo3_generation_${generationId}`);
-      console.log('🔍 Stored data:', stored);
-      
+      console.log("🔍 Stored data:", stored);
+
       if (stored) {
         const data = JSON.parse(stored) as GenerationData;
-        console.log('✅ Loaded data from localStorage:', data);
+        console.log("✅ Loaded data from localStorage:", data);
         setGenerationData(data);
         return data;
       }
-      
+
       // If no data in localStorage but we have sessionId, create initial data
       if (sessionId) {
-        console.log('🆕 Creating initial data for sessionId:', sessionId);
+        console.log("🆕 Creating initial data for sessionId:", sessionId);
         const initialData: GenerationData = {
           generationId,
           sessionId,
-          prompt: 'Loading...',
+          prompt: "Loading...",
           videoCount: 1,
           createdAt: new Date().toISOString(),
           fileIds: [],
-          status: 'pending',
+          status: "pending",
           progress: 0,
-          videos: []
+          videos: [],
         };
-        
-        localStorage.setItem(`veo3_generation_${generationId}`, JSON.stringify(initialData));
+
+        localStorage.setItem(
+          `veo3_generation_${generationId}`,
+          JSON.stringify(initialData)
+        );
         setGenerationData(initialData);
         return initialData;
       }
-      
-      console.log('❌ No data found and no sessionId');
+
+      console.log("❌ No data found and no sessionId");
       return null;
     } catch (err) {
-      console.error('Error loading generation data:', err);
+      console.error("Error loading generation data:", err);
       return null;
     }
   }, [generationId, sessionId]);
 
   // Save generation data to localStorage
-  const saveGenerationData = useCallback((data: GenerationData) => {
-    try {
-      localStorage.setItem(`veo3_generation_${generationId}`, JSON.stringify(data));
-      setGenerationData(data);
-    } catch (err) {
-      console.error('Error saving generation data:', err);
-    }
-  }, [generationId]);
+  const saveGenerationData = useCallback(
+    (data: GenerationData) => {
+      try {
+        localStorage.setItem(
+          `veo3_generation_${generationId}`,
+          JSON.stringify(data)
+        );
+        setGenerationData(data);
+      } catch (err) {
+        console.error("Error saving generation data:", err);
+      }
+    },
+    [generationId]
+  );
 
   // Check file status via API
-  const checkFileStatus = useCallback(async (fileId: string): Promise<FileStatus | null> => {
-    try {
-      const response = await fetch(`/api/file/${fileId}`);
-      if (!response.ok) {
-        return null;
-      }
-      
-      const data = await response.json();
-      return {
-        id: fileId,
-        status: data.status as 'pending' | 'in_progress' | 'completed' | 'error',
-        url: data.url,
-        thumbnailUrl: data.thumbnailUrl,
-        error: data.error
-      };
-    } catch (err) {
-      console.error(`Error checking file status for ${fileId}:`, err);
-      return null;
-    }
-  }, []);
-
-  // Update video statuses
-  const updateVideoStatuses = useCallback(async (data: GenerationData) => {
-    if (!data.fileIds.length) return data;
-
-    const updatedVideos = await Promise.all(
-      data.fileIds.map(async (fileId) => {
-        const fileStatus = await checkFileStatus(fileId);
-        if (!fileStatus) {
-          return {
-            fileId,
-            status: 'error' as const,
-          };
+  const checkFileStatus = useCallback(
+    async (fileId: string): Promise<FileStatus | null> => {
+      try {
+        const response = await fetch(`/api/file/${fileId}`);
+        if (!response.ok) {
+          return null;
         }
 
+        const data = await response.json();
         return {
-          fileId,
-          status: fileStatus.status === 'in_progress' ? 'processing' as const : 
-                 fileStatus.status === 'completed' ? 'completed' as const :
-                 fileStatus.status === 'error' ? 'error' as const : 'pending' as const,
-          url: fileStatus.url,
-          thumbnailUrl: fileStatus.thumbnailUrl,
+          id: fileId,
+          status: data.status as
+            | "pending"
+            | "in_progress"
+            | "completed"
+            | "error",
+          url: data.url,
+          thumbnailUrl: data.thumbnailUrl,
+          error: data.error,
         };
-      })
-    );
+      } catch (err) {
+        console.error(`Error checking file status for ${fileId}:`, err);
+        return null;
+      }
+    },
+    []
+  );
 
-    // Calculate overall progress
-    const completedCount = updatedVideos.filter(v => v.status === 'completed').length;
-    const processingCount = updatedVideos.filter(v => v.status === 'processing').length;
-    const errorCount = updatedVideos.filter(v => v.status === 'error').length;
-    
-    const progress = (completedCount / data.videoCount) * 100;
-    
-    let overallStatus: GenerationData['status'] = 'pending';
-    if (errorCount > 0) {
-      overallStatus = 'error';
-    } else if (completedCount === data.videoCount) {
-      overallStatus = 'completed';
-    } else if (processingCount > 0 || completedCount > 0) {
-      overallStatus = 'processing';
-    }
+  // Update video statuses
+  const updateVideoStatuses = useCallback(
+    async (data: GenerationData) => {
+      if (!data.fileIds.length) return data;
 
-    const updatedData = {
-      ...data,
-      videos: updatedVideos,
-      progress,
-      status: overallStatus,
-    };
+      const updatedVideos = await Promise.all(
+        data.fileIds.map(async (fileId) => {
+          const fileStatus = await checkFileStatus(fileId);
+          if (!fileStatus) {
+            return {
+              fileId,
+              status: "error" as const,
+            };
+          }
 
-    saveGenerationData(updatedData);
-    return updatedData;
-  }, [checkFileStatus, saveGenerationData]);
+          return {
+            fileId,
+            status:
+              fileStatus.status === "in_progress"
+                ? ("processing" as const)
+                : fileStatus.status === "completed"
+                  ? ("completed" as const)
+                  : fileStatus.status === "error"
+                    ? ("error" as const)
+                    : ("pending" as const),
+            url: fileStatus.url,
+            thumbnailUrl: fileStatus.thumbnailUrl,
+          };
+        })
+      );
+
+      // Calculate overall progress
+      const completedCount = updatedVideos.filter(
+        (v) => v.status === "completed"
+      ).length;
+      const processingCount = updatedVideos.filter(
+        (v) => v.status === "processing"
+      ).length;
+      const errorCount = updatedVideos.filter(
+        (v) => v.status === "error"
+      ).length;
+
+      const progress = (completedCount / data.videoCount) * 100;
+
+      let overallStatus: GenerationData["status"] = "pending";
+      if (errorCount > 0) {
+        overallStatus = "error";
+      } else if (completedCount === data.videoCount) {
+        overallStatus = "completed";
+      } else if (processingCount > 0 || completedCount > 0) {
+        overallStatus = "processing";
+      }
+
+      const updatedData = {
+        ...data,
+        videos: updatedVideos,
+        progress,
+        status: overallStatus,
+      };
+
+      saveGenerationData(updatedData as GenerationData);
+      return updatedData;
+    },
+    [checkFileStatus, saveGenerationData]
+  );
 
   // Refresh status
   const refreshStatus = useCallback(async () => {
@@ -202,8 +244,8 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
     try {
       await updateVideoStatuses(generationData);
     } catch (err) {
-      console.error('Error refreshing status:', err);
-      setError('Failed to refresh status');
+      console.error("Error refreshing status:", err);
+      setError("Failed to refresh status");
     } finally {
       setRefreshing(false);
     }
@@ -217,71 +259,93 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
 
       try {
         let data = loadGenerationData();
-        
+
         if (!data) {
-          console.log('❌ No generation data found, checking all localStorage keys...');
+          console.log(
+            "❌ No generation data found, checking all localStorage keys..."
+          );
           // Debug: show all localStorage keys
           for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key?.startsWith('veo3_')) {
-              console.log('📦 Found key:', key, localStorage.getItem(key));
+            if (key?.startsWith("veo3_")) {
+              console.log("📦 Found key:", key, localStorage.getItem(key));
             }
           }
-          setError('Generation data not found. Please check your link or create a new generation.');
+          setError(
+            "Generation data not found. Please check your link or create a new generation."
+          );
           return;
         }
 
-        console.log('✅ Successfully loaded generation data:', data);
+        console.log("✅ Successfully loaded generation data:", data);
 
         // If we have fileIds, update their statuses
         if (data.fileIds.length > 0) {
-          console.log('🔄 Updating video statuses for', data.fileIds.length, 'files');
-          data = await updateVideoStatuses(data);
+          console.log(
+            "🔄 Updating video statuses for",
+            data.fileIds.length,
+            "files"
+          );
+          data = (await updateVideoStatuses(data)) as GenerationData;
         } else {
-          console.log('⏳ No fileIds yet, waiting for webhook or manual update');
+          console.log(
+            "⏳ No fileIds yet, waiting for webhook or manual update"
+          );
         }
-
       } catch (err) {
-        console.error('Error initializing data:', err);
-        setError('Failed to load generation data');
+        console.error("Error initializing data:", err);
+        setError("Failed to load generation data");
       } finally {
         setLoading(false);
       }
     };
 
-    initializeData();
+    void initializeData();
   }, [loadGenerationData, updateVideoStatuses]);
 
   // Auto-refresh for processing videos
   useEffect(() => {
-    if (!generationData || generationData.status === 'completed' || generationData.status === 'error') {
+    if (
+      !generationData ||
+      generationData.status === "completed" ||
+      generationData.status === "error"
+    ) {
       return;
     }
 
     const interval = setInterval(() => {
-      refreshStatus();
+      void refreshStatus();
     }, 5000); // Refresh every 5 seconds
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [generationData, refreshStatus]);
 
   // Helper function to parse file IDs from generationId
   const parseFileIds = (genId: string): string[] => {
     // Check if generationId contains comma-separated file IDs
-    if (genId.includes(',')) {
-      return genId.split(',').map(id => id.trim()).filter(Boolean);
+    if (genId.includes(",")) {
+      return genId
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
     }
-    
+
     // Check if it's a Stripe session ID (starts with cs_)
-    if (genId.startsWith('cs_')) {
+    if (genId.startsWith("cs_")) {
       return []; // Stripe session IDs should not be treated as file IDs
     }
-    
+
     // Check if it's a single SuperDuperAI file ID (not starting with veo3_ and not Stripe session)
-    if (genId.length > 10 && !genId.startsWith('veo3_') && !genId.startsWith('cs_')) {
+    if (
+      genId.length > 10 &&
+      !genId.startsWith("veo3_") &&
+      !genId.startsWith("cs_")
+    ) {
       return [genId];
     }
-    
+
     return [];
   };
 
@@ -301,36 +365,39 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
   }, [generationData, generationId, saveGenerationData]);
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+    void navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard!");
   };
 
   // Debug function to create test data
   const createTestData = () => {
     const testData: GenerationData = {
       generationId,
-      sessionId: sessionId || generationId,
-      prompt: 'Test prompt: A beautiful sunset over mountains',
+      sessionId: sessionId ?? generationId,
+      prompt: "Test prompt: A beautiful sunset over mountains",
       videoCount: 1,
       createdAt: new Date().toISOString(),
       fileIds: [],
-      status: 'pending',
+      status: "pending",
       progress: 0,
-      videos: []
+      videos: [],
     };
-    
-    localStorage.setItem(`veo3_generation_${generationId}`, JSON.stringify(testData));
+
+    localStorage.setItem(
+      `veo3_generation_${generationId}`,
+      JSON.stringify(testData)
+    );
     setGenerationData(testData);
-    toast.success('Test data created!');
+    toast.success("Test data created!");
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'processing':
+      case "processing":
         return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
-      case 'error':
+      case "error":
         return <XCircle className="h-5 w-5 text-red-500" />;
       default:
         return <Clock className="h-5 w-5 text-gray-500" />;
@@ -339,21 +406,24 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: 'secondary',
-      processing: 'default',
-      completed: 'default',
-      error: 'destructive'
+      pending: "secondary",
+      processing: "default",
+      completed: "default",
+      error: "destructive",
     } as const;
 
     const colors = {
-      pending: 'bg-gray-100 text-gray-800',
-      processing: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800',
-      error: 'bg-red-100 text-red-800'
+      pending: "bg-gray-100 text-gray-800",
+      processing: "bg-blue-100 text-blue-800",
+      completed: "bg-green-100 text-green-800",
+      error: "bg-red-100 text-red-800",
     };
 
     return (
-      <Badge variant={variants[status as keyof typeof variants]} className={colors[status as keyof typeof colors]}>
+      <Badge
+        variant={variants[status as keyof typeof variants]}
+        className={colors[status as keyof typeof colors]}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -381,7 +451,12 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
         </CardHeader>
         <CardContent>
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()} variant="outline">
+          <Button
+            onClick={() => {
+              window.location.reload();
+            }}
+            variant="outline"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry
           </Button>
@@ -398,7 +473,8 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            No generation data found for this ID. Please check your link or create a new generation.
+            No generation data found for this ID. Please check your link or
+            create a new generation.
           </p>
           <Button asChild>
             <a href={`/${locale}/tool/veo3-prompt-generator`}>
@@ -426,7 +502,9 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
               variant="outline"
               size="sm"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </CardTitle>
@@ -434,17 +512,30 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Status</label>
+              <label
+                htmlFor={`status-${generationData.generationId}`}
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Status
+              </label>
               <div className="flex items-center gap-2 mt-1">
                 {getStatusIcon(generationData.status)}
                 {getStatusBadge(generationData.status)}
               </div>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Progress</label>
+              <label
+                htmlFor={`progress-${generationData.generationId}`}
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Progress
+              </label>
               <div className="mt-1">
-                <Progress value={generationData.progress} className="mb-1" />
+                <Progress
+                  value={generationData.progress}
+                  className="mb-1"
+                />
                 <span className="text-sm text-muted-foreground">
                   {Math.round(generationData.progress)}% Complete
                 </span>
@@ -453,23 +544,39 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
           </div>
 
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Prompt</label>
-            <p className="mt-1 text-sm bg-muted p-3 rounded-md">{generationData.prompt}</p>
+            <label
+              htmlFor={`prompt-${generationData.generationId}`}
+              className="text-sm font-medium text-muted-foreground"
+            >
+              Prompt
+            </label>
+            <p className="mt-1 text-sm bg-muted p-3 rounded-md">
+              {generationData.prompt}
+            </p>
           </div>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>Videos: {generationData.videoCount}</span>
-            <span>Created: {new Date(generationData.createdAt).toLocaleString()}</span>
+            <span>
+              Created: {new Date(generationData.createdAt).toLocaleString()}
+            </span>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Generation ID</label>
+            <label
+              htmlFor={`generation-id-${generationData.generationId}`}
+              className="text-sm font-medium text-muted-foreground"
+            >
+              Generation ID
+            </label>
             <div className="flex items-center gap-2 mt-1">
               <code className="text-xs bg-muted px-2 py-1 rounded flex-1 break-all">
                 {generationData.generationId}
               </code>
               <Button
-                onClick={() => copyToClipboard(generationData.generationId)}
+                onClick={() => {
+                  copyToClipboard(generationData.generationId);
+                }}
                 variant="outline"
                 size="sm"
               >
@@ -489,31 +596,45 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {generationData.videos.map((video, index) => (
-                <div key={video.fileId} className="border rounded-lg p-4">
+                <div
+                  key={video.fileId}
+                  className="border rounded-lg p-4"
+                >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium">Video {index + 1}</span>
+                    <span className="text-sm font-medium">
+                      Video {index + 1}
+                    </span>
                     {getStatusBadge(video.status)}
                   </div>
-                  
+
                   {video.thumbnailUrl && (
                     <div className="mb-3">
-                      <img 
-                        src={video.thumbnailUrl} 
+                      <Image
+                        src={video.thumbnailUrl}
                         alt={`Video ${index + 1} thumbnail`}
+                        width={400}
+                        height={128}
                         className="w-full h-32 object-cover rounded"
                       />
                     </div>
                   )}
-                  
+
                   <div className="space-y-2">
                     <div>
-                      <label className="text-xs text-muted-foreground">File ID</label>
+                      <label
+                        htmlFor={`file-id-${video.fileId}`}
+                        className="text-xs text-muted-foreground"
+                      >
+                        File ID
+                      </label>
                       <div className="flex items-center gap-1">
                         <code className="text-xs bg-muted px-1 py-0.5 rounded flex-1 break-all">
                           {video.fileId}
                         </code>
                         <Button
-                          onClick={() => copyToClipboard(video.fileId)}
+                          onClick={() => {
+                            copyToClipboard(video.fileId);
+                          }}
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0"
@@ -522,10 +643,17 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
                         </Button>
                       </div>
                     </div>
-                    
+
                     {video.url && (
-                      <Button asChild className="w-full">
-                        <a href={video.url} target="_blank" rel="noopener noreferrer">
+                      <Button
+                        asChild
+                        className="w-full"
+                      >
+                        <a
+                          href={video.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <Download className="h-4 w-4 mr-2" />
                           Download Video
                         </a>
@@ -540,36 +668,40 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
       )}
 
       {/* Waiting for webhook message */}
-      {generationData.videos.length === 0 && generationData.fileIds.length === 0 && generationData.generationId.startsWith('cs_') && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-500" />
-              Waiting for Payment Confirmation
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Your payment is being processed. Once confirmed, video generation will begin automatically.
-              </p>
-              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Next steps:</strong>
+      {generationData.videos.length === 0 &&
+        generationData.fileIds.length === 0 &&
+        generationData.generationId.startsWith("cs_") && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-blue-500" />
+                Waiting for Payment Confirmation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Your payment is being processed. Once confirmed, video
+                  generation will begin automatically.
                 </p>
-                <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 space-y-1">
-                  <li>• Payment confirmation (usually instant)</li>
-                  <li>• Video generation starts automatically</li>
-                  <li>• This page will update with progress</li>
-                </ul>
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Next steps:</strong>
+                  </p>
+                  <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 space-y-1">
+                    <li>• Payment confirmation (usually instant)</li>
+                    <li>• Video generation starts automatically</li>
+                    <li>• This page will update with progress</li>
+                  </ul>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This page will automatically refresh every 5 seconds to check
+                  for updates.
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                This page will automatically refresh every 5 seconds to check for updates.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Help Section */}
       <Card>
@@ -582,22 +714,26 @@ export default function Veo3StatusClient({ generationId, sessionId, locale }: Ve
               • Video generation typically takes 2-5 minutes per video
             </p>
             <p className="text-sm text-muted-foreground">
-              • This page will automatically refresh every 5 seconds while processing
+              • This page will automatically refresh every 5 seconds while
+              processing
             </p>
             <p className="text-sm text-muted-foreground">
               • You can bookmark this page to check status later
             </p>
             <p className="text-sm text-muted-foreground">
-              • If you encounter issues, try refreshing the page or contact support
+              • If you encounter issues, try refreshing the page or contact
+              support
             </p>
           </div>
-          
+
           {error && (
             <div className="pt-2 border-t">
-              <p className="text-sm text-muted-foreground mb-2">Debug options:</p>
-              <Button 
-                onClick={createTestData} 
-                variant="outline" 
+              <p className="text-sm text-muted-foreground mb-2">
+                Debug options:
+              </p>
+              <Button
+                onClick={createTestData}
+                variant="outline"
                 size="sm"
                 className="text-xs"
               >

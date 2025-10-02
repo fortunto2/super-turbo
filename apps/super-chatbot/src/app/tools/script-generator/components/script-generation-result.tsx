@@ -263,7 +263,7 @@ const handleExportPdf = async (script: string) => {
   doc.setFontSize(12);
 
   // Обрабатываем текст для правильного отображения
-  const processedScript = script.replace(/[^\x00-\x7F]/g, (char) => {
+  const processedScript = script.replace(/[^\u0000-\u007F]/g, (char) => {
     // Заменяем проблемные символы на ASCII эквиваленты
     const replacements: { [key: string]: string } = {
       а: "a",
@@ -380,11 +380,12 @@ const handleExportPdf = async (script: string) => {
           // Жирный текст внутри параграфа
           const strongRegex = /\*\*(.+?)\*\*/g;
           let lastIndex = 0;
-          let match;
+          let match: RegExpExecArray | null;
           let x = margin;
           const localY = y;
           const text = String(token.text ?? "");
-          while ((match = strongRegex.exec(text)) !== null) {
+          match = strongRegex.exec(text);
+          while (match !== null) {
             const before = text.slice(lastIndex, match.index);
             if (before) {
               doc.setFont("helvetica", "normal");
@@ -396,6 +397,7 @@ const handleExportPdf = async (script: string) => {
             x += doc.getTextWidth(String(match[1] ?? ""));
             doc.setFont("helvetica", "normal");
             lastIndex = match.index + match[0].length;
+            match = strongRegex.exec(text);
           }
           const after = text.slice(lastIndex);
           if (after) {

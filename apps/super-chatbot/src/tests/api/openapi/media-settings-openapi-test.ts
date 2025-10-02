@@ -207,17 +207,17 @@ async function testMediaSettingsWithOpenAPI() {
     const videoModelSample = videoConfig.availableModels[0];
 
     console.log("📋 Image model sample:", {
-      name: imageModelSample.name,
-      type: imageModelSample.type,
-      source: imageModelSample.source,
-      hasRequiredFields: !!imageModelSample.name,
+      name: imageModelSample?.name,
+      type: imageModelSample?.type,
+      source: imageModelSample?.source,
+      hasRequiredFields: !!imageModelSample?.name,
     });
 
     console.log("📋 Video model sample:", {
-      name: videoModelSample.name,
-      type: videoModelSample.type,
-      source: videoModelSample.source,
-      hasRequiredFields: !!videoModelSample.name,
+      name: videoModelSample?.name,
+      type: videoModelSample?.type,
+      source: videoModelSample?.source,
+      hasRequiredFields: !!videoModelSample?.name,
     });
 
     // Test model filtering by type

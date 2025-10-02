@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useRef } from "react";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
 import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 import type { ImageEventHandler } from "@/artifacts/image/stores/image-websocket-store";
@@ -13,7 +13,7 @@ interface UseArtifactWebSocketOptions {
 export const useArtifactWebSocket = ({
   enabled = true,
 }: UseArtifactWebSocketOptions = {}) => {
-  const { artifact, setArtifact } = useArtifact();
+  const { artifact, setArtifact } = useArtifactLegacy();
   const currentProjectIdRef = useRef<string | null>(null);
   const currentRequestIdRef = useRef<string | null>(null);
   const eventHandlerRef = useRef<ImageEventHandler | null>(null);

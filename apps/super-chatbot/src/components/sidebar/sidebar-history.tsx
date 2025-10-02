@@ -134,6 +134,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               chats: chatHistory.chats.filter((chat) => chat.id !== deleteId),
             }));
           }
+          return chatHistories;
         });
 
         return "Chat deleted successfully";

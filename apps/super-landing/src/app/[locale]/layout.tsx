@@ -20,9 +20,7 @@ export default function LocaleLayout({
     // or if locale changes during client-side navigation (though less common for lang attribute itself)
     if (currentLocale) {
       const htmlTag = document.documentElement;
-      if (htmlTag.lang !== currentLocale) {
-        htmlTag.lang = currentLocale;
-      }
+      htmlTag.lang = currentLocale;
     }
     // The dependency array ensures this runs if currentLocale changes,
     // although for a layout param, it's set on route change.

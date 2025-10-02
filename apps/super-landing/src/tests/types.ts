@@ -43,7 +43,7 @@ export interface TestMetadata {
   openGraph?: {
     images?: string[];
   };
-  other?: Record<string, any>;
+  other?: Record<string, unknown>;
 }
 
 // Типы для моков
@@ -101,7 +101,7 @@ export interface ApiTestConfig {
 
 export interface ApiResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
   status: number;
 }
@@ -141,16 +141,16 @@ export interface PerformanceTest {
 
 // Утилиты для тестов
 export type TestUtils = {
-  renderComponent: (props: TestGeneratorProps) => any;
-  simulateUserAction: (action: string, element: any) => void;
-  validateOutput: (expected: any, actual: any) => boolean;
+  renderComponent: (props: TestGeneratorProps) => React.ReactElement;
+  simulateUserAction: (action: string, element: HTMLElement) => void;
+  validateOutput: (expected: unknown, actual: unknown) => boolean;
   cleanup: () => void;
 };
 
 // Типы для моков компонентов
 export interface MockComponentProps {
   children?: React.ReactNode;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface MockComponent {
@@ -163,7 +163,7 @@ export interface TestEnvironment {
   name: string;
   setup: () => Promise<void>;
   teardown: () => Promise<void>;
-  mocks: Record<string, any>;
+  mocks: Record<string, unknown>;
 }
 
 // Типы для coverage отчетов

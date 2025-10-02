@@ -250,9 +250,8 @@ export class TemporalAnalyzer {
 
           console.log(`🕒 TemporalAnalyzer: Found match:`, {
             url: media.url,
-            confidence: Math.round(confidence * 100) + "%",
-            temporalDistance:
-              Math.round(temporalDistance / (1000 * 60)) + " minutes ago",
+            confidence: `${Math.round(confidence * 100)}%`,
+            temporalDistance: `${Math.round(temporalDistance / (1000 * 60))} minutes ago`,
           });
         }
       }
@@ -286,7 +285,7 @@ export class TemporalAnalyzer {
         );
         const closestDistance = closest
           ? Math.abs(closest.timestamp.getTime() - targetTime.getTime())
-          : Infinity;
+          : Number.POSITIVE_INFINITY;
 
         return currentDistance < closestDistance ? current : closest;
       },
@@ -313,7 +312,7 @@ export class TemporalAnalyzer {
       (m) => m.timestamp >= targetDate && m.timestamp < nextDay
     );
 
-    return dayMedia.length > 0 ? dayMedia[dayMedia.length - 1] : null;
+    return dayMedia.length > 0 ? dayMedia[dayMedia.length - 1] || null : null;
   }
 
   /**
@@ -339,7 +338,9 @@ export class TemporalAnalyzer {
       return mediaDate >= weekStart && mediaDate < weekEnd;
     });
 
-    return weekMedia.length > 0 ? weekMedia[weekMedia.length - 1] : null;
+    return weekMedia.length > 0
+      ? weekMedia[weekMedia.length - 1] || null
+      : null;
   }
 
   /**
@@ -359,14 +360,14 @@ export class TemporalAnalyzer {
    * Находит последний медиа-файл
    */
   private findLastMedia(media: ChatMedia[]): ChatMedia | null {
-    return media.length > 0 ? media[media.length - 1] : null;
+    return media.length > 0 ? media[media.length - 1] || null : null;
   }
 
   /**
    * Находит предыдущий медиа-файл
    */
   private findPreviousMedia(media: ChatMedia[]): ChatMedia | null {
-    return media.length > 1 ? media[media.length - 2] : null;
+    return media.length > 1 ? media[media.length - 2] || null : null;
   }
 
   /**
@@ -381,7 +382,9 @@ export class TemporalAnalyzer {
       context.currentTime.getTime() - maxMinutes * 60 * 1000
     );
     const recentMedia = media.filter((m) => m.timestamp >= cutoffTime);
-    return recentMedia.length > 0 ? recentMedia[recentMedia.length - 1] : null;
+    return recentMedia.length > 0
+      ? recentMedia[recentMedia.length - 1] || null
+      : null;
   }
 
   /**
@@ -396,7 +399,7 @@ export class TemporalAnalyzer {
       context.currentTime.getTime() - minHours * 60 * 60 * 1000
     );
     const oldMedia = media.filter((m) => m.timestamp <= cutoffTime);
-    return oldMedia.length > 0 ? oldMedia[0] : null;
+    return oldMedia.length > 0 ? oldMedia[0] || null : null;
   }
 
   /**
@@ -435,8 +438,8 @@ export class TemporalAnalyzer {
     });
 
     return timeFilteredMedia.length > 0
-      ? timeFilteredMedia[timeFilteredMedia.length - 1]
-      : todayMedia[todayMedia.length - 1];
+      ? timeFilteredMedia[timeFilteredMedia.length - 1] || null
+      : todayMedia[todayMedia.length - 1] || null;
   }
 
   /**

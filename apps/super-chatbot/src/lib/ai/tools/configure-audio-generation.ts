@@ -270,9 +270,12 @@ export const configureAudioGeneration = (params?: CreateAudioDocumentParams) =>
         try {
           // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
           // TODO: Refactor to use proper parameter passing mechanism
-          const result = await params.createDocument.execute({
-            title: JSON.stringify(audioParams),
-            kind: "audio",
+          const result = await params.createDocument({
+            session: params.session,
+            dataStream: {
+              title: JSON.stringify(audioParams),
+              kind: "audio",
+            },
           });
 
           console.log("🎵 ✅ CREATE DOCUMENT RESULT:", result);

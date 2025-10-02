@@ -21,7 +21,7 @@ import type {
   VideoGenerationConfig,
   VideoSettings as VideoSettingsType,
 } from "@/lib/types/media-settings";
-import { useArtifact } from "@/hooks/use-artifact";
+import { useArtifactLegacy } from "@/hooks/use-artifact";
 import { ScriptArtifactViewer } from "@/artifacts/text/client";
 import { Button, cn } from "@turbo-super/ui";
 
@@ -51,7 +51,7 @@ const PurePreviewMessage = ({
   append?: UseChatHelpers["append"];
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
-  const { setArtifact } = useArtifact();
+  const { setArtifact } = useArtifactLegacy();
 
   return (
     <AnimatePresence>
@@ -123,7 +123,7 @@ const PurePreviewMessage = ({
                       const jsonMatch = part.text.match(
                         /```json\s*({[\s\S]*?})\s*```/
                       );
-                      if (jsonMatch) {
+                      if (jsonMatch?.[1]) {
                         artifact = JSON.parse(jsonMatch[1]);
                       }
                     } catch {}
@@ -339,7 +339,7 @@ const PurePreviewMessage = ({
                           }}
                           selectedChatModel={selectedChatModel}
                           selectedVisibilityType={selectedVisibilityType}
-                          append={append}
+                          {...(append && { append })}
                         />
                       </div>
                     );
@@ -365,7 +365,7 @@ const PurePreviewMessage = ({
                           }}
                           selectedChatModel={selectedChatModel}
                           selectedVisibilityType={selectedVisibilityType}
-                          append={append}
+                          {...(append && { append })}
                         />
                       </div>
                     );
@@ -374,6 +374,8 @@ const PurePreviewMessage = ({
                   return null;
                 }
               }
+
+              return null;
             })}
 
             {!isReadonly && (

@@ -4,9 +4,24 @@ const localeCookieName = "NEXT_LOCALE";
 
 export const i18nServer: LocaleConfig = {
   defaultLocale: "en",
-  locales: ["en", "ru", "tr", "es", "hi"],
+  locales: [
+    "en",
+    "ru",
+    "tr",
+    "es",
+    "hi",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "pl",
+    "uk",
+    "zh",
+    "ja",
+    "ko",
+    "ar",
+  ],
   localeDetection: true, // automatic detection by headers
-  domains: undefined,
   cookieName: localeCookieName,
   cookieMaxAge: 31536000, // 1 year in seconds
   preserveRouteOnHome: true, // flag for clean URLs on home page
@@ -19,6 +34,16 @@ export const localeMapServer: LocaleMap = {
   tr: "Turkish",
   es: "Spanish",
   hi: "Hindi",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  pl: "Polish",
+  uk: "Ukrainian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic",
 };
 
 export const translationConfigServer: TranslationConfig = {

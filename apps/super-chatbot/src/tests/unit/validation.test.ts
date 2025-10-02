@@ -48,7 +48,7 @@ describe("Data Validation", () => {
       const result = userSchema.safeParse(invalidUser);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["email"]);
+        expect(result.error.issues[0]?.path).toEqual(["email"]);
       }
     });
 
@@ -62,7 +62,7 @@ describe("Data Validation", () => {
       const result = userSchema.safeParse(invalidUser);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["id"]);
+        expect(result.error.issues[0]?.path).toEqual(["id"]);
       }
     });
 
@@ -76,7 +76,7 @@ describe("Data Validation", () => {
       const result = userSchema.safeParse(invalidUser);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["name"]);
+        expect(result.error.issues[0]?.path).toEqual(["name"]);
       }
     });
   });
@@ -106,7 +106,7 @@ describe("Data Validation", () => {
       const result = chatMessageSchema.safeParse(invalidMessage);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["role"]);
+        expect(result.error.issues[0]?.path).toEqual(["role"]);
       }
     });
 
@@ -122,7 +122,7 @@ describe("Data Validation", () => {
       const result = chatMessageSchema.safeParse(invalidMessage);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["attachments", 0]);
+        expect(result.error.issues[0]?.path).toEqual(["attachments", 0]);
       }
     });
   });
@@ -150,7 +150,7 @@ describe("Data Validation", () => {
       const result = imageGenerationSchema.safeParse(invalidGeneration);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["prompt"]);
+        expect(result.error.issues[0]?.path).toEqual(["prompt"]);
       }
     });
 
@@ -164,7 +164,7 @@ describe("Data Validation", () => {
       const result = imageGenerationSchema.safeParse(invalidGeneration);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["style"]);
+        expect(result.error.issues[0]?.path).toEqual(["style"]);
       }
     });
 
@@ -178,7 +178,7 @@ describe("Data Validation", () => {
       const result = imageGenerationSchema.safeParse(invalidGeneration);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual(["size"]);
+        expect(result.error.issues[0]?.path).toEqual(["size"]);
       }
     });
   });

@@ -4,9 +4,16 @@ import { myProvider } from "../providers";
 import { createAzure } from "@ai-sdk/azure";
 
 // Initialize Azure provider for VEO3
+const resourceName = process.env.AZURE_OPENAI_RESOURCE_NAME;
+const apiKey = process.env.AZURE_OPENAI_API_KEY;
+
+if (!resourceName || !apiKey) {
+  throw new Error("Azure OpenAI configuration is missing");
+}
+
 const azure = createAzure({
-  resourceName: process.env.AZURE_OPENAI_RESOURCE_NAME!,
-  apiKey: process.env.AZURE_OPENAI_API_KEY!,
+  resourceName,
+  apiKey,
   apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
 });
 
@@ -308,18 +315,18 @@ export const enhancePromptUnified = tool({
           originalPrompt,
           mediaType,
           enhancementLevel,
-          targetAudience,
+          ...(targetAudience && { targetAudience }),
           includeNegativePrompt,
-          modelHint,
+          ...(modelHint && { modelHint }),
         });
       } else if (mode === "veo3") {
         return await enhanceVEO3Prompt({
           originalPrompt,
           customLimit,
-          focusType,
+          ...(focusType && { focusType }),
           includeAudio,
-          promptData,
-          moodboard,
+          ...(promptData && { promptData }),
+          ...(moodboard && { moodboard }),
         });
       } else {
         throw new Error(`Unknown enhancement mode: ${mode}`);

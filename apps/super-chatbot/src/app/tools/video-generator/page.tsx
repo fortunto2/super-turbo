@@ -38,7 +38,7 @@ export default function VideoGeneratorPage() {
 
   // AICODE-NOTE: Video effects hook for auto-saving and side effects management
   useVideoEffects({
-    videoUrl: currentGeneration?.url,
+    videoUrl: currentGeneration?.url ?? "",
     status: generationStatus.status,
     prompt,
     hasInitialized,

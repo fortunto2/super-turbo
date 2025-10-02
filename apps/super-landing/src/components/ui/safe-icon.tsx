@@ -1,6 +1,6 @@
 "use client";
 
-import { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { forwardRef } from "react";
 
 interface SafeIconProps {

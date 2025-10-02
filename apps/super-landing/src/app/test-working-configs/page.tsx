@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+} from "@turbo-super/ui";
 
 const TEST_CONFIGS = [
   // Azure OpenAI конфигурации
@@ -36,7 +41,7 @@ export default function TestWorkingConfigsPage() {
   >({});
   const [isTesting, setIsTesting] = useState(false);
 
-  const testConfig = async (configName: string, type: string) => {
+  const testConfig = async (configName: string, _type: string) => {
     try {
       const response = await fetch("/api/test-config", {
         method: "POST",
@@ -55,7 +60,7 @@ export default function TestWorkingConfigsPage() {
         ...prev,
         [configName]: {
           status: response.ok ? "success" : "error",
-          error: result.error || "Unknown error",
+          error: result.error ?? "Unknown error",
         },
       }));
     } catch (error) {
@@ -196,7 +201,7 @@ export default function TestWorkingConfigsPage() {
                     </Badge>
                     {testResults[config.config]?.error && (
                       <p className="text-xs text-red-300 mt-1">
-                        {testResults[config.config].error}
+                        {testResults[config.config]?.error}
                       </p>
                     )}
                   </CardContent>
@@ -234,14 +239,16 @@ export default function TestWorkingConfigsPage() {
                     {testResults[config.config] && (
                       <div className="mt-2">
                         <Badge
-                          className={`${getStatusColor(testResults[config.config].status)} gap-1`}
+                          className={`${getStatusColor(testResults[config.config]?.status ?? "")} gap-1`}
                         >
-                          {getStatusIcon(testResults[config.config].status)}
-                          {testResults[config.config].status}
+                          {getStatusIcon(
+                            testResults[config.config]?.status ?? ""
+                          )}
+                          {testResults[config.config]?.status}
                         </Badge>
-                        {testResults[config.config].error && (
+                        {testResults[config.config]?.error && (
                           <p className="text-xs text-red-300 mt-1">
-                            {testResults[config.config].error}
+                            {testResults[config.config]?.error}
                           </p>
                         )}
                       </div>

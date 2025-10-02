@@ -44,7 +44,7 @@ export class SemanticContextAnalyzer {
   async findSimilarMedia(
     query: string,
     chatMedia: ChatMedia[],
-    threshold: number = 0.6
+    threshold = 0.6
   ): Promise<SemanticMatch[]> {
     console.log(
       `🔍 SemanticSearch: Searching for "${query}" in ${chatMedia.length} media files`

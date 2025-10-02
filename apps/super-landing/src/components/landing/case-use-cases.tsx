@@ -7,11 +7,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@turbo-super/ui';
+} from "@turbo-super/ui";
 import { default as Link } from "@/components/ui/optimized-link";
 import { Icons } from "@/components/ui/icons";
 import { SafeIcon } from "@/components/ui/safe-icon";
-import { LucideIcon } from "lucide-react";
 import { allCases } from ".contentlayer/generated";
 import { useTranslation } from "@/hooks/use-translation";
 import { useParams } from "next/navigation";
@@ -51,32 +50,36 @@ export function CaseUseCases() {
   const params = useParams();
   const locale = getValidLocale(params.locale);
   const { t } = useTranslation(locale);
-  const categoryDict = t("useCases.categories") as Record<string, string>;
+  const categoryDict = t("useCases.categories");
 
   // Автоматическое определение категорий на основе данных кейсов
   const categoriesMap = new Map<string, CategoryInfo>();
 
   // Собираем информацию о категориях
   allCases.forEach((caseItem) => {
-    const categoryTitle =
-      categoryDict[caseItem.category] || getCategoryTitle(caseItem.category);
+    const categoryTitle = String(
+      categoryDict[caseItem.category as keyof typeof categoryDict] ??
+        getCategoryTitle(caseItem.category)
+    );
     if (!categoriesMap.has(caseItem.category)) {
       categoriesMap.set(caseItem.category, {
         title: categoryTitle,
         icon: getCategoryIcon(caseItem.category),
         count: 1,
         latestDate: new Date(caseItem.date),
-        hasFeatured: caseItem.featured || false,
+        hasFeatured: caseItem.featured ?? false,
       });
     } else {
-      const info = categoriesMap.get(caseItem.category)!;
-      info.count += 1;
-      const caseDate = new Date(caseItem.date);
-      if (caseDate > info.latestDate) {
-        info.latestDate = caseDate;
-      }
-      if (caseItem.featured) {
-        info.hasFeatured = true;
+      const info = categoriesMap.get(caseItem.category);
+      if (info) {
+        info.count += 1;
+        const caseDate = new Date(caseItem.date);
+        if (caseDate > info.latestDate) {
+          info.latestDate = caseDate;
+        }
+        if (caseItem.featured) {
+          info.hasFeatured = true;
+        }
       }
     }
   });
@@ -100,6 +103,15 @@ export function CaseUseCases() {
       });
 
     const bestCase = casesInCategory[0];
+
+    if (!bestCase) {
+      return {
+        title: info.title,
+        description: "",
+        icon: info.icon,
+        url: "#",
+      };
+    }
 
     return {
       title: info.title,
@@ -130,8 +142,8 @@ export function CaseUseCases() {
         >
           {useCases.map((item, index) => {
             const IconComponent =
-              (Icons as Record<string, LucideIcon>)[item.icon] ||
-              (Icons as Record<string, LucideIcon>)["sparkles"];
+              (item.icon && item.icon in Icons ? Icons[item.icon] : null) ??
+              Icons.sparkles;
 
             return (
               <motion.div
@@ -193,7 +205,7 @@ function getCategoryIcon(category: string): string {
   // Ищем наиболее подходящий ключ
   for (const key of Object.keys(iconMap)) {
     if (category.toLowerCase().includes(key.toLowerCase())) {
-      return iconMap[key];
+      return iconMap[key] || "sparkles";
     }
   }
 

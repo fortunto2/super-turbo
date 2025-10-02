@@ -5,13 +5,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Badge,
 } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
-import {
-  Users,
-  FileText,
-  Calendar,
-} from "lucide-react";
+import { Users, FileText, Calendar } from "lucide-react";
 import { getProjectStats } from "@/lib/db/admin-project-queries";
 import { ProjectsTable } from "@/components/admin/projects-table";
 
@@ -68,10 +64,10 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
 
       {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        {statCards.map((stat, index) => {
+        {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={index}>
+            <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}

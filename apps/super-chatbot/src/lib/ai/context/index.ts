@@ -31,6 +31,7 @@ import { contextManager } from "./universal-context";
 import { ImageContextAnalyzer } from "./image-context-analyzer";
 import { VideoContextAnalyzer } from "./video-context-analyzer";
 import { AudioContextAnalyzer } from "./audio-context-analyzer";
+import type { ChatImage } from "../chat/image-context";
 
 // Регистрируем анализаторы
 contextManager.registerAnalyzer(new ImageContextAnalyzer());
@@ -87,7 +88,7 @@ export async function analyzeVideoContext(
   // Используем нашу улучшенную функцию анализа видео-контекста с полной интеграцией всех 4 систем
   const videoResult = await analyzeVideoContextDirect(
     userMessage,
-    chatImages,
+    chatImages.filter((img) => img?.url && img?.id) as ChatImage[], // Фильтруем валидные изображения
     currentAttachments,
     chatId,
     userId
@@ -137,7 +138,7 @@ export async function analyzeMediaContext(
 }
 
 // Экспорт системы кэширования
-export { contextCache, generateMessageHash, CacheUtils } from "./cache";
+export { contextCache, generateMessageHash } from "./cache";
 
 // Экспорт семантического поиска
 export { semanticAnalyzer, SemanticContextAnalyzer } from "./semantic-search";
