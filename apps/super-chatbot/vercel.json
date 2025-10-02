@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm build --filter='@turbo-super/*' --recursive && pnpm --filter=ai-chatbot run build",
+  "buildCommand": "pnpm run build:packages && pnpm --filter=ai-chatbot run build",
   "installCommand": "pnpm install --filter=ai-chatbot --filter='@turbo-super/*' --recursive",
   "framework": null,
   "env": {
