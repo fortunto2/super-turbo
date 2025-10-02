@@ -7,7 +7,6 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build:packages": "pnpm build --filter='@turbo-super/*' --recursive",
     "prebuild": "pnpm -w -r --filter @turbo-super/payment --filter @turbo-super/features build",
     "build": "pnpm run prebuild && next build || (echo 'Build completed with warnings' && exit 0)",
     "build:fast": "next build",
