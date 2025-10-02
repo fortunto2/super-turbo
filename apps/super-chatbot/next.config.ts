@@ -107,7 +107,7 @@ const nextConfig: NextConfig = {
       config.plugins.push(
         new webpack.DefinePlugin({
           "typeof self": JSON.stringify("undefined"),
-          self: JSON.stringify("undefined"),
+          self: "undefined",
         })
       );
     }
