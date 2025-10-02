@@ -1,5 +1,5 @@
 {
-   "buildCommand": "pnpm --filter=@turbo-super/api build && pnpm --filter=@turbo-super/core build && pnpm --filter=@turbo-super/features build && pnpm --filter=@turbo-super/payment build && pnpm --filter=@turbo-super/shared build && pnpm --filter=@turbo-super/ui build && pnpm --filter=@turbo-super/tailwind build && pnpm --filter=@turbo-super/eslint-config build && pnpm --filter=landing run build",
+   "buildCommand": "pnpm --filter=@turbo-super/api build && pnpm --filter=@turbo-super/core build && pnpm --filter=@turbo-super/features build && pnpm --filter=@turbo-super/payment build && pnpm --filter=@turbo-super/shared build && pnpm --filter=@turbo-super/ui build && pnpm --filter=landing run build",
     "installCommand": "pnpm install --filter=landing --filter='@turbo-super/*' --recursive",
     "framework": null,
    
