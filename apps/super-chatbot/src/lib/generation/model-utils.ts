@@ -32,6 +32,11 @@ export async function selectImageToImageModel(
     ? allI2I
     : allI2I.filter((m: any) => !/inpaint/i.test(String(m.name || "")));
 
+  // Если нет доступных image-to-image моделей, возвращаем null
+  if (candidates.length === 0) {
+    return null;
+  }
+
   let pick = candidates.find(
     (m: any) =>
       String(m.name || "").toLowerCase() === wants.toLowerCase() ||

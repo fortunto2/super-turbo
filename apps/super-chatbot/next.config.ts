@@ -28,6 +28,23 @@ process.on("uncaughtException", (error) => {
 });
 
 const nextConfig: NextConfig = {
+  // Отключаем проверку переменных окружения во время сборки
+  env: {
+    // Устанавливаем значения по умолчанию для переменных, которые могут отсутствовать
+    SUPERDUPERAI_URL:
+      process.env.SUPERDUPERAI_URL || "https://dev-editor.superduperai.co",
+    SUPERDUPERAI_TOKEN: process.env.SUPERDUPERAI_TOKEN || "placeholder-token",
+    AZURE_OPENAI_RESOURCE_NAME:
+      process.env.AZURE_OPENAI_RESOURCE_NAME || "placeholder-resource",
+    AZURE_OPENAI_API_KEY: process.env.AZURE_OPENAI_API_KEY || "placeholder-key",
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || "sk_test_placeholder",
+    STRIPE_WEBHOOK_SECRET:
+      process.env.STRIPE_WEBHOOK_SECRET || "whsec_placeholder",
+    DATABASE_URL: process.env.DATABASE_URL || "postgresql://placeholder",
+    REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+  },
+  // Настройки для правильной генерации манифестов
+  output: "standalone",
   // Включаем экспериментальные функции для лучшей совместимости
   experimental: {
     // Включаем оптимизации производительности

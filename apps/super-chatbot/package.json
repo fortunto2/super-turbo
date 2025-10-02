@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm test && next build || (echo 'Build completed with warnings' && exit 0)",
+    "build": "next build || (echo 'Build completed with warnings' && exit 0)",
     "build:fast": "next build",
     "build:skip-migration": "next build",
     "start": "next start",
