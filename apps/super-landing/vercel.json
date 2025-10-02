@@ -2,17 +2,7 @@
     "buildCommand": "pnpm --filter=super-landing run build",
     "installCommand": "pnpm install",
     "framework": null,
-    "functions": {
-        "src/app/api/webhook-status/[sessionId]/route.ts": {
-            "maxDuration": 30
-        },
-        "src/app/api/webhooks/stripe/route.ts": {
-            "maxDuration": 30
-        },
-        "src/app/api/create-checkout/route.ts": {
-            "maxDuration": 30
-        }
-    },
+   
     "public": true,
     "headers": [
         {
@@ -40,3 +30,4 @@
         }
     ]
 }
+
