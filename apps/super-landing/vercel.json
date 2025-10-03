@@ -1,8 +1,15 @@
 {
-    "buildCommand": "pnpm -w run build:packages && pnpm --filter=landing run build",
-    "installCommand": "pnpm install --filter=landing --filter='@turbo-super/*' --recursive",
-    "framework": null,
-    
+    "functions": {
+        "src/app/api/webhook-status/[sessionId]/route.ts": {
+            "maxDuration": 30
+        },
+        "src/app/api/webhooks/stripe/route.ts": {
+            "maxDuration": 30
+        },
+        "src/app/api/create-checkout/route.ts": {
+            "maxDuration": 30
+        }
+    },
     "public": true,
     "headers": [
         {
@@ -27,10 +34,6 @@
         {
             "source": "/llms.txt",
             "destination": "/api/llms-txt"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/"
-          }
+        }
     ]
-  }
+}

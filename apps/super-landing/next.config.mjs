@@ -10,28 +10,11 @@ const nextConfig = {
     // так как мы будем запускать линтер отдельно
     ignoreDuringBuilds: true,
   },
-  // Отключаем проверку переменных окружения во время сборки
-  env: {
-    // Устанавливаем значения по умолчанию для переменных, которые могут отсутствовать
-    SUPERDUPERAI_URL: process.env.SUPERDUPERAI_URL || 'https://dev-editor.superduperai.co',
-    SUPERDUPERAI_TOKEN: process.env.SUPERDUPERAI_TOKEN || 'placeholder-token',
-    AZURE_OPENAI_RESOURCE_NAME: process.env.AZURE_OPENAI_RESOURCE_NAME || 'placeholder-resource',
-    AZURE_OPENAI_API_KEY: process.env.AZURE_OPENAI_API_KEY || 'placeholder-key',
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder',
-    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || 'whsec_placeholder',
-    DATABASE_URL: process.env.DATABASE_URL || 'postgresql://placeholder',
-    DATABASE_URL_UNPOOLED: process.env.DATABASE_URL_UNPOOLED || 'postgresql://placeholder',
-    PGHOST: process.env.PGHOST || 'localhost',
-    PGHOST_UNPOOLED: process.env.PGHOST_UNPOOLED || 'localhost',
-    PGUSER: process.env.PGUSER || 'placeholder',
-    PGDATABASE: process.env.PGDATABASE || 'placeholder',
-    PGPASSWORD: process.env.PGPASSWORD || 'placeholder',
-    REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
-  },
   images: {
     unoptimized: true
   },
   // Use standalone output for optimized builds unless NEXT_STANDALONE is "false"
+  output: process.env.NEXT_STANDALONE === 'false' ? undefined : 'standalone',
   // Настройки экспериментальных функций
   experimental: {
     // Оптимизация импортов пакетов
