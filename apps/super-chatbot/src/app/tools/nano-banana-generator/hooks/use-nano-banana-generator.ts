@@ -74,6 +74,7 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
         const parsed = JSON.parse(storedImages);
         setGeneratedImages(parsed);
         console.log("🍌 📂 Loaded", parsed.length, "stored Nano Banana images");
+        // Failed to execute 'setItem' on 'Storage': Setting the value of 'nano-banana-images' exceeded the quota.
       } catch (error) {
         console.error("Failed to load stored images:", error);
       }
@@ -90,22 +91,17 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
     async (request: NanoBananaImageGenerationRequest) => {
       try {
         setIsGenerating(true);
-        setConnectionStatus("connecting");
+        setConnectionStatus("connected");
+        setIsConnected(true);
         setGenerationStatus({
           status: "pending",
-          progress: 0,
-          message: "Starting Nano Banana image generation...",
-          estimatedTime: 30000,
+          progress: 10,
+          message: "Generating image...",
+          estimatedTime: 0,
           projectId: "",
           requestId: "",
           fileId: "",
         });
-
-        // Simulate connection
-        setTimeout(() => {
-          setConnectionStatus("connected");
-          setIsConnected(true);
-        }, 1000);
 
         // Call API
         const result = await generateNanoBananaImage(request);
@@ -121,29 +117,22 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
         // Store data in a variable after null check
         const generatedData = result.data;
 
-        // Update status
-        setGenerationStatus({
-          status: "processing",
-          progress: 50,
-          message: "Nano Banana image generation in progress...",
-          estimatedTime: 15000,
-          projectId: result.projectId || "",
-          requestId: result.requestId || "",
-          fileId: result.fileId || "",
-        });
-
-        // Simulate processing delay
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        // Update with result
+        // Update with result immediately
         setCurrentGeneration(generatedData);
-        setGeneratedImages((prev) => [generatedData, ...prev]);
-        saveImages([generatedData, ...generatedImages]);
+
+        const MAX_IMAGES = 2; // чтобы не превысить лимит TODO:Реализовать сохранение в БД, вместо localStorage
+
+        const newImages = [generatedData, ...generatedImages].slice(
+          0,
+          MAX_IMAGES
+        );
+        setGeneratedImages(newImages);
+        saveImages(newImages);
 
         setGenerationStatus({
           status: "completed",
           progress: 100,
-          message: "Nano Banana image generation completed!",
+          message: "Image generated",
           estimatedTime: 0,
           projectId: result.projectId || "",
           requestId: result.requestId || "",

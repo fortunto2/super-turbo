@@ -36,6 +36,16 @@ const enhancePromptRequestSchema = z.object({
   customInstructions: z.string().optional(),
 });
 
+const normalizeInput = (body: any) => {
+  if (body.enhancementTechnique === "context_awareness") {
+    body.enhancementTechnique = "context-awareness";
+  }
+  if (body.targetStyle === "photorealistic") {
+    body.targetStyle = "realistic"; // или добавь новый стиль в enum
+  }
+  return body;
+};
+
 export async function POST(request: NextRequest) {
   try {
     console.log("🍌 Nano Banana enhance prompt API called");
@@ -50,8 +60,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Парсим и валидируем запрос
-    const body = await request.json();
-    const validatedData = enhancePromptRequestSchema.parse(body);
+    const rawBody = await request.json();
+    const normalizedBody = normalizeInput(rawBody);
+    const validatedData = enhancePromptRequestSchema.parse(normalizedBody);
 
     console.log("🍌 Validated enhance prompt request data:", validatedData);
 

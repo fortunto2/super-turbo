@@ -172,7 +172,7 @@ export default function NanoBananaGeneratorPage() {
                   value={tab.id}
                   className="flex items-center space-x-2"
                 >
-                  <Icon className="size-4" />
+                  {/* <Icon className="size-4" /> */}
                   <span>{tab.label}</span>
                 </TabsTrigger>
               );

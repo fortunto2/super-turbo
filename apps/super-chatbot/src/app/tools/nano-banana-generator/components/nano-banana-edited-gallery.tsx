@@ -42,6 +42,7 @@ export function NanoBananaEditedGallery({
   const [selectedImage, setSelectedImage] =
     useState<NanoBananaEditResult | null>(null);
 
+  console.log(isEditing);
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
   };
@@ -89,7 +90,7 @@ export function NanoBananaEditedGallery({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -111,44 +112,38 @@ export function NanoBananaEditedGallery({
       </div>
 
       {/* Current Edit */}
-      {currentEdit && (
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-sm">
-              <Palette className="size-4 text-green-600" />
-              <span>Currently Editing</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+      {isEditing && (
+        <Card className="border-green-200 bg-green-50 h-[300px]">
+          <CardContent className="size-full">
+            <div className="space-y-3 size-full">
+              <div className=" rounded-lg flex items-center justify-center size-full">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2" />
                   <p className="text-sm text-gray-600">Editing...</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-700 line-clamp-2">
+              {/* <p className="text-sm text-gray-700 line-clamp-2">
                 {currentEdit.editPrompt}
-              </p>
+              </p> */}
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Images Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex flex-wrap gap-4 overflow-y-auto overflow-x-hidden pr-1 flex-1">
         {images.map((image) => (
           <Card
             key={image.id}
-            className="group hover:shadow-lg transition-shadow"
+            className="group hover:shadow-lg transition-shadow w-[calc((100%-32px)/3)] max-w-[calc((100%-32px)/3)] max-h-52"
           >
-            <CardContent className="p-0">
+            <CardContent className="p-0 size-full">
               {/* Image */}
-              <div className="aspect-square relative overflow-hidden rounded-t-lg">
+              <div className="relative overflow-hidden rounded-t-lg size-full">
                 <img
                   src={image.url}
                   alt={image.editPrompt}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                   onClick={() => setSelectedImage(image)}
                 />
 
@@ -213,7 +208,7 @@ export function NanoBananaEditedGallery({
                   </div>
 
                   {/* Nano Banana Features */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 ">
                     {image.settings.preserveOriginalStyle && (
                       <Badge
                         variant="outline"

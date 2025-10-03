@@ -91,36 +91,6 @@ export function NanoBananaEnhancedPromptDisplay({
         )}
       </div>
 
-      {/* Current Enhancement */}
-      {currentEnhancement && (
-        <Card className="border-purple-200 bg-purple-50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-sm">
-              <Wand2 className="size-4 text-purple-600" />
-              <span>Currently Enhancing</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Badge
-                    className={getTechniqueBadgeColor(
-                      currentEnhancement.technique
-                    )}
-                  >
-                    {currentEnhancement.technique.replace(/_/g, " ")}
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-700 line-clamp-2">
-                  {currentEnhancement.originalPrompt}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Enhanced Prompts List */}
       <div className="space-y-4">
         {enhancedPrompts.map((enhancedPrompt, index) => (
@@ -156,9 +126,9 @@ export function NanoBananaEnhancedPromptDisplay({
               {/* Technique Badge */}
               <div className="flex items-center space-x-2">
                 <Badge
-                  className={getTechniqueBadgeColor(enhancedPrompt.technique)}
+                  className={getTechniqueBadgeColor(enhancedPrompt?.technique)}
                 >
-                  {enhancedPrompt.technique.replace(/_/g, " ")}
+                  {enhancedPrompt?.technique?.replace(/_/g, " ")}
                 </Badge>
               </div>
 
@@ -170,7 +140,7 @@ export function NanoBananaEnhancedPromptDisplay({
                   </h4>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-sm text-gray-600">
-                      {enhancedPrompt.originalPrompt}
+                      {enhancedPrompt?.originalPrompt}
                     </p>
                   </div>
                 </div>
@@ -192,14 +162,14 @@ export function NanoBananaEnhancedPromptDisplay({
               </div>
 
               {/* Improvements */}
-              {enhancedPrompt.improvements.length > 0 && (
+              {enhancedPrompt.improvements?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Star className="size-4 mr-1" />
                     Improvements:
                   </h4>
                   <div className="space-y-1">
-                    {enhancedPrompt.improvements.map((improvement, idx) => (
+                    {enhancedPrompt.improvements?.map((improvement, idx) => (
                       <div
                         key={idx}
                         className="flex items-start space-x-2"
@@ -215,7 +185,7 @@ export function NanoBananaEnhancedPromptDisplay({
               )}
 
               {/* Technical Terms */}
-              {enhancedPrompt.technicalTerms.length > 0 && (
+              {enhancedPrompt.technicalTerms?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Tag className="size-4 mr-1" />
@@ -236,7 +206,7 @@ export function NanoBananaEnhancedPromptDisplay({
               )}
 
               {/* Quality Descriptors */}
-              {enhancedPrompt.qualityDescriptors.length > 0 && (
+              {enhancedPrompt.qualityDescriptors?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Sparkles className="size-4 mr-1" />
@@ -265,7 +235,7 @@ export function NanoBananaEnhancedPromptDisplay({
       {/* Enhancement Preview Modal */}
       {selectedEnhancement && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="bg-zinc-950 rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">Enhanced Prompt Details</h3>
               <Button
@@ -280,7 +250,7 @@ export function NanoBananaEnhancedPromptDisplay({
               <div className="space-y-6">
                 {/* Technique */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  <h4 className="text-sm font-medium  mb-2">
                     Enhancement Technique:
                   </h4>
                   <Badge
@@ -288,14 +258,14 @@ export function NanoBananaEnhancedPromptDisplay({
                       selectedEnhancement.technique
                     )}
                   >
-                    {selectedEnhancement.technique.replace(/_/g, " ")}
+                    {selectedEnhancement.technique?.replace(/_/g, " ")}
                   </Badge>
                 </div>
 
                 {/* Original vs Enhanced */}
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    <h4 className="text-sm font-medium mb-2">
                       Original Prompt:
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
@@ -306,7 +276,7 @@ export function NanoBananaEnhancedPromptDisplay({
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    <h4 className="text-sm font-medium  mb-2">
                       Enhanced Prompt:
                     </h4>
                     <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -318,7 +288,7 @@ export function NanoBananaEnhancedPromptDisplay({
                 </div>
 
                 {/* Improvements */}
-                {selectedEnhancement.improvements.length > 0 && (
+                {selectedEnhancement.improvements?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
                       Improvements:
@@ -342,7 +312,7 @@ export function NanoBananaEnhancedPromptDisplay({
                 )}
 
                 {/* Technical Terms */}
-                {selectedEnhancement.technicalTerms.length > 0 && (
+                {selectedEnhancement.technicalTerms?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
                       Technical Terms:
@@ -361,7 +331,7 @@ export function NanoBananaEnhancedPromptDisplay({
                 )}
 
                 {/* Quality Descriptors */}
-                {selectedEnhancement.qualityDescriptors.length > 0 && (
+                {selectedEnhancement.qualityDescriptors?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
                       Quality Descriptors:
