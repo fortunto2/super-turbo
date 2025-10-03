@@ -137,6 +137,9 @@ importers:
       '@turbo-super/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@turbo-super/tailwind':
+        specifier: workspace:*
+        version: link:../../packages/tailwind
       '@turbo-super/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -330,9 +333,6 @@ importers:
       '@turbo-super/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@turbo-super/tailwind':
-        specifier: workspace:*
-        version: link:../../packages/tailwind
       '@types/d3-scale':
         specifier: ^4.0.8
         version: 4.0.9
