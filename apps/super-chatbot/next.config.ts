@@ -42,7 +42,13 @@ const nextConfig: NextConfig = {
       process.env.STRIPE_WEBHOOK_SECRET || "whsec_placeholder",
     DATABASE_URL: process.env.DATABASE_URL || "postgresql://placeholder",
     REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+    PGHOST: process.env.PGHOST || "localhost",
+    PGHOST_UNPOOLED: process.env.PGHOST_UNPOOLED || "localhost",
+    PGUSER: process.env.PGUSER || "placeholder",
+    PGDATABASE: process.env.PGDATABASE || "placeholder",
+    PGPASSWORD: process.env.PGPASSWORD || "placeholder",
   },
+  output: "standalone",
   // Включаем экспериментальные функции для лучшей совместимости
   experimental: {
     // Включаем оптимизации производительности
@@ -54,28 +60,21 @@ const nextConfig: NextConfig = {
       "clsx",
       "tailwind-merge",
     ],
-    // Включаем поддержку турборепозитория
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
-      },
-    },
+    // // Включаем поддержку турборепозитория
+    // turbo: {
+    //   rules: {
+    //     "*.svg": {
+    //       loaders: ["@svgr/webpack"],
+    //       as: "*.js",
+    //     },
+    //   },
+    // },
   },
 
   images: {
-    remotePatterns: [
-      {
-        hostname: "avatar.vercel.sh",
-      },
-      {
-        hostname: "superduper-acdagaa3e2h7chh0.z02.azurefd.net",
-      },
-      { protocol: "https", hostname: "images.unsplash.com" },
-    ],
+    unoptimized: true,
   },
+  staticPageGenerationTimeout: 120,
 
   webpack: (config, { isServer, dev }) => {
     // Игнорируем предупреждения о критических зависимостях для @opentelemetry
@@ -98,10 +97,15 @@ const nextConfig: NextConfig = {
         fs: false,
         net: false,
         tls: false,
+        buffer: false,
+        os: false,
       };
 
       // Добавляем глобальную переменную self для сервера
       const webpack = require("webpack");
+      config.plugins.push(
+        new webpack.ProvidePlugin({ process: "process/browser" })
+      );
       config.plugins.push(
         new webpack.DefinePlugin({
           "typeof self": JSON.stringify("undefined"),
