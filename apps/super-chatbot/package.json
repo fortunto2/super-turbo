@@ -7,8 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "pnpm -w -r --filter @turbo-super/tailwind --filter @turbo-super/payment --filter @turbo-super/features build",
-    "build": "pnpm run prebuild && next build || (echo 'Build completed with warnings' && exit 0)",
+    "build": "next build || (echo 'Build completed with warnings' && exit 0)",
     "build:fast": "next build",
     "build:skip-migration": "next build",
     "start": "next start",
