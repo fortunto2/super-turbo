@@ -27,6 +27,10 @@
         {
             "source": "/llms.txt",
             "destination": "/api/llms-txt"
-        }
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/"
+          }
     ]
   }
