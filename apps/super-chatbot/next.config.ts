@@ -43,8 +43,6 @@ const nextConfig: NextConfig = {
     DATABASE_URL: process.env.DATABASE_URL || "postgresql://placeholder",
     REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
   },
-  // Настройки для правильной генерации манифестов
-  output: "standalone",
   // Включаем экспериментальные функции для лучшей совместимости
   experimental: {
     // Включаем оптимизации производительности

@@ -32,7 +32,6 @@ const nextConfig = {
     unoptimized: true
   },
   // Use standalone output for optimized builds unless NEXT_STANDALONE is "false"
-  output: process.env.NEXT_STANDALONE === 'false' ? undefined : 'standalone',
   // Настройки экспериментальных функций
   experimental: {
     // Оптимизация импортов пакетов
