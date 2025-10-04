@@ -182,17 +182,28 @@ For small tasks, quick fixes, or routine work:
 
 ### Task Directory Structure
 
-Each task creates a directory `_tasks/YYYY-MM-DD-task-slug/` with sequentially numbered files:
+Each task creates a directory `_tasks/YYYY-MM-DD-task-slug/` **in the MONOREPO ROOT** with sequentially numbered files:
+
+**CRITICAL RULES:**
+- ✅ **ALWAYS use MONOREPO ROOT**: `_tasks/YYYY-MM-DD-task-slug/` (relative from project root)
+- ❌ **NEVER use app-level**: `apps/super-chatbot/_tasks/` or `apps/super-landing/_tasks/`
+- 📝 **ALWAYS save reports**: Each agent MUST create their numbered report file
+- 🔢 **Sequential numbering**: Check existing files with `ls _tasks/YYYY-MM-DD-*/`, use next number
+- 🔗 **Symlinks exist**: `apps/super-chatbot/_ai` and `apps/super-chatbot/_tasks` are symlinks to root directories
+- 🔗 **Symlinks exist**: `apps/super-landing/_ai` and `apps/super-landing/_tasks` are symlinks to root directories
+- ⚠️ **Always use root paths**: Even though symlinks exist, always reference `_ai/` and `_tasks/` from monorepo root
+
+**Standard file sequence:**
 - `01-user-request.md` - Original user request
-- `02-plan.md` - Don's initial plan
-- `03-architecture-review.md` - Linus's review (if needed)
+- `02-plan.md` - @don's initial plan
+- `03-architecture-review.md` - @linus review (if needed)
 - `04-updated-plan.md` - Refined plan (if needed)
-- `05-test-report.md` - Kent's test implementation notes
-- `06-engineer-report.md` - Rob's implementation notes
-- `07-review.md` - Kevlin's code review
-- `08-architecture-review.md` - Linus's final review
-- `09-librarian-report.md` - Ward's knowledge extraction
-- `10-final-plan.md` - Don's final summary
+- `XX-test-report.md` - @kent's test implementation notes
+- `XX-engineer-report.md` - @rob's implementation notes
+- `XX-review.md` - @kevlin's code review
+- `XX-architecture-review.md` - @linus's final review
+- `XX-librarian-report.md` - @ward's knowledge extraction
+- `XX-final-plan.md` - @don's final summary
 
 **CRITICAL**: Never overwrite files - each agent invocation creates a NEW numbered file to preserve complete audit trail.
 
@@ -220,7 +231,17 @@ apps/super-chatbot/
 │   ├── architecture/
 │   ├── development/
 │   └── api-integration/
-└── _tasks/                   # Agent work directories (internal)
+├── _ai -> ../../_ai          # Symlink to root _ai/ (agent knowledge base)
+└── _tasks -> ../../_tasks    # Symlink to root _tasks/ (audit trail)
+
+Monorepo Root:
+├── _ai/                      # Agent Knowledge Base (@ward)
+│   ├── testing.md
+│   ├── nextjs-patterns.md
+│   └── common-fixes.md
+├── _tasks/                   # Task audit trails
+│   └── YYYY-MM-DD-task-slug/
+└── apps/                     # Applications
 ```
 
 ### Important Patterns
@@ -265,8 +286,8 @@ apps/super-chatbot/
 ### Development Guidelines
 
 **Before Starting a Task**
-- Search `_ai/` directory for relevant patterns, gotchas, and code pointers
-- Search `_tasks/` for similar completed tasks and their solutions
+- Search `_ai/` directory for relevant patterns, gotchas, and code pointers (symlinked in each app for convenience)
+- Search `_tasks/` for similar completed tasks and their solutions (symlinked in each app for convenience)
 - Search public docs for architecture and API documentation:
   - `docs/` - monorepo-level docs
   - `apps/super-chatbot/docs/` - chatbot-specific docs
@@ -274,6 +295,7 @@ apps/super-chatbot/
 - Study similar/neighboring files in the codebase to understand patterns
 - Copy proven approaches and architectural patterns from existing code
 - This ensures consistency and leverages existing solutions
+- **Note**: While `_ai/` and `_tasks/` are symlinked in app directories, always use root-level paths for consistency
 
 **Code Style**
 - All comments, code and documentation should be written in English

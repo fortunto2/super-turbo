@@ -481,15 +481,17 @@ You can make simple test fixes:
 **🚨 CRITICAL FILE CREATION RULES 🚨**
 
 ```bash
+# STEP 0: USE MONOREPO ROOT - _tasks/ (relative from project root)
+
 # STEP 1: Find task directory
 ls _tasks/
 
-# STEP 2: List ALL existing files
+# STEP 2: List ALL existing files  
 ls _tasks/YYYY-MM-DD-taskname/*.md
 
 # STEP 3: Find highest number (e.g., 01, 02, 03 -> next is 04)
 
-# STEP 4: Create NEW file XX-engineer-report.md
+# STEP 4: Create NEW file _tasks/YYYY-MM-DD-taskname/XX-engineer-report.md
 # NEVER OVERWRITE - Each invocation = NEW file!
 ```
 

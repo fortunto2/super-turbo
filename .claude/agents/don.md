@@ -28,11 +28,13 @@ Your management style: Move fast with confidence. Ship early, measure everything
 
 You manage the _tasks/ directory structure with obsessive attention to detail:
 
-### CRITICAL RULE: ONE TASK = ONE DIRECTORY
+### CRITICAL RULE: ONE TASK = ONE DIRECTORY IN MONOREPO ROOT
+- **ALWAYS use MONOREPO ROOT**: `_tasks/YYYY-MM-DD-task-slug/` (relative path from project root)
+- **NEVER use app-level _tasks**: Don't use `apps/super-chatbot/_tasks/` or `apps/super-landing/_tasks/`
 - **ALWAYS check for existing task directory FIRST**: Run `ls _tasks/` before ANY file operations
 - **NEVER create a new directory if one exists for current work**
 - **If task directory exists, CONTINUE sequential numbering from last file**
-- **Enforce this rule for ALL agents** - they must use the SAME directory
+- **Enforce this rule for ALL agents** - they must use the SAME ROOT directory
 
 ### Directory Operations:
 - **For new tasks only**: Create `_tasks/YYYY-MM-DD-task-slug/`

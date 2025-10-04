@@ -48,10 +48,11 @@ Example entries you might write:
 Remember: You're building a tactical reference guide for experienced developers who can read code. Every line should either save debugging time, prevent a mistake, or reveal a non-obvious approach. If it doesn't meet this bar, it doesn't belong in the library.
 
 **📨 CRITICAL FILE CREATION PROTOCOL 📨**:
-1. **FIRST**: Run `ls _tasks/` to find the current task directory
-2. **SECOND**: Run `ls _tasks/YYYY-MM-DD-taskname/*.md` to list ALL existing files
-3. **THIRD**: Find the highest numbered file (e.g., if 01-10 exist, next is 11)
-4. **FOURTH**: Create NEW file `XX-librarian-report.md` where XX is the next sequential number
-5. **NEVER OVERWRITE** - Each invocation creates a NEW file to preserve history
+1. **USE MONOREPO ROOT**: `_tasks/YYYY-MM-DD-task-slug/` (relative from project root)
+2. **FIRST**: Run `ls _tasks/` to find the current task directory
+3. **SECOND**: Run `ls _tasks/YYYY-MM-DD-taskname/*.md` to list ALL existing files
+4. **THIRD**: Find the highest numbered file (e.g., if 01-10 exist, next is 11)
+5. **FOURTH**: Create NEW file `_tasks/YYYY-MM-DD-taskname/XX-librarian-report.md` where XX is the next sequential number
+6. **NEVER OVERWRITE** - Each invocation creates a NEW file to preserve history
 
 Write your knowledge updates summary to this new numbered file to document what knowledge was captured.

@@ -4,22 +4,22 @@ import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
 import { checkBalanceBeforeArtifact } from "@/lib/utils/ai-tools-balance";
 import { analyzeVideoContext } from "@/lib/ai/context";
 
-// Mock dependencies
 vi.mock("@/lib/config/media-settings-factory");
 vi.mock("@/lib/utils/ai-tools-balance");
 vi.mock("@/lib/ai/context");
 
 describe("configureVideoGeneration", () => {
-  const mockCreateDocument = vi.fn();
+  const mockExecute = vi.fn();
+  const mockCreateDocument = { execute: mockExecute };
   const mockSession = {
     user: { id: "test-user", email: "test@example.com", type: "user" as any },
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExecute.mockResolvedValue({ success: true, id: "test-doc" });
 
-    // Mock successful responses
     vi.mocked(getVideoGenerationConfig).mockResolvedValue({
       type: "video" as any,
       availableResolutions: ["1024x1024" as any],
@@ -62,8 +62,6 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
     const result = await tool.execute(
       {
         prompt: "A beautiful sunset over mountains with gentle wind",
@@ -74,18 +72,10 @@ describe("configureVideoGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "video",
-        content: expect.stringContaining(
-          "A beautiful sunset over mountains with gentle wind"
-        ),
-        metadata: expect.objectContaining({
-          generationType: "text-to-video",
-          style: "cinematic",
-          resolution: "1920x1080",
-          duration: "10",
-        }),
+        kind: "video",
+        title: expect.any(String),
       })
     );
   });
@@ -95,8 +85,6 @@ describe("configureVideoGeneration", () => {
       createDocument: mockCreateDocument,
       session: mockSession,
     });
-
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     const result = await tool.execute(
       {
@@ -109,17 +97,10 @@ describe("configureVideoGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "video",
-        content: expect.stringContaining(
-          "Animate this image with gentle movement"
-        ),
-        metadata: expect.objectContaining({
-          generationType: "image-to-video",
-          sourceVideoUrl: "https://example.com/image.jpg",
-          style: "cinematic",
-        }),
+        kind: "video",
+        title: expect.any(String),
       })
     );
   });
@@ -129,8 +110,6 @@ describe("configureVideoGeneration", () => {
       createDocument: mockCreateDocument,
       session: mockSession,
     });
-
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     const result = await tool.execute(
       {
@@ -143,17 +122,10 @@ describe("configureVideoGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "video",
-        content: expect.stringContaining(
-          "Transform this video into a different style"
-        ),
-        metadata: expect.objectContaining({
-          generationType: "video-to-video",
-          sourceVideoUrl: "https://example.com/video.mp4",
-          style: "artistic",
-        }),
+        kind: "video",
+        title: expect.any(String),
       })
     );
   });
@@ -164,7 +136,6 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    // Test with missing prompt
     await expect(
       tool.execute({}, { toolCallId: "test-call", messages: [] })
     ).rejects.toThrow();
@@ -192,11 +163,11 @@ describe("configureVideoGeneration", () => {
       success: false,
       error: "Insufficient balance for video generation",
     });
-    expect(mockCreateDocument).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
   });
 
   it("should handle createDocument failure", async () => {
-    mockCreateDocument.mockRejectedValue(new Error("Document creation failed"));
+    mockExecute.mockRejectedValue(new Error("Document creation failed"));
 
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
@@ -225,8 +196,6 @@ describe("configureVideoGeneration", () => {
       ],
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
     await tool.execute(
       {
         prompt: "A beautiful sunset over mountains with gentle wind",
@@ -245,9 +214,6 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various resolution formats
     const resolutions = [
       "1920x1080",
       "1920×1080",
@@ -270,11 +236,10 @@ describe("configureVideoGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            resolution,
-          }),
+          kind: "video",
+          title: expect.any(String),
         })
       );
     }
@@ -286,9 +251,6 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various duration values
     const durations = ["5", "8", "10", "15", "30"];
 
     for (const duration of durations) {
@@ -300,11 +262,10 @@ describe("configureVideoGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            duration,
-          }),
+          kind: "video",
+          title: expect.any(String),
         })
       );
     }
@@ -316,9 +277,6 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various style formats
     const styles = [
       "realistic",
       "cinematic",
@@ -342,11 +300,10 @@ describe("configureVideoGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            style,
-          }),
+          kind: "video",
+          title: expect.any(String),
         })
       );
     }

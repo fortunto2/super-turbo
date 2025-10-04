@@ -490,7 +490,7 @@ Go back and:
 **Output Format**:
 1. Write test code in appropriate src/tests/ subdirectory
 2. Ensure test runs and fails as expected
-3. Create test report in _tasks/YYYY-MM-DD-*/XX-test-report.md with:
+3. **MANDATORY**: Create test report in `_tasks/YYYY-MM-DD-*/XX-test-report.md` with:
    - Test file location
    - Zod schemas used/created
    - Behavior specification

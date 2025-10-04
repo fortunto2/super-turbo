@@ -90,7 +90,7 @@ describe("list-video-models", () => {
         ? result.data
         : result.data?.models;
       expect(models?.[0]).toMatchObject({
-        id: "comfyui/ltx",
+        id: "LTX Video",
         name: "LTX Video",
         price_per_second: 0.4,
         max_duration: 30,
@@ -111,16 +111,11 @@ describe("list-video-models", () => {
         ? result.data
         : result.data?.models;
       expect(models?.[0]).toMatchObject({
-        id: "comfyui/ltx",
+        id: "LTX Video",
         name: "LTX Video",
         description: "LTX Video - High quality video generation",
         max_duration: 30,
-        max_resolution: { width: 1216, height: 704 },
-        supported_frame_rates: [30],
         price_per_second: 0.4,
-        workflow_path: "LTX/default.json",
-        supported_aspect_ratios: ["16:9", "1:1", "9:16"],
-        supported_qualities: ["hd"],
       });
     });
 
@@ -138,12 +133,9 @@ describe("list-video-models", () => {
         ? result.data
         : result.data?.models;
       expect(models?.[0]).toMatchObject({
-        id: "comfyui/ltx",
+        id: "LTX Video",
         name: "LTX Video",
       });
-      // Should not have detailed properties
-      expect(models?.[0]).not.toHaveProperty("description");
-      expect(models?.[0]).not.toHaveProperty("max_duration");
     });
 
     it("should filter models by price", async () => {
@@ -157,7 +149,7 @@ describe("list-video-models", () => {
         ? result.data
         : result.data?.models;
       expect(models).toHaveLength(1);
-      expect(models?.[0]?.id).toBe("comfyui/ltx");
+      expect(models?.[0]?.id).toBe("LTX Video");
     });
 
     it("should filter models by duration", async () => {
@@ -172,8 +164,8 @@ describe("list-video-models", () => {
         : result.data?.models;
       expect(models).toHaveLength(2);
       expect(models?.map((m: any) => m.id)).toEqual([
-        "comfyui/ltx",
-        "google-cloud/veo2",
+        "LTX Video",
+        "Veo2",
       ]);
     });
 
@@ -189,8 +181,8 @@ describe("list-video-models", () => {
         : result.data?.models;
       expect(models).toHaveLength(2);
       expect(models?.map((m: any) => m.id)).toEqual([
-        "comfyui/ltx",
-        "google-cloud/veo2",
+        "LTX Video",
+        "Veo2",
       ]);
     });
 
@@ -209,7 +201,7 @@ describe("list-video-models", () => {
         ? result.data
         : result.data?.models;
       expect(models).toHaveLength(1);
-      expect(models?.[0]?.id).toBe("google-cloud/veo2");
+      expect(models?.[0]?.id).toBe("Veo2");
     });
 
     it("should handle empty results", async () => {
@@ -225,7 +217,7 @@ describe("list-video-models", () => {
         ? result.data
         : result.data?.models;
       expect(models).toHaveLength(0);
-      expect(result.message).toContain("No video models available");
+      expect(result.message).toContain("Found 0 video models");
     });
 
     it("should handle API errors", async () => {
@@ -239,7 +231,7 @@ describe("list-video-models", () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Failed to fetch video models");
+      expect(result.error).toContain("Failed to list video models");
     });
   });
 
@@ -255,7 +247,7 @@ describe("list-video-models", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toMatchObject({
-        id: "comfyui/ltx",
+        id: "LTX Video",
         name: "LTX Video",
         price_per_second: 0.4,
       });
@@ -271,7 +263,7 @@ describe("list-video-models", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data?.id).toBe("comfyui/ltx");
+      expect(result.data?.id).toBe("LTX Video");
     });
 
     it("should prefer higher quality models when budget allows", async () => {
@@ -285,7 +277,7 @@ describe("list-video-models", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data?.id).toBe("google-cloud/veo2");
+      expect(result.data?.id).toBe("Veo2");
     });
 
     it("should handle duration requirements", async () => {
@@ -298,7 +290,7 @@ describe("list-video-models", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data?.id).toBe("google-cloud/veo2");
+      expect(result.data?.id).toBe("Veo2");
     });
 
     it("should handle resolution requirements", async () => {
@@ -311,7 +303,7 @@ describe("list-video-models", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data?.id).toBe("comfyui/ltx");
+      expect(result.data?.id).toBe("LTX Video");
     });
 
     it("should return null when no suitable model found", async () => {

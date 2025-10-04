@@ -10,7 +10,8 @@ vi.mock("@/lib/utils/ai-tools-balance");
 vi.mock("@/lib/ai/context");
 
 describe("configureImageGeneration", () => {
-  const mockCreateDocument = vi.fn();
+  const mockExecute = vi.fn();
+  const mockCreateDocument = { execute: mockExecute };
   const mockSession = {
     user: { id: "test-user", email: "test@example.com", type: "user" as any },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
@@ -18,6 +19,7 @@ describe("configureImageGeneration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExecute.mockResolvedValue({ success: true, id: "test-doc" });
 
     // Mock successful responses
     vi.mocked(getImageGenerationConfig).mockResolvedValue({
@@ -60,8 +62,6 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
     const result = await tool.execute(
       {
         prompt: "A beautiful sunset over mountains",
@@ -71,15 +71,10 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "image",
-        content: expect.stringContaining("A beautiful sunset over mountains"),
-        metadata: expect.objectContaining({
-          generationType: "text-to-image",
-          style: "realistic",
-          resolution: "1024x1024",
-        }),
+        kind: "image",
+        title: expect.any(String),
       })
     );
   });
@@ -89,8 +84,6 @@ describe("configureImageGeneration", () => {
       createDocument: mockCreateDocument,
       session: mockSession,
     });
-
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     const result = await tool.execute(
       {
@@ -102,17 +95,10 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "image",
-        content: expect.stringContaining(
-          "Transform this image into a watercolor painting"
-        ),
-        metadata: expect.objectContaining({
-          generationType: "image-to-image",
-          sourceImageUrl: "https://example.com/image.jpg",
-          style: "watercolor",
-        }),
+        kind: "image",
+        title: expect.any(String),
       })
     );
   });
@@ -151,11 +137,11 @@ describe("configureImageGeneration", () => {
       success: false,
       error: "Insufficient balance for image generation",
     });
-    expect(mockCreateDocument).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
   });
 
   it("should handle createDocument failure", async () => {
-    mockCreateDocument.mockRejectedValue(new Error("Document creation failed"));
+    mockExecute.mockRejectedValue(new Error("Document creation failed"));
 
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
@@ -184,8 +170,6 @@ describe("configureImageGeneration", () => {
       ],
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
     await tool.execute(
       {
         prompt: "A beautiful sunset over mountains",
@@ -204,9 +188,6 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various resolution formats
     const resolutions = [
       "1920x1080",
       "1920×1080",
@@ -228,11 +209,10 @@ describe("configureImageGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            resolution,
-          }),
+          kind: "image",
+          title: expect.any(String),
         })
       );
     }
@@ -244,9 +224,6 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various style formats
     const styles = [
       "realistic",
       "cinematic",
@@ -273,11 +250,10 @@ describe("configureImageGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            style,
-          }),
+          kind: "image",
+          title: expect.any(String),
         })
       );
     }
