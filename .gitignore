@@ -55,3 +55,7 @@ _env.*
 
 dist/
 .pnpm-store/
+
+# TypeScript build files
+*.tsbuildinfo
+tsconfig.tsbuildinfo
