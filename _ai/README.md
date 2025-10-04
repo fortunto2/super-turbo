@@ -12,11 +12,12 @@ This directory contains the internal knowledge base for AI agents. It's a collec
 ## File Organization
 
 One file per functional area:
-- `testing.md` - Test patterns, Vitest/Playwright setup, mocking strategies
-- `sse-patterns.md` - Server-Sent Events implementation patterns
-- `integrations.md` - External API integration patterns
-- `performance.md` - Performance optimization patterns
-- etc.
+- `testing.md` - Test patterns, Vitest/Playwright setup, mocking strategies, Zod validation
+- `nextjs-patterns.md` - Next.js 15 & React 19 patterns, server vs client context, model selection
+- `common-fixes.md` - Typical bugs and solutions, documented fixes from real project work
+- `architecture-patterns.md` - Typed proxy architecture, SSE/WebSocket, artifacts, security
+- `monorepo-patterns.md` - Turborepo, pnpm workspaces, shared packages, build optimization
+- `aicode-system.md` - AICODE comment system (NOTE/TODO/ASK), workflow integration
 
 ## Writing Style
 
