@@ -15,6 +15,7 @@ console.log('🔧 Пересборка всех пакетов в правиль
 // Определяем порядок сборки пакетов (от базовых к зависимым)
 const packageOrder = [
   'packages/shared',
+  'packages/tailwind',
   'packages/ui', 
   'packages/core',
   'packages/api',
