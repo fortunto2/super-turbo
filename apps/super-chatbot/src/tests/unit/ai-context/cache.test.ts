@@ -148,7 +148,9 @@ describe("ContextCache", () => {
 
       // Добавляем больше записей, чем позволяет лимит
       await smallCache.setCachedContext("chat", "hash1", "image", mockContext);
+      await new Promise(resolve => setTimeout(resolve, 10));
       await smallCache.setCachedContext("chat", "hash2", "image", mockContext);
+      await new Promise(resolve => setTimeout(resolve, 10));
       await smallCache.setCachedContext("chat", "hash3", "image", mockContext);
 
       const stats = smallCache.getStats();

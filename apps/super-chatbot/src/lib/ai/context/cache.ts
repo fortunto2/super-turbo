@@ -87,17 +87,18 @@ export class ContextCache {
   ): Promise<void> {
     const key = this.generateKey(chatId, messageHash, mediaType);
 
-    // Проверяем, не превышает ли кэш максимальный размер
-    if (this.cache.size >= this.maxSize) {
-      this.evictOldest();
-    }
-
     const cachedContext: CachedContext = {
       context,
       timestamp: Date.now(),
       messageHash,
       chatId,
     };
+
+    // Проверяем, не превышает ли кэш максимальный размер
+    // Проверяем только если это новый ключ (не обновление существующего)
+    if (!this.cache.has(key) && this.cache.size >= this.maxSize) {
+      this.evictOldest();
+    }
 
     this.cache.set(key, cachedContext);
     console.log(
