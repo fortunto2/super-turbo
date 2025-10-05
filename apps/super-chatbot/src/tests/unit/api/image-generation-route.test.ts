@@ -8,7 +8,8 @@ import { selectImageToImageModel } from "@/lib/generation/model-utils";
 import { validateOperationBalance } from "@/lib/utils/tools-balance";
 
 // Mock dependencies
-vi.mock("@/app/(auth)/auth");
+// NOTE: DO NOT mock @/app/(auth)/auth here - it will be auto-loaded and use the
+// mocked NextAuth from setup.ts. We'll configure the mock in beforeEach.
 vi.mock("@/lib/config/superduperai");
 vi.mock("@turbo-super/api");
 vi.mock("@/lib/generation/model-utils");
@@ -32,13 +33,14 @@ describe("/api/generate/image/route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(auth).mockResolvedValue(mockSession);
-    vi.mocked(getSuperduperAIConfigWithUserToken).mockResolvedValue(mockConfig);
-    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: true });
+    // auth is a real vi.fn() created by the mocked NextAuth in setup.ts
+    (auth as any).mockResolvedValue(mockSession);
+    vi.mocked(getSuperduperAIConfigWithUserToken).mockReturnValue(mockConfig);
+    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: true, cost: 10 });
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    (auth as any).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost/api/generate/image", {
       method: "POST",
