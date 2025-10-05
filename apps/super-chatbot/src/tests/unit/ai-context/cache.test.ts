@@ -133,9 +133,10 @@ describe("ContextCache", () => {
 
     it("should handle cache size limits", async () => {
       // Создаем кэш с очень маленьким лимитом
-      const smallCache = new ContextCache();
-      // @ts-ignore - доступ к приватному свойству для тестирования
-      smallCache.maxSize = 2;
+      const smallCache = new ContextCache(2);
+      // Clear it first to ensure clean state
+      smallCache.clear();
+      smallCache.resetStats();
 
       const mockContext = {
         sourceUrl: "https://example.com/image.jpg",

@@ -22,13 +22,34 @@ describe("configureVideoGeneration", () => {
 
     vi.mocked(getVideoGenerationConfig).mockResolvedValue({
       type: "video" as any,
-      availableResolutions: ["1024x1024" as any],
-      availableStyles: ["realistic" as any],
-      availableShotSizes: ["close-up" as any],
+      availableResolutions: [
+        { id: "1024x1024", label: "1024x1024", value: "1024x1024" } as any,
+      ],
+      availableStyles: [
+        { id: "realistic", label: "realistic", value: "realistic" } as any,
+      ],
+      availableShotSizes: [
+        { id: "close-up", label: "close-up", value: "close-up" } as any,
+      ],
       availableModels: [] as any,
       availableFrameRates: [24, 30, 60] as any,
       availableDurations: [5, 10, 15, 30] as any,
-      defaultSettings: {} as any,
+      defaultSettings: {
+        resolution: {
+          id: "1024x1024",
+          label: "1024x1024",
+          value: "1024x1024",
+        } as any,
+        style: { id: "realistic", label: "realistic", value: "realistic" } as any,
+        shotSize: {
+          id: "close-up",
+          label: "close-up",
+          value: "close-up",
+        } as any,
+        model: { id: "ltx", name: "LTX", value: "ltx" } as any,
+        duration: 10,
+        frameRate: 30,
+      } as any,
     });
 
     vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
@@ -60,6 +81,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
     });
 
     const result = await tool.execute(
@@ -84,6 +107,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "Animate this image with gentle movement",
     });
 
     const result = await tool.execute(
@@ -109,6 +134,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "Transform this video into a different style",
     });
 
     const result = await tool.execute(
@@ -136,20 +163,26 @@ describe("configureVideoGeneration", () => {
       session: mockSession,
     });
 
-    await expect(
-      tool.execute({}, { toolCallId: "test-call", messages: [] })
-    ).rejects.toThrow();
+    // Test with missing prompt - should return config instead of throwing
+    const result = await tool.execute({}, { toolCallId: "test-call", messages: [] });
+
+    expect(result).toHaveProperty("type", "video");
+    expect(result).toHaveProperty("availableResolutions");
+    expect(result).toHaveProperty("availableStyles");
   });
 
   it("should handle balance check failure", async () => {
     vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
       valid: false,
       cost: 0,
+      userMessage: "Недостаточно средств для генерации видео",
     });
 
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
     });
 
     const result = await tool.execute(
@@ -159,9 +192,10 @@ describe("configureVideoGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(result).toEqual({
-      success: false,
-      error: "Insufficient balance for video generation",
+    expect(result).toMatchObject({
+      balanceError: true,
+      error: expect.stringContaining("Недостаточно средств"),
+      requiredCredits: 0,
     });
     expect(mockExecute).not.toHaveBeenCalled();
   });
@@ -172,6 +206,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
     });
 
     const result = await tool.execute(
@@ -181,9 +217,11 @@ describe("configureVideoGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(result).toEqual({
-      success: false,
-      error: "Failed to create video document: Document creation failed",
+    expect(result).toMatchObject({
+      error: expect.stringContaining("Ошибка создания видео"),
+      fallbackConfig: expect.objectContaining({
+        type: "video",
+      }),
     });
   });
 
@@ -191,6 +229,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
       currentAttachments: [
         { type: "video", url: "https://example.com/video.mp4" },
       ],
@@ -203,15 +243,20 @@ describe("configureVideoGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(analyzeVideoContext).toHaveBeenCalledWith([
-      { type: "video", url: "https://example.com/video.mp4" },
-    ]);
+    expect(analyzeVideoContext).toHaveBeenCalledWith(
+      "A beautiful sunset over mountains with gentle wind",
+      "test-chat",
+      [{ type: "video", url: "https://example.com/video.mp4" }],
+      "test-user"
+    );
   });
 
   it("should handle different resolution formats", async () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
     });
 
     const resolutions = [
@@ -249,6 +294,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
     });
 
     const durations = ["5", "8", "10", "15", "30"];
@@ -275,6 +322,8 @@ describe("configureVideoGeneration", () => {
     const tool = configureVideoGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains with gentle wind",
     });
 
     const styles = [

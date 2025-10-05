@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, beforeEach } from "vitest";
 import {
   saveArtifactToStorage,
   loadArtifactFromStorage,
@@ -8,23 +8,39 @@ import {
 } from "@/lib/utils/artifact-persistence";
 import type { SavedArtifactData } from "@/lib/utils/artifact-persistence";
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn(),
+// Mock localStorage with stateful implementation
+const createLocalStorageMock = () => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: (index: number) => Object.keys(store)[index] || null,
+    getStore: () => store, // For debugging
+  };
 };
+
+const localStorageMock = createLocalStorageMock();
 
 Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
+  writable: true,
 });
 
 describe("Artifact Persistence", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    localStorageMock.clear();
   });
 
   const mockArtifact = {
@@ -42,25 +58,44 @@ describe("Artifact Persistence", () => {
 
       saveArtifactToStorage(chatId, mockArtifact);
 
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        "artifact-test-chat-123",
-        expect.stringContaining(chatId)
-      );
+      const saved = localStorageMock.getItem("artifact-test-chat-123");
+      expect(saved).toBeTruthy();
+      expect(saved).toContain("test-doc-123");
     });
 
     it("should handle errors gracefully", () => {
-      localStorageMock.setItem.mockImplementation(() => {
-        throw new Error("Storage error");
+      // Create a mock that throws
+      const originalSetItem = localStorageMock.setItem;
+      let callCount = 0;
+
+      // Replace setItem with a version that throws
+      Object.defineProperty(localStorageMock, 'setItem', {
+        value: () => {
+          callCount++;
+          throw new Error("Storage error");
+        },
+        writable: true,
+        configurable: true,
       });
 
       const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-      saveArtifactToStorage("test-chat", mockArtifact);
+      // Should not throw
+      expect(() => {
+        saveArtifactToStorage("test-chat", mockArtifact);
+      }).not.toThrow();
 
-      // Function should not throw, but may log errors
+      // Function should log warning
       expect(consoleSpy).toHaveBeenCalled();
 
       consoleSpy.mockRestore();
+
+      // Restore original setItem
+      Object.defineProperty(localStorageMock, 'setItem', {
+        value: originalSetItem,
+        writable: true,
+        configurable: true,
+      });
     });
   });
 
@@ -78,19 +113,14 @@ describe("Artifact Persistence", () => {
         version: "2.0",
       };
 
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(savedState));
+      localStorageMock.setItem("artifact-test-chat-123", JSON.stringify(savedState));
 
       const result = loadArtifactFromStorage(chatId);
 
       expect(result).toEqual(savedState);
-      expect(localStorageMock.getItem).toHaveBeenCalledWith(
-        "artifact-test-chat-123"
-      );
     });
 
     it("should return null if no saved state", () => {
-      localStorageMock.getItem.mockReturnValue(null);
-
       const result = loadArtifactFromStorage("test-chat");
 
       expect(result).toBeNull();
@@ -109,14 +139,13 @@ describe("Artifact Persistence", () => {
         version: "2.0",
       };
 
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(expiredState));
+      localStorageMock.setItem("artifact-test-chat-123", JSON.stringify(expiredState));
 
       const result = loadArtifactFromStorage(chatId);
 
       expect(result).toBeNull();
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        "artifact-test-chat-123"
-      );
+      // Check that expired data was removed
+      expect(localStorageMock.getItem("artifact-test-chat-123")).toBeNull();
     });
   });
 
@@ -124,17 +153,18 @@ describe("Artifact Persistence", () => {
     it("should clear artifact state for specific chat", () => {
       const chatId = "test-chat-123";
 
+      // First save something
+      localStorageMock.setItem("artifact-test-chat-123", "some data");
+
       clearArtifactFromStorage(chatId);
 
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        "artifact-test-chat-123"
-      );
+      expect(localStorageMock.getItem("artifact-test-chat-123")).toBeNull();
     });
   });
 
   describe("hasSavedArtifact", () => {
     it("should return true if state exists", () => {
-      localStorageMock.getItem.mockReturnValue("some-state");
+      localStorageMock.setItem("artifact-test-chat", "some-state");
 
       const result = hasSavedArtifact("test-chat");
 
@@ -142,8 +172,6 @@ describe("Artifact Persistence", () => {
     });
 
     it("should return false if no state exists", () => {
-      localStorageMock.getItem.mockReturnValue(null);
-
       const result = hasSavedArtifact("test-chat");
 
       expect(result).toBe(false);
@@ -181,21 +209,15 @@ describe("Artifact Persistence", () => {
         },
       ];
 
-      localStorageMock.length = 2;
-      localStorageMock.key = vi
-        .fn()
-        .mockReturnValueOnce("artifact-chat1")
-        .mockReturnValueOnce("artifact-chat2");
-      localStorageMock.getItem = vi
-        .fn()
-        .mockReturnValueOnce(JSON.stringify(mockArtifacts[0]?.data))
-        .mockReturnValueOnce(JSON.stringify(mockArtifacts[1]?.data));
+      // Save artifacts directly to storage
+      localStorageMock.setItem("artifact-chat-1", JSON.stringify(mockArtifacts[0]?.data));
+      localStorageMock.setItem("artifact-chat-2", JSON.stringify(mockArtifacts[1]?.data));
 
       const result = getAllSavedArtifacts();
 
       expect(result).toHaveLength(2);
-      expect(result[0]?.chatId).toBe("chat1");
-      expect(result[1]?.chatId).toBe("chat2");
+      expect(result[0]?.chatId).toBe("chat-1");
+      expect(result[1]?.chatId).toBe("chat-2");
     });
   });
 });

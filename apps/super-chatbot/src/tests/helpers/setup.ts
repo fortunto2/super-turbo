@@ -31,6 +31,30 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
+// Mock next-auth server
+vi.mock("next-auth", () => ({
+  default: vi.fn(() => ({
+    handlers: { GET: vi.fn(), POST: vi.fn() },
+    auth: vi.fn(),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  })),
+}));
+
+// Mock next/server for next-auth and API routes
+vi.mock("next/server", () => ({
+  NextResponse: {
+    json: vi.fn((data, init) => ({
+      json: () => Promise.resolve(data),
+      status: init?.status || 200,
+      statusText: init?.statusText || 'OK',
+      headers: new Headers(init?.headers),
+    })),
+    redirect: vi.fn((url) => ({ redirect: url })),
+  },
+  NextRequest: vi.fn(),
+}));
+
 // Mock environment variables
 vi.mock("process", () => ({
   env: {

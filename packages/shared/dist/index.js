@@ -108,7 +108,7 @@ function isValidUrl(url) {
   }
 }
 function isValidPhone(phone) {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
   return phoneRegex.test(phone.replace(/\s/g, ""));
 }
 function isValidPassword(password) {
@@ -233,10 +233,10 @@ function useLocalStorage(key, initialValue) {
 }
 
 // src/hooks/use-media-query.ts
-import { useState as useState3, useEffect as useEffect3 } from "react";
+import { useState as useState3, useEffect as useEffect2 } from "react";
 function useMediaQuery(query) {
   const [matches, setMatches] = useState3(false);
-  useEffect3(() => {
+  useEffect2(() => {
     if (typeof window === "undefined") return;
     const media = window.matchMedia(query);
     setMatches(media.matches);
@@ -255,9 +255,9 @@ var useIsDarkMode = () => useMediaQuery("(prefers-color-scheme: dark)");
 var useIsReducedMotion = () => useMediaQuery("(prefers-reduced-motion: reduce)");
 
 // src/hooks/use-click-outside.ts
-import { useEffect as useEffect4 } from "react";
+import { useEffect as useEffect3 } from "react";
 function useClickOutside(ref, handler) {
-  useEffect4(() => {
+  useEffect3(() => {
     const listener = (event) => {
       const el = ref == null ? void 0 : ref.current;
       if (!el || el.contains((event == null ? void 0 : event.target) || null)) {
@@ -2836,7 +2836,7 @@ function getSuperLandingDictionary(locale) {
 }
 function getClientSuperLandingTranslation(locale) {
   const dict = getSuperLandingDictionary(locale);
-  function t(key, fallback) {
+  const t = (key, fallback) => {
     const keys = key.split(".");
     let value = dict;
     for (const k of keys) {
@@ -2848,7 +2848,7 @@ function getClientSuperLandingTranslation(locale) {
       }
     }
     return value;
-  }
+  };
   return { t, dict };
 }
 
@@ -2922,7 +2922,7 @@ function getTranslation(dictionary, key, fallback) {
   if (typeof value === "string") {
     return value;
   }
-  return fallback || key;
+  return fallback != null ? fallback : key;
 }
 function interpolateTranslation(text, variables) {
   return text.replace(/\{(\w+)\}/g, (match, key) => {

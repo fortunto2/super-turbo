@@ -32,11 +32,12 @@ export class ContextCache {
   };
 
   // Настройки кэша
-  private readonly maxSize = 1000; // Максимальное количество записей
+  private maxSize = 1000; // Максимальное количество записей
   private readonly ttl = 300000; // 5 минут в миллисекундах
   private readonly cleanupInterval = 60000; // 1 минута
 
-  constructor() {
+  constructor(maxSize = 1000) {
+    this.maxSize = maxSize;
     // Запускаем периодическую очистку устаревших записей
     setInterval(() => this.cleanup(), this.cleanupInterval);
   }

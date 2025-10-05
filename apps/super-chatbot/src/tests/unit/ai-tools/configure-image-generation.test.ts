@@ -24,11 +24,30 @@ describe("configureImageGeneration", () => {
     // Mock successful responses
     vi.mocked(getImageGenerationConfig).mockResolvedValue({
       type: "image" as any,
-      availableResolutions: ["1024x1024" as any],
-      availableStyles: ["realistic" as any],
-      availableShotSizes: ["close-up" as any],
+      availableResolutions: [
+        { id: "1024x1024", label: "1024x1024", value: "1024x1024" } as any,
+      ],
+      availableStyles: [
+        { id: "realistic", label: "realistic", value: "realistic" } as any,
+      ],
+      availableShotSizes: [
+        { id: "close-up", label: "close-up", value: "close-up" } as any,
+      ],
       availableModels: [] as any,
-      defaultSettings: {} as any,
+      defaultSettings: {
+        resolution: {
+          id: "1024x1024",
+          label: "1024x1024",
+          value: "1024x1024",
+        } as any,
+        style: { id: "realistic", label: "realistic", value: "realistic" } as any,
+        shotSize: {
+          id: "close-up",
+          label: "close-up",
+          value: "close-up",
+        } as any,
+        model: { id: "flux", name: "FLUX", value: "flux" } as any,
+      } as any,
     });
 
     vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
@@ -60,6 +79,8 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "Create a beautiful sunset over mountains",
     });
 
     const result = await tool.execute(
@@ -83,6 +104,8 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "Transform this image into a watercolor painting",
     });
 
     const result = await tool.execute(
@@ -109,16 +132,19 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    // Test with missing prompt
-    await expect(
-      tool.execute({}, { toolCallId: "test-call", messages: [] })
-    ).rejects.toThrow();
+    // Test with missing prompt - should return config instead of throwing
+    const result = await tool.execute({}, { toolCallId: "test-call", messages: [] });
+
+    expect(result).toHaveProperty("type", "image");
+    expect(result).toHaveProperty("availableResolutions");
+    expect(result).toHaveProperty("availableStyles");
   });
 
   it("should handle balance check failure", async () => {
     vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
       valid: false,
       cost: 0,
+      userMessage: "Недостаточно средств для генерации изображения",
     });
 
     const tool = configureImageGeneration({
@@ -133,9 +159,10 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(result).toEqual({
-      success: false,
-      error: "Insufficient balance for image generation",
+    expect(result).toMatchObject({
+      balanceError: true,
+      error: expect.stringContaining("Недостаточно средств"),
+      requiredCredits: 0,
     });
     expect(mockExecute).not.toHaveBeenCalled();
   });
@@ -155,9 +182,11 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(result).toEqual({
-      success: false,
-      error: "Failed to create image document: Document creation failed",
+    expect(result).toMatchObject({
+      error: expect.stringContaining("Failed to create image document"),
+      fallbackConfig: expect.objectContaining({
+        type: "image",
+      }),
     });
   });
 
@@ -165,6 +194,8 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains",
       currentAttachments: [
         { type: "image", url: "https://example.com/image.jpg" },
       ],
@@ -177,15 +208,20 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(analyzeImageContext).toHaveBeenCalledWith([
-      { type: "image", url: "https://example.com/image.jpg" },
-    ]);
+    expect(analyzeImageContext).toHaveBeenCalledWith(
+      "A beautiful sunset over mountains",
+      "test-chat",
+      [{ type: "image", url: "https://example.com/image.jpg" }],
+      "test-user"
+    );
   });
 
   it("should handle different resolution formats", async () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains",
     });
 
     const resolutions = [
@@ -222,6 +258,8 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains",
     });
 
     const styles = [
