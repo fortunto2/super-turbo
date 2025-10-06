@@ -36,7 +36,7 @@ import {
 import { after } from "next/server";
 import type { Chat } from "@/lib/db/schema";
 import { differenceInSeconds } from "date-fns";
-import * as Sentry from "@sentry/nextjs";
+// import * as Sentry from "@sentry/nextjs";
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
 import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
 import { configureAudioGeneration } from "@/lib/ai/tools/configure-audio-generation";
@@ -235,16 +235,16 @@ export async function POST(request: Request) {
     }
 
     // Логируем данные сессии для отладки
-    Sentry.addBreadcrumb({
-      category: "auth",
-      message: "Session user info before Gemini chat creation",
-      level: "info",
-      data: {
-        userId: session.user.id,
-        email: session.user.email,
-        type: session.user.type,
-      },
-    });
+    // Sentry.addBreadcrumb({
+    //   category: "auth",
+    //   message: "Session user info before Gemini chat creation",
+    //   level: "info",
+    //   data: {
+    //     userId: session.user.id,
+    //     email: session.user.email,
+    //     type: session.user.type,
+    //   },
+    // });
 
     const userType: UserType = session.user.type;
 
@@ -262,12 +262,12 @@ export async function POST(request: Request) {
         );
 
         // Логируем успешное создание пользователя
-        Sentry.addBreadcrumb({
-          category: "auth",
-          message: "User created before Gemini chat creation",
-          level: "info",
-          data: { userId: session.user.id },
-        });
+        // Sentry.addBreadcrumb({
+        //   category: "auth",
+        //   message: "User created before Gemini chat creation",
+        //   level: "info",
+        //   data: { userId: session.user.id },
+        // });
       } else {
         // Пользователь найден по email, обновим userId в сессии для создания чата
         const foundUser = users[0];
@@ -277,16 +277,16 @@ export async function POST(request: Request) {
           );
 
           // Логируем, что мы используем другой ID
-          Sentry.addBreadcrumb({
-            category: "auth",
-            message: "Using existing user ID from database",
-            level: "info",
-            data: {
-              sessionUserId: session.user.id,
-              databaseUserId: foundUser?.id ?? session.user.id,
-              email: session.user.email,
-            },
-          });
+          // Sentry.addBreadcrumb({
+          //   category: "auth",
+          //   message: "Using existing user ID from database",
+          //   level: "info",
+          //   data: {
+          //     sessionUserId: session.user.id,
+          //     databaseUserId: foundUser?.id ?? session.user.id,
+          //     email: session.user.email,
+          //   },
+          // });
 
           // Используем ID из базы данных для создания чата
           session.user.id = foundUser?.id ?? session.user.id;
@@ -294,13 +294,13 @@ export async function POST(request: Request) {
       }
     } catch (userError) {
       console.error("Failed to ensure user exists:", userError);
-      Sentry.captureException(userError, {
-        tags: { operation: "user_check_before_gemini_chat" },
-        extra: {
-          userId: session.user.id,
-          email: session.user.email,
-        },
-      });
+      // Sentry.captureException(userError, {
+      //   tags: { operation: "user_check_before_gemini_chat" },
+      //   extra: {
+      //     userId: session.user.id,
+      //     email: session.user.email,
+      //   },
+      // });
       // Продолжаем выполнение, но логируем ошибку
     }
 
@@ -336,16 +336,16 @@ export async function POST(request: Request) {
         savedChat = true;
 
         // Логируем успешное создание чата
-        Sentry.addBreadcrumb({
-          category: "chat",
-          message: `Gemini chat created: ${id}`,
-          level: "info",
-          data: {
-            chatId: id,
-            userId: session.user.id,
-            visibility: selectedVisibilityType,
-          },
-        });
+        // Sentry.addBreadcrumb({
+        //   category: "chat",
+        //   message: `Gemini chat created: ${id}`,
+        //   level: "info",
+        //   data: {
+        //     chatId: id,
+        //     userId: session.user.id,
+        //     visibility: selectedVisibilityType,
+        //   },
+        // });
       } catch (error) {
         console.error("Failed to save Gemini chat:", error);
 
@@ -357,17 +357,17 @@ export async function POST(request: Request) {
             error.message.includes("Key (userId)"))
         ) {
           // Логируем событие в Sentry
-          Sentry.captureException(error, {
-            tags: {
-              error_type: "foreign_key_constraint",
-              entity: "gemini_chat",
-            },
-            extra: {
-              chatId: id,
-              userId: session.user.id,
-              email: session.user.email || "unknown",
-            },
-          });
+          // Sentry.captureException(error, {
+          //   tags: {
+          //     error_type: "foreign_key_constraint",
+          //     entity: "gemini_chat",
+          //   },
+          //   extra: {
+          //     chatId: id,
+          //     userId: session.user.id,
+          //     email: session.user.email || "unknown",
+          //   },
+          // });
 
           console.log(`Trying to auto-create user with ID: ${session.user.id}`);
 
@@ -392,12 +392,12 @@ export async function POST(request: Request) {
             savedChat = true;
 
             // Логируем успешное восстановление ситуации
-            Sentry.addBreadcrumb({
-              category: "chat",
-              message: `Gemini chat created after user recovery: ${id}`,
-              level: "info",
-              data: { chatId: id, userId: session.user.id },
-            });
+            // Sentry.addBreadcrumb({
+            //   category: "chat",
+            //   message: `Gemini chat created after user recovery: ${id}`,
+            //   level: "info",
+            //   data: { chatId: id, userId: session.user.id },
+            // });
           } catch (innerError) {
             console.error(
               "Failed to auto-create user and save Gemini chat:",
@@ -405,17 +405,17 @@ export async function POST(request: Request) {
             );
 
             // Логируем ошибку в Sentry
-            Sentry.captureException(innerError, {
-              tags: {
-                error_type: "failed_gemini_chat_recovery",
-                entity: "user_and_gemini_chat",
-              },
-              extra: {
-                chatId: id,
-                userId: session.user.id,
-                email: session.user.email || "unknown",
-              },
-            });
+            // Sentry.captureException(innerError, {
+            //   tags: {
+            //     error_type: "failed_gemini_chat_recovery",
+            //     entity: "user_and_gemini_chat",
+            //   },
+            //   extra: {
+            //     chatId: id,
+            //     userId: session.user.id,
+            //     email: session.user.email || "unknown",
+            //   },
+            // });
 
             // Возвращаем ошибку клиенту с детальным описанием
             return new Response(
@@ -436,17 +436,17 @@ export async function POST(request: Request) {
           }
         } else {
           // Другие ошибки при создании чата
-          Sentry.captureException(error as Error, {
-            tags: {
-              error_type: "gemini_chat_creation_failed",
-              entity: "gemini_chat",
-            },
-            extra: {
-              chatId: id,
-              userId: session.user.id,
-              errorMessage: (error as Error).message,
-            },
-          });
+          // Sentry.captureException(error as Error, {
+          //   tags: {
+          //     error_type: "gemini_chat_creation_failed",
+          //     entity: "gemini_chat",
+          //   },
+          //   extra: {
+          //     chatId: id,
+          //     userId: session.user.id,
+          //     errorMessage: (error as Error).message,
+          //   },
+          // });
 
           return new Response(
             JSON.stringify({
@@ -484,18 +484,18 @@ export async function POST(request: Request) {
     } else {
       if (chat.userId !== session.user.id) {
         // Логируем попытку доступа к чужому чату
-        Sentry.captureMessage(
-          `Unauthorized Gemini chat access attempt: ${id}`,
-          {
-            level: "warning",
-            tags: { error_type: "unauthorized", entity: "gemini_chat" },
-            extra: {
-              chatId: id,
-              chatOwnerId: chat.userId,
-              userId: session.user.id,
-            },
-          }
-        );
+        // Sentry.captureMessage(
+        //   `Unauthorized Gemini chat access attempt: ${id}`,
+        //   {
+        //     level: "warning",
+        //     tags: { error_type: "unauthorized", entity: "gemini_chat" },
+        //     extra: {
+        //       chatId: id,
+        //       chatOwnerId: chat.userId,
+        //       userId: session.user.id,
+        //     },
+        //   }
+        // );
 
         return new Response("Forbidden", { status: 403 });
       }

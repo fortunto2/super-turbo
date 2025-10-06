@@ -6,7 +6,7 @@ import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import type { DBMessage } from "@/lib/db/schema";
 import type { Attachment, UIMessage } from "ai";
-import * as Sentry from "@sentry/nextjs";
+// import * as Sentry from "@sentry/nextjs";
 import Script from "next/script";
 import { BananaVeo3ChatWrapper } from "./banana-veo3-chat-wrapper";
 
@@ -24,42 +24,42 @@ export default async function BananaVeo3ChatPage(props: {
         id
       )
     ) {
-      Sentry.captureMessage(`Invalid banana-veo3 chat ID format: ${id}`, {
-        level: "error",
-        tags: { error_type: "invalid_uuid", entity: "banana-veo3-chat" },
-        extra: { chatId: id },
-      });
+      // Sentry.captureMessage(`Invalid banana-veo3 chat ID format: ${id}`, {
+      //   level: "error",
+      //   tags: { error_type: "invalid_uuid", entity: "banana-veo3-chat" },
+      //   extra: { chatId: id },
+      // });
       notFound();
     }
 
-    Sentry.addBreadcrumb({
-      category: "banana-veo3",
-      message: `Loading banana-veo3 chat page: ${id}`,
-      level: "info",
-      data: { chatId: id },
-    });
+    // Sentry.addBreadcrumb({
+    //   category: "banana-veo3",
+    //   message: `Loading banana-veo3 chat page: ${id}`,
+    //   level: "info",
+    //   data: { chatId: id },
+    // });
 
     const session = await auth();
 
     if (!session) {
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: `No session found when accessing banana-veo3 chat: ${id}`,
-        level: "info",
-      });
+      // Sentry.addBreadcrumb({
+      //   category: "auth",
+      //   message: `No session found when accessing banana-veo3 chat: ${id}`,
+      //   level: "info",
+      // });
       redirect("/api/auth/guest");
     }
 
     // Дополнительная проверка существования пользователя
     if (!session.user || !session.user.id) {
-      Sentry.captureMessage(
-        `Invalid session user when accessing banana-veo3 chat: ${id}`,
-        {
-          level: "warning",
-          tags: { error_type: "invalid_session", entity: "banana-veo3-chat" },
-          extra: { chatId: id, session: session },
-        }
-      );
+      // Sentry.captureMessage(
+      //   `Invalid session user when accessing banana-veo3 chat: ${id}`,
+      //   {
+      //     level: "warning",
+      //     tags: { error_type: "invalid_session", entity: "banana-veo3-chat" },
+      //     extra: { chatId: id, session: session },
+      //   }
+      // );
       redirect("/api/auth/guest");
     }
 
@@ -71,29 +71,29 @@ export default async function BananaVeo3ChatPage(props: {
       // Проверяем права доступа только для существующих чатов
       if (chat.visibility === "private") {
         if (!session.user) {
-          Sentry.captureMessage(
-            `Access denied to private banana-veo3 chat: ${id}`,
-            {
-              level: "warning",
-              tags: { error_type: "access_denied", entity: "banana-veo3-chat" },
-            }
-          );
+          // Sentry.captureMessage(
+          //   `Access denied to private banana-veo3 chat: ${id}`,
+          //   {
+          //     level: "warning",
+          //     tags: { error_type: "access_denied", entity: "banana-veo3-chat" },
+          //   }
+          // );
           return notFound();
         }
 
         if (session.user.id !== chat.userId) {
-          Sentry.captureMessage(
-            `Unauthorized access to private banana-veo3 chat: ${id}`,
-            {
-              level: "warning",
-              tags: { error_type: "unauthorized", entity: "banana-veo3-chat" },
-              extra: {
-                chatId: id,
-                chatOwnerId: chat.userId,
-                userId: session.user.id,
-              },
-            }
-          );
+          // Sentry.captureMessage(
+          //   `Unauthorized access to private banana-veo3 chat: ${id}`,
+          //   {
+          //     level: "warning",
+          //     tags: { error_type: "unauthorized", entity: "banana-veo3-chat" },
+          //     extra: {
+          //       chatId: id,
+          //       chatOwnerId: chat.userId,
+          //       userId: session.user.id,
+          //     },
+          //   }
+          // );
           return notFound();
         }
       }
@@ -175,19 +175,19 @@ export default async function BananaVeo3ChatPage(props: {
       );
     } catch (error) {
       // Логируем ошибку получения сообщений
-      Sentry.captureException(error, {
-        tags: { source: "banana_veo3_chat_page", chatId: id },
-        extra: {
-          chatId: id,
-          chatUserId: chat?.userId,
-          sessionUserId: session?.user?.id,
-        },
-      });
+      // Sentry.captureException(error, {
+      //   tags: { source: "banana_veo3_chat_page", chatId: id },
+      //   extra: {
+      //     chatId: id,
+      //     chatUserId: chat?.userId,
+      //     sessionUserId: session?.user?.id,
+      //   },
+      // });
       throw error;
     }
   } catch (error) {
     // Отлавливаем любые другие ошибки в компоненте
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     throw error;
   }
 }

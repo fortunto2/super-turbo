@@ -2,7 +2,7 @@ import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
-import { Analytics } from "@vercel/analytics/next";
+// import { Analytics } from "@vercel/analytics/next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
 
@@ -101,7 +101,7 @@ export default async function RootLayout({
             <SessionProvider>
               <QueryProvider>{children}</QueryProvider>
             </SessionProvider>
-            <Analytics />
+            {/* <Analytics /> */}
           </SidebarProvider>
         </ThemeProvider>
       </body>

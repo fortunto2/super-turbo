@@ -37,6 +37,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/minimatch": "^6.0.0",
     "@types/node": "^20.0.0",
     "tsup": "^8.0.2",
     "typescript": "^5.6.3"

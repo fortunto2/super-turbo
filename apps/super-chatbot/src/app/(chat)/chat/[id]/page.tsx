@@ -6,7 +6,7 @@ import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import type { DBMessage } from "@/lib/db/schema";
 import type { Attachment, UIMessage } from "ai";
-import * as Sentry from "@sentry/nextjs";
+// import * as Sentry from "@sentry/nextjs";
 import { ChatPageWrapper } from "@/components/chat/chat-page-wrapper";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
@@ -24,72 +24,72 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         id
       )
     ) {
-      Sentry.captureMessage(`Invalid chat ID format: ${id}`, {
-        level: "error",
-        tags: { error_type: "invalid_uuid", entity: "chat" },
-        extra: { chatId: id },
-      });
+      // Sentry.captureMessage(`Invalid chat ID format: ${id}`, {
+      //   level: "error",
+      //   tags: { error_type: "invalid_uuid", entity: "chat" },
+      //   extra: { chatId: id },
+      // });
       notFound();
     }
 
-    Sentry.addBreadcrumb({
-      category: "chat",
-      message: `Loading chat page: ${id}`,
-      level: "info",
-      data: { chatId: id },
-    });
+    // Sentry.addBreadcrumb({
+    //   category: "chat",
+    //   message: `Loading chat page: ${id}`,
+    //   level: "info",
+    //   data: { chatId: id },
+    // });
 
     const chat = await getChatById({ id });
 
     if (!chat) {
-      Sentry.captureMessage(`Chat not found: ${id}`, {
-        level: "error",
-        tags: { error_type: "404", entity: "chat" },
-        extra: { chatId: id },
-      });
+      // Sentry.captureMessage(`Chat not found: ${id}`, {
+      //   level: "error",
+      //   tags: { error_type: "404", entity: "chat" },
+      //   extra: { chatId: id },
+      // });
       notFound();
     }
 
     const session = await auth();
 
     if (!session) {
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: `No session found when accessing chat: ${id}`,
-        level: "info",
-      });
+      // Sentry.addBreadcrumb({
+      //   category: "auth",
+      //   message: `No session found when accessing chat: ${id}`,
+      //   level: "info",
+      // });
       redirect("/api/auth/guest");
     }
 
     // Дополнительная проверка существования пользователя
     if (!session.user || !session.user.id) {
-      Sentry.captureMessage(`Invalid session user when accessing chat: ${id}`, {
-        level: "warning",
-        tags: { error_type: "invalid_session", entity: "chat" },
-        extra: { chatId: id, session: session },
-      });
+      // Sentry.captureMessage(`Invalid session user when accessing chat: ${id}`, {
+      //   level: "warning",
+      //   tags: { error_type: "invalid_session", entity: "chat" },
+      //   extra: { chatId: id, session: session },
+      // });
       redirect("/api/auth/guest");
     }
 
     if (chat.visibility === "private") {
       if (!session.user) {
-        Sentry.captureMessage(`Access denied to private chat: ${id}`, {
-          level: "warning",
-          tags: { error_type: "access_denied", entity: "chat" },
-        });
+        // Sentry.captureMessage(`Access denied to private chat: ${id}`, {
+        //   level: "warning",
+        //   tags: { error_type: "access_denied", entity: "chat" },
+        // });
         return notFound();
       }
 
       if (session.user.id !== chat.userId) {
-        Sentry.captureMessage(`Unauthorized access to private chat: ${id}`, {
-          level: "warning",
-          tags: { error_type: "unauthorized", entity: "chat" },
-          extra: {
-            chatId: id,
-            chatOwnerId: chat.userId,
-            userId: session.user.id,
-          },
-        });
+        // Sentry.captureMessage(`Unauthorized access to private chat: ${id}`, {
+        //   level: "warning",
+        //   tags: { error_type: "unauthorized", entity: "chat" },
+        //   extra: {
+        //     chatId: id,
+        //     chatOwnerId: chat.userId,
+        //     userId: session.user.id,
+        //   },
+        // });
         return notFound();
       }
     }
@@ -151,19 +151,19 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       );
     } catch (error) {
       // Логируем ошибку получения сообщений
-      Sentry.captureException(error, {
-        tags: { source: "chat_page", chatId: id },
-        extra: {
-          chatId: id,
-          chatUserId: chat.userId,
-          sessionUserId: session?.user?.id,
-        },
-      });
+      // Sentry.captureException(error, {
+      //   tags: { source: "chat_page", chatId: id },
+      //   extra: {
+      //     chatId: id,
+      //     chatUserId: chat.userId,
+      //     sessionUserId: session?.user?.id,
+      //   },
+      // });
       throw error;
     }
   } catch (error) {
     // Отлавливаем любые другие ошибки в компоненте
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     throw error;
   }
 }

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import * as Sentry from '@sentry/nextjs';
-import { useEffect } from 'react';
-import Link from 'next/link';
+// import * as Sentry from '@sentry/nextjs';
+import { useEffect } from "react";
+import Link from "next/link";
 
 export default function NotFound() {
-  useEffect(() => {
-    // Логируем 404 ошибку в Sentry
-    Sentry.captureMessage('404 Not Found', {
-      level: 'error',
-      tags: {
-        error_type: '404',
-        page: window.location.pathname,
-      },
-    });
-  }, []);
+  // useEffect(() => {
+  //   // Логируем 404 ошибку в Sentry
+  //   Sentry.captureMessage('404 Not Found', {
+  //     level: 'error',
+  //     tags: {
+  //       error_type: '404',
+  //       page: window.location.pathname,
+  //     },
+  //   });
+  // }, []);
 
   return (
     <div className="flex h-dvh items-center justify-center bg-background">
