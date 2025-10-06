@@ -17,6 +17,8 @@
   "scripts": {
     "build": "tsup && node restore-types.js",
     "build:types": "node restore-types.js",
+    "build:dts": "tsup src/index.ts --dts --tsconfig tsconfig.build.json",
+    "build:all": "pnpm run build && pnpm run build:dts",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/",
