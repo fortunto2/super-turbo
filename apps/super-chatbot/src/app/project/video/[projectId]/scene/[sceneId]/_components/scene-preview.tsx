@@ -1,8 +1,4 @@
-import {
-  useMediaPrefetch,
-  TextToolbar,
-  type FabricControllerType,
-} from "@turbo-super/features";
+import { useMediaPrefetch, TextToolbar } from "@turbo-super/features";
 import type { ToolType } from "./toolbar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileTypeEnum } from "@turbo-super/api";
@@ -58,7 +54,7 @@ export const ScenePreview = ({
   });
 
   const updateToolbarAnchorFromTarget = useCallback(
-    (target?: FabricControllerType) => {
+    (target?: any) => {
       if (!controller) return;
       const textbox = target ?? controller.getActiveText();
       if (!textbox) {
