@@ -108,7 +108,7 @@ function addModelConfigsToFile(filePath, slug) {
   }
 
   // Находим позицию после locale
-  const localeMatch = content.match(/locale:\s*["']?(\w+)["']?/);
+  const localeMatch = content?.match(/locale:\s*["']?(\w+)["']?/);
   if (!localeMatch) {
     console.log(`Не найден locale в ${filePath}`);
     return;

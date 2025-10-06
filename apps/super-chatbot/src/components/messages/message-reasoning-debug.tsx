@@ -26,7 +26,7 @@ export function MessageReasoningDebug({
     reasoningText = reasoning;
 
     // Для случая, когда think tags находятся в тексте
-    const thinkMatch = reasoning.match(/<think>(.*?)<\/think>/s);
+    const thinkMatch = reasoning?.match(/<think>(.*?)<\/think>/s);
     if (thinkMatch?.[1]) {
       reasoningText = thinkMatch[1].trim();
     }
@@ -70,7 +70,7 @@ export function MessageReasoningDebug({
       message.content &&
       typeof message.content === "string"
     ) {
-      const thinkMatch = message.content.match(/<think>(.*?)<\/think>/s);
+      const thinkMatch = message.content?.match(/<think>(.*?)<\/think>/s);
       if (thinkMatch?.[1]) {
         reasoningText = thinkMatch[1].trim();
       }

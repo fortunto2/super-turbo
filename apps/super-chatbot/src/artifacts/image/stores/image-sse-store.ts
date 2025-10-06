@@ -290,8 +290,8 @@ class ImageSSEStore {
   // AICODE-NOTE: Initialize SSE connection using EventSource
   initConnection(url: string, handlers: ImageEventHandler[]) {
     // Extract ID from URL for tracking (supports both file.{fileId} and project.{projectId})
-    const fileIdMatch = url.match(/file\.([^/]+)/);
-    const projectIdMatch = url.match(/project\.([^/]+)/);
+    const fileIdMatch = url?.match(/file\.([^/]+)/);
+    const projectIdMatch = url?.match(/project\.([^/]+)/);
 
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     const projectId = projectIdMatch ? projectIdMatch[1] : null;

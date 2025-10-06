@@ -23,7 +23,7 @@ const parseResolution = (resolutionString?: string) => {
   let height = 1080;
 
   if (resolutionString) {
-    const match = resolutionString.match(/(\d+)x(\d+)/);
+    const match = resolutionString?.match(/(\d+)x(\d+)/);
     if (match?.[1] && match[2]) {
       width = Number.parseInt(match[1], 10);
       height = Number.parseInt(match[2], 10);

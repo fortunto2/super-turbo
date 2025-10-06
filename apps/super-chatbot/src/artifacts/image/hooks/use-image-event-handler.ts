@@ -118,7 +118,7 @@ export const useImageEventHandler = (
                     // Check if it's an image file using type field
                     const isImage =
                       fileResponse.type === FileTypeEnum.IMAGE ||
-                      fileResponse.url.match(
+                      fileResponse.url?.match(
                         /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
                       );
 
@@ -167,7 +167,7 @@ export const useImageEventHandler = (
           // Also handle case where file data is directly in eventData
           else if (eventData.url) {
             // Check if it's an image file
-            const isImage = eventData.url.match(
+            const isImage = eventData.url?.match(
               /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
             );
 
@@ -211,7 +211,7 @@ export const useImageEventHandler = (
                   // Check if it's an image file using type field
                   const isImage =
                     fileResponse.type === FileTypeEnum.IMAGE ||
-                    fileResponse.url.match(
+                    fileResponse.url?.match(
                       /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
                     );
 
@@ -529,7 +529,9 @@ export const useImageEventHandler = (
           if (eventData.status) {
             onStateUpdate({
               status: eventData.status as ImageGenerationState["status"],
-              ...(eventData.progress !== undefined && { progress: eventData.progress }),
+              ...(eventData.progress !== undefined && {
+                progress: eventData.progress,
+              }),
               ...(eventData.imageUrl && { imageUrl: eventData.imageUrl }),
               ...(eventData.error && { error: eventData.error }),
               projectId: eventData.projectId || projectId,

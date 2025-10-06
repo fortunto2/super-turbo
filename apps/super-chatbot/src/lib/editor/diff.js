@@ -264,7 +264,7 @@ export const patchTextNodes = (schema, oldNode, newNode) => {
 
 // Function to tokenize text into sentences
 const tokenizeSentences = (text) => {
-  return text.match(/[^.!?]+[.!?]*\s*/g) || [];
+  return text?.match(/[^.!?]+[.!?]*\s*/g) || [];
 };
 
 // Function to map sentences to unique characters

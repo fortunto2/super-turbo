@@ -33,7 +33,7 @@ export const videoDocumentHandler = createDocumentHandler<"video">({
       let params: any;
       if (title.startsWith("Video:")) {
         // Extract JSON from the end of readable title
-        const jsonMatch = title.match(/\{.*\}$/);
+        const jsonMatch = title?.match(/\{.*\}$/);
         if (jsonMatch) {
           params = JSON.parse(jsonMatch[0]);
         } else {

@@ -2026,7 +2026,7 @@ function Veo3PromptGenerator({
     setGeneratedPrompt(historyItem.basicPrompt);
     setEnhancedPrompt(historyItem.enhancedPrompt);
     if (historyItem.length) {
-      const match = historyItem.length.match(/(\d+)/);
+      const match = historyItem.length?.match(/(\d+)/);
       if (match) {
         const charLimit = parseInt(match[1]);
         if (charLimit >= 200 && charLimit <= 1e4) {
