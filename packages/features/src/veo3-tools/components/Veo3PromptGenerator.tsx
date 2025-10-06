@@ -45,10 +45,12 @@ interface Veo3PromptGeneratorProps {
     targetCharacters?: number;
     metadata?: any;
   }>;
-  MoodboardUploader?: React.ComponentType<{
-    images: MoodboardImage[];
-    setImages: (images: MoodboardImage[]) => void;
-  }>;
+  MoodboardUploader?:
+    | React.ComponentType<{
+        images: MoodboardImage[];
+        setImages: (images: MoodboardImage[]) => void;
+      }>
+    | undefined;
   showInfoBanner?: boolean;
   className?: string;
   locale?: Locale;
