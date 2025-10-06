@@ -1,9 +1,8 @@
 import { create } from "zustand";
-import type { FabricController } from "@turbo-super/features";
 
 interface ToolbarStore {
-  controller: FabricController | null;
-  setController: (controller: FabricController) => void;
+  controller: any | null;
+  setController: (controller: any) => void;
   clearController: () => void;
 }
 
