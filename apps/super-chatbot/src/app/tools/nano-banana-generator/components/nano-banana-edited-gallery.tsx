@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import { Card, CardContent, } from "@turbo-super/ui";
 import { Badge } from "@turbo-super/ui";
 import {
   Download,

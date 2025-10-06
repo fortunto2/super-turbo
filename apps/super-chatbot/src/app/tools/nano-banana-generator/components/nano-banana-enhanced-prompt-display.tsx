@@ -12,7 +12,6 @@ import {
   Trash2,
   Lightbulb,
   Sparkles,
-  Wand2,
   CheckCircle,
   ArrowRight,
   Tag,

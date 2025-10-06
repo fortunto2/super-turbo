@@ -164,9 +164,7 @@ export class NanoBananaProvider {
               role: "user",
               parts: [
                 {
-                  text:
-                    "Summarize this image generation request in one sentence and list 3 key visual requirements:\n\n" +
-                    enhancedPrompt,
+                  text: `Summarize this image generation request in one sentence and list 3 key visual requirements:\n\n${enhancedPrompt}`,
                 },
               ],
             },
@@ -320,7 +318,7 @@ export class NanoBananaProvider {
 
     return {
       id: `nano-banana-edit-${Date.now()}`,
-      url: editedImageUrl!,
+      url: editedImageUrl,
       editType: params.editType,
       editPrompt: params.editPrompt,
       timestamp: Date.now(),

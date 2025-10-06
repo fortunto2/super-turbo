@@ -21,7 +21,7 @@ import {
   SelectValue,
   Switch,
 } from "../../../../components/ui";
-import { Edit3, Settings, Zap, Palette } from "lucide-react";
+import { Edit3, Zap, Palette } from "lucide-react";
 import type { NanoBananaImageEditingRequest } from "../api/nano-banana-api";
 
 interface NanoBananaEditorFormProps {
