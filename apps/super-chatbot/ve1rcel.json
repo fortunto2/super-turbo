@@ -1,11 +1,16 @@
 {
-  "buildCommand": "pnpm --filter=ai-chatbot run build",
-  "installCommand": "pnpm install --filter=ai-chatbot --filter='@turbo-super/*' --recursive",
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install",
   "framework": null,
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
-        "source": "/(.*)",
-        "destination": "/"
-      }
-]
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
 }

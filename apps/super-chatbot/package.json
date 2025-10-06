@@ -3,7 +3,7 @@
   "version": "3.0.22",
   "private": true,
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=20.18.1"
   },
   "scripts": {
     "dev": "next dev",
@@ -50,7 +50,8 @@
     "test:project-image": "node src/tests/media/image/project-image-endpoint-test.js",
     "test:final": "node src/tests/media/image/final-generate-image-test.js",
     "test:compatibility": "node src/tests/integration/chat-standalone-compatibility-test.mjs",
-    "test:endpoints": "node src/tests/integration/final-endpoints-test.js"
+    "test:endpoints": "node src/tests/integration/final-endpoints-test.js",
+    "check:build": "node scripts/check-build.js"
   },
   "dependencies": {
     "@ai-sdk/azure": "^1.3.23",
@@ -119,7 +120,7 @@
     "marked": "^16.0.0",
     "nanoid": "^5.0.8",
     "next": "15.3.1",
-    "next-auth": "5.0.0-beta.25",
+    "next-auth": "^5.0.0",
     "next-themes": "^0.3.0",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",

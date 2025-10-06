@@ -60,15 +60,6 @@ const nextConfig: NextConfig = {
       "clsx",
       "tailwind-merge",
     ],
-    // // Включаем поддержку турборепозитория
-    // turbo: {
-    //   rules: {
-    //     "*.svg": {
-    //       loaders: ["@svgr/webpack"],
-    //       as: "*.js",
-    //     },
-    //   },
-    // },
   },
 
   images: {
@@ -76,7 +67,12 @@ const nextConfig: NextConfig = {
   },
   staticPageGenerationTimeout: 120,
 
-  webpack: (config, { isServer, dev }) => {
+  webpack: (config, { isServer }) => {
+    // Исправляем проблемы с webpack кэшем для больших строк
+    config.cache = {
+      type: 'memory',
+    };
+
     // Игнорируем предупреждения о критических зависимостях для @opentelemetry
     config.ignoreWarnings = [
       {
@@ -87,6 +83,10 @@ const nextConfig: NextConfig = {
       // Игнорируем ошибки с 'self is not defined' - не критично для работы приложения
       {
         message: /self is not defined/,
+      },
+      // Игнорируем предупреждения о сериализации больших строк
+      {
+        message: /Serializing big strings.*impacts deserialization performance/,
       },
     ];
 
@@ -112,67 +112,6 @@ const nextConfig: NextConfig = {
           self: JSON.stringify("undefined"),
         })
       );
-    }
-
-    // Оптимизации для production
-    if (!dev) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: "all",
-          minSize: 20000,
-          maxSize: 244000,
-          cacheGroups: {
-            // AI SDK и связанные библиотеки
-            ai: {
-              test: /[\\/]node_modules[\\/](ai|@ai-sdk|@ai-sdk-react)[\\/]/,
-              name: "ai-vendor",
-              chunks: "all",
-              priority: 30,
-            },
-            // UI библиотеки
-            ui: {
-              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|class-variance-authority|clsx|tailwind-merge)[\\/]/,
-              name: "ui-vendor",
-              chunks: "all",
-              priority: 25,
-            },
-            // React и связанные
-            react: {
-              test: /[\\/]node_modules[\\/](react|react-dom|react-hook-form|@hookform)[\\/]/,
-              name: "react-vendor",
-              chunks: "all",
-              priority: 20,
-            },
-            // Остальные vendor библиотеки
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: "vendors",
-              chunks: "all",
-              priority: 10,
-            },
-            // Общие компоненты приложения
-            common: {
-              name: "common",
-              minChunks: 2,
-              chunks: "all",
-              enforce: true,
-              priority: 5,
-            },
-          },
-        },
-        // Включаем tree shaking
-        usedExports: true,
-        sideEffects: false,
-      };
-    } else {
-      // В dev режиме отключаем некоторые оптимизации для ускорения сборки
-      config.optimization = {
-        ...config.optimization,
-        removeAvailableModules: false,
-        removeEmptyChunks: false,
-        splitChunks: false,
-      };
     }
 
     return config;
