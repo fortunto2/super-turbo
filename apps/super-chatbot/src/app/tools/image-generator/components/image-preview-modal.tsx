@@ -45,7 +45,7 @@ export const ImagePreviewModal = ({
       formData.append("model", "comfyui/flux/inpainting");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
+        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
         {
           method: "POST",
           body: formData,

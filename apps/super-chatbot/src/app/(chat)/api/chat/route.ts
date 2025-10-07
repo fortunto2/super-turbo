@@ -76,7 +76,16 @@ function normalizeMessage(message: any) {
  * @returns Response object with formatted error
  */
 function formatErrorResponse(error: unknown, context = "API") {
-  console.error(`Error in ${context}:`, error);
+  console.error(`❌ Error in ${context}:`, error);
+
+  // Логируем дополнительную информацию для отладки в продакшене
+  if (error instanceof Error) {
+    console.error(`❌ Error message: ${error.message}`);
+    console.error(`❌ Error name: ${error.name}`);
+    console.error(`❌ Error stack: ${error.stack}`);
+  } else {
+    console.error(`❌ Non-Error object:`, typeof error, error);
+  }
 
   // In development mode return detailed error information
   if (!isProductionEnvironment) {
@@ -139,6 +148,17 @@ function getStreamContext() {
 }
 
 export const POST = withMonitoring(async function POST(request: Request) {
+  console.log("🔍 POST /api/chat started");
+  console.log("🔍 Environment check:", {
+    NODE_ENV: process.env.NODE_ENV,
+    isProduction: isProductionEnvironment,
+    hasWithMonitoring: typeof withMonitoring,
+    hasAzureApiKey: !!process.env.AZURE_OPENAI_API_KEY,
+    hasAzureResource: !!process.env.AZURE_OPENAI_RESOURCE_NAME,
+    hasGoogleApiKey: !!process.env.GOOGLE_AI_API_KEY,
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasRedisUrl: !!process.env.REDIS_URL,
+  });
   let requestBody: PostRequestBody;
 
   try {
@@ -154,11 +174,13 @@ export const POST = withMonitoring(async function POST(request: Request) {
       hasSelectedChatModel: !!json.selectedChatModel,
       hasSelectedVisibilityType: !!json.selectedVisibilityType,
       fullKeys: Object.keys(json),
+      isProduction: isProductionEnvironment,
     });
 
     requestBody = postRequestBodySchema.parse(json);
+    console.log("✅ Request body parsed successfully");
   } catch (error) {
-    console.error("Invalid request body:", error);
+    console.error("❌ Invalid request body:", error);
 
     if (!isProductionEnvironment) {
       return new Response(
@@ -184,6 +206,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
   }
 
   try {
+    console.log("🔍 Processing request body...");
     const {
       id,
       message,
@@ -192,6 +215,15 @@ export const POST = withMonitoring(async function POST(request: Request) {
       selectedVisibilityType,
     } = requestBody;
 
+    console.log("🔍 Extracted from request body:", {
+      hasId: !!id,
+      hasMessage: !!message,
+      hasRequestMessages: !!requestMessages,
+      requestMessagesLength: requestMessages?.length || 0,
+      hasSelectedChatModel: !!selectedChatModel,
+      hasSelectedVisibilityType: !!selectedVisibilityType,
+    });
+
     // Определяем сообщение для обработки
     const messageToProcess =
       message ||
@@ -199,8 +231,13 @@ export const POST = withMonitoring(async function POST(request: Request) {
         ? requestMessages[requestMessages.length - 1]
         : null);
 
+    console.log("🔍 Message to process:", {
+      hasMessageToProcess: !!messageToProcess,
+      messageRole: messageToProcess?.role,
+    });
+
     if (!messageToProcess) {
-      console.error("No message found in request body");
+      console.error("❌ No message found in request body");
       return new Response(
         JSON.stringify(
           {
@@ -220,9 +257,22 @@ export const POST = withMonitoring(async function POST(request: Request) {
       );
     }
 
+    console.log("🔍 Getting session...");
     const session = await auth();
+    console.log("🔍 Session result:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userType: session?.user?.type,
+    });
+
+    console.log("🔍 Provider check:", {
+      hasProvider: !!myProvider,
+      providerType: typeof myProvider,
+    });
 
     if (!session?.user) {
+      console.error("❌ No session or user found");
       return new Response("Unauthorized", { status: 401 });
     }
 
@@ -954,6 +1004,11 @@ export const POST = withMonitoring(async function POST(request: Request) {
       return new Response(stream);
     }
   } catch (error) {
+    console.error("❌ Main error in POST /api/chat:", error);
+    console.error(
+      "❌ Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
     return formatErrorResponse(error);
   }
 });
