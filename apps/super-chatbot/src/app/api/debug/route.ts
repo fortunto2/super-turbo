@@ -13,16 +13,31 @@ export async function GET() {
       hasAzureApiKey: !!process.env.AZURE_OPENAI_API_KEY,
       hasAzureResource: !!process.env.AZURE_OPENAI_RESOURCE_NAME,
       hasGoogleApiKey: !!process.env.GOOGLE_AI_API_KEY,
+      azureApiKeyLength: process.env.AZURE_OPENAI_API_KEY?.length || 0,
+      azureResourceName: process.env.AZURE_OPENAI_RESOURCE_NAME || "NOT_SET",
+      azureRegion: process.env.AZURE_OPENAI_REGION || "NOT_SET",
+      azureDeploymentName: process.env.AZURE_GPT41_DEPLOYMENT_NAME || "NOT_SET",
       hasDatabaseUrl: !!process.env.DATABASE_URL,
       hasRedisUrl: !!process.env.REDIS_URL,
       hasAuthSecret: !!process.env.AUTH_SECRET,
       hasAuthUrl: !!process.env.AUTH_URL,
+      googleApiKeyLength: process.env.GOOGLE_AI_API_KEY?.length || 0,
     };
 
     // Проверяем провайдер
     const providerCheck = {
       hasProvider: !!myProvider,
       providerType: typeof myProvider,
+    };
+
+    // Проверяем Azure конфигурацию без тестирования подключения
+    const azureConfig = {
+      apiKeyLength: process.env.AZURE_OPENAI_API_KEY?.length || 0,
+      resourceName: process.env.AZURE_OPENAI_RESOURCE_NAME || "NOT_SET",
+      region: process.env.AZURE_OPENAI_REGION || "NOT_SET",
+      deploymentName: process.env.AZURE_GPT41_DEPLOYMENT_NAME || "NOT_SET",
+      apiVersion: process.env.AZURE_OPENAI_API_VERSION || "NOT_SET",
+      hasEndpoint: !!process.env.AZURE_OPENAI_ENDPOINT,
     };
 
     // Проверяем сессию
@@ -46,6 +61,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       environment: envCheck,
       provider: providerCheck,
+      azureConfig: azureConfig,
       session: sessionCheck,
     });
   } catch (error) {

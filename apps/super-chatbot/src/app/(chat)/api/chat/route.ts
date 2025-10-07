@@ -171,7 +171,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
       messagesLength: json.messages ? json.messages.length : 0,
       messageKeys: json.message ? Object.keys(json.message) : [],
       hasId: !!json.id,
-      hasSelectedChatModel: !!json.selectedChatModel,
+      selectedChatModel: json.selectedChatModel,
       hasSelectedVisibilityType: !!json.selectedVisibilityType,
       fullKeys: Object.keys(json),
       isProduction: isProductionEnvironment,
@@ -220,9 +220,28 @@ export const POST = withMonitoring(async function POST(request: Request) {
       hasMessage: !!message,
       hasRequestMessages: !!requestMessages,
       requestMessagesLength: requestMessages?.length || 0,
-      hasSelectedChatModel: !!selectedChatModel,
+      selectedChatModel: selectedChatModel,
       hasSelectedVisibilityType: !!selectedVisibilityType,
     });
+
+    // Проверяем, не используется ли Gemini модель без API ключа
+    if (
+      selectedChatModel?.includes("gemini") &&
+      !process.env.GOOGLE_AI_API_KEY
+    ) {
+      console.error("❌ Gemini model selected but no Google API key available");
+      return new Response(
+        JSON.stringify({
+          error: "Gemini model requires Google API key which is not configured",
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
 
     // Определяем сообщение для обработки
     const messageToProcess =
