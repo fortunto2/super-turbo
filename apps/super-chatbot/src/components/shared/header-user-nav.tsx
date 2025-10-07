@@ -118,7 +118,7 @@ export function HeaderUserNav({ className }: HeaderUserNavProps) {
                 toast({
                   type: "error",
                   description:
-                    "Проверка статуса аутентификации, попробуйте еще раз!",
+                    "Checking authentication status, please try again!",
                 });
                 return;
               }
@@ -136,7 +136,7 @@ export function HeaderUserNav({ className }: HeaderUserNavProps) {
               }
             }}
           >
-            {isGuest ? "Войти в аккаунт" : "Выйти"}
+            {isGuest ? "Log in" : "Log out"}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

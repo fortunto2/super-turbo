@@ -109,7 +109,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   }
                 }}
               >
-                {isGuest ? "Войти в аккаунт" : "Выйти"}
+                {isGuest ? "Log in" : "Log out"}
               </button>
             </DropdownMenuItem>
           </DropdownMenuContent>

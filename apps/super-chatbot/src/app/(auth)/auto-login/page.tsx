@@ -86,7 +86,7 @@ function AutoLoginContent() {
           <LoaderIcon size={48} />
         </div>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
-          Перенаправление на Auth0...
+          Redirecting to Auth0...
         </p>
       </div>
     </div>
