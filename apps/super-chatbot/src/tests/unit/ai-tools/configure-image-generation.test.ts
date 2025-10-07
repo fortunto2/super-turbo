@@ -10,7 +10,8 @@ vi.mock("@/lib/utils/ai-tools-balance");
 vi.mock("@/lib/ai/context");
 
 describe("configureImageGeneration", () => {
-  const mockCreateDocument = vi.fn();
+  const mockExecute = vi.fn();
+  const mockCreateDocument = { execute: mockExecute };
   const mockSession = {
     user: { id: "test-user", email: "test@example.com", type: "user" as any },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
@@ -18,15 +19,35 @@ describe("configureImageGeneration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExecute.mockResolvedValue({ success: true, id: "test-doc" });
 
     // Mock successful responses
     vi.mocked(getImageGenerationConfig).mockResolvedValue({
       type: "image" as any,
-      availableResolutions: ["1024x1024" as any],
-      availableStyles: ["realistic" as any],
-      availableShotSizes: ["close-up" as any],
+      availableResolutions: [
+        { id: "1024x1024", label: "1024x1024", value: "1024x1024" } as any,
+      ],
+      availableStyles: [
+        { id: "realistic", label: "realistic", value: "realistic" } as any,
+      ],
+      availableShotSizes: [
+        { id: "close-up", label: "close-up", value: "close-up" } as any,
+      ],
       availableModels: [] as any,
-      defaultSettings: {} as any,
+      defaultSettings: {
+        resolution: {
+          id: "1024x1024",
+          label: "1024x1024",
+          value: "1024x1024",
+        } as any,
+        style: { id: "realistic", label: "realistic", value: "realistic" } as any,
+        shotSize: {
+          id: "close-up",
+          label: "close-up",
+          value: "close-up",
+        } as any,
+        model: { id: "flux", name: "FLUX", value: "flux" } as any,
+      } as any,
     });
 
     vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
@@ -58,9 +79,9 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "Create a beautiful sunset over mountains",
     });
-
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     const result = await tool.execute(
       {
@@ -71,15 +92,10 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "image",
-        content: expect.stringContaining("A beautiful sunset over mountains"),
-        metadata: expect.objectContaining({
-          generationType: "text-to-image",
-          style: "realistic",
-          resolution: "1024x1024",
-        }),
+        kind: "image",
+        title: expect.any(String),
       })
     );
   });
@@ -88,9 +104,9 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "Transform this image into a watercolor painting",
     });
-
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     const result = await tool.execute(
       {
@@ -102,17 +118,10 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(mockCreateDocument).toHaveBeenCalledWith(
+    expect(mockExecute).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "image",
-        content: expect.stringContaining(
-          "Transform this image into a watercolor painting"
-        ),
-        metadata: expect.objectContaining({
-          generationType: "image-to-image",
-          sourceImageUrl: "https://example.com/image.jpg",
-          style: "watercolor",
-        }),
+        kind: "image",
+        title: expect.any(String),
       })
     );
   });
@@ -123,16 +132,19 @@ describe("configureImageGeneration", () => {
       session: mockSession,
     });
 
-    // Test with missing prompt
-    await expect(
-      tool.execute({}, { toolCallId: "test-call", messages: [] })
-    ).rejects.toThrow();
+    // Test with missing prompt - should return config instead of throwing
+    const result = await tool.execute({}, { toolCallId: "test-call", messages: [] });
+
+    expect(result).toHaveProperty("type", "image");
+    expect(result).toHaveProperty("availableResolutions");
+    expect(result).toHaveProperty("availableStyles");
   });
 
   it("should handle balance check failure", async () => {
     vi.mocked(checkBalanceBeforeArtifact).mockResolvedValue({
       valid: false,
       cost: 0,
+      userMessage: "Недостаточно средств для генерации изображения",
     });
 
     const tool = configureImageGeneration({
@@ -147,15 +159,16 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(result).toEqual({
-      success: false,
-      error: "Insufficient balance for image generation",
+    expect(result).toMatchObject({
+      balanceError: true,
+      error: expect.stringContaining("Недостаточно средств"),
+      requiredCredits: 0,
     });
-    expect(mockCreateDocument).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
   });
 
   it("should handle createDocument failure", async () => {
-    mockCreateDocument.mockRejectedValue(new Error("Document creation failed"));
+    mockExecute.mockRejectedValue(new Error("Document creation failed"));
 
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
@@ -169,9 +182,11 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(result).toEqual({
-      success: false,
-      error: "Failed to create image document: Document creation failed",
+    expect(result).toMatchObject({
+      error: expect.stringContaining("Failed to create image document"),
+      fallbackConfig: expect.objectContaining({
+        type: "image",
+      }),
     });
   });
 
@@ -179,12 +194,12 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains",
       currentAttachments: [
         { type: "image", url: "https://example.com/image.jpg" },
       ],
     });
-
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
 
     await tool.execute(
       {
@@ -193,20 +208,22 @@ describe("configureImageGeneration", () => {
       { toolCallId: "test-call", messages: [] }
     );
 
-    expect(analyzeImageContext).toHaveBeenCalledWith([
-      { type: "image", url: "https://example.com/image.jpg" },
-    ]);
+    expect(analyzeImageContext).toHaveBeenCalledWith(
+      "A beautiful sunset over mountains",
+      "test-chat",
+      [{ type: "image", url: "https://example.com/image.jpg" }],
+      "test-user"
+    );
   });
 
   it("should handle different resolution formats", async () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains",
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various resolution formats
     const resolutions = [
       "1920x1080",
       "1920×1080",
@@ -228,11 +245,10 @@ describe("configureImageGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            resolution,
-          }),
+          kind: "image",
+          title: expect.any(String),
         })
       );
     }
@@ -242,11 +258,10 @@ describe("configureImageGeneration", () => {
     const tool = configureImageGeneration({
       createDocument: mockCreateDocument,
       session: mockSession,
+      chatId: "test-chat",
+      userMessage: "A beautiful sunset over mountains",
     });
 
-    mockCreateDocument.mockResolvedValue({ success: true, id: "test-doc" });
-
-    // Test various style formats
     const styles = [
       "realistic",
       "cinematic",
@@ -273,11 +288,10 @@ describe("configureImageGeneration", () => {
         { toolCallId: "test-call", messages: [] }
       );
 
-      expect(mockCreateDocument).toHaveBeenCalledWith(
+      expect(mockExecute).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({
-            style,
-          }),
+          kind: "image",
+          title: expect.any(String),
         })
       );
     }

@@ -28,8 +28,10 @@ export const POST = withMonitoring(async function POST(request: NextRequest) {
     let body: any;
     if (isMultipart) {
       const form = await request.formData();
+      const style = form.get("style");
+      const shotSize = form.get("shotSize");
       body = {
-        prompt: form.get("prompt"),
+        prompt: String(form.get("prompt") || ""),
         model: { name: String(form.get("model") || "comfyui/flux") },
         resolution: (() => {
           const res = String(form.get("resolution") || "1024x1024");
@@ -39,11 +41,11 @@ export const POST = withMonitoring(async function POST(request: NextRequest) {
             height: Number.parseInt(h ?? "0"),
           };
         })(),
-        style: { id: String(form.get("style") || "flux_watercolor") },
-        shotSize: { id: String(form.get("shotSize") || "medium_shot") },
+        style: typeof style === "string" ? style : { id: String(style || "flux_watercolor") },
+        shotSize: typeof shotSize === "string" ? shotSize : { id: String(shotSize || "medium_shot") },
         seed: form.get("seed") ? Number(form.get("seed")) : undefined,
         chatId: form.get("chatId") || "image-generator-tool",
-        generationType: "image-to-image",
+        generationType: String(form.get("generationType") || "image-to-image"),
         file: form.get("file") as File,
         mask: form.get("mask") as File,
         sourceImageId: form.get("sourceImageId") as string,

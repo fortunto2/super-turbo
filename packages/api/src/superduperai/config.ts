@@ -1,4 +1,3 @@
-// @ts-nocheck
 // SuperDuperAI API Configuration
 
 export interface SuperduperAIConfig {
@@ -8,7 +7,7 @@ export interface SuperduperAIConfig {
 }
 
 // Cache for models with 1-hour expiration
-const modelCache = new Map<string, { data: any[]; timestamp: number }>();
+const modelCache = new Map<string, { data: unknown[]; timestamp: number }>();
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 /**
@@ -36,7 +35,9 @@ export function validateBearerToken(token: string): boolean {
  */
 
 export function getSuperduperAIConfig(): SuperduperAIConfig {
-  if (typeof window === "undefined") {
+  const isServer = typeof window === "undefined";
+
+  if (isServer) {
     // Server-side: Real external API
     const url =
       process.env.SUPERDUPERAI_URL || "https://dev-editor.superduperai.co";
@@ -58,8 +59,8 @@ export function getSuperduperAIConfig(): SuperduperAIConfig {
   }
 
   // Client-side: Use current origin for proxy paths
-  const currentOrigin =
-    typeof window !== "undefined" ? window.location.origin : "";
+  // eslint-disable-next-line no-undef
+  const currentOrigin = window.location.origin;
   return {
     url: currentOrigin, // Use current origin for proxy paths
     token: "", // Never expose tokens to client
@@ -71,6 +72,7 @@ export function getSuperduperAIConfig(): SuperduperAIConfig {
  */
 export async function getClientSuperduperAIConfig(): Promise<SuperduperAIConfig> {
   try {
+    // eslint-disable-next-line no-undef
     const response = await fetch("/api/config/superduperai");
     if (!response.ok) {
       throw new Error("Failed to get SuperDuperAI config");
@@ -143,7 +145,7 @@ export function getCacheStats() {
     totalSize: 0,
   };
 
-  for (const [key, value] of modelCache.entries()) {
+  for (const [, value] of modelCache.entries()) {
     if (now - value.timestamp < CACHE_DURATION) {
       stats.validEntries++;
     } else {

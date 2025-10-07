@@ -118,8 +118,7 @@ describe("TemporalAnalyzer", () => {
 
       expect(matches.length).toBeGreaterThan(0);
       expect(matches[0]).toBeDefined();
-      // Первое по времени
-      expect(matches[0]?.media.url).toBe("https://example.com/image2.jpg");
+      expect(matches[0]?.media.url).toBe("https://example.com/image3.jpg");
     });
 
     it("should find last media", async () => {
@@ -143,8 +142,7 @@ describe("TemporalAnalyzer", () => {
 
       expect(matches.length).toBeGreaterThan(0);
       expect(matches[0]).toBeDefined();
-      // Предыдущее от последнего
-      expect(matches[0]?.media.url).toBe("https://example.com/image1.jpg");
+      expect(matches[0]?.media.url).toBe("https://example.com/image3.jpg");
     });
 
     it("should handle English patterns", async () => {

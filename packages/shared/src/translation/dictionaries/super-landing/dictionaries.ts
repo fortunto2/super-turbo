@@ -36,13 +36,10 @@ export function getSuperLandingDictionary(locale: Locale): NestedDictionary {
 export function getClientSuperLandingTranslation(locale: Locale) {
   const dict = getSuperLandingDictionary(locale);
 
-  // Перегрузка функции для лучшего автодополнения
-  function t<T = string>(key: SuperLandingTranslationKey, fallback?: T): T;
-  function t<T = string>(key: string, fallback?: T): T;
-  function t<T = string>(
+  const t = <T = string>(
     key: SuperLandingTranslationKey | string,
     fallback?: T
-  ): T {
+  ): T => {
     // Ищем в словаре по ключу
     const keys = key.split(".");
     let value: unknown = dict;
@@ -58,7 +55,7 @@ export function getClientSuperLandingTranslation(locale: Locale) {
     }
 
     return value as T;
-  }
+  };
 
   return { t, dict };
 }

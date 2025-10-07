@@ -1,4 +1,4 @@
-import type { NestedDictionary, Locale } from "./types";
+import type { NestedDictionary } from "./types";
 
 /**
  * Get nested value from dictionary using dot notation
@@ -42,7 +42,7 @@ export function getTranslation(
     return value;
   }
   
-  return fallback || key;
+  return fallback ?? key;
 }
 
 /**

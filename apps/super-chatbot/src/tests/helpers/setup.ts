@@ -31,6 +31,42 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
+// Mock next-auth to prevent it from importing next/server
+// This returns FACTORY FUNCTIONS that create new mocks each time they're called
+// This way, when auth.ts calls NextAuth(), it gets a fresh set of mocks
+// that test files can then configure with mockResolvedValue, etc.
+vi.mock("next-auth", () => ({
+  default: () => ({
+    handlers: { GET: vi.fn(), POST: vi.fn() },
+    auth: vi.fn(),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
+// Mock next/server for next-auth and API routes
+vi.mock("next/server", () => {
+  // Use the global Request class from Node.js as the base for NextRequest
+  class MockNextRequest extends Request {
+    constructor(input: string | URL | Request, init?: RequestInit) {
+      super(input, init);
+    }
+  }
+
+  return {
+    NextResponse: {
+      json: vi.fn((data, init) => ({
+        json: () => Promise.resolve(data),
+        status: init?.status || 200,
+        statusText: init?.statusText || 'OK',
+        headers: init?.headers || {},
+      })),
+      redirect: vi.fn((url) => ({ redirect: url })),
+    },
+    NextRequest: MockNextRequest,
+  };
+});
+
 // Mock environment variables
 vi.mock("process", () => ({
   env: {

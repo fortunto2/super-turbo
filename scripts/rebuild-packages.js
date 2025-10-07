@@ -17,6 +17,7 @@ const packageOrder = [
   // Tailwind должен собираться первым, т.к. от него зависят конфиги и стили
   'packages/tailwind',
   'packages/shared',
+  'packages/tailwind',
   'packages/ui', 
   'packages/core',
   'packages/api',
