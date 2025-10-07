@@ -97,19 +97,6 @@ export const ImagePreviewModal = ({
             isGenerating={isGenerating || isInpainting}
           />
         </div>
-
-        <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white p-4 rounded-b-lg">
-          <p className="text-sm font-medium line-clamp-2">{image.prompt}</p>
-          <p className="text-xs text-gray-300 mt-1">
-            {formatTimestamp(image.timestamp)}
-          </p>
-          {isInpainting && (
-            <div className="mt-2 flex items-center space-x-2 text-blue-300">
-              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs">Starting inpainting...</span>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

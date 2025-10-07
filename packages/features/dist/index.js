@@ -4190,7 +4190,7 @@ var Inpainting = ({
   const handleActiveToolChange = (tool) => {
     setActiveTool(tool);
   };
-  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "w-full h-full flex flex-col lg:flex-row bg-gray-50 dark:bg-gray-900", children: [
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "w-full h-full flex flex-row bg-gray-50 dark:bg-gray-900", children: [
     /* @__PURE__ */ jsxRuntime.jsx(
       "div",
       {
@@ -4211,7 +4211,7 @@ var Inpainting = ({
         )
       }
     ),
-    /* @__PURE__ */ jsxRuntime.jsx("div", { className: "w-full lg:w-80 lg:min-w-80 p-4 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900", children: /* @__PURE__ */ jsxRuntime.jsx(
+    /* @__PURE__ */ jsxRuntime.jsx("div", { className: " w-80 lg:min-w-80 p-4 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900", children: /* @__PURE__ */ jsxRuntime.jsx(
       Control,
       {
         onGenerating: handleGenerating,

@@ -104,10 +104,18 @@ function formatErrorResponse(error: unknown, context = "API") {
     );
   }
 
-  // In production return generic message
-  return new Response("An error occurred while processing your request!", {
-    status: 500,
-  });
+  // In production return generic message with proper JSON format
+  return new Response(
+    JSON.stringify({
+      error: "An error occurred while processing your request!",
+    }),
+    {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 }
 
 function getStreamContext() {
