@@ -1,16 +1,16 @@
 "use client";
 
-// import * as Sentry from '@sentry/nextjs';
+// import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import Link from "next/link";
 
 export default function NotFound() {
   // useEffect(() => {
   //   // Логируем 404 ошибку в Sentry
-  //   Sentry.captureMessage('404 Not Found', {
-  //     level: 'error',
+  //   Sentry.captureMessage("404 Not Found", {
+  //     level: "error",
   //     tags: {
-  //       error_type: '404',
+  //       error_type: "404",
   //       page: window.location.pathname,
   //     },
   //   });

@@ -4,7 +4,7 @@ import { POST } from "@/app/api/generate/image/route";
 import { auth } from "@/app/(auth)/auth";
 import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
 import { generateImageWithStrategy } from "@turbo-super/api";
-import { selectImageToImageModel, ensureNonEmptyPrompt } from "@/lib/generation/model-utils";
+import { selectImageToImageModel, } from "@/lib/generation/model-utils";
 import { validateOperationBalance } from "@/lib/utils/tools-balance";
 
 // Mock dependencies

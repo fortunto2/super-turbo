@@ -48,9 +48,6 @@ vi.mock("next-auth", () => ({
 vi.mock("next/server", () => {
   // Use the global Request class from Node.js as the base for NextRequest
   class MockNextRequest extends Request {
-    constructor(input: string | URL | Request, init?: RequestInit) {
-      super(input, init);
-    }
   }
 
   return {

@@ -65,7 +65,6 @@ async function syncAuth0User(userId: string, email: string | null) {
     }
   }
 
-  // Логируем ошибку в Sentry, если все попытки неудачны
   // Sentry.captureException(lastError, {
   //   tags: { error_type: "auth0_sync_failure" },
   //   extra: {
@@ -309,7 +308,6 @@ export const {
           }
         } catch (error) {
           console.error("Error syncing Auth0 user with database:", error);
-          // Логируем ошибку в Sentry
           // Sentry.captureException(error, {
           //   tags: {
           //     error_type: "auth0_db_sync",

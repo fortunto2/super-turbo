@@ -1,4 +1,4 @@
-// import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -137,4 +137,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Only wrap with Sentry config if DSN is configured and in production/CI
+const shouldUseSentry =
+  (process.env.NODE_ENV === 'production' || process.env.CI) &&
+  process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+export default shouldUseSentry
+  ? withSentryConfig(nextConfig, {
+      org: "superduperai",
+      project: "super-chatbot",
+      silent: !process.env.CI,
+
+      sourcemaps: {
+        disable: false,
+      },
+
+      widenClientFileUpload: true,
+
+      disableLogger: true,
+    })
+  : nextConfig;

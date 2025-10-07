@@ -1,6 +1,5 @@
 import { Button } from "@turbo-super/ui";
 import type { GeneratedImage } from "../hooks/use-image-generator";
-import { formatTimestamp } from "@/lib/utils/format";
 import { X } from "lucide-react";
 import { Inpainting } from "@turbo-super/features";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
