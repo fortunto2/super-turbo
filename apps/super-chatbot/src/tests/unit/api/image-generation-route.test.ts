@@ -4,7 +4,7 @@ import { POST } from "@/app/api/generate/image/route";
 import { auth } from "@/app/(auth)/auth";
 import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
 import { generateImageWithStrategy } from "@turbo-super/api";
-import { selectImageToImageModel, } from "@/lib/generation/model-utils";
+import { selectImageToImageModel } from "@/lib/generation/model-utils";
 import { validateOperationBalance } from "@/lib/utils/tools-balance";
 
 // Mock dependencies
@@ -42,7 +42,10 @@ describe("/api/generate/image/route", () => {
     // auth is a real vi.fn() created by the mocked NextAuth in setup.ts
     (auth as any).mockResolvedValue(mockSession);
     vi.mocked(getSuperduperAIConfigWithUserToken).mockReturnValue(mockConfig);
-    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: true, cost: 10 });
+    vi.mocked(validateOperationBalance).mockResolvedValue({
+      valid: true,
+      cost: 10,
+    });
   });
 
   it("should return 401 for unauthenticated requests", async () => {
@@ -212,8 +215,8 @@ describe("/api/generate/image/route", () => {
     // Multipart processing wraps style in an object for consistency with JSON path
     expect(generateImageWithStrategy).toHaveBeenCalled();
     const callArgs = vi.mocked(generateImageWithStrategy).mock.calls[0];
-    expect(callArgs[0]).toBe("text-to-image");
-    expect(callArgs[1]).toMatchObject({
+    expect(callArgs?.[0]).toBe("text-to-image");
+    expect(callArgs?.[1]).toMatchObject({
       prompt: "A beautiful sunset over mountains",
       generationType: "text-to-image",
     });

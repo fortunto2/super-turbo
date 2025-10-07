@@ -3,8 +3,13 @@ import { NextRequest } from "next/server";
 import { POST } from "@/app/api/generate/video/route";
 import { auth } from "@/app/(auth)/auth";
 import { getSuperduperAIConfigWithUserToken } from "@/lib/config/superduperai";
-import { generateVideoWithStrategy } from "@turbo-super/api";
-import { validateOperationBalance, deductOperationBalance } from "@/lib/utils/tools-balance";
+import {
+  generateVideoWithStrategy,
+} from "@turbo-super/api";
+import {
+  validateOperationBalance,
+  deductOperationBalance,
+} from "@/lib/utils/tools-balance";
 
 // Mock dependencies
 // NOTE: DO NOT mock @/app/(auth)/auth here - it will be auto-loaded and use the
@@ -34,9 +39,12 @@ describe("/api/generate/video/route", () => {
     // auth is a real vi.fn() created by the mocked NextAuth in setup.ts
     (auth as any).mockResolvedValue(mockSession);
     vi.mocked(getSuperduperAIConfigWithUserToken).mockReturnValue(mockConfig);
-    vi.mocked(validateOperationBalance).mockResolvedValue({ valid: true, cost: 10 });
+    vi.mocked(validateOperationBalance).mockResolvedValue({
+      valid: true,
+      cost: 10,
+    });
     vi.mocked(deductOperationBalance).mockResolvedValue(undefined);
-    vi.mocked(generateVideoWithStrategy).mockResolvedValue({ success: true, data: {} });
+    vi.mocked(generateVideoWithStrategy).mockResolvedValue({ success: true });
   });
 
   it("should return 401 for unauthenticated requests", async () => {
@@ -226,8 +234,9 @@ describe("/api/generate/video/route", () => {
     vi.mocked(validateOperationBalance).mockResolvedValue({
       valid: false,
       cost: 100,
+      //@ts-ignore
       currentBalance: 50,
-      required: 100
+      required: 100,
     });
 
     const request = new NextRequest("http://localhost/api/generate/video", {
