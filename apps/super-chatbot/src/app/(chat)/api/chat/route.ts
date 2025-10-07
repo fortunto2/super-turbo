@@ -37,7 +37,7 @@ import {
 import { after } from "next/server";
 import type { Chat } from "@/lib/db/schema";
 import { differenceInSeconds } from "date-fns";
-import * as Sentry from "@sentry/nextjs";
+// import * as Sentry from "@sentry/nextjs";
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
 import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
 import { configureAudioGeneration } from "@/lib/ai/tools/configure-audio-generation";
@@ -76,7 +76,16 @@ function normalizeMessage(message: any) {
  * @returns Response object with formatted error
  */
 function formatErrorResponse(error: unknown, context = "API") {
-  console.error(`Error in ${context}:`, error);
+  console.error(`❌ Error in ${context}:`, error);
+
+  // Логируем дополнительную информацию для отладки в продакшене
+  if (error instanceof Error) {
+    console.error(`❌ Error message: ${error.message}`);
+    console.error(`❌ Error name: ${error.name}`);
+    console.error(`❌ Error stack: ${error.stack}`);
+  } else {
+    console.error(`❌ Non-Error object:`, typeof error, error);
+  }
 
   // In development mode return detailed error information
   if (!isProductionEnvironment) {
@@ -104,10 +113,18 @@ function formatErrorResponse(error: unknown, context = "API") {
     );
   }
 
-  // In production return generic message
-  return new Response("An error occurred while processing your request!", {
-    status: 500,
-  });
+  // In production return generic message with proper JSON format
+  return new Response(
+    JSON.stringify({
+      error: "An error occurred while processing your request!",
+    }),
+    {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 }
 
 function getStreamContext() {
@@ -131,6 +148,17 @@ function getStreamContext() {
 }
 
 export const POST = withMonitoring(async function POST(request: Request) {
+  console.log("🔍 POST /api/chat started");
+  console.log("🔍 Environment check:", {
+    NODE_ENV: process.env.NODE_ENV,
+    isProduction: isProductionEnvironment,
+    hasWithMonitoring: typeof withMonitoring,
+    hasAzureApiKey: !!process.env.AZURE_OPENAI_API_KEY,
+    hasAzureResource: !!process.env.AZURE_OPENAI_RESOURCE_NAME,
+    hasGoogleApiKey: !!process.env.GOOGLE_AI_API_KEY,
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasRedisUrl: !!process.env.REDIS_URL,
+  });
   let requestBody: PostRequestBody;
 
   try {
@@ -143,14 +171,16 @@ export const POST = withMonitoring(async function POST(request: Request) {
       messagesLength: json.messages ? json.messages.length : 0,
       messageKeys: json.message ? Object.keys(json.message) : [],
       hasId: !!json.id,
-      hasSelectedChatModel: !!json.selectedChatModel,
+      selectedChatModel: json.selectedChatModel,
       hasSelectedVisibilityType: !!json.selectedVisibilityType,
       fullKeys: Object.keys(json),
+      isProduction: isProductionEnvironment,
     });
 
     requestBody = postRequestBodySchema.parse(json);
+    console.log("✅ Request body parsed successfully");
   } catch (error) {
-    console.error("Invalid request body:", error);
+    console.error("❌ Invalid request body:", error);
 
     if (!isProductionEnvironment) {
       return new Response(
@@ -176,6 +206,7 @@ export const POST = withMonitoring(async function POST(request: Request) {
   }
 
   try {
+    console.log("🔍 Processing request body...");
     const {
       id,
       message,
@@ -184,6 +215,34 @@ export const POST = withMonitoring(async function POST(request: Request) {
       selectedVisibilityType,
     } = requestBody;
 
+    console.log("🔍 Extracted from request body:", {
+      hasId: !!id,
+      hasMessage: !!message,
+      hasRequestMessages: !!requestMessages,
+      requestMessagesLength: requestMessages?.length || 0,
+      selectedChatModel: selectedChatModel,
+      hasSelectedVisibilityType: !!selectedVisibilityType,
+    });
+
+    // Проверяем, не используется ли Gemini модель без API ключа
+    if (
+      selectedChatModel?.includes("gemini") &&
+      !process.env.GOOGLE_AI_API_KEY
+    ) {
+      console.error("❌ Gemini model selected but no Google API key available");
+      return new Response(
+        JSON.stringify({
+          error: "Gemini model requires Google API key which is not configured",
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
     // Определяем сообщение для обработки
     const messageToProcess =
       message ||
@@ -191,8 +250,13 @@ export const POST = withMonitoring(async function POST(request: Request) {
         ? requestMessages[requestMessages.length - 1]
         : null);
 
+    console.log("🔍 Message to process:", {
+      hasMessageToProcess: !!messageToProcess,
+      messageRole: messageToProcess?.role,
+    });
+
     if (!messageToProcess) {
-      console.error("No message found in request body");
+      console.error("❌ No message found in request body");
       return new Response(
         JSON.stringify(
           {
@@ -212,46 +276,78 @@ export const POST = withMonitoring(async function POST(request: Request) {
       );
     }
 
+    console.log("🔍 Getting session...");
     const session = await auth();
+    console.log("🔍 Session result:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userType: session?.user?.type,
+    });
+
+    console.log("🔍 Provider check:", {
+      hasProvider: !!myProvider,
+      providerType: typeof myProvider,
+    });
 
     if (!session?.user) {
+      console.error("❌ No session or user found");
       return new Response("Unauthorized", { status: 401 });
     }
 
-    // Логируем данные сессии для отладки
-    Sentry.addBreadcrumb({
-      category: "auth",
-      message: "Session user info before chat creation",
-      level: "info",
-      data: {
-        userId: session.user.id,
-        email: session.user.email,
-        type: session.user.type,
-      },
+    // Временная проверка для диагностики
+    console.log("🔍 About to process user type and entitlements...");
+    console.log("🔍 User type extracted:", session.user.type);
+
+    console.log("🔍 Getting entitlements...");
+    const entitlements = entitlementsByUserType[session.user.type as UserType];
+    console.log("🔍 Entitlements result:", {
+      hasEntitlements: !!entitlements,
+      maxMessagesPerDay: entitlements?.maxMessagesPerDay,
+      availableModels: entitlements?.availableChatModelIds?.length || 0,
     });
+
+    // Логируем данные сессии для отладки
+    // Sentry.addBreadcrumb({
+    //   category: "auth",
+    //   message: "Session user info before chat creation",
+    //   level: "info",
+    //   data: {
+    //     userId: session.user.id,
+    //     email: session.user.email,
+    //     type: session.user.type,
+    //   },
+    // });
 
     const userType: UserType = session.user.type;
 
     // Перед созданием чата убедимся, что пользователь существует в БД
+    console.log("🔍 Checking user existence in database...");
     try {
       const users = await getUser(session.user.email || "");
+      console.log("🔍 Database user lookup result:", {
+        email: session.user.email,
+        usersFound: users.length,
+      });
+
       if (users.length === 0) {
         // Если поиск по email не дал результатов, принудительно создаем пользователя
         console.log(
-          `User not found by email, trying to ensure user exists: ${session.user.id}`
+          `🔍 User not found by email, trying to ensure user exists: ${session.user.id}`
         );
         await getOrCreateOAuthUser(
           session.user.id,
           session.user.email || `user-${session.user.id}@example.com`
         );
+        console.log("✅ User created successfully");
 
         // Логируем успешное создание пользователя
-        Sentry.addBreadcrumb({
-          category: "auth",
-          message: "User created before chat creation",
-          level: "info",
-          data: { userId: session.user.id },
-        });
+        // Sentry.addBreadcrumb({
+        //   category: "auth",
+        //   message: "User created before chat creation",
+        //   level: "info",
+        //   data: { userId: session.user.id },
+        // });
       } else {
         // Пользователь найден по email, обновим userId в сессии для создания чата
         const foundUser = users[0];
@@ -261,16 +357,16 @@ export const POST = withMonitoring(async function POST(request: Request) {
           );
 
           // Логируем, что мы используем другой ID
-          Sentry.addBreadcrumb({
-            category: "auth",
-            message: "Using existing user ID from database",
-            level: "info",
-            data: {
-              sessionUserId: session.user.id,
-              databaseUserId: foundUser?.id,
-              email: session.user.email,
-            },
-          });
+          // Sentry.addBreadcrumb({
+          //   category: "auth",
+          //   message: "Using existing user ID from database",
+          //   level: "info",
+          //   data: {
+          //     sessionUserId: session.user.id,
+          //     databaseUserId: foundUser?.id,
+          //     email: session.user.email,
+          //   },
+          // });
 
           // Используем ID из базы данных для создания чата
           session.user.id = foundUser?.id;
@@ -278,14 +374,14 @@ export const POST = withMonitoring(async function POST(request: Request) {
       }
     } catch (userError) {
       console.error("Failed to ensure user exists:", userError);
-      Sentry.captureException(userError, {
-        tags: { operation: "user_check_before_chat" },
-        extra: {
-          userId: session.user.id,
-          email: session.user.email,
-        },
-      });
-      // Продолжаем выполнение, но логируем ошибку
+      // Sentry.captureException(userError, {
+      //   tags: { operation: "user_check_before_chat" },
+      //   extra: {
+      //     userId: session.user.id,
+      //     email: session.user.email,
+      //   },
+      // });
+      // // Продолжаем выполнение, но логируем ошибку
     }
 
     const messageCount = await getMessageCountByUserId({
@@ -320,16 +416,16 @@ export const POST = withMonitoring(async function POST(request: Request) {
         savedChat = true;
 
         // Логируем успешное создание чата
-        Sentry.addBreadcrumb({
-          category: "chat",
-          message: `Chat created: ${id}`,
-          level: "info",
-          data: {
-            chatId: id,
-            userId: session.user.id,
-            visibility: selectedVisibilityType,
-          },
-        });
+        // Sentry.addBreadcrumb({
+        //   category: "chat",
+        //   message: `Chat created: ${id}`,
+        //   level: "info",
+        //   data: {
+        //     chatId: id,
+        //     userId: session.user.id,
+        //     visibility: selectedVisibilityType,
+        //   },
+        // });
       } catch (error) {
         console.error("Failed to save chat:", error);
 
@@ -341,14 +437,14 @@ export const POST = withMonitoring(async function POST(request: Request) {
             error.message.includes("Key (userId)"))
         ) {
           // Логируем событие в Sentry
-          Sentry.captureException(error, {
-            tags: { error_type: "foreign_key_constraint", entity: "chat" },
-            extra: {
-              chatId: id,
-              userId: session.user.id,
-              email: session.user.email || "unknown",
-            },
-          });
+          // Sentry.captureException(error, {
+          //   tags: { error_type: "foreign_key_constraint", entity: "chat" },
+          //   extra: {
+          //     chatId: id,
+          //     userId: session.user.id,
+          //     email: session.user.email || "unknown",
+          //   },
+          // });
 
           console.log(`Trying to auto-create user with ID: ${session.user.id}`);
 
@@ -373,12 +469,12 @@ export const POST = withMonitoring(async function POST(request: Request) {
             savedChat = true;
 
             // Логируем успешное восстановление ситуации
-            Sentry.addBreadcrumb({
-              category: "chat",
-              message: `Chat created after user recovery: ${id}`,
-              level: "info",
-              data: { chatId: id, userId: session.user.id },
-            });
+            // Sentry.addBreadcrumb({
+            //   category: "chat",
+            //   message: `Chat created after user recovery: ${id}`,
+            //   level: "info",
+            //   data: { chatId: id, userId: session.user.id },
+            // });
           } catch (innerError) {
             console.error(
               "Failed to auto-create user and save chat:",
@@ -386,19 +482,19 @@ export const POST = withMonitoring(async function POST(request: Request) {
             );
 
             // Логируем ошибку в Sentry
-            Sentry.captureException(innerError, {
-              tags: {
-                error_type: "failed_chat_recovery",
-                entity: "user_and_chat",
-              },
-              extra: {
-                chatId: id,
-                userId: session.user.id,
-                email: session.user.email || "unknown",
-              },
-            });
+            // Sentry.captureException(innerError, {
+            //   tags: {
+            //     error_type: "failed_chat_recovery",
+            //     entity: "user_and_chat",
+            //   },
+            //   extra: {
+            //     chatId: id,
+            //     userId: session.user.id,
+            //     email: session.user.email || "unknown",
+            //   },
+            // });
 
-            // Возвращаем ошибку клиенту с детальным описанием
+            // // Возвращаем ошибку клиенту с детальным описанием
             return new Response(
               JSON.stringify({
                 error: "Failed to create chat due to user creation issues",
@@ -416,14 +512,14 @@ export const POST = withMonitoring(async function POST(request: Request) {
           }
         } else {
           // Другие ошибки при создании чата
-          Sentry.captureException(error as Error, {
-            tags: { error_type: "chat_creation_failed", entity: "chat" },
-            extra: {
-              chatId: id,
-              userId: session.user.id,
-              errorMessage: (error as Error).message,
-            },
-          });
+          // Sentry.captureException(error as Error, {
+          //   tags: { error_type: "chat_creation_failed", entity: "chat" },
+          //   extra: {
+          //     chatId: id,
+          //     userId: session.user.id,
+          //     errorMessage: (error as Error).message,
+          //   },
+          // });
 
           return new Response(
             JSON.stringify({
@@ -460,16 +556,16 @@ export const POST = withMonitoring(async function POST(request: Request) {
       }
     } else {
       if (chat.userId !== session.user.id) {
-        // Логируем попытку доступа к чужому чату
-        Sentry.captureMessage(`Unauthorized chat access attempt: ${id}`, {
-          level: "warning",
-          tags: { error_type: "unauthorized", entity: "chat" },
-          extra: {
-            chatId: id,
-            chatOwnerId: chat.userId,
-            userId: session.user.id,
-          },
-        });
+        // // Логируем попытку доступа к чужому чату
+        // Sentry.captureMessage(`Unauthorized chat access attempt: ${id}`, {
+        //   level: "warning",
+        //   tags: { error_type: "unauthorized", entity: "chat" },
+        //   extra: {
+        //     chatId: id,
+        //     chatOwnerId: chat.userId,
+        //     userId: session.user.id,
+        //   },
+        // });
 
         return new Response("Forbidden", { status: 403 });
       }
@@ -946,6 +1042,11 @@ export const POST = withMonitoring(async function POST(request: Request) {
       return new Response(stream);
     }
   } catch (error) {
+    console.error("❌ Main error in POST /api/chat:", error);
+    console.error(
+      "❌ Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
     return formatErrorResponse(error);
   }
 });

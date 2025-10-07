@@ -32,6 +32,12 @@ export function saveArtifactToStorage(chatId: string, artifact: any): void {
     return;
   }
 
+  // Don't save artifacts with init documentId (temporary/placeholder artifacts)
+  if (artifact.documentId === "init") {
+    console.log("⚠️ saveArtifactToStorage skipped: init documentId");
+    return;
+  }
+
   const artifactData: SavedArtifactData = {
     documentId: artifact.documentId,
     status: artifact.status,
@@ -43,25 +49,29 @@ export function saveArtifactToStorage(chatId: string, artifact: any): void {
     version: "2.0",
   };
 
-  const key = `artifact-${chatId}`;
-  const value = JSON.stringify(artifactData);
+  try {
+    const key = `artifact-${chatId}`;
+    const value = JSON.stringify(artifactData);
 
-  console.log("🔍 Saving to localStorage:", { key, value: artifactData });
-  localStorage.setItem(key, value);
+    console.log("🔍 Saving to localStorage:", { key, value: artifactData });
+    localStorage.setItem(key, value);
 
-  // Проверяем, что данные действительно сохранились
-  const saved = localStorage.getItem(key);
-  console.log(
-    "🔍 Verification - saved data:",
-    saved ? "✅ Success" : "❌ Failed"
-  );
+    // Проверяем, что данные действительно сохранились
+    const saved = localStorage.getItem(key);
+    console.log(
+      "🔍 Verification - saved data:",
+      saved ? "✅ Success" : "❌ Failed"
+    );
 
-  console.log("💾 Artifact saved to storage:", {
-    chatId,
-    documentId: artifactData.documentId,
-    status: artifactData.status,
-    isVisible: artifactData.isVisible,
-  });
+    console.log("💾 Artifact saved to storage:", {
+      chatId,
+      documentId: artifactData.documentId,
+      status: artifactData.status,
+      isVisible: artifactData.isVisible,
+    });
+  } catch (error) {
+    console.warn("⚠️ Error saving artifact to storage:", error);
+  }
 }
 
 /**

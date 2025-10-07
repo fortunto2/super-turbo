@@ -7,7 +7,7 @@ import { authConfig } from "./auth.config";
 import { DUMMY_PASSWORD } from "@/lib/constants";
 import type { DefaultJWT } from "next-auth/jwt";
 import { nanoid } from "nanoid";
-import * as Sentry from "@sentry/nextjs";
+// import * as Sentry from "@sentry/nextjs";
 
 export type UserType = "guest" | "regular";
 
@@ -65,15 +65,14 @@ async function syncAuth0User(userId: string, email: string | null) {
     }
   }
 
-  // Логируем ошибку в Sentry, если все попытки неудачны
-  Sentry.captureException(lastError, {
-    tags: { error_type: "auth0_sync_failure" },
-    extra: {
-      userId,
-      email,
-      attempts: maxRetries,
-    },
-  });
+  // Sentry.captureException(lastError, {
+  //   tags: { error_type: "auth0_sync_failure" },
+  //   extra: {
+  //     userId,
+  //     email,
+  //     attempts: maxRetries,
+  //   },
+  // });
 
   return null;
 }
@@ -288,17 +287,17 @@ export const {
         }
 
         // Логируем информацию для отладки
-        Sentry.addBreadcrumb({
-          category: "auth",
-          message: "Processing Auth0 account",
-          level: "info",
-          data: {
-            tokenId: token.id,
-            tokenEmail: token.email,
-            tokenName: token.name,
-            provider: account.provider,
-          },
-        });
+        // Sentry.addBreadcrumb({
+        //   category: "auth",
+        //   message: "Processing Auth0 account",
+        //   level: "info",
+        //   data: {
+        //     tokenId: token.id,
+        //     tokenEmail: token.email,
+        //     tokenName: token.name,
+        //     provider: account.provider,
+        //   },
+        // });
 
         try {
           if (token.email) {
@@ -309,17 +308,16 @@ export const {
           }
         } catch (error) {
           console.error("Error syncing Auth0 user with database:", error);
-          // Логируем ошибку в Sentry
-          Sentry.captureException(error, {
-            tags: {
-              error_type: "auth0_db_sync",
-              phase: "jwt_callback",
-            },
-            extra: {
-              tokenId: token.id,
-              tokenEmail: token.email,
-            },
-          });
+          // Sentry.captureException(error, {
+          //   tags: {
+          //     error_type: "auth0_db_sync",
+          //     phase: "jwt_callback",
+          //   },
+          //   extra: {
+          //     tokenId: token.id,
+          //     tokenEmail: token.email,
+          //   },
+          // });
         }
       }
 
@@ -364,16 +362,16 @@ export const {
                   "Error syncing Auth0 user during session check:",
                   syncError
                 );
-                Sentry.captureException(syncError, {
-                  tags: {
-                    error_type: "auth0_db_sync",
-                    phase: "session_callback",
-                  },
-                  extra: {
-                    tokenId: token.id,
-                    tokenEmail: token.email,
-                  },
-                });
+                // Sentry.captureException(syncError, {
+                //   tags: {
+                //     error_type: "auth0_db_sync",
+                //     phase: "session_callback",
+                //   },
+                //   extra: {
+                //     tokenId: token.id,
+                //     tokenEmail: token.email,
+                //   },
+                // });
               }
             }
           } catch (error) {
@@ -381,16 +379,16 @@ export const {
               "Error during user check in session callback:",
               error
             );
-            Sentry.captureException(error, {
-              tags: {
-                error_type: "session_user_check",
-                phase: "session_callback",
-              },
-              extra: {
-                tokenId: token.id,
-                tokenEmail: token.email,
-              },
-            });
+            // Sentry.captureException(error, {
+            //   tags: {
+            //     error_type: "session_user_check",
+            //     phase: "session_callback",
+            //   },
+            //   extra: {
+            //     tokenId: token.id,
+            //     tokenEmail: token.email,
+            //   },
+            // });
           }
         }
       }

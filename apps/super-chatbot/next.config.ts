@@ -1,32 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
-// Подавляем ошибку 'self is not defined' - не критично для работы приложения
-process.on("unhandledRejection", (reason, promise) => {
-  if (
-    reason instanceof Error &&
-    reason.message.includes("self is not defined")
-  ) {
-    console.warn(
-      "⚠️  Ignoring self is not defined error (non-critical):",
-      reason.message
-    );
-    return;
-  }
-  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-});
-
-process.on("uncaughtException", (error) => {
-  if (error.message.includes("self is not defined")) {
-    console.warn(
-      "⚠️  Ignoring self is not defined error (non-critical):",
-      error.message
-    );
-    return;
-  }
-  console.error("❌ Uncaught Exception:", error);
-});
-
 const nextConfig: NextConfig = {
   // Отключаем проверку переменных окружения во время сборки
   env: {
@@ -58,12 +32,7 @@ const nextConfig: NextConfig = {
     ],
     // Включаем поддержку турборепозитория
     turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
-      },
+      rules: { "*.svg": { loaders: ["@svgr/webpack"], as: "*.js" } },
     },
   },
 
@@ -101,15 +70,6 @@ const nextConfig: NextConfig = {
         net: false,
         tls: false,
       };
-
-      // Добавляем глобальную переменную self для сервера
-      const webpack = require("webpack");
-      config.plugins.push(
-        new webpack.DefinePlugin({
-          "typeof self": JSON.stringify("undefined"),
-          self: JSON.stringify("undefined"),
-        })
-      );
     }
 
     // Оптимизации для production
@@ -177,34 +137,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+// Only wrap with Sentry config if DSN is configured and in production/CI
+const shouldUseSentry =
+  (process.env.NODE_ENV === 'production' || process.env.CI) &&
+  process.env.NEXT_PUBLIC_SENTRY_DSN;
 
-  org: "superduperai",
-  project: "super-chat",
+export default shouldUseSentry
+  ? withSentryConfig(nextConfig, {
+      org: "superduperai",
+      project: "super-chatbot",
+      silent: !process.env.CI,
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+      sourcemaps: {
+        disable: false,
+      },
 
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+      widenClientFileUpload: true,
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: "/monitoring",
-
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
-
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
-});
+      disableLogger: true,
+    })
+  : nextConfig;

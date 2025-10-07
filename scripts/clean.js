@@ -40,14 +40,29 @@ function main() {
     console.log('Примеры:');
     console.log('  node scripts/clean.js node_modules');
     console.log('  node scripts/clean.js dist .next');
+    console.log('  node scripts/clean.js packages/*/node_modules');
     process.exit(1);
   }
   
   console.log('🧹 Начинаем очистку...\n');
   
   args.forEach(arg => {
-    const fullPath = path.resolve(arg);
-    removeDirectory(fullPath);
+    // Обрабатываем glob паттерны
+    if (arg.includes('*')) {
+      const glob = require('glob');
+      const matches = glob.sync(arg);
+      if (matches.length === 0) {
+        console.log(`📁 Паттерн ${arg} не найден, пропускаем`);
+        return;
+      }
+      matches.forEach(match => {
+        const fullPath = path.resolve(match);
+        removeDirectory(fullPath);
+      });
+    } else {
+      const fullPath = path.resolve(arg);
+      removeDirectory(fullPath);
+    }
   });
   
   console.log('\n🎉 Очистка завершена!');

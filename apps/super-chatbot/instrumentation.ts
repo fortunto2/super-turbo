@@ -1,36 +1,44 @@
-import * as Sentry from "@sentry/nextjs";
-
 export async function register() {
+  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+  if (!dsn) {
+    return;
+  }
+
+  // Dynamic import to avoid loading Sentry when not configured
+  const Sentry = await import("@sentry/nextjs");
+
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    // Инициализация Sentry для серверной части
     Sentry.init({
-      dsn: "https://1301771c6b15e81db39cfe8653da9eec@o4508070942474240.ingest.us.sentry.io/4509294960705536",
+      dsn,
 
-      // Добавляет заголовки запросов и IP для пользователей
-      sendDefaultPii: true,
+      sendDefaultPii: process.env.SENTRY_SEND_PII === 'true',
 
-      // Устанавливаем tracesSampleRate на 1.0, чтобы захватывать 100%
-      // транзакций для трассировки.
-      // В продакшне рекомендуется установить меньшее значение
-      tracesSampleRate: 1.0,
+      tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
+        ? Number.parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
+        : (process.env.NODE_ENV === "production" ? 0.01 : 1.0),
+
+      environment: process.env.NODE_ENV,
     });
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {
-    // Инициализация Sentry для edge runtime
     Sentry.init({
-      dsn: "https://1301771c6b15e81db39cfe8653da9eec@o4508070942474240.ingest.us.sentry.io/4509294960705536",
+      dsn,
 
-      // Добавляет заголовки запросов и IP для пользователей
-      sendDefaultPii: true,
+      sendDefaultPii: process.env.SENTRY_SEND_PII === 'true',
 
-      // Устанавливаем tracesSampleRate на 1.0, чтобы захватывать 100%
-      // транзакций для трассировки.
-      // В продакшне рекомендуется установить меньшее значение
-      tracesSampleRate: 1.0,
+      tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
+        ? Number.parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE)
+        : (process.env.NODE_ENV === "production" ? 0.01 : 1.0),
+
+      environment: process.env.NODE_ENV,
     });
   }
 }
 
-// Перехват ошибок запросов (для Next.js 15+)
+// TODO: Investigate onRequestError hook
+// - Test if it duplicates manual captureException calls
+// - Verify it doesn't cause noise from expected errors (404s, validation)
+// - If clean, activate and remove manual captures from route handlers
 // export const onRequestError = Sentry.captureRequestError;

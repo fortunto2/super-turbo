@@ -10,7 +10,9 @@ const nextConfig = {
     // так как мы будем запускать линтер отдельно
     ignoreDuringBuilds: true,
   },
-  // Отключаем проверку переменных окружения во время сборки
+  images: {
+    unoptimized: true
+  },
   env: {
     // Устанавливаем значения по умолчанию для переменных, которые могут отсутствовать
     SUPERDUPERAI_URL: process.env.SUPERDUPERAI_URL || 'https://dev-editor.superduperai.co',
@@ -27,9 +29,6 @@ const nextConfig = {
     PGDATABASE: process.env.PGDATABASE || 'placeholder',
     PGPASSWORD: process.env.PGPASSWORD || 'placeholder',
     REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
-  },
-  images: {
-    unoptimized: true
   },
   // Use standalone output for optimized builds unless NEXT_STANDALONE is "false"
   output: process.env.NEXT_STANDALONE === 'false' ? undefined : 'standalone',

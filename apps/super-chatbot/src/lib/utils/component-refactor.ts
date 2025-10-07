@@ -42,7 +42,7 @@ export function analyzeComponent(
   }
 
   // Подсчет пропсов (упрощенный анализ)
-  const propsMatch = componentCode.match(/interface\s+\w+Props\s*\{([^}]+)\}/);
+  const propsMatch = componentCode?.match(/interface\s+\w+Props\s*\{([^}]+)\}/);
   const props = propsMatch
     ? propsMatch[1]?.split("\n").filter((line) => line.trim().includes(":"))
         .length || 0
@@ -52,20 +52,20 @@ export function analyzeComponent(
   }
 
   // Подсчет хуков
-  const hooks = (componentCode.match(/use[A-Z]\w+/g) || []).length;
+  const hooks = (componentCode?.match(/use[A-Z]\w+/g) || []).length;
   if (hooks > maxHooks) {
     issues.push(`Слишком много хуков: ${hooks} (максимум ${maxHooks})`);
   }
 
   // Подсчет состояний
-  const states = (componentCode.match(/useState/g) || []).length;
+  const states = (componentCode?.match(/useState/g) || []).length;
   if (states > maxStates) {
     issues.push(`Слишком много состояний: ${states} (максимум ${maxStates})`);
   }
 
   // Подсчет функций
   const functions = (
-    componentCode.match(/const\s+\w+\s*=\s*(?:useCallback\s*)?\(/g) || []
+    componentCode?.match(/const\s+\w+\s*=\s*(?:useCallback\s*)?\(/g) || []
   ).length;
 
   const metrics = {

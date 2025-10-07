@@ -73,7 +73,7 @@ function getDisplayTitle(title: string, kind: ArtifactKind): string {
     // Check if title starts with "Video:" (new readable format)
     if (title.startsWith("Video:")) {
       // Extract readable part before JSON
-      const jsonMatch = title.match(/\{.*\}$/);
+      const jsonMatch = title?.match(/\{.*\}$/);
       if (jsonMatch) {
         return title.substring(0, title.length - jsonMatch[0].length).trim();
       }

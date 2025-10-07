@@ -10,6 +10,7 @@ import type {
   GeminiImageResult,
   GeminiEditResult,
 } from "../types/gemini";
+import { callGeminiDirect } from "../gemini-direct";
 
 export class NanoBananaProvider {
   /**
@@ -35,13 +36,77 @@ export class NanoBananaProvider {
     // Получаем размеры из aspectRatio
     const dimensions = this.getAspectRatioDimensions(params.aspectRatio);
 
-    // Создаем красивое placeholder изображение
-    const placeholderImage = this.createPlaceholderImage(
-      enhancedPrompt,
-      dimensions.width,
-      dimensions.height,
-      params.style
-    );
+    // Пытаемся сгенерировать реальное изображение через Gemini 2.5 Flash Image (Vertex AI)
+    let generatedImageUrl: string | null = null;
+    try {
+      const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+      if (apiKey) {
+        const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+        const requestBody = {
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: enhancedPrompt }],
+            },
+          ],
+          // Явно просим изображение в ответе
+          responseModalities: ["IMAGE"],
+          generationConfig: {
+            temperature: 0.4,
+            topP: 0.8,
+            topK: 40,
+            // Для image токены не критичны, оставим по-умолчанию
+          },
+        } as any;
+
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          throw new Error(
+            `Gemini Image API error: ${resp.status} - ${errorText}`
+          );
+        }
+
+        const data: any = await resp.json();
+        // Ищем бинарные данные изображения
+        const candidates = data?.candidates || [];
+        for (const c of candidates) {
+          const parts = c?.content?.parts || [];
+          for (const part of parts) {
+            const inline = part?.inlineData;
+            if (inline?.data && inline?.mimeType?.startsWith("image/")) {
+              generatedImageUrl = `data:${inline.mimeType};base64,${inline.data}`;
+              break;
+            }
+          }
+          if (generatedImageUrl) break;
+        }
+      } else {
+        console.warn(
+          "⚠️ GOOGLE_AI_API_KEY is not configured; skipping Gemini image call"
+        );
+      }
+    } catch (e) {
+      console.warn(
+        "⚠️ Gemini image generation failed, will fallback to placeholder",
+        e
+      );
+    }
+
+    // Если реальное изображение не удалось получить, создаём placeholder
+    const placeholderImage =
+      generatedImageUrl ||
+      this.createPlaceholderImage(
+        enhancedPrompt,
+        dimensions.width,
+        dimensions.height,
+        params.style
+      );
 
     const result: GeminiImageResult = {
       id: `nano-banana-${Date.now()}`,
@@ -89,7 +154,40 @@ export class NanoBananaProvider {
       geminiResponse: enhancedPrompt,
     };
 
-    console.log("🍌 ✅ NANO BANANA: Image generated (placeholder mode)");
+    // Параллельно запрашиваем ответ у Gemini 2.5 Flash Lite через Vertex AI (текстовая часть)
+    try {
+      const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+      if (apiKey) {
+        const geminiText = await callGeminiDirect(
+          [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `Summarize this image generation request in one sentence and list 3 key visual requirements:\n\n${enhancedPrompt}`,
+                },
+              ],
+            },
+          ],
+          apiKey,
+          { temperature: 0.6, maxTokens: 256 }
+        );
+        result.geminiResponse = geminiText || enhancedPrompt;
+      } else {
+        console.warn(
+          "⚠️ GOOGLE_AI_API_KEY is not configured; skipping Gemini direct call"
+        );
+      }
+    } catch (err) {
+      console.warn(
+        "⚠️ Gemini direct call failed, using enhanced prompt only",
+        err
+      );
+    }
+
+    console.log(
+      "🍌 ✅ NANO BANANA: Image generated (placeholder + Gemini text)"
+    );
     return result;
   }
 
@@ -101,26 +199,126 @@ export class NanoBananaProvider {
     params: GeminiEditParams,
     config?: any
   ): Promise<GeminiEditResult> {
-    console.log(
-      "🍌 🚀 NANO BANANA: Editing image with enhanced prompt (placeholder mode)"
-    );
+    console.log("🍌 🚀 NANO BANANA: Editing image with real Gemini API");
 
-    // Улучшаем промпт редактирования
     const enhancedEditPrompt = this.enhanceEditPrompt(params);
-
     console.log("🍌 ✨ Enhanced Edit Prompt:", enhancedEditPrompt);
 
-    // Создаем placeholder для редактирования
-    const placeholderImage = this.createPlaceholderImage(
-      `Edited: ${enhancedEditPrompt}`,
-      1024,
-      1024,
-      "realistic"
-    );
+    let editedImageUrl: string | null = null;
 
-    const result: GeminiEditResult = {
+    try {
+      const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+      if (!apiKey) {
+        throw new Error("GOOGLE_AI_API_KEY is not set");
+      }
+
+      const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+
+      const requestBody = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: enhancedEditPrompt },
+              {
+                inlineData: {
+                  mimeType: "image/png",
+                  data: await this.fetchImageAsBase64(params.sourceImageUrl),
+                },
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.4,
+          topP: 0.8,
+          topK: 40,
+        },
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Gemini edit API error: ${response.status} - ${errorText}`
+        );
+      }
+
+      const resultData = await response.json();
+
+      const candidates = resultData?.candidates || [];
+      for (const c of candidates) {
+        const parts = c?.content?.parts || [];
+        for (const part of parts) {
+          const inline = part?.inlineData;
+          if (inline?.data && inline?.mimeType?.startsWith("image/")) {
+            editedImageUrl = `data:${inline.mimeType};base64,${inline.data}`;
+            break;
+          }
+        }
+        if (editedImageUrl) break;
+      }
+
+      if (!editedImageUrl) {
+        throw new Error("No image returned from Gemini API");
+      }
+    } catch (error) {
+      console.error("❌ Gemini image edit error:", error);
+
+      return {
+        id: `nano-banana-edit-${Date.now()}`,
+        url: this.createPlaceholderImage(
+          `Error: ${enhancedEditPrompt}`,
+          1024,
+          1024,
+          "realistic"
+        ),
+        editType: params.editType,
+        editPrompt: params.editPrompt,
+        timestamp: Date.now(),
+        settings: {
+          precisionLevel: params.precisionLevel,
+          blendMode: params.blendMode,
+          preserveOriginalStyle: params.preserveOriginalStyle,
+          enhanceLighting: params.enhanceLighting,
+          preserveShadows: params.preserveShadows,
+        },
+        nanoBananaEditInfo: {
+          model: "gemini-2.5-flash-image",
+          editType: {
+            id: params.editType,
+            label: params.editType,
+            description: "Nano Banana edit type",
+          },
+          precisionLevel: {
+            id: params.precisionLevel,
+            label: params.precisionLevel,
+            description: "Nano Banana precision level",
+          },
+          blendMode: {
+            id: params.blendMode,
+            label: params.blendMode,
+            description: "Nano Banana blend mode",
+          },
+          capabilities: [
+            "Контекстно-осознанное редактирование",
+            "Хирургическая точность",
+            "Интеллектуальное освещение",
+            "Сохранение стиля",
+            "Естественное смешивание",
+          ],
+        },
+      };
+    }
+
+    return {
       id: `nano-banana-edit-${Date.now()}`,
-      url: placeholderImage,
+      url: editedImageUrl,
       editType: params.editType,
       editPrompt: params.editPrompt,
       timestamp: Date.now(),
@@ -157,9 +355,6 @@ export class NanoBananaProvider {
         ],
       },
     };
-
-    console.log("🍌 ✅ NANO BANANA: Image edited (placeholder mode)");
-    return result;
   }
 
   /**
@@ -313,6 +508,16 @@ export class NanoBananaProvider {
     `;
 
     return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  }
+
+  private async fetchImageAsBase64(imageUrl: string): Promise<string> {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch source image: ${response.status}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    return Buffer.from(buffer).toString("base64");
   }
 }
 

@@ -411,7 +411,7 @@ const handleExportPdf = async (script: string) => {
       (token.items as { text?: string }[]).forEach((item) => {
         const itemText = String(item.text ?? "");
         // Диалог в списке
-        const dialogueMatch = itemText.match(
+        const dialogueMatch = itemText?.match(
           /^([A-Za-z0-9\- ]+):\s*"([^"]+)"$/
         );
         if (dialogueMatch) {

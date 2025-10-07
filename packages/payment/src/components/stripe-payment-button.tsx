@@ -226,7 +226,7 @@ export function StripePaymentButton({
       >
         <CardContent className="flex items-center justify-center py-8">
           <span className="text-red-600 dark:text-red-400">
-            {error || getTranslation("stripe_payment.failed_load_payment")}
+            {error ?? getTranslation("stripe_payment.failed_load_payment")}
           </span>
         </CardContent>
       </Card>

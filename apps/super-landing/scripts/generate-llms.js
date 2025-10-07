@@ -14,16 +14,16 @@ const packageJson = require('../package.json');
 function extractMdxMetadata(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
-    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    const frontmatterMatch = content?.match(/^---\n([\s\S]*?)\n---/);
     
     if (!frontmatterMatch) {
       return null;
     }
 
     const frontmatter = frontmatterMatch[1];
-    const titleMatch = frontmatter.match(/title:\s*["']([^"']+)["']/);
-    const descriptionMatch = frontmatter.match(/description:\s*["']([^"']+)["']/);
-    const slugMatch = frontmatter.match(/slug:\s*["']([^"']+)["']/);
+    const titleMatch = frontmatter?.match(/title:\s*["']([^"']+)["']/);
+    const descriptionMatch = frontmatter?.match(/description:\s*["']([^"']+)["']/);
+    const slugMatch = frontmatter?.match(/slug:\s*["']([^"']+)["']/);
 
     if (!titleMatch || !descriptionMatch || !slugMatch) {
       return null;

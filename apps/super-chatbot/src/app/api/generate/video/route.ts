@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     let width = 1920;
     let height = 1080;
     if (typeof body.resolution === "string") {
-      const m = body.resolution.match(/(\d+)x(\d+)/);
+      const m = body.resolution?.match(/(\d+)x(\d+)/);
       if (m) {
         width = Number.parseInt(m[1]);
         height = Number.parseInt(m[2]);

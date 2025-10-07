@@ -394,18 +394,13 @@ export class SecurityMonitor {
     );
   }
 
-  /**
-   * Отправляет событие в Sentry
-   */
   private sendToSentry(event: SecurityEvent): void {
     Sentry.withScope((scope) => {
       scope.setTag("security_event", event.type);
       scope.setLevel(this.getSentryLevel(event.severity));
       scope.setContext("security_details", event.details);
-
       if (event.ip) scope.setTag("ip", event.ip);
       if (event.userId) scope.setUser({ id: event.userId });
-
       Sentry.captureMessage(
         `Security Event: ${event.type}`,
         this.getSentryLevel(event.severity)

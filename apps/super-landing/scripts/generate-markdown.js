@@ -10,7 +10,7 @@ const path = require('path');
 // Функция для преобразования MDX в Markdown (аналогичная той, что используется в API)
 function mdxToMarkdown(content) {
   // Сохраняем frontmatter
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  const frontmatterMatch = content?.match(/^---\n([\s\S]*?)\n---/);
   const frontmatter = frontmatterMatch
     ? `---\n${frontmatterMatch[1]}\n---\n\n`
     : "";

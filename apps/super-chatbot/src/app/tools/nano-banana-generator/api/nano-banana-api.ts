@@ -130,16 +130,40 @@ export async function generateNanoBananaImage(
   request: NanoBananaImageGenerationRequest
 ): Promise<NanoBananaApiResponse<NanoBananaImageResult>> {
   try {
-    const response = await fetch("/api/nano-banana/generate", {
+    // Прямой минимальный вызов: без контекста, сразу Vertex Image
+    const response = await fetch("/api/nano-banana/direct-image", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(request),
+      body: JSON.stringify({ prompt: request.prompt }),
     });
 
     const data = await response.json();
-    return data;
+    if (!response.ok || !data?.success || !data?.url) {
+      return {
+        success: false,
+        error: data?.error || "Failed to generate image",
+      };
+    }
+
+    const result: NanoBananaImageResult = {
+      id: `vertex-${Date.now()}`,
+      url: data.url,
+      prompt: request.prompt,
+      timestamp: Date.now(),
+      settings: {
+        style: String(request.style || ""),
+        quality: String(request.quality || ""),
+        aspectRatio: String(request.aspectRatio || ""),
+        ...(typeof request.seed === "number" ? { seed: request.seed } : {}),
+        enableContextAwareness: Boolean(request.enableContextAwareness),
+        enableSurgicalPrecision: Boolean(request.enableSurgicalPrecision),
+        creativeMode: Boolean(request.creativeMode),
+      },
+    };
+
+    return { success: true, data: result };
   } catch (error) {
     console.error("Nano Banana image generation error:", error);
     return {
@@ -230,40 +254,25 @@ export async function getNanoBananaConfig(): Promise<{
   enhancementTechniques: string[];
   techniques: string[];
 }> {
-  try {
-    const [stylesRes, editTypesRes, techniquesRes] = await Promise.all([
-      fetch("/api/nano-banana/generate"),
-      fetch("/api/nano-banana/edit"),
-      fetch("/api/nano-banana/enhance-prompt"),
-    ]);
-
-    const [stylesData, editTypesData, techniquesData] = await Promise.all([
-      stylesRes.json(),
-      editTypesRes.json(),
-      techniquesRes.json(),
-    ]);
-
-    return {
-      styles: stylesData.styles || [],
-      qualityLevels: stylesData.qualityLevels || [],
-      aspectRatios: stylesData.aspectRatios || [],
-      editTypes: editTypesData.editTypes || [],
-      precisionLevels: editTypesData.precisionLevels || [],
-      blendModes: editTypesData.blendModes || [],
-      enhancementTechniques: techniquesData.techniques || [],
-      techniques: techniquesData.techniques || [],
-    };
-  } catch (error) {
-    console.error("Failed to fetch Nano Banana config:", error);
-    return {
-      styles: [],
-      qualityLevels: [],
-      aspectRatios: [],
-      editTypes: [],
-      precisionLevels: [],
-      blendModes: [],
-      enhancementTechniques: [],
-      techniques: [],
-    };
-  }
+  // Минимальная локальная конфигурация, чтобы UI работал без внешних API
+  return {
+    styles: ["realistic", "photorealistic", "cinematic", "anime", "artistic"],
+    qualityLevels: ["high", "standard"],
+    aspectRatios: ["1:1", "16:9", "9:16", "4:3", "3:4"],
+    editTypes: ["background-replacement", "object-removal", "style-transfer"],
+    precisionLevels: ["automatic", "high", "ultra"],
+    blendModes: ["natural", "overlay", "multiply"],
+    enhancementTechniques: [
+      "context-aware-editing",
+      "surgical-precision",
+      "lighting-mastery",
+      "physical-logic",
+    ],
+    techniques: [
+      "context-aware-editing",
+      "surgical-precision",
+      "lighting-mastery",
+      "physical-logic",
+    ],
+  };
 }

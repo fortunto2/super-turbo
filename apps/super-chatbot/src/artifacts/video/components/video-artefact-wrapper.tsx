@@ -378,7 +378,7 @@ export const VideoArtifactWrapper = memo(
     } else {
       try {
         // Try to extract URL from various formats
-        const urlMatch = content.match(/https?:\/\/[^\s"]+/);
+        const urlMatch = content?.match(/https?:\/\/[^\s"]+/);
         if (urlMatch) {
           videoUrl = urlMatch[0];
         } else {

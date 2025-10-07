@@ -7,29 +7,44 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const redirectUrl = searchParams.get("redirectUrl") || "/";
+  try {
+    const { searchParams } = new URL(request.url);
+    const redirectUrl = searchParams.get("redirectUrl") || "/";
 
-  const secret =
-    process.env.AUTH_SECRET ||
-    process.env.NEXTAUTH_SECRET ||
-    (process.env.NODE_ENV !== "production"
-      ? "dev-secret-change-me"
-      : "fallback-secret");
+    const secret =
+      process.env.AUTH_SECRET ||
+      process.env.NEXTAUTH_SECRET ||
+      (process.env.NODE_ENV !== "production"
+        ? "dev-secret-change-me"
+        : "fallback-secret");
 
-  const token = await getToken({
-    req: request,
-    secret,
-    secureCookie: !isDevelopmentEnvironment,
-  });
+    // Добавляем проверку на существование secret
+    if (!secret || secret === "fallback-secret") {
+      console.warn("⚠️ Auth secret is not properly configured");
+    }
 
-  if (token) {
-    return NextResponse.redirect(new URL("/", request.url));
+    const token = await getToken({
+      req: request,
+      secret,
+      secureCookie: !isDevelopmentEnvironment,
+    });
+
+    if (token) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // Выполняем вход как гость
+    return signIn("guest", {
+      redirect: true,
+      redirectTo: redirectUrl,
+    });
+  } catch (error) {
+    console.error("❌ Error in guest auth route:", error);
+    
+    // Возвращаем ошибку вместо краша
+    return NextResponse.json(
+      { error: "Authentication error" },
+      { status: 500 }
+    );
   }
-
-  // Выполняем вход как гость
-  return signIn("guest", {
-    redirect: true,
-    redirectTo: redirectUrl,
-  });
 }

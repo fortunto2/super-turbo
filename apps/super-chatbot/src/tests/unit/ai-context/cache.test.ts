@@ -133,9 +133,10 @@ describe("ContextCache", () => {
 
     it("should handle cache size limits", async () => {
       // Создаем кэш с очень маленьким лимитом
-      const smallCache = new ContextCache();
-      // @ts-ignore - доступ к приватному свойству для тестирования
-      smallCache.maxSize = 2;
+      const smallCache = new ContextCache(2);
+      // Clear it first to ensure clean state
+      smallCache.clear();
+      smallCache.resetStats();
 
       const mockContext = {
         sourceUrl: "https://example.com/image.jpg",
@@ -147,7 +148,9 @@ describe("ContextCache", () => {
 
       // Добавляем больше записей, чем позволяет лимит
       await smallCache.setCachedContext("chat", "hash1", "image", mockContext);
+      await new Promise(resolve => setTimeout(resolve, 10));
       await smallCache.setCachedContext("chat", "hash2", "image", mockContext);
+      await new Promise(resolve => setTimeout(resolve, 10));
       await smallCache.setCachedContext("chat", "hash3", "image", mockContext);
 
       const stats = smallCache.getStats();

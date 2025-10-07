@@ -44,7 +44,7 @@ function addProjectThemes(filePath, themeName) {
       // Если есть стили для body, добавляем класс
       if (!newContent.includes(themeClass)) {
         // Ищем первый селектор body и добавляем класс
-        const firstBodyMatch = newContent.match(/(\s*)body\s*{/);
+        const firstBodyMatch = newContent?.match(/(\s*)body\s*{/);
         if (firstBodyMatch) {
           const indent = firstBodyMatch[1];
           const bodyComment = `${indent}/* Применяем тему проекта */\n${indent}body {\n${indent}  @apply ${themeClass};\n${indent}}\n\n`;

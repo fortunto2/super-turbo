@@ -1,6 +1,5 @@
 import { Button } from "@turbo-super/ui";
 import type { GeneratedImage } from "../hooks/use-image-generator";
-import { formatTimestamp } from "@/lib/utils/format";
 import { X } from "lucide-react";
 import { Inpainting } from "@turbo-super/features";
 import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
@@ -45,7 +44,7 @@ export const ImagePreviewModal = ({
       formData.append("model", "comfyui/flux/inpainting");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
+        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
         {
           method: "POST",
           body: formData,
@@ -96,19 +95,6 @@ export const ImagePreviewModal = ({
             onComplete={handleInpaintingComplete}
             isGenerating={isGenerating || isInpainting}
           />
-        </div>
-
-        <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white p-4 rounded-b-lg">
-          <p className="text-sm font-medium line-clamp-2">{image.prompt}</p>
-          <p className="text-xs text-gray-300 mt-1">
-            {formatTimestamp(image.timestamp)}
-          </p>
-          {isInpainting && (
-            <div className="mt-2 flex items-center space-x-2 text-blue-300">
-              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs">Starting inpainting...</span>
-            </div>
-          )}
         </div>
       </div>
     </div>

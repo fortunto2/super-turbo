@@ -1,11 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, useEffect } from "react";
-import {
-  FabricCanvas,
-  type FabricController,
-  useFabricEditor,
-} from "@turbo-super/features";
+import { FabricCanvas, useFabricEditor } from "@turbo-super/features";
 import type { SceneTextbox_Output } from "@turbo-super/api";
 import { debounce, isEqual } from "lodash";
 import { useToolbarStore } from "@/lib/store";
@@ -92,7 +88,7 @@ export function CanvasWrapper({
   };
 
   const handleControllerReady = useCallback(
-    (newController: FabricController) => {
+    (newController: any) => {
       // Добавляем обработчики событий для тулбара
       newController.on((evt: any) => {
         if (evt.type === "object:clicked") {

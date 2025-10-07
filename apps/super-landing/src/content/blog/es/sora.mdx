@@ -1,5 +1,6 @@
 ---
 title: "Sora Text2Video"
+description: High-quality text-to-video generation
 date: 2025-05-20
 slug: sora
 locale: es

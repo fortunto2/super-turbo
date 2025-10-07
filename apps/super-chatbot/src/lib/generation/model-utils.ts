@@ -23,37 +23,52 @@ export async function selectImageToImageModel(
   const allImageModels = await getAvailableImageModels();
   const allI2I = allImageModels.filter((m: any) => m.type === "image_to_image");
 
-  const wants = String(rawModelName || "");
-  const baseToken = wants.toLowerCase().includes("flux")
-    ? "flux"
-    : wants.split("/").pop()?.split("-")[0] || wants.toLowerCase();
+  const wants = String(rawModelName || "").trim();
+  const wantsLower = wants.toLowerCase();
+
+  if (!wants) {
+    return null;
+  }
 
   const candidates = allowInpainting
     ? allI2I
     : allI2I.filter((m: any) => !/inpaint/i.test(String(m.name || "")));
 
-  // Если нет доступных image-to-image моделей, возвращаем null
   if (candidates.length === 0) {
     return null;
   }
 
   let pick = candidates.find(
     (m: any) =>
-      String(m.name || "").toLowerCase() === wants.toLowerCase() ||
-      String(m.label || "").toLowerCase() === wants.toLowerCase()
+      String(m.name || "").toLowerCase() === wantsLower ||
+      String(m.label || "").toLowerCase() === wantsLower
   );
-  if (!pick && baseToken) {
-    pick = candidates.find(
-      (m: any) =>
-        String(m.name || "")
-          .toLowerCase()
-          .includes(baseToken) ||
-        String(m.label || "")
-          .toLowerCase()
-          .includes(baseToken)
-    );
+
+  if (!pick) {
+    pick = candidates.find((m: any) => {
+      const modelName = String(m.name || "").toLowerCase();
+      const modelLabel = String(m.label || "").toLowerCase();
+      return modelName.includes(wantsLower) || modelLabel.includes(wantsLower);
+    });
   }
-  if (!pick && candidates.length > 0) pick = candidates[0];
+
+  if (!pick) {
+    const baseToken = wantsLower.includes("flux")
+      ? "flux"
+      : wants.split("/").pop()?.split("-")[0]?.toLowerCase() || wantsLower;
+
+    if (baseToken && baseToken !== wantsLower) {
+      pick = candidates.find(
+        (m: any) =>
+          String(m.name || "")
+            .toLowerCase()
+            .includes(baseToken) ||
+          String(m.label || "")
+            .toLowerCase()
+            .includes(baseToken)
+      );
+    }
+  }
 
   return pick?.name || null;
 }
@@ -89,8 +104,6 @@ export async function selectImageToVideoModel(
           .includes(baseToken)
     );
   }
-
-  if (!pick && allI2V.length > 0) pick = allI2V[0];
 
   return pick?.name || null;
 }

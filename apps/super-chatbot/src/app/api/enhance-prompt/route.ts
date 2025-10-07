@@ -207,7 +207,7 @@ REQUIREMENTS:
 function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
   try {
     // Try to parse as JSON first
-    const jsonMatch = llmResponse.match(/\{[\s\S]*\}/);
+    const jsonMatch = llmResponse?.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       return {

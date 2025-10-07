@@ -1,25 +1,27 @@
-// AICODE-NOTE: Form component for Nano Banana image editing
-// Provides comprehensive controls for all Nano Banana editing features
-
 "use client";
 
 import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Textarea,
+  Separator,
+  Badge,
+} from "@turbo-super/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
 } from "../../../../components/ui";
-import { Switch } from "../../../../components/ui";
-import { Edit3, Settings, Zap, Palette } from "lucide-react";
+import { Edit3, Zap, Palette } from "lucide-react";
 import type { NanoBananaImageEditingRequest } from "../api/nano-banana-api";
 
 interface NanoBananaEditorFormProps {
@@ -60,11 +62,11 @@ export function NanoBananaEditorForm({
   },
 }: NanoBananaEditorFormProps) {
   const [formData, setFormData] = useState<NanoBananaImageEditingRequest>({
-    editType: "remove_object",
+    editType: "object-removal",
     editPrompt: "",
     sourceImageUrl: "",
-    precisionLevel: "high",
-    blendMode: "normal",
+    precisionLevel: "automatic",
+    blendMode: "natural",
     preserveOriginalStyle: true,
     enhanceLighting: true,
     preserveShadows: true,
@@ -74,7 +76,6 @@ export function NanoBananaEditorForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -91,17 +92,14 @@ export function NanoBananaEditorForm({
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.editPrompt.trim() || !formData.sourceImageUrl.trim()) {
       return;
     }
-
     await onEdit(formData);
   };
 
-  // Update form data
   const updateFormData = (
     field: keyof NanoBananaImageEditingRequest,
     value: any
@@ -109,198 +107,55 @@ export function NanoBananaEditorForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Get edit type specific parameters
+  // Поля, зависящие от editType (оставил как есть)
   const getEditTypeSpecificFields = () => {
     switch (formData.editType) {
       case "remove_object":
         return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="objectToRemove"
-              className="text-sm font-medium"
-            >
-              Object to Remove
-            </Label>
-            <Input
-              id="objectToRemove"
-              placeholder="e.g., 'person in the background', 'car on the left'"
-              value={formData.objectToRemove || ""}
-              onChange={(e) => updateFormData("objectToRemove", e.target.value)}
-              disabled={isEditing}
-            />
-          </div>
+          <Input
+            placeholder="e.g., 'person in the background'"
+            value={formData.objectToRemove || ""}
+            onChange={(e) => updateFormData("objectToRemove", e.target.value)}
+            disabled={isEditing}
+          />
         );
       case "add_object":
         return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="targetObject"
-              className="text-sm font-medium"
-            >
-              Object to Add
-            </Label>
-            <Input
-              id="targetObject"
-              placeholder="e.g., 'a golden retriever', 'a vintage car'"
-              value={formData.targetObject || ""}
-              onChange={(e) => updateFormData("targetObject", e.target.value)}
-              disabled={isEditing}
-            />
-          </div>
+          <Input
+            placeholder="e.g., 'a golden retriever'"
+            value={formData.targetObject || ""}
+            onChange={(e) => updateFormData("targetObject", e.target.value)}
+            disabled={isEditing}
+          />
         );
       case "replace_background":
         return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="newBackground"
-              className="text-sm font-medium"
-            >
-              New Background
-            </Label>
-            <Input
-              id="newBackground"
-              placeholder="e.g., 'beach sunset', 'mountain landscape', 'urban cityscape'"
-              value={formData.newBackground || ""}
-              onChange={(e) => updateFormData("newBackground", e.target.value)}
-              disabled={isEditing}
-            />
-          </div>
+          <Input
+            placeholder="e.g., 'beach sunset'"
+            value={formData.newBackground || ""}
+            onChange={(e) => updateFormData("newBackground", e.target.value)}
+            disabled={isEditing}
+          />
         );
       case "style_transfer":
         return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="styleToTransfer"
-              className="text-sm font-medium"
-            >
-              Style to Transfer
-            </Label>
-            <Input
-              id="styleToTransfer"
-              placeholder="e.g., 'Van Gogh style', 'anime art style', 'watercolor painting'"
-              value={formData.styleToTransfer || ""}
-              onChange={(e) =>
-                updateFormData("styleToTransfer", e.target.value)
-              }
-              disabled={isEditing}
-            />
-          </div>
+          <Input
+            placeholder="e.g., 'Van Gogh style'"
+            value={formData.styleToTransfer || ""}
+            onChange={(e) => updateFormData("styleToTransfer", e.target.value)}
+            disabled={isEditing}
+          />
         );
       case "object_replacement":
         return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="replacementObject"
-              className="text-sm font-medium"
-            >
-              Replacement Object
-            </Label>
-            <Input
-              id="replacementObject"
-              placeholder="e.g., 'replace the car with a bicycle', 'replace the dog with a cat'"
-              value={formData.replacementObject || ""}
-              onChange={(e) =>
-                updateFormData("replacementObject", e.target.value)
-              }
-              disabled={isEditing}
-            />
-          </div>
-        );
-      case "lighting_adjustment":
-        return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="lightingDirection"
-              className="text-sm font-medium"
-            >
-              Lighting Direction
-            </Label>
-            <Input
-              id="lightingDirection"
-              placeholder="e.g., 'warm golden hour lighting', 'dramatic side lighting', 'soft diffused light'"
-              value={formData.lightingDirection || ""}
-              onChange={(e) =>
-                updateFormData("lightingDirection", e.target.value)
-              }
-              disabled={isEditing}
-            />
-          </div>
-        );
-      case "color_adjustment":
-        return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="colorAdjustments"
-              className="text-sm font-medium"
-            >
-              Color Adjustments
-            </Label>
-            <Input
-              id="colorAdjustments"
-              placeholder="e.g., 'make colors more vibrant', 'desaturate to black and white', 'add warm tones'"
-              value={formData.colorAdjustments || ""}
-              onChange={(e) =>
-                updateFormData("colorAdjustments", e.target.value)
-              }
-              disabled={isEditing}
-            />
-          </div>
-        );
-      case "texture_enhancement":
-        return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="textureDetails"
-              className="text-sm font-medium"
-            >
-              Texture Details
-            </Label>
-            <Input
-              id="textureDetails"
-              placeholder="e.g., 'enhance fabric textures', 'add wood grain details', 'smooth skin texture'"
-              value={formData.textureDetails || ""}
-              onChange={(e) => updateFormData("textureDetails", e.target.value)}
-              disabled={isEditing}
-            />
-          </div>
-        );
-      case "composition_change":
-        return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="compositionChanges"
-              className="text-sm font-medium"
-            >
-              Composition Changes
-            </Label>
-            <Input
-              id="compositionChanges"
-              placeholder="e.g., 'move subject to the left', 'add rule of thirds framing', 'create depth of field'"
-              value={formData.compositionChanges || ""}
-              onChange={(e) =>
-                updateFormData("compositionChanges", e.target.value)
-              }
-              disabled={isEditing}
-            />
-          </div>
-        );
-      case "artistic_effect":
-        return (
-          <div className="space-y-2">
-            <Label
-              htmlFor="artisticEffect"
-              className="text-sm font-medium"
-            >
-              Artistic Effect
-            </Label>
-            <Input
-              id="artisticEffect"
-              placeholder="e.g., 'add bokeh effect', 'create vintage film look', 'apply oil painting filter'"
-              value={formData.artisticEffect || ""}
-              onChange={(e) => updateFormData("artisticEffect", e.target.value)}
-              disabled={isEditing}
-            />
-          </div>
+          <Input
+            placeholder="e.g., 'replace the car with a bicycle'"
+            value={formData.replacementObject || ""}
+            onChange={(e) =>
+              updateFormData("replacementObject", e.target.value)
+            }
+            disabled={isEditing}
+          />
         );
       default:
         return null;
@@ -310,7 +165,7 @@ export function NanoBananaEditorForm({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
+        <CardTitle className="flex items-center gap-2">
           <Edit3 className="size-5 text-green-600" />
           <span>Nano Banana Image Editor</span>
           <Badge
@@ -326,21 +181,14 @@ export function NanoBananaEditorForm({
           onSubmit={handleSubmit}
           className="space-y-6"
         >
-          {/* Source Image Upload */}
+          {/* Source Image */}
           <div className="space-y-2">
-            <Label
-              htmlFor="sourceImage"
-              className="text-sm font-medium"
-            >
-              Source Image *
-            </Label>
-            <div className="flex items-center space-x-4">
+            <Label className="text-sm font-medium">Source Image *</Label>
+            <div className="flex items-center gap-4">
               <Input
-                id="sourceImage"
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
-                className="flex-1"
                 disabled={isEditing}
               />
               <Button
@@ -358,27 +206,17 @@ export function NanoBananaEditorForm({
               </Button>
             </div>
             {imagePreview && (
-              <div className="mt-2">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-32 h-32 object-cover rounded-lg border"
-                />
-              </div>
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="mt-2 w-32 h-32 object-cover rounded-lg border"
+              />
             )}
-            <p className="text-xs text-gray-500">
-              Upload the image you want to edit.
-            </p>
           </div>
 
-          {/* Edit Type Selection */}
+          {/* Edit Type */}
           <div className="space-y-2">
-            <Label
-              htmlFor="editType"
-              className="text-sm font-medium"
-            >
-              Edit Type *
-            </Label>
+            <Label className="text-sm font-medium">Edit Type *</Label>
             <Select
               value={formData.editType || ""}
               onValueChange={(value) => updateFormData("editType", value)}
@@ -402,58 +240,41 @@ export function NanoBananaEditorForm({
             </Select>
           </div>
 
-          {/* Edit Prompt */}
+          {/* Prompt */}
           <div className="space-y-2">
-            <Label
-              htmlFor="editPrompt"
-              className="text-sm font-medium"
-            >
-              Edit Instructions *
-            </Label>
+            <Label className="text-sm font-medium">Edit Instructions *</Label>
             <Textarea
-              id="editPrompt"
-              placeholder="Describe what you want to edit... (e.g., 'Remove the person in the background and replace with a beautiful sunset')"
+              placeholder="Describe what you want to edit..."
               value={formData.editPrompt}
               onChange={(e) => updateFormData("editPrompt", e.target.value)}
-              className="min-h-[100px]"
               disabled={isEditing}
             />
-            <p className="text-xs text-gray-500">
-              Be specific about what you want to change and how.
-            </p>
           </div>
 
-          {/* Edit Type Specific Fields */}
+          {/* Type-specific */}
           {getEditTypeSpecificFields()}
 
           <Separator />
 
-          {/* Precision and Blend Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Precision + Blend */}
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label
-                htmlFor="precisionLevel"
-                className="text-sm font-medium"
-              >
-                Precision Level
-              </Label>
+              <Label className="text-sm font-medium">Precision Level</Label>
               <Select
                 value={formData.precisionLevel || ""}
-                onValueChange={(value) =>
-                  updateFormData("precisionLevel", value)
-                }
+                onValueChange={(v) => updateFormData("precisionLevel", v)}
                 disabled={isEditing}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select precision level" />
                 </SelectTrigger>
                 <SelectContent>
-                  {config.precisionLevels.map((level) => (
+                  {config.precisionLevels.map((lvl) => (
                     <SelectItem
-                      key={level}
-                      value={level}
+                      key={lvl}
+                      value={lvl}
                     >
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                      {lvl}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -461,15 +282,10 @@ export function NanoBananaEditorForm({
             </div>
 
             <div className="space-y-2">
-              <Label
-                htmlFor="blendMode"
-                className="text-sm font-medium"
-              >
-                Blend Mode
-              </Label>
+              <Label className="text-sm font-medium">Blend Mode</Label>
               <Select
                 value={formData.blendMode || ""}
-                onValueChange={(value) => updateFormData("blendMode", value)}
+                onValueChange={(v) => updateFormData("blendMode", v)}
                 disabled={isEditing}
               >
                 <SelectTrigger>
@@ -481,9 +297,7 @@ export function NanoBananaEditorForm({
                       key={mode}
                       value={mode}
                     >
-                      {mode
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      {mode.replace(/_/g, " ")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -491,66 +305,45 @@ export function NanoBananaEditorForm({
             </div>
           </div>
 
-          {/* Advanced Settings */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Settings className="size-4 text-gray-500" />
-              <Label className="text-sm font-medium">Advanced Settings</Label>
+          {/* Advanced */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Seed</Label>
+              <Input
+                type="number"
+                placeholder="Random seed"
+                value={formData.seed || ""}
+                onChange={(e) =>
+                  updateFormData(
+                    "seed",
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
+                disabled={isEditing}
+              />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="seed"
-                  className="text-sm font-medium"
-                >
-                  Seed (Optional)
-                </Label>
-                <Input
-                  id="seed"
-                  type="number"
-                  placeholder="Random seed for reproducible results"
-                  value={formData.seed || ""}
-                  onChange={(e) =>
-                    updateFormData(
-                      "seed",
-                      e.target.value ? Number.parseInt(e.target.value) : undefined
-                    )
-                  }
-                  disabled={isEditing}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="batchSize"
-                  className="text-sm font-medium"
-                >
-                  Batch Size
-                </Label>
-                <Select
-                  value={formData.batchSize?.toString() || "1"}
-                  onValueChange={(value) =>
-                    updateFormData("batchSize", Number.parseInt(value))
-                  }
-                  disabled={isEditing}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select batch size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 image</SelectItem>
-                    <SelectItem value="2">2 images</SelectItem>
-                    <SelectItem value="4">4 images</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Batch Size</Label>
+              <Select
+                value={formData.batchSize?.toString() || "1"}
+                onValueChange={(v) => updateFormData("batchSize", Number(v))}
+                disabled={isEditing}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select batch size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="4">4</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Nano Banana Features */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
+          {/* Features */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
               <Zap className="size-4 text-green-600" />
               <Label className="text-sm font-medium">
                 Nano Banana Features
@@ -559,62 +352,37 @@ export function NanoBananaEditorForm({
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">
-                    Preserve Original Style
-                  </Label>
-                  <p className="text-xs text-gray-500">
-                    Maintains the original image&apos;s artistic style
-                  </p>
-                </div>
+                <Label className="text-sm font-medium">
+                  Preserve Original Style
+                </Label>
                 <Switch
                   checked={formData.preserveOriginalStyle || false}
-                  onCheckedChange={(checked) =>
-                    updateFormData("preserveOriginalStyle", checked)
+                  onCheckedChange={(c) =>
+                    updateFormData("preserveOriginalStyle", c)
                   }
                   disabled={isEditing}
                 />
               </div>
-
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">
-                    Enhance Lighting
-                  </Label>
-                  <p className="text-xs text-gray-500">
-                    Automatically improves lighting and shadows
-                  </p>
-                </div>
+                <Label className="text-sm font-medium">Enhance Lighting</Label>
                 <Switch
                   checked={formData.enhanceLighting || false}
-                  onCheckedChange={(checked) =>
-                    updateFormData("enhanceLighting", checked)
-                  }
+                  onCheckedChange={(c) => updateFormData("enhanceLighting", c)}
                   disabled={isEditing}
                 />
               </div>
-
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">
-                    Preserve Shadows
-                  </Label>
-                  <p className="text-xs text-gray-500">
-                    Maintains realistic shadow details
-                  </p>
-                </div>
+                <Label className="text-sm font-medium">Preserve Shadows</Label>
                 <Switch
                   checked={formData.preserveShadows || false}
-                  onCheckedChange={(checked) =>
-                    updateFormData("preserveShadows", checked)
-                  }
+                  onCheckedChange={(c) => updateFormData("preserveShadows", c)}
                   disabled={isEditing}
                 />
               </div>
             </div>
           </div>
 
-          {/* Edit Button */}
+          {/* Submit */}
           <Button
             type="submit"
             className="w-full"

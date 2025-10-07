@@ -284,4 +284,4 @@ const styleMap: Record<string, keyof TextboxProps> = {
   overline: "overline",
 };
 
-export type { FabricController as FabricControllerType };
+export type FabricControllerType = FabricController;

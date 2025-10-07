@@ -72,5 +72,10 @@
     "VERCEL",
     "VERCEL_ENV",
     "CI"
+  ],
+  "globalDependencies": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml"
   ]
 } 
