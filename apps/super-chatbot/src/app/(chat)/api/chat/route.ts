@@ -276,6 +276,18 @@ export const POST = withMonitoring(async function POST(request: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    // Временная проверка для диагностики
+    console.log("🔍 About to process user type and entitlements...");
+    console.log("🔍 User type extracted:", session.user.type);
+
+    console.log("🔍 Getting entitlements...");
+    const entitlements = entitlementsByUserType[session.user.type as UserType];
+    console.log("🔍 Entitlements result:", {
+      hasEntitlements: !!entitlements,
+      maxMessagesPerDay: entitlements?.maxMessagesPerDay,
+      availableModels: entitlements?.availableChatModelIds?.length || 0,
+    });
+
     // Логируем данные сессии для отладки
     // Sentry.addBreadcrumb({
     //   category: "auth",
@@ -291,17 +303,24 @@ export const POST = withMonitoring(async function POST(request: Request) {
     const userType: UserType = session.user.type;
 
     // Перед созданием чата убедимся, что пользователь существует в БД
+    console.log("🔍 Checking user existence in database...");
     try {
       const users = await getUser(session.user.email || "");
+      console.log("🔍 Database user lookup result:", {
+        email: session.user.email,
+        usersFound: users.length,
+      });
+
       if (users.length === 0) {
         // Если поиск по email не дал результатов, принудительно создаем пользователя
         console.log(
-          `User not found by email, trying to ensure user exists: ${session.user.id}`
+          `🔍 User not found by email, trying to ensure user exists: ${session.user.id}`
         );
         await getOrCreateOAuthUser(
           session.user.id,
           session.user.email || `user-${session.user.id}@example.com`
         );
+        console.log("✅ User created successfully");
 
         // Логируем успешное создание пользователя
         // Sentry.addBreadcrumb({
