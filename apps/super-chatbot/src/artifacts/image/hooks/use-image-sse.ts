@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 import {
   imageSSEStore,
   type ImageEventHandler,
-} from "../stores/image-sse-store";
-import { createFileSSEURL } from "@/lib/config/superduperai";
+} from '../stores/image-sse-store';
+import { createFileSSEURL } from '@/lib/config/superduperai';
 
 type Props = {
   fileId: string; // Only fileId needed for image/video generation
@@ -23,7 +23,7 @@ export const useImageSSE = ({
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const maxAttempts = 3;
   const connectionHandlerRef = useRef<((connected: boolean) => void) | null>(
-    null
+    null,
   );
   const mountedRef = useRef(true);
 
@@ -42,7 +42,7 @@ export const useImageSSE = ({
       return;
     }
 
-    console.log("🔌 Setting up SSE connection for file:", fileId);
+    console.log('🔌 Setting up SSE connection for file:', fileId);
 
     // Reset attempts for new file
     setConnectionAttempts(0);
@@ -57,10 +57,10 @@ export const useImageSSE = ({
       if (!mountedRef.current) return;
 
       console.log(
-        "📡 SSE connection state changed:",
+        '📡 SSE connection state changed:',
         connected,
-        "for file:",
-        fileId
+        'for file:',
+        fileId,
       );
       setIsConnected(connected);
 
@@ -78,13 +78,13 @@ export const useImageSSE = ({
     // Create SSE URL for file events only
     const sseUrl = createFileSSEURL(fileId);
 
-    console.log("🔌 Initializing SSE connection to:", sseUrl);
+    console.log('🔌 Initializing SSE connection to:', sseUrl);
 
     // Initialize SSE connection with file-specific handlers
     imageSSEStore.initConnection(sseUrl, eventHandlers);
 
     return () => {
-      console.log("🧹 Cleaning up SSE hook for file:", fileId);
+      console.log('🧹 Cleaning up SSE hook for file:', fileId);
 
       // Remove specific connection handler
       if (connectionHandlerRef.current) {
@@ -113,7 +113,7 @@ export const useImageSSE = ({
       // Force cleanup if too many handlers accumulated
       const debugInfo = imageSSEStore.getDebugInfo();
       if (debugInfo.totalHandlers > 5) {
-        console.log("🧹 Force cleanup due to handler accumulation on unmount");
+        console.log('🧹 Force cleanup due to handler accumulation on unmount');
         imageSSEStore.forceCleanup();
       }
     };
@@ -125,7 +125,7 @@ export const useImageSSE = ({
     connectionAttempts,
     maxAttempts,
     disconnect: () => {
-      console.log("🔌 Manual SSE disconnect requested for file:", fileId);
+      console.log('🔌 Manual SSE disconnect requested for file:', fileId);
       imageSSEStore.disconnect();
       setConnectionAttempts(0);
     },

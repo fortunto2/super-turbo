@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { TaskTypeEnum } from "@turbo-super/api";
-import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { TaskTypeEnum } from '@turbo-super/api';
+import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ProjectTask {
   type: string;
@@ -17,44 +17,44 @@ export const ProjectTaskList: React.FC<ProjectTaskListProps> = ({ tasks }) => {
   const getTaskTypeName = (type: string) => {
     switch (type) {
       case TaskTypeEnum.TXT2SCRIPT_FLOW:
-        return "Script Generation";
+        return 'Script Generation';
       case TaskTypeEnum.SCRIPT2ENTITIES_FLOW:
-        return "Entity Extraction";
+        return 'Entity Extraction';
       case TaskTypeEnum.SCRIPT2STORYBOARD_FLOW:
-        return "Storyboard Creation";
+        return 'Storyboard Creation';
       case TaskTypeEnum.STORYBOARD2VIDEO_FLOW:
-        return "Video Generation";
+        return 'Video Generation';
       case TaskTypeEnum.AUDIO_GENERATION_FLOW:
-        return "Audio Addition";
+        return 'Audio Addition';
       default:
-        return type?.replace(/_/g, " ").toLowerCase() || "Unknown Task";
+        return type?.replace(/_/g, ' ').toLowerCase() || 'Unknown Task';
     }
   };
 
   // Get task status in English
   const getTaskStatusText = (status: string) => {
     switch (status) {
-      case "completed":
-        return "Completed";
-      case "error":
-        return "Error";
-      case "in_progress":
-        return "In Progress";
-      case "pending":
-        return "Pending";
+      case 'completed':
+        return 'Completed';
+      case 'error':
+        return 'Error';
+      case 'in_progress':
+        return 'In Progress';
+      case 'pending':
+        return 'Pending';
       default:
-        return "Unknown";
+        return 'Unknown';
     }
   };
 
   // Get icon for task status
   const getTaskStatusIcon = (status: string) => {
     switch (status) {
-      case "completed":
+      case 'completed':
         return <CheckCircle className="size-3 text-green-600" />;
-      case "error":
+      case 'error':
         return <AlertCircle className="size-3 text-red-600" />;
-      case "in_progress":
+      case 'in_progress':
         return <Loader2 className="size-3 animate-spin text-primary" />;
       default:
         return <div className="size-3 rounded-full bg-muted" />;

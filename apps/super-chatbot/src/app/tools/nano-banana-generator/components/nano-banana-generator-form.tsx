@@ -1,31 +1,26 @@
 // AICODE-NOTE: Form component for Nano Banana image generation
 // Provides comprehensive controls for all Nano Banana generation features
 
-"use client";
+'use client';
 
-import { useState, } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Input } from '@turbo-super/ui';
+import { Label } from '@turbo-super/ui';
+import { Textarea } from '@turbo-super/ui';
+import { Separator } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../components/ui";
-import { Switch } from "../../../../components/ui";
-import {
-  Wand2,
-  Sparkles,
-  Settings,
-  Zap,
-} from "lucide-react";
-import type { NanoBananaImageGenerationRequest } from "../api/nano-banana-api";
+} from '../../../../components/ui';
+import { Switch } from '../../../../components/ui';
+import { Wand2, Sparkles, Settings, Zap } from 'lucide-react';
+import type { NanoBananaImageGenerationRequest } from '../api/nano-banana-api';
 
 interface NanoBananaGeneratorFormProps {
   onGenerate: (request: NanoBananaImageGenerationRequest) => Promise<void>;
@@ -42,22 +37,22 @@ export function NanoBananaGeneratorForm({
   isGenerating,
   config = {
     styles: [
-      "photorealistic",
-      "artistic",
-      "minimalist",
-      "vintage",
-      "futuristic",
+      'photorealistic',
+      'artistic',
+      'minimalist',
+      'vintage',
+      'futuristic',
     ],
-    qualityLevels: ["standard", "high", "ultra"],
-    aspectRatios: ["1:1", "16:9", "9:16", "4:3", "3:4"],
+    qualityLevels: ['standard', 'high', 'ultra'],
+    aspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
   },
 }: NanoBananaGeneratorFormProps) {
   const [formData, setFormData] = useState<NanoBananaImageGenerationRequest>({
-    prompt: "",
-    sourceImageUrl: "",
-    style: "photorealistic",
-    quality: "high",
-    aspectRatio: "1:1",
+    prompt: '',
+    sourceImageUrl: '',
+    style: 'photorealistic',
+    quality: 'high',
+    aspectRatio: '1:1',
     batchSize: 1,
     enableContextAwareness: true,
     enableSurgicalPrecision: true,
@@ -97,7 +92,7 @@ export function NanoBananaGeneratorForm({
   // Update form data
   const updateFormData = (
     field: keyof NanoBananaImageGenerationRequest,
-    value: any
+    value: any,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -108,32 +103,23 @@ export function NanoBananaGeneratorForm({
         <CardTitle className="flex items-center space-x-2">
           <Wand2 className="size-5 text-yellow-600" />
           <span>Nano Banana Image Generator</span>
-          <Badge
-            variant="secondary"
-            className="ml-auto"
-          >
+          <Badge variant="secondary" className="ml-auto">
             AI-Powered
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Prompt Input */}
           <div className="space-y-2">
-            <Label
-              htmlFor="prompt"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="prompt" className="text-sm font-medium">
               Prompt *
             </Label>
             <Textarea
               id="prompt"
               placeholder="Describe the image you want to generate... (e.g., 'A majestic lion in a golden savanna at sunset, photorealistic style')"
               value={formData.prompt}
-              onChange={(e) => updateFormData("prompt", e.target.value)}
+              onChange={(e) => updateFormData('prompt', e.target.value)}
               className="min-h-[100px]"
               disabled={isGenerating}
             />
@@ -145,10 +131,7 @@ export function NanoBananaGeneratorForm({
 
           {/* Source Image Upload */}
           <div className="space-y-2">
-            <Label
-              htmlFor="sourceImage"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="sourceImage" className="text-sm font-medium">
               Source Image (Optional)
             </Label>
             <div className="flex items-center space-x-4">
@@ -167,7 +150,7 @@ export function NanoBananaGeneratorForm({
                 onClick={() => {
                   setImageFile(null);
                   setImagePreview(null);
-                  updateFormData("sourceImageUrl", "");
+                  updateFormData('sourceImageUrl', '');
                 }}
                 disabled={isGenerating || !imageFile}
               >
@@ -193,15 +176,12 @@ export function NanoBananaGeneratorForm({
           {/* Style and Quality Settings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label
-                htmlFor="style"
-                className="text-sm font-medium"
-              >
+              <Label htmlFor="style" className="text-sm font-medium">
                 Style
               </Label>
               <Select
-                value={formData.style || ""}
-                onValueChange={(value) => updateFormData("style", value)}
+                value={formData.style || ''}
+                onValueChange={(value) => updateFormData('style', value)}
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -209,10 +189,7 @@ export function NanoBananaGeneratorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.styles.map((style) => (
-                    <SelectItem
-                      key={style}
-                      value={style}
-                    >
+                    <SelectItem key={style} value={style}>
                       {style.charAt(0).toUpperCase() + style.slice(1)}
                     </SelectItem>
                   ))}
@@ -221,15 +198,12 @@ export function NanoBananaGeneratorForm({
             </div>
 
             <div className="space-y-2">
-              <Label
-                htmlFor="quality"
-                className="text-sm font-medium"
-              >
+              <Label htmlFor="quality" className="text-sm font-medium">
                 Quality
               </Label>
               <Select
-                value={formData.quality || ""}
-                onValueChange={(value) => updateFormData("quality", value)}
+                value={formData.quality || ''}
+                onValueChange={(value) => updateFormData('quality', value)}
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -237,10 +211,7 @@ export function NanoBananaGeneratorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.qualityLevels.map((quality) => (
-                    <SelectItem
-                      key={quality}
-                      value={quality}
-                    >
+                    <SelectItem key={quality} value={quality}>
                       {quality.charAt(0).toUpperCase() + quality.slice(1)}
                     </SelectItem>
                   ))}
@@ -249,15 +220,12 @@ export function NanoBananaGeneratorForm({
             </div>
 
             <div className="space-y-2">
-              <Label
-                htmlFor="aspectRatio"
-                className="text-sm font-medium"
-              >
+              <Label htmlFor="aspectRatio" className="text-sm font-medium">
                 Aspect Ratio
               </Label>
               <Select
-                value={formData.aspectRatio || ""}
-                onValueChange={(value) => updateFormData("aspectRatio", value)}
+                value={formData.aspectRatio || ''}
+                onValueChange={(value) => updateFormData('aspectRatio', value)}
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -265,10 +233,7 @@ export function NanoBananaGeneratorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.aspectRatios.map((ratio) => (
-                    <SelectItem
-                      key={ratio}
-                      value={ratio}
-                    >
+                    <SelectItem key={ratio} value={ratio}>
                       {ratio}
                     </SelectItem>
                   ))}
@@ -286,21 +251,20 @@ export function NanoBananaGeneratorForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label
-                  htmlFor="seed"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="seed" className="text-sm font-medium">
                   Seed (Optional)
                 </Label>
                 <Input
                   id="seed"
                   type="number"
                   placeholder="Random seed for reproducible results"
-                  value={formData.seed || ""}
+                  value={formData.seed || ''}
                   onChange={(e) =>
                     updateFormData(
-                      "seed",
-                      e.target.value ? Number.parseInt(e.target.value) : undefined
+                      'seed',
+                      e.target.value
+                        ? Number.parseInt(e.target.value)
+                        : undefined,
                     )
                   }
                   disabled={isGenerating}
@@ -308,16 +272,13 @@ export function NanoBananaGeneratorForm({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="batchSize"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="batchSize" className="text-sm font-medium">
                   Batch Size
                 </Label>
                 <Select
-                  value={formData.batchSize?.toString() || "1"}
+                  value={formData.batchSize?.toString() || '1'}
                   onValueChange={(value) =>
-                    updateFormData("batchSize", Number.parseInt(value))
+                    updateFormData('batchSize', Number.parseInt(value))
                   }
                   disabled={isGenerating}
                 >
@@ -356,7 +317,7 @@ export function NanoBananaGeneratorForm({
                 <Switch
                   checked={formData.enableContextAwareness || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("enableContextAwareness", checked)
+                    updateFormData('enableContextAwareness', checked)
                   }
                   disabled={isGenerating}
                 />
@@ -374,7 +335,7 @@ export function NanoBananaGeneratorForm({
                 <Switch
                   checked={formData.enableSurgicalPrecision || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("enableSurgicalPrecision", checked)
+                    updateFormData('enableSurgicalPrecision', checked)
                   }
                   disabled={isGenerating}
                 />
@@ -390,7 +351,7 @@ export function NanoBananaGeneratorForm({
                 <Switch
                   checked={formData.creativeMode || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("creativeMode", checked)
+                    updateFormData('creativeMode', checked)
                   }
                   disabled={isGenerating}
                 />

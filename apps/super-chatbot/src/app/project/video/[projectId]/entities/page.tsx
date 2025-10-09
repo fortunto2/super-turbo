@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useMemo } from "react";
-import { Users, Edit, Eye } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { BackButton } from "@/components/shared/back-button";
-import { QueryState } from "@/components/ui/query-state";
-import { useEntityList } from "@/lib/api/superduperai/entity/query";
-import type { EntityTypeEnum } from "@turbo-super/api";
+import { useParams } from 'next/navigation';
+import { useMemo } from 'react';
+import { Users, Edit, Eye } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { BackButton } from '@/components/shared/back-button';
+import { QueryState } from '@/components/ui/query-state';
+import { useEntityList } from '@/lib/api/superduperai/entity/query';
+import type { EntityTypeEnum } from '@turbo-super/api';
 
 export default function EntitiesPage() {
   const params = useParams();
@@ -28,31 +28,31 @@ export default function EntitiesPage() {
 
   const getEntityTypeIcon = (type: EntityTypeEnum) => {
     switch (type) {
-      case "character":
-        return "👤";
-      case "location":
-        return "📍";
-      case "object":
-        return "📦";
-      case "place":
-        return "🏢";
+      case 'character':
+        return '👤';
+      case 'location':
+        return '📍';
+      case 'object':
+        return '📦';
+      case 'place':
+        return '🏢';
       default:
-        return "❓";
+        return '❓';
     }
   };
 
   const getEntityTypeColor = (type: EntityTypeEnum) => {
     switch (type) {
-      case "character":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-      case "location":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-      case "object":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
-      case "place":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400";
+      case 'character':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'location':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'object':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      case 'place':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     }
   };
 
@@ -138,7 +138,7 @@ export default function EntitiesPage() {
                                 </h3>
                                 <span
                                   className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEntityTypeColor(
-                                    entity.type
+                                    entity.type,
                                   )}`}
                                 >
                                   {entity.type}
@@ -150,7 +150,7 @@ export default function EntitiesPage() {
                           {/* Entity Description - фиксированная высота */}
                           <div className="mb-3 min-h-[2.5rem] flex items-start">
                             <p className="text-sm text-muted-foreground line-clamp-2">
-                              {entity.description || "No description"}
+                              {entity.description || 'No description'}
                             </p>
                           </div>
 
@@ -200,36 +200,36 @@ export default function EntitiesPage() {
                     <div className="mt-6 pt-4 border-t border-border">
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>
-                          Total entities:{" "}
+                          Total entities:{' '}
                           <strong className="text-foreground">
                             {entities.items.length}
                           </strong>
                         </span>
                         <span>
-                          Characters:{" "}
+                          Characters:{' '}
                           <strong className="text-foreground">
                             {
                               entities.items.filter(
-                                (e) => e.type === "character"
+                                (e) => e.type === 'character',
                               ).length
                             }
                           </strong>
                         </span>
                         <span>
-                          Locations:{" "}
+                          Locations:{' '}
                           <strong className="text-foreground">
                             {
                               entities.items.filter(
-                                (e) => e.type === "location"
+                                (e) => e.type === 'location',
                               ).length
                             }
                           </strong>
                         </span>
                         <span>
-                          Objects:{" "}
+                          Objects:{' '}
                           <strong className="text-foreground">
                             {
-                              entities.items.filter((e) => e.type === "object")
+                              entities.items.filter((e) => e.type === 'object')
                                 .length
                             }
                           </strong>
@@ -247,7 +247,7 @@ export default function EntitiesPage() {
             <div className="inline-flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-md">
               <div className="size-2 bg-primary rounded-full animate-pulse" />
               <span className="text-xs text-muted-foreground">
-                Powered by{" "}
+                Powered by{' '}
                 <strong className="text-foreground">SuperDuperAI</strong>
               </span>
             </div>

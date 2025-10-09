@@ -14,4 +14,4 @@ export interface PromptData {
   lighting: string;
   mood: string;
   language: string;
-} 
+}

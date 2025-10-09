@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   Button,
-} from "@turbo-super/ui";
-import { CopyIcon } from "@/components/common/icons";
-import { ImageErrorDisplay } from "@/components/chat/error-display";
-import { useImageGeneration } from "../hooks/use-image-generation";
-import { useImageEffects } from "../hooks/use-image-effects";
+} from '@turbo-super/ui';
+import { CopyIcon } from '@/components/common/icons';
+import { ImageErrorDisplay } from '@/components/chat/error-display';
+import { useImageGeneration } from '../hooks/use-image-generation';
+import { useImageEffects } from '../hooks/use-image-effects';
 import {
   copyImageUrlToClipboard,
   shouldShowSkeleton,
@@ -20,16 +20,16 @@ import {
   getDisplayImageUrl,
   getDisplayPrompt,
   type ImageState,
-} from "../utils/image-utils";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import { DebugParameters } from "@/components/debug/debug-parameters";
-import { FileService, FileTypeEnum } from "@turbo-super/api";
-import { toast } from "sonner";
+} from '../utils/image-utils';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import { DebugParameters } from '@/components/debug/debug-parameters';
+import { FileService, FileTypeEnum } from '@turbo-super/api';
+import { toast } from 'sonner';
 
 interface ImageEditorProps {
   chatId?: string;
-  append?: UseChatHelpers["append"];
-  setMessages?: UseChatHelpers["setMessages"];
+  append?: UseChatHelpers['append'];
+  setMessages?: UseChatHelpers['setMessages'];
   initialState?: ImageState;
   setArtifact?: (fn: (prev: any) => any) => void;
   parsedContent?: any;
@@ -109,7 +109,7 @@ function GenerationSkeleton({
             disabled={isChecking}
             className="text-xs"
           >
-            {isChecking ? "Checking..." : "Check for results"}
+            {isChecking ? 'Checking...' : 'Check for results'}
           </Button>
         </div>
       )}
@@ -147,9 +147,9 @@ function ImageDisplay({
         {/*eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
-          alt={`Generated image: ${prompt || "AI generated"}`}
+          alt={`Generated image: ${prompt || 'AI generated'}`}
           className="w-full h-auto rounded-lg border object-contain"
-          style={{ maxHeight: "70vh" }}
+          style={{ maxHeight: '70vh' }}
         />
         <div className="absolute top-2 right-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
           ✅ Complete
@@ -173,9 +173,9 @@ function ImageDisplay({
 function ConnectionStatus({ isConnected }: { isConnected: boolean }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span>{isConnected ? "🟢" : "🔴"}</span>
+      <span>{isConnected ? '🟢' : '🔴'}</span>
       <span className="text-muted-foreground">
-        {isConnected ? "Connected" : "Disconnected"}
+        {isConnected ? 'Connected' : 'Disconnected'}
       </span>
     </div>
   );
@@ -196,20 +196,20 @@ export function ImageEditor({
   const effectiveProjectId = initialState?.fileId || chatId;
 
   // AICODE-DEBUG: Подробное логирование fileId в ImageEditor
-  console.log("🔍 ImageEditor: FileId tracking:", {
-    propChatId: propChatId || "none",
-    paramsId: (params?.id as string) || "none",
-    finalChatId: chatId || "none",
-    initialStateFileId: initialState?.fileId || "none",
-    initialStateProjectId: initialState?.projectId || "none",
-    effectiveProjectId: effectiveProjectId || "none",
+  console.log('🔍 ImageEditor: FileId tracking:', {
+    propChatId: propChatId || 'none',
+    paramsId: (params?.id as string) || 'none',
+    finalChatId: chatId || 'none',
+    initialStateFileId: initialState?.fileId || 'none',
+    initialStateProjectId: initialState?.projectId || 'none',
+    effectiveProjectId: effectiveProjectId || 'none',
     fallbackReason: initialState?.fileId
-      ? "using initialState.fileId"
-      : "using chatId as fallback",
-    initialStateKeys: initialState ? Object.keys(initialState) : "none",
+      ? 'using initialState.fileId'
+      : 'using chatId as fallback',
+    initialStateKeys: initialState ? Object.keys(initialState) : 'none',
   });
   const imageGeneration = useImageGeneration(effectiveProjectId);
-  const [prompt, setPrompt] = useState(initialState?.prompt || "");
+  const [prompt, setPrompt] = useState(initialState?.prompt || '');
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isForceChecking, setIsForceChecking] = useState(false);
 
@@ -221,24 +221,24 @@ export function ImageEditor({
       // If we have initialState with projectId and it's processing, start tracking
       if (
         (initialState?.fileId || initialState?.projectId) &&
-        (initialState.status === "processing" ||
-          initialState.status === "pending")
+        (initialState.status === 'processing' ||
+          initialState.status === 'pending')
       ) {
         console.log(
-          "🎯 Starting tracking for artifact project:",
+          '🎯 Starting tracking for artifact project:',
           initialState.projectId,
-          "requestId:",
-          initialState.requestId
+          'requestId:',
+          initialState.requestId,
         );
         if (initialState?.projectId) {
           imageGeneration.startTracking(
             initialState.projectId,
-            initialState.requestId
+            initialState.requestId,
           );
         } else if (initialState?.fileId) {
           imageGeneration.startTracking(
             initialState?.fileId,
-            initialState.requestId
+            initialState.requestId,
           );
         }
       }
@@ -254,13 +254,13 @@ export function ImageEditor({
 
   // Debug initialState changes to track when it gets updated
   useEffect(() => {
-    console.log("🎯 ImageEditor: initialState updated", {
-      projectId: initialState?.projectId || "none",
-      status: initialState?.status || "none",
+    console.log('🎯 ImageEditor: initialState updated', {
+      projectId: initialState?.projectId || 'none',
+      status: initialState?.status || 'none',
       imageUrl: initialState?.imageUrl
         ? `${initialState.imageUrl.substring(0, 50)}...`
-        : "none",
-      timestamp: initialState?.timestamp || "none",
+        : 'none',
+      timestamp: initialState?.timestamp || 'none',
     });
   }, [initialState]);
 
@@ -279,9 +279,9 @@ export function ImageEditor({
     ...(effectiveImageUrlForEffects && {
       imageUrl: effectiveImageUrlForEffects,
     }),
-    status: effectiveStatusForEffects || "",
+    status: effectiveStatusForEffects || '',
     ...(append && { append }),
-    prompt: prompt || initialState?.prompt || "",
+    prompt: prompt || initialState?.prompt || '',
     hasInitialized,
     ...(setArtifact && { setArtifact }),
     chatId,
@@ -298,7 +298,7 @@ export function ImageEditor({
     // If we have initialState with projectId, we're in artifact mode - use SSE status
     if (initialState?.fileId || initialState?.projectId) {
       // Check global artifact SSE connections
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         const globalWindow = window as any;
         if (
           initialState.fileId &&
@@ -314,8 +314,8 @@ export function ImageEditor({
       }
       // Fallback: assume connected if we have projectId and it's processing/pending
       return (
-        initialState.status === "processing" ||
-        initialState.status === "pending"
+        initialState.status === 'processing' ||
+        initialState.status === 'pending'
       );
     }
 
@@ -330,35 +330,35 @@ export function ImageEditor({
   const showSkeleton = shouldShowSkeleton(
     initialState,
     effectiveImageUrl,
-    initialState?.imageUrl
+    initialState?.imageUrl,
   );
   const showImage = shouldShowImage(effectiveImageUrl, initialState?.imageUrl);
   const displayImageUrl = getDisplayImageUrl(
     effectiveImageUrl,
-    initialState?.imageUrl
+    initialState?.imageUrl,
   );
   const displayPrompt = getDisplayPrompt(prompt, initialState?.prompt);
 
   // Debug display logic to understand why image is not showing
   useEffect(() => {
-    console.log("🎯 ImageEditor display state:", {
-      projectId: initialState?.projectId || "none",
+    console.log('🎯 ImageEditor display state:', {
+      projectId: initialState?.projectId || 'none',
       isArtifactMode,
-      initialStatus: initialState?.status || "none",
+      initialStatus: initialState?.status || 'none',
       initialImageUrl: initialState?.imageUrl
         ? `${initialState.imageUrl.substring(0, 50)}...`
-        : "none",
+        : 'none',
       liveImageUrl: imageGeneration.imageUrl
         ? `${imageGeneration.imageUrl.substring(0, 50)}...`
-        : "none",
+        : 'none',
       effectiveImageUrl: effectiveImageUrl
         ? `${effectiveImageUrl.substring(0, 50)}...`
-        : "none",
+        : 'none',
       showSkeleton,
       showImage,
       displayImageUrl: displayImageUrl
         ? `${displayImageUrl.substring(0, 50)}...`
-        : "none",
+        : 'none',
     });
   }, [
     initialState?.status,
@@ -394,7 +394,7 @@ export function ImageEditor({
 
   const handleGenerateNew = () => {
     imageGeneration.resetState();
-    setPrompt("");
+    setPrompt('');
   };
 
   const handleRetry = async () => {
@@ -405,18 +405,18 @@ export function ImageEditor({
       // For now, we don't have lastGenerationParams in the hook
       // This is a placeholder implementation
       if (!prompt) {
-        toast.error("Нет промпта для повтора генерации");
+        toast.error('Нет промпта для повтора генерации');
         return;
       }
 
       // TODO: Implement proper retry logic with stored parameters
       // This would typically call imageGeneration.generateImageAsync with stored params
       toast.info(
-        "Функция повтора изображения будет реализована в следующей версии"
+        'Функция повтора изображения будет реализована в следующей версии',
       );
     } catch (error) {
-      console.error("Error during retry:", error);
-      toast.error("Ошибка при повторе генерации");
+      console.error('Error during retry:', error);
+      toast.error('Ошибка при повторе генерации');
     }
   };
 
@@ -427,11 +427,11 @@ export function ImageEditor({
       const projectId = initialState?.projectId || imageGeneration.projectId;
 
       if (!projectId) {
-        console.warn("⚠️ No active project to check");
+        console.warn('⚠️ No active project to check');
         return;
       }
 
-      console.log("🔍 Force checking results for project:", projectId);
+      console.log('🔍 Force checking results for project:', projectId);
 
       // Use the same logic as imageGeneration.forceCheckResults but with projectId from initialState
       const response = await fetch(`/api/project/${projectId}`);
@@ -439,12 +439,12 @@ export function ImageEditor({
       if (!response.ok) {
         const errorData = await response
           .json()
-          .catch(() => ({ error: "Unknown error" }));
+          .catch(() => ({ error: 'Unknown error' }));
         throw new Error(errorData.error || `HTTP ${response.status}`);
       }
 
       const project = await response.json();
-      console.log("🔍 Project check result:", {
+      console.log('🔍 Project check result:', {
         id: project.id,
         tasksCount: project.tasks?.length || 0,
         dataCount: project.data?.length || 0,
@@ -453,11 +453,11 @@ export function ImageEditor({
 
       // Look for image data in project.data
       const imageData = project.data?.find((data: any) => {
-        if (data.value && typeof data.value === "object") {
+        if (data.value && typeof data.value === 'object') {
           const value = data.value as Record<string, any>;
           const hasUrl = !!value.url;
           const isImage = value.url?.match(
-            /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i
+            /\.(jpg|jpeg|png|webp|gif|bmp|svg)$/i,
           );
 
           return hasUrl && isImage;
@@ -465,18 +465,18 @@ export function ImageEditor({
         return false;
       });
 
-      if (imageData?.value && typeof imageData.value === "object") {
+      if (imageData?.value && typeof imageData.value === 'object') {
         const imageUrl = (imageData.value as Record<string, any>).url as string;
-        console.log("🔍 ✅ Image found manually:", imageUrl);
+        console.log('🔍 ✅ Image found manually:', imageUrl);
 
         // Update artifact content if in artifact mode
         if (initialState?.projectId && setArtifact) {
           setArtifact((prev: any) => {
             try {
-              const currentContent = JSON.parse(prev.content || "{}");
+              const currentContent = JSON.parse(prev.content || '{}');
               const updatedContent = {
                 ...currentContent,
-                status: "completed",
+                status: 'completed',
                 imageUrl,
                 progress: 100,
               };
@@ -485,7 +485,7 @@ export function ImageEditor({
                 content: JSON.stringify(updatedContent),
               };
             } catch (error) {
-              console.error("🔍 ❌ Failed to update artifact content:", error);
+              console.error('🔍 ❌ Failed to update artifact content:', error);
               return prev;
             }
           });
@@ -493,7 +493,7 @@ export function ImageEditor({
           // For standalone mode, we can't directly update the state
           // The user can see the result in the console and try SSE again
           console.log(
-            "🔍 ✅ Image found in standalone mode - refresh page or wait for SSE"
+            '🔍 ✅ Image found in standalone mode - refresh page or wait for SSE',
           );
         }
         return;
@@ -503,32 +503,32 @@ export function ImageEditor({
       const fileIdData = project.data?.find((data: any) => {
         return (
           data.value &&
-          typeof data.value === "object" &&
+          typeof data.value === 'object' &&
           (data.value as any).file_id
         );
       });
 
-      if (fileIdData?.value && typeof fileIdData.value === "object") {
+      if (fileIdData?.value && typeof fileIdData.value === 'object') {
         const fileId = (fileIdData.value as Record<string, any>)
           .file_id as string;
-        console.log("🔍 Found file_id manually, resolving:", fileId);
+        console.log('🔍 Found file_id manually, resolving:', fileId);
 
         const fileResponse = await FileService.fileGetById({ id: fileId });
 
         if (fileResponse?.url && fileResponse.type === FileTypeEnum.IMAGE) {
           console.log(
-            "🔍 ✅ File ID resolved to image URL manually:",
-            fileResponse.url
+            '🔍 ✅ File ID resolved to image URL manually:',
+            fileResponse.url,
           );
 
           // Update artifact content if in artifact mode
           if (initialState?.projectId && setArtifact) {
             setArtifact((prev: any) => {
               try {
-                const currentContent = JSON.parse(prev.content || "{}");
+                const currentContent = JSON.parse(prev.content || '{}');
                 const updatedContent = {
                   ...currentContent,
-                  status: "completed",
+                  status: 'completed',
                   imageUrl: fileResponse.url,
                   progress: 100,
                 };
@@ -538,8 +538,8 @@ export function ImageEditor({
                 };
               } catch (error) {
                 console.error(
-                  "🔍 ❌ Failed to update artifact content with file_id:",
-                  error
+                  '🔍 ❌ Failed to update artifact content with file_id:',
+                  error,
                 );
                 return prev;
               }
@@ -548,16 +548,16 @@ export function ImageEditor({
             // For standalone mode, we can't directly update the state
             // The user can see the result in the console and try SSE again
             console.log(
-              "🔍 ✅ File ID resolved in standalone mode - refresh page or wait for SSE"
+              '🔍 ✅ File ID resolved in standalone mode - refresh page or wait for SSE',
             );
           }
           return;
         }
       }
 
-      console.log("🔍 ⚠️ No image data found");
+      console.log('🔍 ⚠️ No image data found');
     } catch (error) {
-      console.error("🔍 ❌ Force check failed:", error);
+      console.error('🔍 ❌ Force check failed:', error);
     } finally {
       setIsForceChecking(false);
     }

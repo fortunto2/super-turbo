@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Users, UserCheck, UserX, DollarSign } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Users, UserCheck, UserX, DollarSign } from 'lucide-react';
 
 interface UserStats {
   totalUsers: number;
@@ -22,32 +22,32 @@ interface UserStatsCardsProps {
 export function UserStatsCards({ stats }: UserStatsCardsProps) {
   const statCards = [
     {
-      title: "Total Users",
+      title: 'Total Users',
       value: stats.totalUsers,
       description: `${stats.guestUsers} guests, ${stats.regularUsers} registered`,
       icon: Users,
-      color: "text-blue-500",
+      color: 'text-blue-500',
     },
     {
-      title: "Registered Users",
+      title: 'Registered Users',
       value: stats.regularUsers,
-      description: "Users with real email addresses",
+      description: 'Users with real email addresses',
       icon: UserCheck,
-      color: "text-green-500",
+      color: 'text-green-500',
     },
     {
-      title: "Guest Users",
+      title: 'Guest Users',
       value: stats.guestUsers,
-      description: "Temporary guest accounts",
+      description: 'Temporary guest accounts',
       icon: UserX,
-      color: "text-orange-500",
+      color: 'text-orange-500',
     },
     {
-      title: "Total Credits",
+      title: 'Total Credits',
       value: stats.balanceStats.total.toLocaleString(),
       description: `Average: ${stats.balanceStats.average} per user`,
       icon: DollarSign,
-      color: "text-purple-500",
+      color: 'text-purple-500',
     },
   ];
 

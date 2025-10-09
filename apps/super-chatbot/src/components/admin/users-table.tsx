@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button, Input, cn } from "@turbo-super/ui";
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Badge, Button, Input, cn } from '@turbo-super/ui';
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from '../ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from '../ui/dropdown-menu';
 import {
   Search,
   MoreHorizontal,
@@ -27,9 +27,9 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react";
-import { EditUserDialog } from "./edit-user-dialog";
-import { DeleteUserDialog } from "./delete-user-dialog";
+} from 'lucide-react';
+import { EditUserDialog } from './edit-user-dialog';
+import { DeleteUserDialog } from './delete-user-dialog';
 
 interface UsersTableProps {
   page: number;
@@ -40,7 +40,7 @@ interface User {
   id: string;
   email: string;
   balance: number;
-  type: "guest" | "regular";
+  type: 'guest' | 'regular';
 }
 
 export function UsersTable({ page, search }: UsersTableProps) {
@@ -67,22 +67,22 @@ export function UsersTable({ page, search }: UsersTableProps) {
         setLoading(true);
 
         const params = new URLSearchParams();
-        params.set("page", page.toString());
+        params.set('page', page.toString());
         if (search) {
-          params.set("search", search);
+          params.set('search', search);
         }
 
         const response = await fetch(`/api/admin/users?${params.toString()}`);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch users");
+          throw new Error('Failed to fetch users');
         }
 
         const data = await response.json();
         setUsers(data.users as User[]);
         setPagination(data.pagination);
       } catch (error) {
-        console.error("Failed to load users:", error);
+        console.error('Failed to load users:', error);
       } finally {
         setLoading(false);
       }
@@ -96,18 +96,18 @@ export function UsersTable({ page, search }: UsersTableProps) {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (searchQuery) {
-      params.set("search", searchQuery);
+      params.set('search', searchQuery);
     } else {
-      params.delete("search");
+      params.delete('search');
     }
-    params.delete("page"); // Reset to first page
+    params.delete('page'); // Reset to first page
     router.push(`/admin/users?${params.toString()}`);
   };
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set("page", newPage.toString());
+    params.set('page', newPage.toString());
     router.push(`/admin/users?${params.toString()}`);
   };
 
@@ -130,10 +130,7 @@ export function UsersTable({ page, search }: UsersTableProps) {
   return (
     <div className="space-y-4">
       {/* Search */}
-      <form
-        onSubmit={handleSearch}
-        className="flex gap-2"
-      >
+      <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -193,9 +190,9 @@ export function UsersTable({ page, search }: UsersTableProps) {
                 <TableCell className="font-medium">{user.email}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={user.type === "regular" ? "default" : "secondary"}
+                    variant={user.type === 'regular' ? 'default' : 'secondary'}
                   >
-                    {user.type === "regular" ? "Registered" : "Guest"}
+                    {user.type === 'regular' ? 'Registered' : 'Guest'}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -203,12 +200,12 @@ export function UsersTable({ page, search }: UsersTableProps) {
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <span
                       className={cn(
-                        "font-medium",
+                        'font-medium',
                         user.balance <= 10
-                          ? "text-red-500"
+                          ? 'text-red-500'
                           : user.balance <= 50
-                            ? "text-yellow-500"
-                            : "text-green-500"
+                            ? 'text-yellow-500'
+                            : 'text-green-500',
                       )}
                     >
                       {user.balance}
@@ -218,10 +215,7 @@ export function UsersTable({ page, search }: UsersTableProps) {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                      >
+                      <Button variant="ghost" size="sm">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

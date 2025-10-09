@@ -1,230 +1,231 @@
-import type { Document } from "@/lib/db/schema";
-import { generateUUID } from "@/lib/utils";
-import { expect, test } from "@playwright/test";
+import type { Document } from '@/lib/db/schema';
+import { generateUUID } from '@/lib/utils';
+import { expect, test } from '@playwright/test';
 
 const documentsCreatedByAda: Array<Document> = [];
 
-test.describe.serial("/api/document", () => {
-  test("Ada cannot retrieve a document without specifying an id", async ({
-    adaContext,
-  }: any) => {
-    const response = await adaContext.request.get("/api/document");
-    expect(response.status()).toBe(400);
+test.describe
+  .serial('/api/document', () => {
+    test('Ada cannot retrieve a document without specifying an id', async ({
+      adaContext,
+    }: any) => {
+      const response = await adaContext.request.get('/api/document');
+      expect(response.status()).toBe(400);
 
-    const text = await response.text();
-    expect(text).toEqual("Missing id");
-  });
+      const text = await response.text();
+      expect(text).toEqual('Missing id');
+    });
 
-  test("Ada cannot retrieve a document that does not exist", async ({
-    adaContext,
-  }: any) => {
-    const documentId = generateUUID();
+    test('Ada cannot retrieve a document that does not exist', async ({
+      adaContext,
+    }: any) => {
+      const documentId = generateUUID();
 
-    const response = await adaContext.request.get(
-      `/api/document?id=${documentId}`
-    );
-    expect(response.status()).toBe(404);
+      const response = await adaContext.request.get(
+        `/api/document?id=${documentId}`,
+      );
+      expect(response.status()).toBe(404);
 
-    const text = await response.text();
-    expect(text).toEqual("Not found");
-  });
+      const text = await response.text();
+      expect(text).toEqual('Not found');
+    });
 
-  test("Ada can create a document", async ({ adaContext }: any) => {
-    const documentId = generateUUID();
+    test('Ada can create a document', async ({ adaContext }: any) => {
+      const documentId = generateUUID();
 
-    const draftDocument = {
-      title: "Ada's Document",
-      kind: "text",
-      content: "Created by Ada",
-    };
+      const draftDocument = {
+        title: "Ada's Document",
+        kind: 'text',
+        content: 'Created by Ada',
+      };
 
-    const response = await adaContext.request.post(
-      `/api/document?id=${documentId}`,
-      {
-        data: draftDocument,
+      const response = await adaContext.request.post(
+        `/api/document?id=${documentId}`,
+        {
+          data: draftDocument,
+        },
+      );
+      expect(response.status()).toBe(200);
+
+      const [createdDocument] = await response.json();
+      expect(createdDocument).toMatchObject(draftDocument);
+
+      documentsCreatedByAda.push(createdDocument);
+    });
+
+    test('Ada can retrieve a created document', async ({ adaContext }: any) => {
+      const [document] = documentsCreatedByAda;
+      if (!document) {
+        throw new Error('No document found');
       }
-    );
-    expect(response.status()).toBe(200);
 
-    const [createdDocument] = await response.json();
-    expect(createdDocument).toMatchObject(draftDocument);
+      const response = await adaContext.request.get(
+        `/api/document?id=${document.id}`,
+      );
+      expect(response.status()).toBe(200);
 
-    documentsCreatedByAda.push(createdDocument);
-  });
+      const retrievedDocuments = await response.json();
+      expect(retrievedDocuments).toHaveLength(1);
 
-  test("Ada can retrieve a created document", async ({ adaContext }: any) => {
-    const [document] = documentsCreatedByAda;
-    if (!document) {
-      throw new Error("No document found");
-    }
+      const [retrievedDocument] = retrievedDocuments;
+      expect(retrievedDocument).toMatchObject(document);
+    });
 
-    const response = await adaContext.request.get(
-      `/api/document?id=${document.id}`
-    );
-    expect(response.status()).toBe(200);
-
-    const retrievedDocuments = await response.json();
-    expect(retrievedDocuments).toHaveLength(1);
-
-    const [retrievedDocument] = retrievedDocuments;
-    expect(retrievedDocument).toMatchObject(document);
-  });
-
-  test("Ada can save a new version of the document", async ({
-    adaContext,
-  }: any) => {
-    const [firstDocument] = documentsCreatedByAda;
-    if (!firstDocument) {
-      throw new Error("No document found");
-    }
-
-    const draftDocument = {
-      title: "Ada's Document",
-      kind: "text",
-      content: "Updated by Ada",
-    };
-
-    const response = await adaContext.request.post(
-      `/api/document?id=${firstDocument.id}`,
-      {
-        data: draftDocument,
+    test('Ada can save a new version of the document', async ({
+      adaContext,
+    }: any) => {
+      const [firstDocument] = documentsCreatedByAda;
+      if (!firstDocument) {
+        throw new Error('No document found');
       }
-    );
-    expect(response.status()).toBe(200);
 
-    const [createdDocument] = await response.json();
-    expect(createdDocument).toMatchObject(draftDocument);
+      const draftDocument = {
+        title: "Ada's Document",
+        kind: 'text',
+        content: 'Updated by Ada',
+      };
 
-    documentsCreatedByAda.push(createdDocument);
-  });
+      const response = await adaContext.request.post(
+        `/api/document?id=${firstDocument.id}`,
+        {
+          data: draftDocument,
+        },
+      );
+      expect(response.status()).toBe(200);
 
-  test("Ada can retrieve all versions of her documents", async ({
-    adaContext,
-  }: any) => {
-    const [firstDocument, secondDocument] = documentsCreatedByAda;
-    if (!firstDocument || !secondDocument) {
-      throw new Error("No documents found");
-    }
+      const [createdDocument] = await response.json();
+      expect(createdDocument).toMatchObject(draftDocument);
 
-    const response = await adaContext.request.get(
-      `/api/document?id=${firstDocument.id}`
-    );
-    expect(response.status()).toBe(200);
+      documentsCreatedByAda.push(createdDocument);
+    });
 
-    const retrievedDocuments = await response.json();
-    expect(retrievedDocuments).toHaveLength(2);
-
-    const [firstRetrievedDocument, secondRetrievedDocument] =
-      retrievedDocuments;
-    expect(firstRetrievedDocument).toMatchObject(firstDocument);
-    expect(secondRetrievedDocument).toMatchObject(secondDocument);
-  });
-
-  test("Ada cannot delete a document without specifying an id", async ({
-    adaContext,
-  }: any) => {
-    const response = await adaContext.request.delete(`/api/document`);
-    expect(response.status()).toBe(400);
-
-    const text = await response.text();
-    expect(text).toEqual("Missing id");
-  });
-
-  test("Ada cannot delete a document without specifying a timestamp", async ({
-    adaContext,
-  }: any) => {
-    const [firstDocument] = documentsCreatedByAda;
-    if (!firstDocument) {
-      throw new Error("No document found");
-    }
-
-    const response = await adaContext.request.delete(
-      `/api/document?id=${firstDocument.id}`
-    );
-    expect(response.status()).toBe(400);
-
-    const text = await response.text();
-    expect(text).toEqual("Missing timestamp");
-  });
-
-  test("Ada can delete a document by specifying id and timestamp", async ({
-    adaContext,
-  }: any) => {
-    const [firstDocument, secondDocument] = documentsCreatedByAda;
-    if (!firstDocument || !secondDocument) {
-      throw new Error("No documents found");
-    }
-
-    const response = await adaContext.request.delete(
-      `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`
-    );
-    expect(response.status()).toBe(200);
-
-    const deletedDocuments = await response.json();
-    expect(deletedDocuments).toHaveLength(1);
-
-    const [deletedDocument] = deletedDocuments;
-    expect(deletedDocument).toMatchObject(secondDocument);
-  });
-
-  test("Ada can retrieve documents without deleted versions", async ({
-    adaContext,
-  }: any) => {
-    const [firstDocument] = documentsCreatedByAda;
-    if (!firstDocument) {
-      throw new Error("No document found");
-    }
-
-    const response = await adaContext.request.get(
-      `/api/document?id=${firstDocument.id}`
-    );
-    expect(response.status()).toBe(200);
-
-    const retrievedDocuments = await response.json();
-    expect(retrievedDocuments).toHaveLength(1);
-
-    const [firstRetrievedDocument] = retrievedDocuments;
-    expect(firstRetrievedDocument).toMatchObject(firstDocument);
-  });
-
-  test("Babbage cannot update Ada's document", async ({
-    babbageContext,
-  }: any) => {
-    const [firstDocument] = documentsCreatedByAda;
-    if (!firstDocument) {
-      throw new Error("No document found");
-    }
-
-    const draftDocument = {
-      title: "Babbage's Document",
-      kind: "text",
-      content: "Created by Babbage",
-    };
-
-    const response = await babbageContext.request.post(
-      `/api/document?id=${firstDocument.id}`,
-      {
-        data: draftDocument,
+    test('Ada can retrieve all versions of her documents', async ({
+      adaContext,
+    }: any) => {
+      const [firstDocument, secondDocument] = documentsCreatedByAda;
+      if (!firstDocument || !secondDocument) {
+        throw new Error('No documents found');
       }
-    );
-    expect(response.status()).toBe(403);
 
-    const text = await response.text();
-    expect(text).toEqual("Forbidden");
+      const response = await adaContext.request.get(
+        `/api/document?id=${firstDocument.id}`,
+      );
+      expect(response.status()).toBe(200);
+
+      const retrievedDocuments = await response.json();
+      expect(retrievedDocuments).toHaveLength(2);
+
+      const [firstRetrievedDocument, secondRetrievedDocument] =
+        retrievedDocuments;
+      expect(firstRetrievedDocument).toMatchObject(firstDocument);
+      expect(secondRetrievedDocument).toMatchObject(secondDocument);
+    });
+
+    test('Ada cannot delete a document without specifying an id', async ({
+      adaContext,
+    }: any) => {
+      const response = await adaContext.request.delete(`/api/document`);
+      expect(response.status()).toBe(400);
+
+      const text = await response.text();
+      expect(text).toEqual('Missing id');
+    });
+
+    test('Ada cannot delete a document without specifying a timestamp', async ({
+      adaContext,
+    }: any) => {
+      const [firstDocument] = documentsCreatedByAda;
+      if (!firstDocument) {
+        throw new Error('No document found');
+      }
+
+      const response = await adaContext.request.delete(
+        `/api/document?id=${firstDocument.id}`,
+      );
+      expect(response.status()).toBe(400);
+
+      const text = await response.text();
+      expect(text).toEqual('Missing timestamp');
+    });
+
+    test('Ada can delete a document by specifying id and timestamp', async ({
+      adaContext,
+    }: any) => {
+      const [firstDocument, secondDocument] = documentsCreatedByAda;
+      if (!firstDocument || !secondDocument) {
+        throw new Error('No documents found');
+      }
+
+      const response = await adaContext.request.delete(
+        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`,
+      );
+      expect(response.status()).toBe(200);
+
+      const deletedDocuments = await response.json();
+      expect(deletedDocuments).toHaveLength(1);
+
+      const [deletedDocument] = deletedDocuments;
+      expect(deletedDocument).toMatchObject(secondDocument);
+    });
+
+    test('Ada can retrieve documents without deleted versions', async ({
+      adaContext,
+    }: any) => {
+      const [firstDocument] = documentsCreatedByAda;
+      if (!firstDocument) {
+        throw new Error('No document found');
+      }
+
+      const response = await adaContext.request.get(
+        `/api/document?id=${firstDocument.id}`,
+      );
+      expect(response.status()).toBe(200);
+
+      const retrievedDocuments = await response.json();
+      expect(retrievedDocuments).toHaveLength(1);
+
+      const [firstRetrievedDocument] = retrievedDocuments;
+      expect(firstRetrievedDocument).toMatchObject(firstDocument);
+    });
+
+    test("Babbage cannot update Ada's document", async ({
+      babbageContext,
+    }: any) => {
+      const [firstDocument] = documentsCreatedByAda;
+      if (!firstDocument) {
+        throw new Error('No document found');
+      }
+
+      const draftDocument = {
+        title: "Babbage's Document",
+        kind: 'text',
+        content: 'Created by Babbage',
+      };
+
+      const response = await babbageContext.request.post(
+        `/api/document?id=${firstDocument.id}`,
+        {
+          data: draftDocument,
+        },
+      );
+      expect(response.status()).toBe(403);
+
+      const text = await response.text();
+      expect(text).toEqual('Forbidden');
+    });
+
+    test("Ada's documents did not get updated", async ({ adaContext }: any) => {
+      const [firstDocument] = documentsCreatedByAda;
+      if (!firstDocument) {
+        throw new Error('No document found');
+      }
+
+      const response = await adaContext.request.get(
+        `/api/document?id=${firstDocument.id}`,
+      );
+      expect(response.status()).toBe(200);
+
+      const documentsRetrieved = await response.json();
+      expect(documentsRetrieved).toHaveLength(1);
+    });
   });
-
-  test("Ada's documents did not get updated", async ({ adaContext }: any) => {
-    const [firstDocument] = documentsCreatedByAda;
-    if (!firstDocument) {
-      throw new Error("No document found");
-    }
-
-    const response = await adaContext.request.get(
-      `/api/document?id=${firstDocument.id}`
-    );
-    expect(response.status()).toBe(200);
-
-    const documentsRetrieved = await response.json();
-    expect(documentsRetrieved).toHaveLength(1);
-  });
-});

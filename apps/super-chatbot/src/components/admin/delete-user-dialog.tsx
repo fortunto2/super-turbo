@@ -1,15 +1,22 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import { Button } from '@turbo-super/ui';
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@turbo-super/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@turbo-super/ui';
 interface User {
   id: string;
   email: string;
   balance: number;
-  type: "guest" | "regular";
+  type: 'guest' | 'regular';
 }
 
 interface DeleteUserDialogProps {
@@ -24,20 +31,20 @@ export function DeleteUserDialog({
   onDelete,
 }: DeleteUserDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const handleDelete = async () => {
     try {
       setLoading(true);
-      setError("");
+      setError('');
 
       const response = await fetch(`/api/admin/users/${user.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete user");
+        throw new Error(errorData.error || 'Failed to delete user');
       }
 
       onDelete(user.id);
@@ -45,18 +52,15 @@ export function DeleteUserDialog({
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to delete user. Please try again."
+          : 'Failed to delete user. Please try again.',
       );
-      console.error("Delete user error:", err);
+      console.error('Delete user error:', err);
       setLoading(false);
     }
   };
 
   return (
-    <Dialog
-      open={true}
-      onOpenChange={onClose}
-    >
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
@@ -77,8 +81,8 @@ export function DeleteUserDialog({
                 <strong>Email:</strong> {user.email}
               </p>
               <p>
-                <strong>Type:</strong>{" "}
-                {user.type === "regular" ? "Registered" : "Guest"}
+                <strong>Type:</strong>{' '}
+                {user.type === 'regular' ? 'Registered' : 'Guest'}
               </p>
               <p>
                 <strong>Balance:</strong> {user.balance} credits
@@ -128,7 +132,7 @@ export function DeleteUserDialog({
             className="flex items-center gap-2"
           >
             <Trash2 className="h-4 w-4" />
-            {loading ? "Deleting..." : "Delete User"}
+            {loading ? 'Deleting...' : 'Delete User'}
           </Button>
         </DialogFooter>
       </DialogContent>

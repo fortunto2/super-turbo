@@ -1,13 +1,31 @@
-import { ImageIcon, VideoIcon, Wand2, Sparkles, Zap, Play, Languages, FileText } from 'lucide-react';
+import {
+  ImageIcon,
+  VideoIcon,
+  Wand2,
+  Sparkles,
+  Zap,
+  Play,
+  Languages,
+  FileText,
+} from 'lucide-react';
 
-export type IconName = 'image' | 'video' | 'wand' | 'sparkles' | 'zap' | 'play' | 'languages' | 'gallery' | 'file-text';
+export type IconName =
+  | 'image'
+  | 'video'
+  | 'wand'
+  | 'sparkles'
+  | 'zap'
+  | 'play'
+  | 'languages'
+  | 'gallery'
+  | 'file-text';
 
 interface ToolIconProps {
   name: IconName;
   className?: string;
 }
 
-export function ToolIcon({ name, className = "size-4" }: ToolIconProps) {
+export function ToolIcon({ name, className = 'size-4' }: ToolIconProps) {
   switch (name) {
     case 'image':
       return <ImageIcon className={className} />;
@@ -30,4 +48,4 @@ export function ToolIcon({ name, className = "size-4" }: ToolIconProps) {
     default:
       return <Sparkles className={className} />;
   }
-} 
+}

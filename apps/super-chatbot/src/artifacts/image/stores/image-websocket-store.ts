@@ -1,10 +1,10 @@
-import { getSuperduperAIConfig, createWSURL } from "@/lib/config/superduperai";
+import { getSuperduperAIConfig, createWSURL } from '@/lib/config/superduperai';
 import type {
   ImageWSMessage,
   ImageEventHandler,
   ConnectionStateHandler,
   ImageProjectHandler as ProjectHandler,
-} from "@/types/websocket-types";
+} from '@/types/websocket-types';
 
 export type { ImageWSMessage, ImageEventHandler, ConnectionStateHandler };
 
@@ -32,20 +32,20 @@ class ImageWebsocketStore {
   addProjectHandlers(
     projectId: string,
     handlers: ImageEventHandler[],
-    requestId?: string
+    requestId?: string,
   ) {
     if (!projectId) {
-      console.error("❌ Cannot add handlers without projectId");
+      console.error('❌ Cannot add handlers without projectId');
       return;
     }
 
     console.log(
-      "➕ Adding handlers for project:",
+      '➕ Adding handlers for project:',
       projectId,
-      "count:",
+      'count:',
       handlers.length,
-      "requestId:",
-      requestId
+      'requestId:',
+      requestId,
     );
 
     // Initialize project handler array if not exists
@@ -58,7 +58,7 @@ class ImageWebsocketStore {
 
     // Check project-specific handler limit
     if (projectHandlerList.length >= this.maxHandlersPerProject) {
-      console.warn("⚠️ Max handlers per project limit reached for:", projectId);
+      console.warn('⚠️ Max handlers per project limit reached for:', projectId);
       // Remove oldest handler to make room
       projectHandlerList.shift();
     }
@@ -78,28 +78,28 @@ class ImageWebsocketStore {
     });
 
     console.log(
-      "➕ Project",
+      '➕ Project',
       projectId,
-      "now has",
+      'now has',
       projectHandlerList.length,
-      "handlers"
+      'handlers',
     );
   }
 
   // Remove handlers for a specific project
   removeProjectHandlers(
     projectId: string,
-    handlersToRemove: ImageEventHandler[]
+    handlersToRemove: ImageEventHandler[],
   ) {
     if (!projectId || !this.projectHandlers.has(projectId)) {
       return;
     }
 
     console.log(
-      "➖ Removing handlers for project:",
+      '➖ Removing handlers for project:',
       projectId,
-      "count:",
-      handlersToRemove.length
+      'count:',
+      handlersToRemove.length,
     );
 
     const projectHandlerList = this.projectHandlers.get(projectId);
@@ -107,7 +107,7 @@ class ImageWebsocketStore {
 
     handlersToRemove.forEach((handlerToRemove) => {
       const index = projectHandlerList.findIndex(
-        (ph) => ph.handler === handlerToRemove
+        (ph) => ph.handler === handlerToRemove,
       );
       if (index > -1) {
         projectHandlerList.splice(index, 1);
@@ -115,18 +115,18 @@ class ImageWebsocketStore {
     });
 
     console.log(
-      "➖ Project",
+      '➖ Project',
       projectId,
-      "now has",
+      'now has',
       projectHandlerList.length,
-      "handlers"
+      'handlers',
     );
 
     // Clean up empty project
     if (projectHandlerList.length === 0) {
       this.projectHandlers.delete(projectId);
       this.activeProjects.delete(projectId);
-      console.log("🧹 Cleaned up empty project:", projectId);
+      console.log('🧹 Cleaned up empty project:', projectId);
     }
 
     // Schedule disconnect if no handlers remain for any project
@@ -146,7 +146,7 @@ class ImageWebsocketStore {
 
   // Schedule disconnect with proper cleanup
   private scheduleDisconnect() {
-    console.log("🔌 No handlers left, scheduling disconnect in 1000ms");
+    console.log('🔌 No handlers left, scheduling disconnect in 1000ms');
 
     if (this.disconnectTimeout) {
       clearTimeout(this.disconnectTimeout);
@@ -155,11 +155,11 @@ class ImageWebsocketStore {
     this.disconnectTimeout = setTimeout(() => {
       if (this.getTotalHandlersCount() === 0) {
         console.log(
-          "🔌 Actually disconnecting after timeout - no handlers remain"
+          '🔌 Actually disconnecting after timeout - no handlers remain',
         );
         this.disconnect();
       } else {
-        console.log("🔌 Disconnect cancelled - handlers were re-added");
+        console.log('🔌 Disconnect cancelled - handlers were re-added');
       }
     }, 1000);
   }
@@ -168,7 +168,7 @@ class ImageWebsocketStore {
     // Check connection handler limit
     if (this.connectionHandlers.length >= this.maxConnectionHandlers) {
       console.warn(
-        "⚠️ Max connection handlers limit reached, rejecting new handler"
+        '⚠️ Max connection handlers limit reached, rejecting new handler',
       );
       return;
     }
@@ -181,40 +181,40 @@ class ImageWebsocketStore {
 
   removeConnectionHandler(handler: (connected: boolean) => void) {
     this.connectionHandlers = this.connectionHandlers.filter(
-      (h) => h !== handler
+      (h) => h !== handler,
     );
   }
 
   private notifyConnectionState(connected: boolean) {
     console.log(
-      "📡 Notifying connection state:",
+      '📡 Notifying connection state:',
       connected,
-      "to",
+      'to',
       this.connectionHandlers.length,
-      "handlers"
+      'handlers',
     );
     this.connectionHandlers.forEach((handler) => {
       try {
         handler(connected);
       } catch (error) {
-        console.error("❌ Error in connection handler:", error);
+        console.error('❌ Error in connection handler:', error);
       }
     });
   }
 
   // Force cleanup method for React Strict Mode
   forceCleanup() {
-    console.log("🧹 Force cleanup initiated");
-    console.log("🧹 Current handlers:", this.getTotalHandlersCount());
-    console.log("🧹 Connection handlers:", this.connectionHandlers.length);
-    console.log("🧹 Active projects:", Array.from(this.activeProjects));
+    console.log('🧹 Force cleanup initiated');
+    console.log('🧹 Current handlers:', this.getTotalHandlersCount());
+    console.log('🧹 Connection handlers:', this.connectionHandlers.length);
+    console.log('🧹 Active projects:', Array.from(this.activeProjects));
 
     // Clear all handlers but be more conservative during development (React Strict Mode)
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     if (isDevelopment && this.getTotalHandlersCount() < 5) {
       console.log(
-        "🧹 Skipping force cleanup in development with few handlers (React Strict Mode)"
+        '🧹 Skipping force cleanup in development with few handlers (React Strict Mode)',
       );
       return;
     }
@@ -224,8 +224,8 @@ class ImageWebsocketStore {
     this.activeProjects.clear();
 
     if (this.connection && this.connection.readyState === WebSocket.OPEN) {
-      console.log("🧹 Closing WebSocket connection");
-      this.connection.close(1000, "Force cleanup");
+      console.log('🧹 Closing WebSocket connection');
+      this.connection.close(1000, 'Force cleanup');
     }
     this.connection = null;
     this.currentUrl = null;
@@ -233,12 +233,12 @@ class ImageWebsocketStore {
     this.reconnectAttempts = 0;
 
     this.notifyConnectionState(false);
-    console.log("🧹 Force cleanup completed");
+    console.log('🧹 Force cleanup completed');
   }
 
   // Clean up handlers for specific project
   cleanupProject(projectId: string) {
-    console.log("🧹 Cleaning up project:", projectId);
+    console.log('🧹 Cleaning up project:', projectId);
     const config = getSuperduperAIConfig();
     const projectUrl = createWSURL(`/api/v1/ws/project.${projectId}`, config);
 
@@ -249,14 +249,14 @@ class ImageWebsocketStore {
     const projectHandlerList = this.projectHandlers.get(projectId);
     if (projectHandlerList) {
       console.log(
-        `🧹 Removing ${projectHandlerList.length} handlers for project: ${projectId}`
+        `🧹 Removing ${projectHandlerList.length} handlers for project: ${projectId}`,
       );
       this.projectHandlers.delete(projectId);
     }
 
     // If this is the current connection, disconnect it
     if (this.currentUrl === projectUrl) {
-      console.log("🧹 Disconnecting current project connection");
+      console.log('🧹 Disconnecting current project connection');
       this.disconnect();
     }
 
@@ -281,7 +281,7 @@ class ImageWebsocketStore {
   }
 
   disconnect() {
-    console.log("🔌 Disconnecting WebSocket");
+    console.log('🔌 Disconnecting WebSocket');
 
     // Clear any pending connection timeout
     if (this.connectionTimeout) {
@@ -296,7 +296,7 @@ class ImageWebsocketStore {
     }
 
     if (this.connection) {
-      this.connection.close(1000, "Disconnecting");
+      this.connection.close(1000, 'Disconnecting');
       this.connection = null;
     }
     this.currentUrl = null;
@@ -309,22 +309,22 @@ class ImageWebsocketStore {
     const now = Date.now();
 
     // Extract project ID from URL - remove 'project.' prefix for clean ID
-    const urlParts = url.split("/").pop() || "";
-    const cleanProjectId = urlParts.startsWith("project.")
+    const urlParts = url.split('/').pop() || '';
+    const cleanProjectId = urlParts.startsWith('project.')
       ? urlParts.substring(8)
       : urlParts;
     this.currentProjectId = cleanProjectId;
 
     console.log(
-      "🔌 Extracted clean projectId:",
+      '🔌 Extracted clean projectId:',
       cleanProjectId,
-      "from URL:",
-      url
+      'from URL:',
+      url,
     );
 
     // Debounce rapid successive connection attempts
     if (now - this.lastConnectionAttempt < this.connectionDebounceMs) {
-      console.log("🔌 Connection attempt debounced", {
+      console.log('🔌 Connection attempt debounced', {
         timeSinceLastAttempt: now - this.lastConnectionAttempt,
         debounceMs: this.connectionDebounceMs,
         cleanProjectId,
@@ -337,16 +337,16 @@ class ImageWebsocketStore {
     }
     this.lastConnectionAttempt = now;
 
-    console.log("🔌 Initializing WebSocket connection to:", url);
-    console.log("🔌 Current connection state:", this.connection?.readyState);
-    console.log("🔌 Is currently connecting:", this.isConnecting);
-    console.log("🔌 Current URL:", this.currentUrl);
-    console.log("🔌 Debug info:", this.getDebugInfo());
+    console.log('🔌 Initializing WebSocket connection to:', url);
+    console.log('🔌 Current connection state:', this.connection?.readyState);
+    console.log('🔌 Is currently connecting:', this.isConnecting);
+    console.log('🔌 Current URL:', this.currentUrl);
+    console.log('🔌 Debug info:', this.getDebugInfo());
 
     // Force cleanup if too many handlers or connection handlers
     const debugInfo = this.getDebugInfo();
     if (debugInfo.totalHandlers > 8 || debugInfo.connectionHandlers > 4) {
-      console.log("🧹 Too many handlers before connection, forcing cleanup");
+      console.log('🧹 Too many handlers before connection, forcing cleanup');
       this.forceCleanup();
     }
 
@@ -356,7 +356,7 @@ class ImageWebsocketStore {
       this.currentUrl === url &&
       this.connection.readyState === WebSocket.OPEN
     ) {
-      console.log("🔌 Using existing open WebSocket connection");
+      console.log('🔌 Using existing open WebSocket connection');
       if (cleanProjectId) {
         this.addProjectHandlers(cleanProjectId, handlers);
       }
@@ -365,7 +365,7 @@ class ImageWebsocketStore {
 
     // If currently connecting to the same URL, just add handlers and wait
     if (this.isConnecting && this.currentUrl === url) {
-      console.log("🔌 Already connecting to same URL, adding handlers");
+      console.log('🔌 Already connecting to same URL, adding handlers');
       if (cleanProjectId) {
         this.addProjectHandlers(cleanProjectId, handlers);
       }
@@ -379,7 +379,7 @@ class ImageWebsocketStore {
         this.connection.readyState === WebSocket.CLOSED)
     ) {
       console.log(
-        "🔌 Closing existing connection for different URL or bad state"
+        '🔌 Closing existing connection for different URL or bad state',
       );
       this.connection.close();
       this.connection = null;
@@ -401,14 +401,14 @@ class ImageWebsocketStore {
     // Set timeout for connection attempt
     this.connectionTimeout = setTimeout(() => {
       if (this.isConnecting) {
-        console.log("⏰ Connection timeout, cancelling attempt");
+        console.log('⏰ Connection timeout, cancelling attempt');
         this.isConnecting = false;
         this.notifyConnectionState(false);
       }
     }, 10000); // 10 second timeout
 
     const websocket = new WebSocket(url);
-    console.log("🔌 WebSocket created for project:", cleanProjectId);
+    console.log('🔌 WebSocket created for project:', cleanProjectId);
 
     // Track active project with clean ID
     if (cleanProjectId) {
@@ -417,7 +417,7 @@ class ImageWebsocketStore {
 
     websocket.onopen = () => {
       console.log(`✅ Image websocket connected. Project: ${cleanProjectId}`);
-      console.log("✅ WebSocket readyState:", websocket.readyState);
+      console.log('✅ WebSocket readyState:', websocket.readyState);
 
       // Clear connection timeout
       if (this.connectionTimeout) {
@@ -431,21 +431,21 @@ class ImageWebsocketStore {
 
       // Send subscribe message for image generation with full project ID
       const subscribeMessage = {
-        type: "subscribe",
+        type: 'subscribe',
         projectId: urlParts, // Use full project.{id} format for subscription
       };
 
       try {
         websocket.send(JSON.stringify(subscribeMessage));
-        console.log("📤 Subscribe message sent:", subscribeMessage);
+        console.log('📤 Subscribe message sent:', subscribeMessage);
       } catch (error) {
-        console.error("❌ Failed to send subscribe message:", error);
+        console.error('❌ Failed to send subscribe message:', error);
       }
     };
 
     websocket.onerror = (err) => {
-      console.error("❌ Image websocket error:", err);
-      console.error("❌ WebSocket readyState on error:", websocket.readyState);
+      console.error('❌ Image websocket error:', err);
+      console.error('❌ WebSocket readyState on error:', websocket.readyState);
 
       // Clear connection timeout
       if (this.connectionTimeout) {
@@ -459,10 +459,10 @@ class ImageWebsocketStore {
 
     websocket.onclose = (e) => {
       console.log(
-        `🔌 Image websocket closed. Code: ${e.code}, Reason: ${e.reason}, Clean: ${e.wasClean}`
+        `🔌 Image websocket closed. Code: ${e.code}, Reason: ${e.reason}, Clean: ${e.wasClean}`,
       );
       console.log(
-        `🔌 Project: ${cleanProjectId}, Reconnect attempts: ${this.reconnectAttempts}`
+        `🔌 Project: ${cleanProjectId}, Reconnect attempts: ${this.reconnectAttempts}`,
       );
 
       // Clear connection timeout
@@ -476,7 +476,7 @@ class ImageWebsocketStore {
 
       if (e.wasClean) {
         console.log(
-          `✅ Image websocket closed cleanly. Project: ${cleanProjectId}`
+          `✅ Image websocket closed cleanly. Project: ${cleanProjectId}`,
         );
       } else if (
         this.reconnectAttempts < this.maxReconnectAttempts &&
@@ -486,20 +486,20 @@ class ImageWebsocketStore {
         const delay =
           this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1); // Exponential backoff
         console.log(
-          `🔄 Image websocket reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`
+          `🔄 Image websocket reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`,
         );
         setTimeout(() => {
           if (this.getTotalHandlersCount() > 0) {
             // Check if handlers still exist
-            console.log("🔄 Attempting reconnection...");
+            console.log('🔄 Attempting reconnection...');
             this.initConnection(url, []);
           } else {
-            console.log("🔄 No handlers remaining, skipping reconnection");
+            console.log('🔄 No handlers remaining, skipping reconnection');
           }
         }, delay);
       } else {
         console.error(
-          "💥 Max reconnection attempts reached for image websocket or no handlers"
+          '💥 Max reconnection attempts reached for image websocket or no handlers',
         );
         this.currentUrl = null;
       }
@@ -508,17 +508,17 @@ class ImageWebsocketStore {
     websocket.onmessage = (event) => {
       try {
         const eventData = JSON.parse(event.data as string) as ImageWSMessage;
-        console.log("📨 Image websocket message received:", eventData);
-        console.log("📨 Message handlers count:", this.getTotalHandlersCount());
+        console.log('📨 Image websocket message received:', eventData);
+        console.log('📨 Message handlers count:', this.getTotalHandlersCount());
 
         if (this.getTotalHandlersCount() === 0) {
-          console.warn("⚠️ No handlers available to process WebSocket message");
+          console.warn('⚠️ No handlers available to process WebSocket message');
           return;
         }
 
         // Extract clean project ID from incoming event data
         let messageProjectId = eventData.projectId;
-        if (messageProjectId?.startsWith("project.")) {
+        if (messageProjectId?.startsWith('project.')) {
           messageProjectId = messageProjectId.substring(8);
         }
 
@@ -527,14 +527,14 @@ class ImageWebsocketStore {
           messageProjectId = cleanProjectId;
         }
 
-        console.log("📨 Routing message to clean projectId:", messageProjectId);
+        console.log('📨 Routing message to clean projectId:', messageProjectId);
 
         // Route message to correct project handlers with clean project ID
         const projectHandlerList = this.projectHandlers.get(messageProjectId);
 
         if (!projectHandlerList || projectHandlerList.length === 0) {
           console.warn(
-            `⚠️ No handlers found for clean project: ${messageProjectId}`
+            `⚠️ No handlers found for clean project: ${messageProjectId}`,
           );
           return;
         }
@@ -548,7 +548,7 @@ class ImageWebsocketStore {
         projectHandlerList.forEach((ph, index) => {
           try {
             console.log(
-              `📨 Calling handler ${index + 1}/${projectHandlerList.length} for clean project: ${messageProjectId}`
+              `📨 Calling handler ${index + 1}/${projectHandlerList.length} for clean project: ${messageProjectId}`,
             );
             ph.handler(normalizedEventData);
           } catch (error) {
@@ -556,19 +556,19 @@ class ImageWebsocketStore {
           }
         });
       } catch (error) {
-        console.error("❌ Image websocket parse error:", error);
-        console.error("❌ Raw message data:", event.data);
+        console.error('❌ Image websocket parse error:', error);
+        console.error('❌ Raw message data:', event.data);
       }
     };
 
     this.connection = websocket;
-    console.log("🔌 WebSocket object created, waiting for connection...");
-    console.log("🔌 Initial readyState:", websocket.readyState);
+    console.log('🔌 WebSocket object created, waiting for connection...');
+    console.log('🔌 Initial readyState:', websocket.readyState);
   }
 
   isConnected(): boolean {
     const connected = this.connection?.readyState === WebSocket.OPEN;
-    console.log("🔍 Checking connection status:", {
+    console.log('🔍 Checking connection status:', {
       connectionExists: !!this.connection,
       readyState: this.connection?.readyState,
       WebSocketOPEN: WebSocket.OPEN,

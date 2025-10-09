@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import type { DropResult } from "@hello-pangea/dnd";
-import type { ISceneRead } from "@turbo-super/api";
-import { GripVertical } from "lucide-react";
-import { useEffect, useState, type FC, type ReactNode } from "react";
-import { Dragging } from "../";
+import type { DropResult } from '@hello-pangea/dnd';
+import type { ISceneRead } from '@turbo-super/api';
+import { GripVertical } from 'lucide-react';
+import { useEffect, useState, type FC, type ReactNode } from 'react';
+import { Dragging } from '../';
 
 type ItemProps = {
   children: ReactNode;
@@ -13,20 +13,11 @@ type ItemProps = {
 
 const Item: FC<ItemProps> = ({ children, index }) => {
   return (
-    <Dragging.Card
-      key={index}
-      idx={index}
-    >
+    <Dragging.Card key={index} idx={index}>
       {(dragHandleProps) => (
         <div className="flex items-center gap-3 w-full scroll-my-3">
-          <div
-            {...dragHandleProps}
-            className="cursor-grab"
-          >
-            <GripVertical
-              size={30}
-              color="gray"
-            />
+          <div {...dragHandleProps} className="cursor-grab">
+            <GripVertical size={30} color="gray" />
           </div>
           <div className="flex-grow">{children}</div>
         </div>
@@ -61,7 +52,7 @@ const Root: FC<RootProps> = ({ children, scenes, onDragChange }) => {
     const updatedStoryboard = [...storyboard];
     const [movedScene] = updatedStoryboard.splice(source.index, 1);
     const order = destination.index;
-    
+
     if (movedScene) {
       updatedStoryboard.splice(order, 0, movedScene);
       onDragChange(movedScene, order);
@@ -74,10 +65,7 @@ const Root: FC<RootProps> = ({ children, scenes, onDragChange }) => {
       <Dragging.List>
         {storyboard?.map((scene, index) => {
           return (
-            <div
-              key={scene.id}
-              className="flex flex-grow w-full"
-            >
+            <div key={scene.id} className="flex flex-grow w-full">
               <ScenesList.Item index={index}>
                 {children(scene, index)}
               </ScenesList.Item>

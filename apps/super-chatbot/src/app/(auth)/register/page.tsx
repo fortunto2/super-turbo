@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { signIn } from "next-auth/react";
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { signIn } from 'next-auth/react';
 
-import { Button } from "@turbo-super/ui";
-import { LoaderIcon } from "@/components/common/icons";
+import { Button } from '@turbo-super/ui';
+import { LoaderIcon } from '@/components/common/icons';
 
 export default function Page() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function Page() {
   useEffect(() => {
     // Автоматически начинаем процесс аутентификации через Auth0
     const signupWithAuth0 = async () => {
-      await signIn("auth0", { callbackUrl: "/" });
+      await signIn('auth0', { callbackUrl: '/' });
     };
 
     signupWithAuth0();
@@ -32,7 +32,7 @@ export default function Page() {
         </div>
         <div className="flex flex-col gap-4 px-4 sm:px-16">
           <Button
-            onClick={() => signIn("auth0", { callbackUrl: "/" })}
+            onClick={() => signIn('auth0', { callbackUrl: '/' })}
             type="button"
             className="w-full bg-black text-white hover:bg-gray-800"
           >
@@ -47,15 +47,15 @@ export default function Page() {
             </span>
           </div>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {"Уже есть аккаунт? "}
+            {'Уже есть аккаунт? '}
             <Button
               variant="link"
               className="p-0 h-auto font-semibold text-gray-800 hover:underline dark:text-zinc-200"
-              onClick={() => signIn("auth0", { callbackUrl: "/" })}
+              onClick={() => signIn('auth0', { callbackUrl: '/' })}
             >
               Войдите
             </Button>
-            {" через Auth0."}
+            {' через Auth0.'}
           </p>
         </div>
       </div>

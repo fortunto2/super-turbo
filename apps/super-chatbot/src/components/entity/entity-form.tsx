@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
 import type {
   IEntityCreate,
   IEntityRead,
   IEntityUpdate,
-} from "@turbo-super/api";
-import { EntityTypeEnum } from "@turbo-super/api";
-import type { FieldPath } from "react-hook-form";
-import { Controller, useForm } from "react-hook-form";
-import type { FC } from "react";
-import { useMemo } from "react";
-import { Button, Input, Label, Textarea } from "@turbo-super/ui";
+} from '@turbo-super/api';
+import { EntityTypeEnum } from '@turbo-super/api';
+import type { FieldPath } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import type { FC } from 'react';
+import { useMemo } from 'react';
+import { Button, Input, Label, Textarea } from '@turbo-super/ui';
 
 export type EntityData = Pick<
   IEntityCreate | IEntityUpdate,
-  "name" | "description" | "config" | "voice_name" | "loras"
+  'name' | 'description' | 'config' | 'voice_name' | 'loras'
 >;
 
 type Props = {
@@ -28,20 +28,20 @@ type OptionalField = {
   label: string;
   name: Exclude<
     FieldPath<IEntityUpdate>,
-    | "name"
-    | "description"
-    | "voice_name"
-    | "loras"
+    | 'name'
+    | 'description'
+    | 'voice_name'
+    | 'loras'
     | `loras.${number}`
-    | "id"
-    | "file_id"
-    | "config"
+    | 'id'
+    | 'file_id'
+    | 'config'
   >;
   defaultValue: string | null;
   isInline?: boolean;
 };
 
-const FORM_ID = "entity-form";
+const FORM_ID = 'entity-form';
 
 const EntityForm: FC<Props> & { ID: string } = ({
   entity,
@@ -57,44 +57,44 @@ const EntityForm: FC<Props> & { ID: string } = ({
     if (type === EntityTypeEnum.CHARACTER) {
       return [
         {
-          label: "Age",
-          name: "config.age",
+          label: 'Age',
+          name: 'config.age',
           defaultValue: null,
           isInline: true,
         },
         {
-          label: "Gender",
-          name: "config.gender",
+          label: 'Gender',
+          name: 'config.gender',
           defaultValue: null,
           isInline: true,
         },
         {
-          label: "Appearance",
-          name: "config.appearance",
+          label: 'Appearance',
+          name: 'config.appearance',
           defaultValue: null,
           isInline: false,
         },
         {
-          label: "Clothes",
-          name: "config.clothes",
+          label: 'Clothes',
+          name: 'config.clothes',
           defaultValue: null,
           isInline: false,
         },
         {
-          label: "Race",
-          name: "config.race",
+          label: 'Race',
+          name: 'config.race',
           defaultValue: null,
           isInline: true,
         },
         {
-          label: "Role",
-          name: "config.role",
+          label: 'Role',
+          name: 'config.role',
           defaultValue: null,
           isInline: true,
         },
         {
-          label: "Resemblance",
-          name: "config.resemblance",
+          label: 'Resemblance',
+          name: 'config.resemblance',
           defaultValue: null,
           isInline: false,
         },
@@ -103,23 +103,23 @@ const EntityForm: FC<Props> & { ID: string } = ({
     if (type === EntityTypeEnum.LOCATION) {
       return [
         {
-          label: "Appearance",
-          name: "config.appearance",
+          label: 'Appearance',
+          name: 'config.appearance',
           defaultValue: null,
         },
         {
-          label: "Setting",
-          name: "config.setting",
+          label: 'Setting',
+          name: 'config.setting',
           defaultValue: null,
         },
         {
-          label: "Specific Elements",
-          name: "config.specific_elements",
+          label: 'Specific Elements',
+          name: 'config.specific_elements',
           defaultValue: null,
         },
         {
-          label: "Historical Period or Setting",
-          name: "config.historical_period_or_setting",
+          label: 'Historical Period or Setting',
+          name: 'config.historical_period_or_setting',
           defaultValue: null,
         },
       ];
@@ -127,13 +127,13 @@ const EntityForm: FC<Props> & { ID: string } = ({
     if (type === EntityTypeEnum.OBJECT) {
       return [
         {
-          label: "Appearance",
-          name: "config.appearance",
+          label: 'Appearance',
+          name: 'config.appearance',
           defaultValue: null,
         },
         {
-          label: "Properties",
-          name: "config.properties",
+          label: 'Properties',
+          name: 'config.properties',
           defaultValue: null,
         },
       ];
@@ -142,11 +142,7 @@ const EntityForm: FC<Props> & { ID: string } = ({
   }, [type]);
 
   return (
-    <form
-      id={FORM_ID}
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6"
-    >
+    <form id={FORM_ID} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Controller
         name="name"
         control={control}
@@ -204,7 +200,7 @@ const EntityForm: FC<Props> & { ID: string } = ({
         return (
           <div
             key={optionalField.name}
-            className={`flex gap-4 ${shouldRenderInline ? "flex-row" : "flex-col"}`}
+            className={`flex gap-4 ${shouldRenderInline ? 'flex-row' : 'flex-col'}`}
           >
             <div className="flex-1">
               <Controller
@@ -218,7 +214,7 @@ const EntityForm: FC<Props> & { ID: string } = ({
                     </Label>
                     <Input
                       id={optionalField.name}
-                      value={value ?? ""}
+                      value={value ?? ''}
                       placeholder={`Enter ${optionalField.label.toLowerCase()}`}
                       disabled={isLoading}
                       {...field}
@@ -239,7 +235,7 @@ const EntityForm: FC<Props> & { ID: string } = ({
                       <Label htmlFor={nextField.name}>{nextField.label}</Label>
                       <Input
                         id={nextField.name}
-                        value={value ?? ""}
+                        value={value ?? ''}
                         placeholder={`Enter ${nextField.label.toLowerCase()}`}
                         disabled={isLoading}
                         {...field}
@@ -261,7 +257,7 @@ const EntityForm: FC<Props> & { ID: string } = ({
             <Label htmlFor="voice_name">Voice Name</Label>
             <Input
               id="voice_name"
-              value={value ?? ""}
+              value={value ?? ''}
               placeholder="Enter voice name"
               disabled={isLoading}
               {...rest}
@@ -273,12 +269,8 @@ const EntityForm: FC<Props> & { ID: string } = ({
 
       {/* Submit Button */}
       <div className="flex justify-end pt-4">
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="min-w-[150px]"
-        >
-          {isLoading ? "Saving..." : "Save Changes"}
+        <Button type="submit" disabled={isLoading} className="min-w-[150px]">
+          {isLoading ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
     </form>

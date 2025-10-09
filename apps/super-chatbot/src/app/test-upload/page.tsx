@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Button,
   Card,
@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 import {
   Upload,
   X,
@@ -17,12 +17,12 @@ import {
   Loader2,
   FileImage,
   Trash2,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface UploadedFile {
   id: string;
   file: File;
-  status: "pending" | "uploading" | "success" | "error";
+  status: 'pending' | 'uploading' | 'success' | 'error';
   progress: number;
   error?: string;
   result?: any;
@@ -35,15 +35,15 @@ export default function TestUploadPage() {
     // Проверка размера файла (максимум 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return { valid: false, error: "Файл слишком большой (максимум 10MB)" };
+      return { valid: false, error: 'Файл слишком большой (максимум 10MB)' };
     }
 
     // Проверка типа файла
-    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       return {
         valid: false,
-        error: "Неподдерживаемый тип файла. Разрешены только PNG, JPEG, WebP",
+        error: 'Неподдерживаемый тип файла. Разрешены только PNG, JPEG, WebP',
       };
     }
 
@@ -62,14 +62,14 @@ export default function TestUploadPage() {
         newFiles.push({
           id: Math.random().toString(36).substr(2, 9),
           file,
-          status: "pending",
+          status: 'pending',
           progress: 0,
         });
       } else {
         // Показываем ошибку валидации
         console.error(
           `Файл ${file.name} не прошел валидацию:`,
-          validation.error
+          validation.error,
         );
       }
     });
@@ -82,16 +82,16 @@ export default function TestUploadPage() {
     setFiles((prev) =>
       prev.map((f) =>
         f.id === uploadedFile.id
-          ? { ...f, status: "uploading", progress: 0 }
-          : f
-      )
+          ? { ...f, status: 'uploading', progress: 0 }
+          : f,
+      ),
     );
 
     try {
-      console.log("🚀 Starting upload for file:", uploadedFile.file.name);
+      console.log('🚀 Starting upload for file:', uploadedFile.file.name);
 
       // Логируем детали файла
-      console.log("📁 File details:", {
+      console.log('📁 File details:', {
         name: uploadedFile.file.name,
         size: uploadedFile.file.size,
         type: uploadedFile.file.type,
@@ -100,17 +100,17 @@ export default function TestUploadPage() {
 
       // Создаем FormData для FileService (только payload)
       const formData = new FormData();
-      formData.append("payload", uploadedFile.file);
+      formData.append('payload', uploadedFile.file);
       // type передается как query параметр в FileService
 
-      console.log("📤 FormData created, making fetch request...");
+      console.log('📤 FormData created, making fetch request...');
 
       // Логируем содержимое FormData для отладки
-      console.log("📤 FormData entries:");
+      console.log('📤 FormData entries:');
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
           console.log(
-            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`,
           );
         } else {
           console.log(`  ${key}: ${value}`);
@@ -118,36 +118,36 @@ export default function TestUploadPage() {
       }
 
       // Используем FileService API endpoint (правильная структура)
-      const response = await fetch("/api/file/upload?type=image", {
-        method: "POST",
+      const response = await fetch('/api/file/upload?type=image', {
+        method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("❌ Upload error response:", {
+        console.error('❌ Upload error response:', {
           status: response.status,
           statusText: response.statusText,
           errorData,
         });
         throw new Error(
-          `HTTP ${response.status}: ${errorData.error || response.statusText}`
+          `HTTP ${response.status}: ${errorData.error || response.statusText}`,
         );
       }
 
       const result = await response.json();
-      console.log("✅ Upload successful:", result);
+      console.log('✅ Upload successful:', result);
 
       setFiles((prev) =>
         prev.map((f) =>
           f.id === uploadedFile.id
-            ? { ...f, status: "success", progress: 100, result }
-            : f
-        )
+            ? { ...f, status: 'success', progress: 100, result }
+            : f,
+        ),
       );
     } catch (error) {
-      console.error("❌ Upload failed:", error);
-      console.error("❌ Error details:", {
+      console.error('❌ Upload failed:', error);
+      console.error('❌ Error details:', {
         name: (error as any)?.constructor?.name,
         message: (error as any)?.message,
         stack: (error as any)?.stack,
@@ -158,17 +158,17 @@ export default function TestUploadPage() {
           f.id === uploadedFile.id
             ? {
                 ...f,
-                status: "error",
+                status: 'error',
                 error: error instanceof Error ? error.message : String(error),
               }
-            : f
-        )
+            : f,
+        ),
       );
     }
   };
 
   const uploadAllFiles = async () => {
-    const pendingFiles = files.filter((f) => f.status === "pending");
+    const pendingFiles = files.filter((f) => f.status === 'pending');
     for (const file of pendingFiles) {
       await uploadFile(file);
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -183,29 +183,29 @@ export default function TestUploadPage() {
     setFiles([]);
   };
 
-  const getStatusIcon = (status: UploadedFile["status"]) => {
+  const getStatusIcon = (status: UploadedFile['status']) => {
     switch (status) {
-      case "pending":
+      case 'pending':
         return <FileImage className="w-5 h-5 text-gray-500" />;
-      case "uploading":
+      case 'uploading':
         return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
-      case "success":
+      case 'success':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "error":
+      case 'error':
         return <AlertCircle className="w-5 h-5 text-red-500" />;
     }
   };
 
-  const getStatusColor = (status: UploadedFile["status"]) => {
+  const getStatusColor = (status: UploadedFile['status']) => {
     switch (status) {
-      case "pending":
-        return "bg-gray-100 dark:bg-gray-800";
-      case "uploading":
-        return "bg-blue-100 dark:bg-blue-900/20";
-      case "success":
-        return "bg-green-100 dark:bg-green-900/20";
-      case "error":
-        return "bg-red-100 dark:bg-red-900/20";
+      case 'pending':
+        return 'bg-gray-100 dark:bg-gray-800';
+      case 'uploading':
+        return 'bg-blue-100 dark:bg-blue-900/20';
+      case 'success':
+        return 'bg-green-100 dark:bg-green-900/20';
+      case 'error':
+        return 'bg-red-100 dark:bg-red-900/20';
     }
   };
 
@@ -251,7 +251,7 @@ export default function TestUploadPage() {
             <div className="flex gap-2 flex-wrap">
               <Button
                 onClick={uploadAllFiles}
-                disabled={!files.some((f) => f.status === "pending")}
+                disabled={!files.some((f) => f.status === 'pending')}
                 className="flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
@@ -273,10 +273,7 @@ export default function TestUploadPage() {
             <div className="space-y-3">
               <h3 className="text-lg font-medium">Загруженные файлы:</h3>
               {files.map((file) => (
-                <Card
-                  key={file.id}
-                  className={getStatusColor(file.status)}
-                >
+                <Card key={file.id} className={getStatusColor(file.status)}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">
@@ -288,7 +285,7 @@ export default function TestUploadPage() {
                           <p className="text-sm text-gray-500">
                             {(file.file.size / 1024 / 1024).toFixed(2)} MB
                           </p>
-                          {file.status === "uploading" && (
+                          {file.status === 'uploading' && (
                             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                               <div
                                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
@@ -306,21 +303,21 @@ export default function TestUploadPage() {
                       <div className="flex items-center gap-2">
                         <Badge
                           variant={
-                            file.status === "success"
-                              ? "default"
-                              : file.status === "error"
-                                ? "destructive"
-                                : file.status === "uploading"
-                                  ? "secondary"
-                                  : "outline"
+                            file.status === 'success'
+                              ? 'default'
+                              : file.status === 'error'
+                                ? 'destructive'
+                                : file.status === 'uploading'
+                                  ? 'secondary'
+                                  : 'outline'
                           }
                         >
-                          {file.status === "pending" && "Ожидает"}
-                          {file.status === "uploading" && "Загружается"}
-                          {file.status === "success" && "Успешно"}
-                          {file.status === "error" && "Ошибка"}
+                          {file.status === 'pending' && 'Ожидает'}
+                          {file.status === 'uploading' && 'Загружается'}
+                          {file.status === 'success' && 'Успешно'}
+                          {file.status === 'error' && 'Ошибка'}
                         </Badge>
-                        {file.status === "pending" && (
+                        {file.status === 'pending' && (
                           <Button
                             size="sm"
                             onClick={() => uploadFile(file)}

@@ -3,8 +3,8 @@
  * Использует универсальный подход без жестко заданных категорий
  */
 
-import type { ChatMedia } from "./universal-context";
-import { semanticIndex } from "./semantic-index";
+import type { ChatMedia } from './universal-context';
+import { semanticIndex } from './semantic-index';
 
 interface SemanticMatch {
   media: ChatMedia;
@@ -44,10 +44,10 @@ export class SemanticContextAnalyzer {
   async findSimilarMedia(
     query: string,
     chatMedia: ChatMedia[],
-    threshold = 0.6
+    threshold = 0.6,
   ): Promise<SemanticMatch[]> {
     console.log(
-      `🔍 SemanticSearch: Searching for "${query}" in ${chatMedia.length} media files`
+      `🔍 SemanticSearch: Searching for "${query}" in ${chatMedia.length} media files`,
     );
 
     const queryKeywords = this.extractKeywords(query);
@@ -61,7 +61,7 @@ export class SemanticContextAnalyzer {
         matches.push({
           media,
           similarity,
-          reasoning: `Семантическое сходство: ${Math.round(similarity * 100)}% (${matchedKeywords.join(", ")})`,
+          reasoning: `Семантическое сходство: ${Math.round(similarity * 100)}% (${matchedKeywords.join(', ')})`,
           matchedKeywords,
         });
       }
@@ -71,7 +71,7 @@ export class SemanticContextAnalyzer {
     matches.sort((a, b) => b.similarity - a.similarity);
 
     console.log(
-      `🎯 SemanticSearch: Found ${matches.length} similar media files`
+      `🎯 SemanticSearch: Found ${matches.length} similar media files`,
     );
     return matches;
   }
@@ -91,7 +91,7 @@ export class SemanticContextAnalyzer {
    */
   private async calculateSimilarity(
     queryKeywords: string[],
-    media: ChatMedia
+    media: ChatMedia,
   ): Promise<number> {
     let totalScore = 0;
     let maxPossibleScore = 0;
@@ -101,7 +101,7 @@ export class SemanticContextAnalyzer {
       const promptKeywords = this.extractKeywords(media.prompt);
       const promptScore = this.calculateKeywordOverlap(
         queryKeywords,
-        promptKeywords
+        promptKeywords,
       );
       totalScore += promptScore * this.weights.prompt;
       maxPossibleScore += this.weights.prompt;
@@ -109,12 +109,12 @@ export class SemanticContextAnalyzer {
 
     // Анализируем имя файла (извлекаем из URL)
     if (media.url) {
-      const fileName = media.url.split("/").pop() || "";
+      const fileName = media.url.split('/').pop() || '';
       if (fileName) {
         const fileNameKeywords = this.extractKeywords(fileName);
         const fileNameScore = this.calculateKeywordOverlap(
           queryKeywords,
-          fileNameKeywords
+          fileNameKeywords,
         );
         totalScore += fileNameScore * this.weights.fileName;
         maxPossibleScore += this.weights.fileName;
@@ -145,7 +145,7 @@ export class SemanticContextAnalyzer {
    */
   private calculateKeywordOverlap(
     keywords1: string[],
-    keywords2: string[]
+    keywords2: string[],
   ): number {
     if (keywords1.length === 0 || keywords2.length === 0) return 0;
 
@@ -164,14 +164,14 @@ export class SemanticContextAnalyzer {
    */
   private calculateRoleRelevance(keywords: string[], role: string): number {
     const roleKeywords = {
-      user: ["загружен", "uploaded", "мой", "my"],
-      assistant: ["сгенерирован", "generated", "создан", "created"],
+      user: ['загружен', 'uploaded', 'мой', 'my'],
+      assistant: ['сгенерирован', 'generated', 'создан', 'created'],
     };
 
     const relevantKeywords =
       roleKeywords[role as keyof typeof roleKeywords] || [];
     const hasRelevantKeyword = keywords.some((keyword) =>
-      relevantKeywords.some((rk) => keyword.toLowerCase().includes(rk))
+      relevantKeywords.some((rk) => keyword.toLowerCase().includes(rk)),
     );
 
     return hasRelevantKeyword ? 1.0 : 0.5; // Нейтральный score для неопределенных ролей
@@ -182,7 +182,7 @@ export class SemanticContextAnalyzer {
    */
   private findMatchedKeywords(
     queryKeywords: string[],
-    media: ChatMedia
+    media: ChatMedia,
   ): string[] {
     const matched: string[] = [];
 
@@ -219,7 +219,7 @@ export class SemanticContextAnalyzer {
       });
 
       console.log(
-        `📝 SemanticSearch: Added media to index: ${media.id || media.url}`
+        `📝 SemanticSearch: Added media to index: ${media.id || media.url}`,
       );
     }
   }
@@ -247,7 +247,7 @@ export class SemanticContextAnalyzer {
   clearIndex(): void {
     this.keywordEmbeddings.clear();
     this.mediaEmbeddings.clear();
-    console.log("🧹 SemanticSearch: Index cleared");
+    console.log('🧹 SemanticSearch: Index cleared');
   }
 
   /**
@@ -262,7 +262,7 @@ export class SemanticContextAnalyzer {
     const totalKeywords = this.keywordEmbeddings.size;
     const totalKeywordCount = Array.from(this.mediaEmbeddings.values()).reduce(
       (sum, embedding) => sum + embedding.values.length,
-      0
+      0,
     );
 
     return {

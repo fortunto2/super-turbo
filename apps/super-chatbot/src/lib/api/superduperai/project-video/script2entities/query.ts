@@ -1,8 +1,8 @@
-import type { MutationKey } from "@tanstack/react-query";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ProjectService } from "@turbo-super/api";
-import { projectKeys } from "../../project/query";
-import { entityKeys } from "../../entity";
+import type { MutationKey } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ProjectService } from '@turbo-super/api';
+import { projectKeys } from '../../project/query';
+import { entityKeys } from '../../entity';
 
 type IProjectVideoScript2Entities = Parameters<
   typeof ProjectService.projectScript2Entities

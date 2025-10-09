@@ -1,14 +1,14 @@
-import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { cookies } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
 
-import { auth } from "@/app/(auth)/auth";
-import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
-import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
-import type { DBMessage } from "@/lib/db/schema";
-import type { Attachment, UIMessage } from "ai";
+import { auth } from '@/app/(auth)/auth';
+import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
+import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import type { DBMessage } from '@/lib/db/schema';
+import type { Attachment, UIMessage } from 'ai';
 // import * as Sentry from "@sentry/nextjs";
-import Script from "next/script";
-import { BananaVeo3ChatWrapper } from "./banana-veo3-chat-wrapper";
+import Script from 'next/script';
+import { BananaVeo3ChatWrapper } from './banana-veo3-chat-wrapper';
 
 export default async function BananaVeo3ChatPage(props: {
   params: Promise<{ id: string }>;
@@ -44,7 +44,7 @@ export default async function BananaVeo3ChatPage(props: {
     //   message: `No session found when accessing banana-veo3 chat: ${id}`,
     //   level: "info",
     // });
-    redirect("/api/auth/guest");
+    redirect('/api/auth/guest');
   }
 
   // Дополнительная проверка существования пользователя
@@ -57,7 +57,7 @@ export default async function BananaVeo3ChatPage(props: {
     //     extra: { chatId: id, session: session },
     //   }
     // );
-    redirect("/api/auth/guest");
+    redirect('/api/auth/guest');
   }
 
   const chat = await getChatById({ id });
@@ -66,7 +66,7 @@ export default async function BananaVeo3ChatPage(props: {
   // Чат будет создан автоматически при первом сообщении через API
   if (chat) {
     // Проверяем права доступа только для существующих чатов
-    if (chat.visibility === "private") {
+    if (chat.visibility === 'private') {
       if (!session.user) {
         // Sentry.captureMessage(
         //   `Access denied to private banana-veo3 chat: ${id}`,
@@ -100,16 +100,16 @@ export default async function BananaVeo3ChatPage(props: {
   });
 
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
-    console.log("🍌 Converting messages from DB:", messages.length);
+    console.log('🍌 Converting messages from DB:', messages.length);
 
     return messages.map((message, index) => {
-      const parts = message.parts as UIMessage["parts"];
+      const parts = message.parts as UIMessage['parts'];
 
       // Extract text from parts
-      let content = "";
+      let content = '';
       if (parts && Array.isArray(parts) && parts.length > 0) {
         const firstPart = parts[0] as any;
-        content = firstPart?.text || "";
+        content = firstPart?.text || '';
       }
 
       console.log(`🍌 Message ${index}:`, {
@@ -123,7 +123,7 @@ export default async function BananaVeo3ChatPage(props: {
       return {
         id: message.id,
         parts,
-        role: message.role as UIMessage["role"],
+        role: message.role as UIMessage['role'],
         content,
         createdAt: message.createdAt,
         experimental_attachments:
@@ -133,14 +133,14 @@ export default async function BananaVeo3ChatPage(props: {
   }
 
   const cookieStore = await cookies();
-  const chatModelFromCookie = cookieStore.get("chat-model");
+  const chatModelFromCookie = cookieStore.get('chat-model');
 
   const chatContent = !chatModelFromCookie ? (
     <BananaVeo3ChatWrapper
       id={id}
       initialMessages={convertToUIMessages(messagesFromDb)}
       initialChatModel={DEFAULT_CHAT_MODEL}
-      initialVisibilityType={chat?.visibility ?? "private"}
+      initialVisibilityType={chat?.visibility ?? 'private'}
       isReadonly={chat ? session?.user?.id !== chat.userId : false}
       session={session}
       autoResume={true}
@@ -150,7 +150,7 @@ export default async function BananaVeo3ChatPage(props: {
       id={id}
       initialMessages={convertToUIMessages(messagesFromDb)}
       initialChatModel={chatModelFromCookie.value}
-      initialVisibilityType={chat?.visibility ?? "private"}
+      initialVisibilityType={chat?.visibility ?? 'private'}
       isReadonly={chat ? session?.user?.id !== chat.userId : false}
       session={session}
       autoResume={true}

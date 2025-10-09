@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { DocumentGallery } from "./components/document-gallery";
-import { GalleryFilters } from "./components/gallery-filters";
-import { GallerySearch } from "./components/gallery-search";
-import type { ArtifactKind } from "@/components/artifacts/artifact";
-import { useSession } from "next-auth/react";
+import { useState } from 'react';
+import { DocumentGallery } from './components/document-gallery';
+import { GalleryFilters } from './components/gallery-filters';
+import { GallerySearch } from './components/gallery-search';
+import type { ArtifactKind } from '@/components/artifacts/artifact';
+import { useSession } from 'next-auth/react';
 
 export interface DocumentFilters {
-  visibility: "mine" | "public" | "all";
+  visibility: 'mine' | 'public' | 'all';
   kind?: ArtifactKind;
   model?: string;
   dateFrom?: Date;
   dateTo?: Date;
   search?: string;
-  sort: "newest" | "oldest" | "popular";
+  sort: 'newest' | 'oldest' | 'popular';
 }
 
 export default function GalleryPage() {
   const { data: session } = useSession();
   const [filters, setFilters] = useState<DocumentFilters>({
-    visibility: "all",
-    sort: "newest",
+    visibility: 'all',
+    sort: 'newest',
   });
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +49,7 @@ export default function GalleryPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">Artifact Gallery</h1>
             <GallerySearch
-              value={filters.search || ""}
+              value={filters.search || ''}
               onChange={(search: string) => {
                 const newFilters = { ...filters };
                 if (search) {

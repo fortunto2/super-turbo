@@ -5,7 +5,7 @@ import {
   type ISceneUpdate,
   type ITaskRead,
   TaskStatusEnum,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 // ---------- API Types ----------
 export interface SceneData {
@@ -20,7 +20,7 @@ export async function fetchScene(sceneId: string): Promise<SceneData> {
 
   if (!res.ok) {
     if (res.status === 404) {
-      return { success: false, error: "Scene not found" };
+      return { success: false, error: 'Scene not found' };
     }
     throw new Error(`HTTP ${res.status}`);
   }
@@ -31,12 +31,12 @@ export async function fetchScene(sceneId: string): Promise<SceneData> {
 export async function fetchFiles(
   sceneId: string,
   projectId: string,
-  activeTool: string | null
+  activeTool: string | null,
 ): Promise<IFileRead[]> {
   const types = getFileTypesForTool(activeTool);
 
   const res = await fetch(
-    `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`
+    `/api/file?sceneId=${sceneId}&projectId=${projectId}&types=${types}`,
   );
 
   if (!res.ok) {
@@ -49,11 +49,11 @@ export async function fetchFiles(
 
 export async function updateScene(
   sceneId: string,
-  updatedSceneData: ISceneUpdate
+  updatedSceneData: ISceneUpdate,
 ): Promise<ISceneRead> {
   const response = await fetch(`/api/scene/update?sceneId=${sceneId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       sceneId,
       requestBody: updatedSceneData,
@@ -69,14 +69,14 @@ export async function updateScene(
 }
 
 export async function deleteFile(fileId: string): Promise<void> {
-  const response = await fetch("/api/file/delete", {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+  const response = await fetch('/api/file/delete', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: fileId }),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to delete file");
+    throw new Error('Failed to delete file');
   }
 }
 
@@ -92,7 +92,7 @@ export async function checkFileStatus(fileId: string): Promise<{
 
   const json = await res.json();
   const hasError = json.tasks?.some(
-    (task: ITaskRead) => task.status === TaskStatusEnum.ERROR
+    (task: ITaskRead) => task.status === TaskStatusEnum.ERROR,
   );
 
   return {
@@ -104,9 +104,9 @@ export async function checkFileStatus(fileId: string): Promise<{
 // ---------- Helper Functions ----------
 function getFileTypesForTool(activeTool: string | null): string {
   switch (activeTool) {
-    case "soundEffect":
+    case 'soundEffect':
       return FileTypeEnum.SOUND_EFFECT;
-    case "voiceover":
+    case 'voiceover':
       return FileTypeEnum.VOICEOVER;
     default:
       return `${FileTypeEnum.IMAGE},${FileTypeEnum.VIDEO}`;

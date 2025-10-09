@@ -1,6 +1,6 @@
-import { cookies } from "next/headers";
+import { cookies } from 'next/headers';
 
-const GUEST_SESSION_COOKIE = "superduperai_guest_session";
+const GUEST_SESSION_COOKIE = 'superduperai_guest_session';
 
 /**
  * Генерирует уникальный sessionId для гостевого пользователя на сервере
@@ -21,15 +21,15 @@ export async function getServerGuestSessionId(): Promise<string | null> {
  * Сохраняет sessionId в cookie на сервере
  */
 export async function setServerGuestSessionId(
-  sessionId: string
+  sessionId: string,
 ): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(GUEST_SESSION_COOKIE, sessionId, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60, // 30 дней
-    path: "/",
+    path: '/',
   });
 }
 

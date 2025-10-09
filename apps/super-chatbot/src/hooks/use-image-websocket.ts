@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 import {
   imageWebsocketStore,
   type ImageEventHandler,
-} from "@/artifacts/image/stores/image-websocket-store";
-import { getSuperduperAIConfig } from "@/lib/config/superduperai";
+} from '@/artifacts/image/stores/image-websocket-store';
+import { getSuperduperAIConfig } from '@/lib/config/superduperai';
 
 type Props = {
   projectId: string;
@@ -23,7 +23,7 @@ export const useImageWebsocket = ({
   const maxAttempts = 3;
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
   const connectionHandlerRef = useRef<((connected: boolean) => void) | null>(
-    null
+    null,
   );
   const mountedRef = useRef(true);
 
@@ -57,14 +57,14 @@ export const useImageWebsocket = ({
       // Use environment variable or fallback to default
       const config = getSuperduperAIConfig();
       const baseUrl = config.wsURL
-        .replace("wss://", "https://")
-        .replace("ws://", "http://");
-      const url = `${baseUrl.replace("https://", "wss://")}/api/v1/ws/project.${projectId}`;
+        .replace('wss://', 'https://')
+        .replace('ws://', 'http://');
+      const url = `${baseUrl.replace('https://', 'wss://')}/api/v1/ws/project.${projectId}`;
 
       // Remove previous connection handler if exists
       if (connectionHandlerRef.current) {
         imageWebsocketStore.removeConnectionHandler(
-          connectionHandlerRef.current
+          connectionHandlerRef.current,
         );
       }
 
@@ -114,7 +114,7 @@ export const useImageWebsocket = ({
       // Remove specific connection handler
       if (connectionHandlerRef.current) {
         imageWebsocketStore.removeConnectionHandler(
-          connectionHandlerRef.current
+          connectionHandlerRef.current,
         );
         connectionHandlerRef.current = null;
       }
@@ -137,7 +137,7 @@ export const useImageWebsocket = ({
 
       if (connectionHandlerRef.current) {
         imageWebsocketStore.removeConnectionHandler(
-          connectionHandlerRef.current
+          connectionHandlerRef.current,
         );
       }
 
@@ -147,7 +147,7 @@ export const useImageWebsocket = ({
       // Force cleanup if too many handlers accumulated
       const debugInfo = imageWebsocketStore.getDebugInfo();
       if (debugInfo.totalHandlers > 5) {
-        console.log("🧹 Force cleanup due to handler accumulation on unmount");
+        console.log('🧹 Force cleanup due to handler accumulation on unmount');
         imageWebsocketStore.forceCleanup();
       }
     };

@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { SceneService } from "@turbo-super/api";
-import { sceneKeys } from "../query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { SceneService } from '@turbo-super/api';
+import { sceneKeys } from '../query';
 
 type ISceneUpdateOrder = Parameters<typeof SceneService.sceneUpdateOrder>[0];
 

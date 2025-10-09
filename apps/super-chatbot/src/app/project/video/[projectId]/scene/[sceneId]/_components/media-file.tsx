@@ -1,11 +1,15 @@
-import { FileTypeEnum, type ISceneRead, type IFileRead } from "@turbo-super/api";
-import { FileGenerationStatus } from "./helper";
-import { FileMetadataModal } from "./file-metadata-modal";
-import { hasMetadata } from "./file-metadata-utils";
-import { useState } from "react";
-import Image from "next/image";
-import { Play, Trash2, Info } from "lucide-react";
-import { useFileDelete, useSceneUpdate } from "@/lib/api";
+import {
+  FileTypeEnum,
+  type ISceneRead,
+  type IFileRead,
+} from '@turbo-super/api';
+import { FileGenerationStatus } from './helper';
+import { FileMetadataModal } from './file-metadata-modal';
+import { hasMetadata } from './file-metadata-utils';
+import { useState } from 'react';
+import Image from 'next/image';
+import { Play, Trash2, Info } from 'lucide-react';
+import { useFileDelete, useSceneUpdate } from '@/lib/api';
 
 export function MediaFile({
   file,
@@ -30,7 +34,7 @@ export function MediaFile({
     try {
       await deleteFile({ id: fileId });
     } catch (error) {
-      console.error("Error deleting file:", error);
+      console.error('Error deleting file:', error);
     }
   };
 
@@ -45,7 +49,7 @@ export function MediaFile({
         },
       });
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.error('Error selecting file:', error);
     }
   };
 
@@ -62,19 +66,16 @@ export function MediaFile({
       onMouseLeave={() => setHoveredFile(null)}
     >
       {!file.url && !file.thumbnail_url ? (
-        <FileGenerationStatus
-          file={file}
-          key={file.id}
-        />
+        <FileGenerationStatus file={file} key={file.id} />
       ) : (
         <button
           onClick={handleSelect}
           disabled={isSelecting}
           className={`relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
             isActive
-              ? "border-primary ring-2 ring-primary"
-              : "border-border hover:border-primary/60 hover:shadow-md"
-          } ${isSelecting ? "opacity-50 cursor-not-allowed" : ""}`}
+              ? 'border-primary ring-2 ring-primary'
+              : 'border-border hover:border-primary/60 hover:shadow-md'
+          } ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {file.type === FileTypeEnum.VIDEO && (
             <div className="absolute">

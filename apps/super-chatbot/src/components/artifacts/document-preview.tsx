@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   memo,
@@ -7,28 +7,28 @@ import {
   useEffect,
   useMemo,
   useRef,
-} from "react";
-import type { UIArtifact, ArtifactKind as BaseArtifactKind } from "./artifact";
+} from 'react';
+import type { UIArtifact, ArtifactKind as BaseArtifactKind } from './artifact';
 import {
   FileIcon,
   FullscreenIcon,
   ImageIcon,
   LoaderIcon,
-} from "../common/icons";
-import { cn } from "@turbo-super/ui";
-import { fetcher } from "@/lib/utils";
-import type { Document as BaseDocument } from "@/lib/db/schema";
-type ArtifactKind = BaseArtifactKind | "script";
-type Document = Omit<BaseDocument, "kind"> & { kind: ArtifactKind };
-import { InlineDocumentSkeleton } from "./document-skeleton";
-import useSWR from "swr";
-import { Editor } from "../editors/text-editor";
-import { DocumentToolCall, DocumentToolResult } from "./document";
+} from '../common/icons';
+import { cn } from '@turbo-super/ui';
+import { fetcher } from '@/lib/utils';
+import type { Document as BaseDocument } from '@/lib/db/schema';
+type ArtifactKind = BaseArtifactKind | 'script';
+type Document = Omit<BaseDocument, 'kind'> & { kind: ArtifactKind };
+import { InlineDocumentSkeleton } from './document-skeleton';
+import useSWR from 'swr';
+import { Editor } from '../editors/text-editor';
+import { DocumentToolCall, DocumentToolResult } from './document';
 
-import { useArtifactLegacy } from "@/hooks/use-artifact";
-import equal from "fast-deep-equal";
-import { SpreadsheetEditor } from "../editors/sheet-editor";
-import { Markdown } from "../common/markdown";
+import { useArtifactLegacy } from '@/hooks/use-artifact';
+import equal from 'fast-deep-equal';
+import { SpreadsheetEditor } from '../editors/sheet-editor';
+import { Markdown } from '../common/markdown';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -94,15 +94,15 @@ export function DocumentPreview({
 
   const document: Document | null = previewDocument
     ? previewDocument
-    : artifact.status === "streaming"
+    : artifact.status === 'streaming'
       ? {
           title: artifact.title,
           kind: artifact.kind,
           content: artifact.content,
           id: artifact.documentId,
           createdAt: new Date(),
-          userId: "noop",
-          visibility: "private" as const,
+          userId: 'noop',
+          visibility: 'private' as const,
           model: null,
           tags: null,
           viewCount: 0,
@@ -123,7 +123,7 @@ export function DocumentPreview({
       <DocumentHeader
         title={document.title}
         kind={document.kind}
-        isStreaming={artifact.status === "streaming"}
+        isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
     </div>
@@ -143,7 +143,7 @@ const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
         <FullscreenIcon />
       </div>
     </div>
-    {artifactKind === "image" ? (
+    {artifactKind === 'image' ? (
       <div className="overflow-y-scroll border rounded-b-2xl bg-muted border-t-0 dark:border-zinc-700">
         <div className="animate-pulse h-[257px] bg-muted-foreground/20 w-full" />
       </div>
@@ -163,7 +163,7 @@ const PureHitboxLayer = ({
   hitboxRef: React.RefObject<HTMLDivElement>;
   result: any;
   setArtifact: (
-    updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)
+    updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
   ) => void;
 }) => {
   const handleClick = useCallback(
@@ -171,7 +171,7 @@ const PureHitboxLayer = ({
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
       setArtifact((artifact) =>
-        artifact.status === "streaming"
+        artifact.status === 'streaming'
           ? { ...artifact, isVisible: true }
           : {
               ...artifact,
@@ -185,10 +185,10 @@ const PureHitboxLayer = ({
                 width: boundingBox.width,
                 height: boundingBox.height,
               },
-            }
+            },
       );
     },
-    [setArtifact, result]
+    [setArtifact, result],
   );
 
   return (
@@ -229,7 +229,7 @@ const PureDocumentHeader = ({
           <div className="animate-spin">
             <LoaderIcon />
           </div>
-        ) : kind === "image" ? (
+        ) : kind === 'image' ? (
           <ImageIcon />
         ) : (
           <FileIcon />
@@ -252,20 +252,20 @@ const DocumentContent = ({ document }: { document: Document }) => {
   const { artifact } = useArtifactLegacy();
 
   const containerClassName = cn(
-    "h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700",
+    'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
-      "p-4 sm:px-14 sm:py-16":
-        document.kind === "text" || document.kind === "script",
-    }
+      'p-4 sm:px-14 sm:py-16':
+        document.kind === 'text' || document.kind === 'script',
+    },
   );
 
   const commonProps = {
-    content: document.content ?? "",
+    content: document.content ?? '',
     isCurrentVersion: true,
     currentVersionIndex: 0,
     status:
-      artifact.status === "completed" || artifact.status === "pending"
-        ? "idle"
+      artifact.status === 'completed' || artifact.status === 'pending'
+        ? 'idle'
         : artifact.status,
     saveContent: () => {},
     suggestions: [],
@@ -273,30 +273,27 @@ const DocumentContent = ({ document }: { document: Document }) => {
 
   return (
     <div className={containerClassName}>
-      {document.kind === "text" ? (
-        <Editor
-          {...commonProps}
-          onSaveContent={() => {}}
-        />
-      ) : document.kind === "script" ? (
+      {document.kind === 'text' ? (
+        <Editor {...commonProps} onSaveContent={() => {}} />
+      ) : document.kind === 'script' ? (
         <div className="prose dark:prose-invert p-4">
-          <Markdown>{document.content ?? ""}</Markdown>
+          <Markdown>{document.content ?? ''}</Markdown>
         </div>
-      ) : document.kind === "sheet" ? (
+      ) : document.kind === 'sheet' ? (
         <div className="flex flex-1 relative size-full p-4">
           <SpreadsheetEditor {...commonProps} />
         </div>
-      ) : document.kind === "image" ? (
+      ) : document.kind === 'image' ? (
         <div className="p-4">
           {/*eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={document.content || ""}
+            src={document.content || ''}
             alt={document.title}
             className="w-full h-auto rounded-lg border max-h-[200px] object-contain"
             onError={(e) => {
               console.error(
-                "Image load error in preview:",
-                document.content?.substring(0, 100)
+                'Image load error in preview:',
+                document.content?.substring(0, 100),
               );
             }}
           />

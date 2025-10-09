@@ -3,17 +3,17 @@ import {
   type IFileRead,
   type ISceneRead,
   type ISceneUpdate,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 // ---------- File Selection Logic ----------
 export function getFileIdType(file: IFileRead, isPlaceholder?: boolean) {
   const id = isPlaceholder ? null : file.id;
 
   // Для placeholder файлов определяем тип по ID
-  if (file.id.startsWith("placeholder-") || isPlaceholder) {
-    if (file.id.includes("voiceover")) {
+  if (file.id.startsWith('placeholder-') || isPlaceholder) {
+    if (file.id.includes('voiceover')) {
       return { voiceover_id: null };
-    } else if (file.id.includes("soundeffect")) {
+    } else if (file.id.includes('soundeffect')) {
       return { sound_effect_id: null };
     } else {
       return { file_id: null };
@@ -34,7 +34,7 @@ export function getFileIdType(file: IFileRead, isPlaceholder?: boolean) {
 export function createUpdatedSceneData(
   scene: ISceneRead,
   file: IFileRead,
-  isPlaceholder?: boolean
+  isPlaceholder?: boolean,
 ) {
   const idType = getFileIdType(file, isPlaceholder);
 
@@ -48,7 +48,7 @@ export function createUpdatedSceneData(
 export function downloadSceneFile(scene: ISceneRead) {
   if (!scene?.file?.url) return;
 
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = scene.file.url;
   a.download = `scene-${scene.id}.asset`;
   a.click();

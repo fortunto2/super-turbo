@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Veo3PromptGenerator,
   type PromptDataType,
   type MoodboardImageType,
-} from "@turbo-super/features";
-import { enhancePromptVeo3 } from "@/lib/ai/api/enhance-prompt-veo3";
+} from '@turbo-super/features';
+import { enhancePromptVeo3 } from '@/lib/ai/api/enhance-prompt-veo3';
 
-import { Button } from "@turbo-super/ui";
-import { Wand2, Video, Sparkles } from "lucide-react";
-import { PromptEnhancer } from "./components/prompt-enhancer";
+import { Button } from '@turbo-super/ui';
+import { Wand2, Video, Sparkles } from 'lucide-react';
+import { PromptEnhancer } from './components/prompt-enhancer';
 
 // Define types from exported values
 type PromptData = typeof PromptDataType;
 type MoodboardImage = typeof MoodboardImageType;
 
-type EnhancementMode = "general" | "veo3";
+type EnhancementMode = 'general' | 'veo3';
 
 export default function PromptEnhancerPage() {
-  const [mode, setMode] = useState<EnhancementMode>("general");
+  const [mode, setMode] = useState<EnhancementMode>('general');
 
   const enhancePromptFunction = async (params: {
     prompt: string;
@@ -33,22 +33,22 @@ export default function PromptEnhancerPage() {
       images: MoodboardImage[];
     };
   }) => {
-    if (mode === "veo3") {
+    if (mode === 'veo3') {
       const response = await enhancePromptVeo3({
         body: JSON.stringify(params),
       });
       return response;
     } else {
       // For general mode, we'll use the API endpoint
-      const response = await fetch("/api/enhance-prompt", {
-        method: "POST",
+      const response = await fetch('/api/enhance-prompt', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           originalPrompt: params.prompt,
-          mediaType: "video", // Default for general mode
-          enhancementLevel: "detailed",
+          mediaType: 'video', // Default for general mode
+          enhancementLevel: 'detailed',
           includeNegativePrompt: true,
         }),
       });
@@ -78,16 +78,16 @@ export default function PromptEnhancerPage() {
         {/* Mode Toggle */}
         <div className="flex items-center justify-center space-x-4">
           <Button
-            variant={mode === "general" ? "default" : "outline"}
-            onClick={() => setMode("general")}
+            variant={mode === 'general' ? 'default' : 'outline'}
+            onClick={() => setMode('general')}
             className="flex items-center space-x-2"
           >
             <Sparkles className="size-4" />
             <span>General Mode</span>
           </Button>
           <Button
-            variant={mode === "veo3" ? "default" : "outline"}
-            onClick={() => setMode("veo3")}
+            variant={mode === 'veo3' ? 'default' : 'outline'}
+            onClick={() => setMode('veo3')}
             className="flex items-center space-x-2"
           >
             <Video className="size-4" />
@@ -97,7 +97,7 @@ export default function PromptEnhancerPage() {
 
         {/* Mode Description */}
         <div className="max-w-2xl mx-auto">
-          {mode === "general" ? (
+          {mode === 'general' ? (
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">
                 General Enhancement Mode
@@ -124,7 +124,7 @@ export default function PromptEnhancerPage() {
       </div>
 
       {/* Main Content */}
-      {mode === "veo3" ? (
+      {mode === 'veo3' ? (
         <Veo3PromptGenerator
           MoodboardUploader={undefined}
           enhancePromptFunction={enhancePromptFunction}

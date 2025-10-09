@@ -1,16 +1,16 @@
-import "server-only";
+import 'server-only';
 
 import {
   getSuperduperAIConfig,
   ProjectService,
   type IProjectRead,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 /**
  * Получает детали проекта с задачами из SuperDuperAI API
  */
 export async function getProjectDetails(
-  projectId: string
+  projectId: string,
 ): Promise<IProjectRead | null> {
   try {
     const config = await getSuperduperAIConfig();
@@ -30,7 +30,7 @@ export async function getProjectDetails(
  * Получает детали для нескольких проектов
  */
 export async function getMultipleProjectDetails(
-  projectIds: string[]
+  projectIds: string[],
 ): Promise<Map<string, IProjectRead>> {
   const projectDetails = new Map<string, IProjectRead>();
 

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
-import { ProjectTimeline } from "@turbo-super/features";
-import { ArrowLeft, Eye } from "lucide-react";
+import { useParams, useRouter } from 'next/navigation';
+import { ProjectTimeline } from '@turbo-super/features';
+import { ArrowLeft, Eye } from 'lucide-react';
 import {
   DataTypeEnum,
   type IDataUpdate,
@@ -10,16 +10,16 @@ import {
   TaskTypeEnum,
   useProjectData,
   useTaskStatus,
-} from "@turbo-super/api";
-import { useState } from "react";
-import { ProjectVideoExportDialog } from "@/components";
+} from '@turbo-super/api';
+import { useState } from 'react';
+import { ProjectVideoExportDialog } from '@/components';
 import {
   useDataUpdate,
   useGenerateTimeline,
   useProjectGetById,
   useProjectTimeline2Video,
-} from "@/lib/api/superduperai";
-import { QueryState } from "@/components/ui/query-state";
+} from '@/lib/api/superduperai';
+import { QueryState } from '@/components/ui/query-state';
 
 export default function VideoPage() {
   const params = useParams();
@@ -61,17 +61,17 @@ export default function VideoPage() {
 
   const { isPending: isRendering } = useTaskStatus(
     TaskTypeEnum.TIMELINE2VIDEO_FLOW,
-    project?.tasks
+    project?.tasks,
   );
 
   const handleDownload = (file: IFileRead) => {
     if (!file.url) {
-      console.error("❌ No download URL available");
+      console.error('❌ No download URL available');
       return;
     }
 
     // Create temporary download link
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = file.url;
     link.download = `video-${projectId}.mp4`;
     document.body.appendChild(link);

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export default function GlobalError({
   error,
@@ -10,10 +10,7 @@ export default function GlobalError({
   // }, [error]);
 
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <div className="flex min-h-screen flex-col items-center justify-center bg-background">
           <div className="container flex max-w-md flex-col items-center gap-4 text-center">

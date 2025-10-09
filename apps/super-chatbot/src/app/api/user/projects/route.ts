@@ -1,25 +1,25 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
-import { getUserProjects, getUserProjectStats } from "@/lib/db/project-queries";
-import { getMultipleProjectDetails } from "@/lib/api/admin-project-details";
-import { getProjectStatus } from "@/lib/utils/project-status";
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
+import { getUserProjects, getUserProjectStats } from '@/lib/db/project-queries';
+import { getMultipleProjectDetails } from '@/lib/api/admin-project-details';
+import { getProjectStatus } from '@/lib/utils/project-status';
 
 export async function GET(request: NextRequest) {
   try {
     // Authentication check
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status") as
-      | "pending"
-      | "processing"
-      | "completed"
-      | "failed"
+    const status = searchParams.get('status') as
+      | 'pending'
+      | 'processing'
+      | 'completed'
+      | 'failed'
       | null;
-    const includeStats = searchParams.get("includeStats") === "true";
+    const includeStats = searchParams.get('includeStats') === 'true';
 
     const userId = session.user.id;
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
       return {
         ...project,
-        status: statusInfo?.status || "pending",
+        status: statusInfo?.status || 'pending',
         errorStage: statusInfo?.errorStage,
         errorMessage: statusInfo?.errorMessage,
         completedStages: statusInfo?.completedStages || [],
@@ -59,10 +59,10 @@ export async function GET(request: NextRequest) {
       count: enrichedProjects.length,
     });
   } catch (error: any) {
-    console.error("User projects fetch error:", error);
+    console.error('User projects fetch error:', error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
+      { error: error.message || 'Internal server error' },
+      { status: 500 },
     );
   }
 }

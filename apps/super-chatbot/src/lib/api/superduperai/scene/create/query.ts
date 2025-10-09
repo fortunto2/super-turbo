@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type ISceneCreate, SceneService } from "@turbo-super/api";
-import { sceneKeys } from "../query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { type ISceneCreate, SceneService } from '@turbo-super/api';
+import { sceneKeys } from '../query';
 
 export const useSceneCreate = () => {
   const queryClient = useQueryClient();

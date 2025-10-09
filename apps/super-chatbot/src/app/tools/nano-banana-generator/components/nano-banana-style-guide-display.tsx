@@ -1,21 +1,14 @@
 // AICODE-NOTE: Component for displaying style guide results
 // Shows style information, tips, examples, and techniques
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
-import {
-  BookOpen,
-  Lightbulb,
-  Star,
-  Tag,
-  Eye,
-  Search,
-} from "lucide-react";
-import type { NanoBananaStyleInfo } from "../api/nano-banana-api";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
+import { BookOpen, Lightbulb, Star, Tag, Eye, Search } from 'lucide-react';
+import type { NanoBananaStyleInfo } from '../api/nano-banana-api';
 
 interface NanoBananaStyleGuideDisplayProps {
   styleInfos: NanoBananaStyleInfo[];
@@ -33,28 +26,28 @@ export function NanoBananaStyleGuideDisplay({
 
   const getDifficultyBadgeColor = (difficulty: string) => {
     const colors: Record<string, string> = {
-      beginner: "bg-green-100 text-green-800",
-      intermediate: "bg-yellow-100 text-yellow-800",
-      advanced: "bg-orange-100 text-orange-800",
-      expert: "bg-red-100 text-red-800",
+      beginner: 'bg-green-100 text-green-800',
+      intermediate: 'bg-yellow-100 text-yellow-800',
+      advanced: 'bg-orange-100 text-orange-800',
+      expert: 'bg-red-100 text-red-800',
     };
-    return colors[difficulty] || "bg-gray-100 text-gray-800";
+    return colors[difficulty] || 'bg-gray-100 text-gray-800';
   };
 
   const getCategoryBadgeColor = (category: string) => {
     const colors: Record<string, string> = {
-      photography: "bg-blue-100 text-blue-800",
-      digital_art: "bg-purple-100 text-purple-800",
-      traditional_art: "bg-amber-100 text-amber-800",
-      cinematic: "bg-red-100 text-red-800",
-      architectural: "bg-gray-100 text-gray-800",
-      portrait: "bg-pink-100 text-pink-800",
-      landscape: "bg-green-100 text-green-800",
-      abstract: "bg-indigo-100 text-indigo-800",
-      minimalist: "bg-gray-100 text-gray-800",
-      vintage: "bg-yellow-100 text-yellow-800",
+      photography: 'bg-blue-100 text-blue-800',
+      digital_art: 'bg-purple-100 text-purple-800',
+      traditional_art: 'bg-amber-100 text-amber-800',
+      cinematic: 'bg-red-100 text-red-800',
+      architectural: 'bg-gray-100 text-gray-800',
+      portrait: 'bg-pink-100 text-pink-800',
+      landscape: 'bg-green-100 text-green-800',
+      abstract: 'bg-indigo-100 text-indigo-800',
+      minimalist: 'bg-gray-100 text-gray-800',
+      vintage: 'bg-yellow-100 text-yellow-800',
     };
-    return colors[category] || "bg-gray-100 text-gray-800";
+    return colors[category] || 'bg-gray-100 text-gray-800';
   };
 
   if (isLoading) {
@@ -110,10 +103,7 @@ export function NanoBananaStyleGuideDisplay({
       {/* Styles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {styleInfos?.map((styleInfo, index) => (
-          <Card
-            key={index}
-            className="group hover:shadow-lg transition-shadow"
-          >
+          <Card key={index} className="group hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <CardTitle className="text-lg">{styleInfo.technique}</CardTitle>
@@ -127,7 +117,7 @@ export function NanoBananaStyleGuideDisplay({
               </div>
               <div className="flex items-center space-x-2">
                 <Badge className={getCategoryBadgeColor(styleInfo.category)}>
-                  {styleInfo.category.replace(/_/g, " ")}
+                  {styleInfo.category.replace(/_/g, ' ')}
                 </Badge>
                 <Badge
                   className={getDifficultyBadgeColor(styleInfo.difficulty)}
@@ -146,19 +136,12 @@ export function NanoBananaStyleGuideDisplay({
               {styleInfo.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {styleInfo.tags.slice(0, 3).map((tag, idx) => (
-                    <Badge
-                      key={idx}
-                      variant="outline"
-                      className="text-xs"
-                    >
+                    <Badge key={idx} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
                   {styleInfo.tags.length > 3 && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs"
-                    >
+                    <Badge variant="outline" className="text-xs">
                       +{styleInfo.tags.length - 3} more
                     </Badge>
                   )}
@@ -218,11 +201,11 @@ export function NanoBananaStyleGuideDisplay({
                   <Badge
                     className={getCategoryBadgeColor(selectedStyle.category)}
                   >
-                    {selectedStyle.category.replace(/_/g, " ")}
+                    {selectedStyle.category.replace(/_/g, ' ')}
                   </Badge>
                   <Badge
                     className={getDifficultyBadgeColor(
-                      selectedStyle.difficulty
+                      selectedStyle.difficulty,
                     )}
                   >
                     {selectedStyle.difficulty}
@@ -248,10 +231,7 @@ export function NanoBananaStyleGuideDisplay({
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedStyle.tags.map((tag, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="outline"
-                        >
+                        <Badge key={idx} variant="outline">
                           {tag}
                         </Badge>
                       ))}
@@ -268,10 +248,7 @@ export function NanoBananaStyleGuideDisplay({
                     </h4>
                     <div className="space-y-2">
                       {selectedStyle.tips.map((tip, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start space-x-2"
-                        >
+                        <div key={idx} className="flex items-start space-x-2">
                           <Star className="size-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-gray-600">{tip}</span>
                         </div>
@@ -289,10 +266,7 @@ export function NanoBananaStyleGuideDisplay({
                     </h4>
                     <div className="space-y-2">
                       {selectedStyle.examples.map((example, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-gray-50 p-3 rounded-lg"
-                        >
+                        <div key={idx} className="bg-gray-50 p-3 rounded-lg">
                           <p className="text-sm text-gray-700">{example}</p>
                         </div>
                       ))}

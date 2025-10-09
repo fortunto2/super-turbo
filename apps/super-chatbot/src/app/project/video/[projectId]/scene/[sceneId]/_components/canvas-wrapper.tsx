@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useState, useEffect } from "react";
-import { FabricCanvas, useFabricEditor } from "@turbo-super/features";
-import type { SceneTextbox_Output } from "@turbo-super/api";
-import { debounce, isEqual } from "lodash";
-import { useToolbarStore } from "@/lib/store";
-import { useSceneGetById, useSceneUpdate } from "@/lib/api";
+import { useCallback, useMemo, useState, useEffect } from 'react';
+import { FabricCanvas, useFabricEditor } from '@turbo-super/features';
+import type { SceneTextbox_Output } from '@turbo-super/api';
+import { debounce, isEqual } from 'lodash';
+import { useToolbarStore } from '@/lib/store';
+import { useSceneGetById, useSceneUpdate } from '@/lib/api';
 
 interface CanvasWrapperProps {
   width: number;
@@ -27,7 +27,7 @@ export function CanvasWrapper({
   const { controller, setController } = useToolbarStore();
 
   const [initialObjects, setInitialObjects] = useState<SceneTextbox_Output[]>(
-    []
+    [],
   );
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -58,17 +58,17 @@ export function CanvasWrapper({
           },
         });
       } catch (e) {
-        console.error("Scene update error", e);
+        console.error('Scene update error', e);
       } finally {
         setIsUpdating(false);
       }
     },
-    [scene, mutateAsync, isUpdating]
+    [scene, mutateAsync, isUpdating],
   );
 
   const debouncedUpdate = useMemo(
     () => debounce(handleSceneUpdate, 700),
-    [handleSceneUpdate]
+    [handleSceneUpdate],
   );
 
   // Отменяем debounce при размонтировании компонента
@@ -91,13 +91,13 @@ export function CanvasWrapper({
     (newController: any) => {
       // Добавляем обработчики событий для тулбара
       newController.on((evt: any) => {
-        if (evt.type === "object:clicked") {
-          if (evt.target && evt.target.type === "textbox") {
+        if (evt.type === 'object:clicked') {
+          if (evt.target && evt.target.type === 'textbox') {
             onToolbarUpdate(evt.target);
           }
-        } else if (evt.type === "canvas:clicked") {
+        } else if (evt.type === 'canvas:clicked') {
           onToolbarUpdate();
-        } else if (evt.type === "selection:changed") {
+        } else if (evt.type === 'selection:changed') {
           const active = newController.getActiveText();
           if (active) onToolbarUpdate(active);
           else {
@@ -107,7 +107,7 @@ export function CanvasWrapper({
       });
       setController(newController);
     },
-    [onToolbarUpdate, setController]
+    [onToolbarUpdate, setController],
   );
 
   const { handleReady, controller: updatedController } = useFabricEditor({

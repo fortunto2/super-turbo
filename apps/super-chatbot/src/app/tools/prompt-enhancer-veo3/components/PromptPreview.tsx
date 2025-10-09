@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@turbo-super/ui';
 import { Button } from '@turbo-super/ui';
 import { Textarea } from '@turbo-super/ui';
 import { Badge } from '@turbo-super/ui';
-import { Copy, Shuffle, Sparkles, Trash2 } from "lucide-react";
+import { Copy, Shuffle, Sparkles, Trash2 } from 'lucide-react';
 
 interface PromptPreviewProps {
   generatedPrompt: string;
@@ -33,10 +33,7 @@ export function PromptPreview({
         <CardTitle className="flex items-center gap-2">
           <Copy className="w-5 h-5" />
           Generated Prompt
-          <Badge
-            variant="secondary"
-            className="ml-auto text-xs"
-          >
+          <Badge variant="secondary" className="ml-auto text-xs">
             Preview
           </Badge>
         </CardTitle>
@@ -55,7 +52,7 @@ export function PromptPreview({
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setGeneratedPrompt("")}
+                onClick={() => setGeneratedPrompt('')}
                 disabled={!generatedPrompt}
                 className="size-8 p-0 hover:bg-background/80"
                 title="Clear text"
@@ -68,7 +65,7 @@ export function PromptPreview({
                 onClick={() => copyToClipboard(generatedPrompt)}
                 disabled={!generatedPrompt}
                 className="size-8 p-0 hover:bg-background/80"
-                title={copied ? "Copied!" : "Copy to clipboard"}
+                title={copied ? 'Copied!' : 'Copy to clipboard'}
               >
                 <Copy className="size-4" />
               </Button>
@@ -86,11 +83,7 @@ export function PromptPreview({
                 <Shuffle className="size-4 mr-2" />
                 Randomize All
               </Button>
-              <Button
-                onClick={clearAll}
-                variant="outline"
-                className="flex-1"
-              >
+              <Button onClick={clearAll} variant="outline" className="flex-1">
                 <Trash2 className="size-4 mr-2" />
                 Clear All
               </Button>
@@ -98,7 +91,7 @@ export function PromptPreview({
             {/* Navigate to AI Enhancement - Large and Prominent */}
             <Button
               onClick={() => {
-                setActiveTab("enhance");
+                setActiveTab('enhance');
                 setTimeout(() => {
                   if (generatedPrompt && !isEnhancing) {
                     enhancePrompt();

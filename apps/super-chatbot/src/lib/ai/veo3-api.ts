@@ -6,15 +6,15 @@
 export interface Veo3VideoRequest {
   prompt: string;
   duration?: number; // в секундах
-  style?: "realistic" | "animated" | "cinematic" | "documentary";
-  resolution?: "720p" | "1080p" | "4k";
-  aspectRatio?: "16:9" | "9:16" | "1:1";
+  style?: 'realistic' | 'animated' | 'cinematic' | 'documentary';
+  resolution?: '720p' | '1080p' | '4k';
+  aspectRatio?: '16:9' | '9:16' | '1:1';
   seed?: number;
 }
 
 export interface Veo3VideoResponse {
   id: string;
-  status: "processing" | "completed" | "failed";
+  status: 'processing' | 'completed' | 'failed';
   videoUrl?: string;
   thumbnailUrl?: string;
   duration: number;
@@ -37,33 +37,33 @@ export interface Veo3Project {
  * Создает видео с помощью VEO3
  */
 export async function createVeo3Video(
-  request: Veo3VideoRequest
+  request: Veo3VideoRequest,
 ): Promise<Veo3VideoResponse> {
   const apiKey = process.env.GOOGLE_AI_API_KEY; // Используем тот же ключ
 
   if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY not configured");
+    throw new Error('GOOGLE_AI_API_KEY not configured');
   }
 
   try {
     // В реальной интеграции здесь будет вызов к VEO3 API
     const response = await fetch(
-      "https://aiplatform.googleapis.com/v1/publishers/google/models/veo3:generateVideo",
+      'https://aiplatform.googleapis.com/v1/publishers/google/models/veo3:generateVideo',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           prompt: request.prompt,
           duration: request.duration || 5,
-          style: request.style || "realistic",
-          resolution: request.resolution || "1080p",
-          aspectRatio: request.aspectRatio || "16:9",
+          style: request.style || 'realistic',
+          resolution: request.resolution || '1080p',
+          aspectRatio: request.aspectRatio || '16:9',
           seed: request.seed,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -75,22 +75,22 @@ export async function createVeo3Video(
 
     return {
       id: data.id,
-      status: "processing",
+      status: 'processing',
       duration: request.duration || 10,
-      resolution: request.resolution || "1080p",
+      resolution: request.resolution || '1080p',
       prompt: request.prompt,
       createdAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("VEO3 video creation error:", error);
+    console.error('VEO3 video creation error:', error);
     return {
       id: crypto.randomUUID(),
-      status: "failed",
+      status: 'failed',
       duration: request.duration || 10,
-      resolution: request.resolution || "1080p",
+      resolution: request.resolution || '1080p',
       prompt: request.prompt,
       createdAt: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -99,12 +99,12 @@ export async function createVeo3Video(
  * Получает статус видео VEO3
  */
 export async function getVeo3VideoStatus(
-  videoId: string
+  videoId: string,
 ): Promise<Veo3VideoResponse> {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY not configured");
+    throw new Error('GOOGLE_AI_API_KEY not configured');
   }
 
   try {
@@ -114,7 +114,7 @@ export async function getVeo3VideoStatus(
         headers: {
           Authorization: `Bearer ${apiKey}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -136,7 +136,7 @@ export async function getVeo3VideoStatus(
       error: data.error,
     };
   } catch (error) {
-    console.error("VEO3 video status error:", error);
+    console.error('VEO3 video status error:', error);
     throw error;
   }
 }
@@ -148,17 +148,17 @@ export async function getVeo3Videos(): Promise<Veo3VideoResponse[]> {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY not configured");
+    throw new Error('GOOGLE_AI_API_KEY not configured');
   }
 
   try {
     const response = await fetch(
-      "https://aiplatform.googleapis.com/v1/videos",
+      'https://aiplatform.googleapis.com/v1/videos',
       {
         headers: {
           Authorization: `Bearer ${apiKey}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -169,7 +169,7 @@ export async function getVeo3Videos(): Promise<Veo3VideoResponse[]> {
 
     return data.videos || [];
   } catch (error) {
-    console.error("VEO3 videos list error:", error);
+    console.error('VEO3 videos list error:', error);
     return [];
   }
 }
@@ -179,28 +179,28 @@ export async function getVeo3Videos(): Promise<Veo3VideoResponse[]> {
  */
 export async function createVeo3Project(
   name: string,
-  description: string
+  description: string,
 ): Promise<Veo3Project> {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY not configured");
+    throw new Error('GOOGLE_AI_API_KEY not configured');
   }
 
   try {
     const response = await fetch(
-      "https://aiplatform.googleapis.com/v1/projects",
+      'https://aiplatform.googleapis.com/v1/projects',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           name,
           description,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -217,7 +217,7 @@ export async function createVeo3Project(
       createdAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("VEO3 project creation error:", error);
+    console.error('VEO3 project creation error:', error);
     throw error;
   }
 }

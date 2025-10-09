@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 type GenerateAudioPayload = {
   requestBody: {
@@ -9,16 +9,16 @@ type GenerateAudioPayload = {
 };
 
 async function generateAudioRequest(payload: GenerateAudioPayload) {
-  const response = await fetch("/api/file/generate-audio", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const response = await fetch('/api/file/generate-audio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || "Failed to generate audio");
+    throw new Error(text || 'Failed to generate audio');
   }
-  console.log("AUDIO", response);
+  console.log('AUDIO', response);
   return response.json();
 }
 

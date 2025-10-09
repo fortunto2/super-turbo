@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Suspense } from "react";
-import { ImageGeneratorForm } from "./components/image-generator-form";
-import { GenerationProgress } from "./components/generation-progress";
-import { ImageGallery } from "./components/image-gallery";
-import { useImageGenerator } from "./hooks/use-image-generator";
-import { Separator } from "@turbo-super/ui";
-import { ImageIcon, Sparkles, Zap } from "lucide-react";
+import { Suspense } from 'react';
+import { ImageGeneratorForm } from './components/image-generator-form';
+import { GenerationProgress } from './components/generation-progress';
+import { ImageGallery } from './components/image-gallery';
+import { useImageGenerator } from './hooks/use-image-generator';
+import { Separator } from '@turbo-super/ui';
+import { ImageIcon, Sparkles, Zap } from 'lucide-react';
 
 export default function ImageGeneratorPage() {
   const {
@@ -41,23 +41,23 @@ export default function ImageGeneratorPage() {
           <div className="flex items-center space-x-2 ml-4">
             <div
               className={`size-3 rounded-full ${
-                isGenerating && connectionStatus === "connected"
-                  ? "bg-green-500"
-                  : isGenerating && connectionStatus === "connecting"
-                    ? "bg-yellow-500 animate-pulse"
+                isGenerating && connectionStatus === 'connected'
+                  ? 'bg-green-500'
+                  : isGenerating && connectionStatus === 'connecting'
+                    ? 'bg-yellow-500 animate-pulse'
                     : isGenerating
-                      ? "bg-red-500"
-                      : "bg-gray-400"
+                      ? 'bg-red-500'
+                      : 'bg-gray-400'
               }`}
             />
             <span className="text-sm text-gray-500">
-              {isGenerating && connectionStatus === "connected"
-                ? "Connected"
-                : isGenerating && connectionStatus === "connecting"
-                  ? "Connecting..."
+              {isGenerating && connectionStatus === 'connected'
+                ? 'Connected'
+                : isGenerating && connectionStatus === 'connecting'
+                  ? 'Connecting...'
                   : isGenerating
-                    ? "Disconnected"
-                    : "Idle"}
+                    ? 'Disconnected'
+                    : 'Idle'}
             </span>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function ImageGeneratorPage() {
           </Suspense>
           <GenerationProgress
             generationStatus={generationStatus}
-            prompt={generationStatus.message ?? ""}
+            prompt={generationStatus.message ?? ''}
             onForceCheck={forceCheckResults}
           />
         </div>

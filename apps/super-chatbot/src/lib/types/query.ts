@@ -2,11 +2,11 @@ import type {
   UseQueryOptions as DefaultUseQueryOptions,
   UseInfiniteQueryOptions as DefaultUseInfiniteQueryOptions,
   InfiniteData,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query';
 
 export type UseQueryOptions<TData> = Omit<
   DefaultUseQueryOptions<any, any, TData, any>,
-  "queryKey" | "queryFn"
+  'queryKey' | 'queryFn'
 >;
 
 export type UseInfiniteQueryOptions<TData> = Omit<
@@ -18,7 +18,7 @@ export type UseInfiniteQueryOptions<TData> = Omit<
     InfiniteData<TData, any>,
     any
   >,
-  "queryKey" | "initialPageParam" | "getNextPageParam"
+  'queryKey' | 'initialPageParam' | 'getNextPageParam'
 > & {
   queryFn?: any;
 };

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Card } from "@turbo-super/ui";
+import { Card } from '@turbo-super/ui';
 import {
   FileIcon,
   ImageIcon,
   PlayIcon,
   LineChartIcon,
-} from "@/components/common/icons";
-import { formatDistance } from "date-fns";
-import { useRouter } from "next/navigation";
-import type { ArtifactKind } from "@/components/artifacts/artifact";
+} from '@/components/common/icons';
+import { formatDistance } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import type { ArtifactKind } from '@/components/artifacts/artifact';
 
 interface DocumentCardProps {
   document: {
@@ -23,7 +23,7 @@ interface DocumentCardProps {
     model?: string;
     tags: string[];
     viewCount: number;
-    visibility: "public" | "private";
+    visibility: 'public' | 'private';
     metadata: Record<string, any>;
   };
 }
@@ -34,11 +34,11 @@ export function DocumentCard({ document }: DocumentCardProps) {
 
   const getIcon = () => {
     switch (document.kind) {
-      case "image":
+      case 'image':
         return <ImageIcon size={24} />;
-      case "video":
+      case 'video':
         return <PlayIcon size={24} />;
-      case "sheet":
+      case 'sheet':
         return <LineChartIcon size={24} />;
       default:
         return <FileIcon size={24} />;
@@ -109,10 +109,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
           {document.tags && document.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {document.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2 py-1 text-xs border rounded"
-                >
+                <span key={tag} className="px-2 py-1 text-xs border rounded">
                   {tag}
                 </span>
               ))}
@@ -133,7 +130,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
             })}
           </span>
           <div className="flex items-center gap-2">
-            {document.visibility === "public" && (
+            {document.visibility === 'public' && (
               <span className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded">
                 Public
               </span>

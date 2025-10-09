@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 // Простой мониторинг для критичных API
 const apiMetrics = {
@@ -31,32 +31,32 @@ export function middleware(request: NextRequest) {
   const startTime = Date.now();
 
   // Проверяем, является ли это запросом к чату с ID
-  if (pathname.startsWith("/chat/")) {
-    const chatId = pathname.split("/chat/")[1];
+  if (pathname.startsWith('/chat/')) {
+    const chatId = pathname.split('/chat/')[1];
 
     // Валидируем UUID формат
     if (
       chatId &&
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        chatId
+        chatId,
       )
     ) {
       // Если UUID невалиден, перенаправляем на главную страницу
       console.warn(`Invalid chat ID format: ${chatId}, redirecting to home`);
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
   // Мониторим критичные API endpoints
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith('/api/')) {
     const response = NextResponse.next();
 
     // Добавляем заголовки для отслеживания
-    response.headers.set("X-Request-ID", crypto.randomUUID());
-    response.headers.set("X-Start-Time", startTime.toString());
+    response.headers.set('X-Request-ID', crypto.randomUUID());
+    response.headers.set('X-Start-Time', startTime.toString());
 
     // Отслеживаем запрос (будет завершено в response)
-    response.headers.set("X-Track-Request", "true");
+    response.headers.set('X-Track-Request', 'true');
 
     return response;
   }
@@ -65,5 +65,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/chat/:path*", "/api/:path*"],
+  matcher: ['/chat/:path*', '/api/:path*'],
 };

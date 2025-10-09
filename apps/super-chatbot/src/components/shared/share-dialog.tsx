@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Share2, Copy, Check } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Share2, Copy, Check } from 'lucide-react';
 
 type Props = {
   isOpen: boolean;
@@ -19,13 +19,13 @@ export const ShareDialog: React.FC<Props> = ({
 
   // URL for sharing - project preview page
   const shareUrl =
-    typeof window !== "undefined"
+    typeof window !== 'undefined'
       ? `${window.location.origin}/project/video/${projectId}/preview`
       : `/project/video/${projectId}/preview`;
 
   const handleShare = (baseUrl: string) => {
     const shareUrlEncoded = `${baseUrl}${encodeURIComponent(shareUrl)}`;
-    window.open(shareUrlEncoded, "_blank");
+    window.open(shareUrlEncoded, '_blank');
   };
 
   const handleCopy = async () => {
@@ -36,7 +36,7 @@ export const ShareDialog: React.FC<Props> = ({
         setCopied(false);
       }, 2000);
     } catch (error) {
-      console.error("Failed to copy text: ", error);
+      console.error('Failed to copy text: ', error);
     }
   };
 
@@ -118,11 +118,7 @@ export const ShareDialog: React.FC<Props> = ({
 
         {/* Close Button */}
         <div className="mt-6 text-center">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="w-full"
-          >
+          <Button onClick={onClose} variant="outline" className="w-full">
             Close
           </Button>
         </div>
@@ -151,7 +147,7 @@ const ShareButton = ({
 
 const shareOptions = [
   {
-    title: "Telegram",
+    title: 'Telegram',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -170,10 +166,10 @@ const shareOptions = [
         />
       </svg>
     ),
-    url: "https://t.me/share/url?url=",
+    url: 'https://t.me/share/url?url=',
   },
   {
-    title: "WhatsApp",
+    title: 'WhatsApp',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -192,10 +188,10 @@ const shareOptions = [
         />
       </svg>
     ),
-    url: "https://api.whatsapp.com/send?text=",
+    url: 'https://api.whatsapp.com/send?text=',
   },
   {
-    title: "LinkedIn",
+    title: 'LinkedIn',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -214,6 +210,6 @@ const shareOptions = [
         />
       </svg>
     ),
-    url: "https://www.linkedin.com/shareArticle?url=",
+    url: 'https://www.linkedin.com/shareArticle?url=',
   },
 ];

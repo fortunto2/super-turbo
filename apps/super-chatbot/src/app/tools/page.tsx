@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -6,9 +6,9 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from "@turbo-super/ui";
-import { TOOLS_CONFIG } from "@/lib/config/tools-config";
-import { ToolIcon } from "@/lib/config/tools-icons";
+} from '@turbo-super/ui';
+import { TOOLS_CONFIG } from '@/lib/config/tools-config';
+import { ToolIcon } from '@/lib/config/tools-icons';
 
 export default function ToolsPage() {
   return (
@@ -30,10 +30,7 @@ export default function ToolsPage() {
           {/* Tools grid - Dynamic from TOOLS_CONFIG */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 w-full">
             {TOOLS_CONFIG.map((tool) => (
-              <Link
-                key={tool.id}
-                href={tool.href}
-              >
+              <Link key={tool.id} href={tool.href}>
                 <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer group h-[400px] flex flex-col">
                   <CardHeader className="text-center">
                     <div className="flex items-center justify-center mb-4">
@@ -72,11 +69,11 @@ export default function ToolsPage() {
                           name={tool.iconName}
                           className="size-4 mr-2"
                         />
-                        {tool.id === "image-generator"
-                          ? "Generate Images"
-                          : tool.id === "video-generator"
-                            ? "Generate Videos"
-                            : "Enhance Prompts"}
+                        {tool.id === 'image-generator'
+                          ? 'Generate Images'
+                          : tool.id === 'video-generator'
+                            ? 'Generate Videos'
+                            : 'Enhance Prompts'}
                       </Button>
                     </div>
                   </CardContent>

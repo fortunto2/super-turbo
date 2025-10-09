@@ -3,25 +3,25 @@
  * Вынесен в отдельный файл для лучшей организации кода
  */
 
-import { useState, useCallback, useEffect } from "react";
-import { useVideoSSE } from "@/artifacts/video";
+import { useState, useCallback, useEffect } from 'react';
+import { useVideoSSE } from '@/artifacts/video';
 
 export function useVideoConnection(projectId?: string) {
   const [connectionStatus, setConnectionStatus] = useState<
-    "disconnected" | "connecting" | "connected"
-  >("disconnected");
+    'disconnected' | 'connecting' | 'connected'
+  >('disconnected');
 
   const { isConnected, disconnect } = useVideoSSE({
-    projectId: projectId || "",
+    projectId: projectId || '',
     eventHandlers: [],
     enabled: !!projectId,
   });
 
   useEffect(() => {
     if (isConnected) {
-      setConnectionStatus("connected");
+      setConnectionStatus('connected');
     } else {
-      setConnectionStatus("disconnected");
+      setConnectionStatus('disconnected');
     }
   }, [isConnected]);
 
@@ -29,7 +29,7 @@ export function useVideoConnection(projectId?: string) {
     try {
       disconnect();
     } catch (error) {
-      console.error("Failed to disconnect:", error);
+      console.error('Failed to disconnect:', error);
     }
   }, [disconnect]);
 

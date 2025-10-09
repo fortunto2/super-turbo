@@ -1,13 +1,13 @@
-import { tool } from "ai";
-import { z } from "zod";
-import type { MediaOption } from "@/lib/types/media-settings";
-import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
+import { tool } from 'ai';
+import { z } from 'zod';
+import type { MediaOption } from '@/lib/types/media-settings';
+import { getVideoGenerationConfig } from '@/lib/config/media-settings-factory';
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
-} from "@/lib/utils/ai-tools-balance";
-import type { Session } from "next-auth";
-import { analyzeVideoContext } from "@/lib/ai/context";
+} from '@/lib/utils/ai-tools-balance';
+import type { Session } from 'next-auth';
+import { analyzeVideoContext } from '@/lib/ai/context';
 
 interface CreateVideoDocumentParams {
   createDocument: any;
@@ -22,53 +22,53 @@ interface CreateVideoDocumentParams {
 export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
   tool({
     description:
-      "Configure video generation settings or generate a video directly if prompt is provided. Supports text-to-video by default, video-to-video when a video sourceVideoUrl is provided, and image-to-video when an image sourceVideoUrl is provided. When triggered, creates a video artifact that shows generation progress in real-time.",
-    parameters: z.object({
+      'Configure video generation settings or generate a video directly if prompt is provided. Supports text-to-video by default, video-to-video when a video sourceVideoUrl is provided, and image-to-video when an image sourceVideoUrl is provided. When triggered, creates a video artifact that shows generation progress in real-time.',
+    inputSchema: z.object({
       prompt: z
         .string()
         .optional()
         .describe(
-          "Detailed description of the video to generate. If provided, will immediately create video artifact and start generation"
+          'Detailed description of the video to generate. If provided, will immediately create video artifact and start generation',
         ),
       sourceVideoUrl: z
         .string()
         .url()
         .optional()
         .describe(
-          "Optional source URL for video generation. Can be a video URL for video-to-video generation, or an image URL for image-to-video generation (e.g., when the user uploaded media in chat). If provided, the system will run the appropriate generation type."
+          'Optional source URL for video generation. Can be a video URL for video-to-video generation, or an image URL for image-to-video generation (e.g., when the user uploaded media in chat). If provided, the system will run the appropriate generation type.',
         ),
       style: z
         .string()
         .optional()
         .describe(
-          'Style of the video. Supports many formats: "realistic", "cinematic", "anime", "cartoon", "documentary", "vlog", "tutorial", "promotional", "artistic", "minimalist", "abstract", and many more available styles'
+          'Style of the video. Supports many formats: "realistic", "cinematic", "anime", "cartoon", "documentary", "vlog", "tutorial", "promotional", "artistic", "minimalist", "abstract", and many more available styles',
         ),
       resolution: z
         .string()
         .optional()
         .describe(
-          'Video resolution. Accepts various formats: "1920x1080", "1920×1080", "1920 x 1080", "full hd", "fhd", "1080p", "4k", "square", "vertical", "horizontal", etc.'
+          'Video resolution. Accepts various formats: "1920x1080", "1920×1080", "1920 x 1080", "full hd", "fhd", "1080p", "4k", "square", "vertical", "horizontal", etc.',
         ),
       duration: z
         .string()
         .optional()
         .describe(
-          'Video duration. Accepts: "5s", "10s", "30s", "1m", "2m", "short", "medium", "long", etc.'
+          'Video duration. Accepts: "5s", "10s", "30s", "1m", "2m", "short", "medium", "long", etc.',
         ),
       model: z
         .string()
         .optional()
         .describe(
-          'AI model to use. Models are loaded dynamically from SuperDuperAI API. Use model name like "VEO3" or full model ID.'
+          'AI model to use. Models are loaded dynamically from SuperDuperAI API. Use model name like "VEO3" or full model ID.',
         ),
-      seed: z.number().optional().describe("Seed for reproducible results"),
+      seed: z.number().optional().describe('Seed for reproducible results'),
       batchSize: z
         .number()
         .min(1)
         .max(2)
         .optional()
         .describe(
-          "Number of videos to generate simultaneously (1-2). Higher batch sizes generate multiple variations at once."
+          'Number of videos to generate simultaneously (1-2). Higher batch sizes generate multiple variations at once.',
         ),
     }),
     execute: async ({
@@ -81,7 +81,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
       seed,
       batchSize,
     }) => {
-      console.log("🎬 configureVideoGeneration called with:", {
+      console.log('🎬 configureVideoGeneration called with:', {
         prompt,
         style,
         resolution,
@@ -92,10 +92,10 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
       });
 
       // AICODE-NOTE: Use new factory to get configuration with OpenAPI models
-      console.log("🎬 Loading video configuration from OpenAPI factory...");
+      console.log('🎬 Loading video configuration from OpenAPI factory...');
       const config = await getVideoGenerationConfig();
 
-      console.log("🎬 ✅ Loaded video config:", {
+      console.log('🎬 ✅ Loaded video config:', {
         modelsCount: config.availableModels.length,
         resolutionsCount: config.availableResolutions.length,
         stylesCount: config.availableStyles.length,
@@ -104,24 +104,24 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
       // If no prompt provided, return configuration panel
       if (!prompt) {
         console.log(
-          "🎬 No prompt provided, returning video configuration panel"
+          '🎬 No prompt provided, returning video configuration panel',
         );
         return config;
       }
 
-      console.log("🎬 ✅ PROMPT PROVIDED, CREATING VIDEO DOCUMENT:", prompt);
+      console.log('🎬 ✅ PROMPT PROVIDED, CREATING VIDEO DOCUMENT:', prompt);
 
       if (!params?.createDocument) {
         console.log(
-          "🎬 ❌ createDocument not available, returning basic config"
+          '🎬 ❌ createDocument not available, returning basic config',
         );
         return config;
       }
 
       // Check style for quality multipliers
       const multipliers: string[] = [];
-      if (style?.includes("high-quality")) multipliers.push("high-quality");
-      if (style?.includes("ultra-quality")) multipliers.push("ultra-quality");
+      if (style?.includes('high-quality')) multipliers.push('high-quality');
+      if (style?.includes('ultra-quality')) multipliers.push('ultra-quality');
 
       try {
         // Find the selected options or use defaults from factory
@@ -136,37 +136,37 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           if (foundStyle) {
             selectedStyle = foundStyle;
             console.log(
-              "🎬 ✅ STYLE MATCHED:",
+              '🎬 ✅ STYLE MATCHED:',
               style,
-              "->",
-              selectedStyle.label
+              '->',
+              selectedStyle.label,
             );
           } else {
             console.log(
-              "🎬 ⚠️ STYLE NOT FOUND:",
+              '🎬 ⚠️ STYLE NOT FOUND:',
               style,
-              "using default:",
-              selectedStyle.label
+              'using default:',
+              selectedStyle.label,
             );
           }
         }
 
         const selectedDuration = duration
           ? config.availableDurations.find(
-              (d) => d.label === duration || d.id === duration
+              (d) => d.label === duration || d.id === duration,
             ) || config.defaultSettings.duration
           : config.defaultSettings.duration;
 
         const selectedModel = model
           ? config.availableModels.find(
-              (m) => m.name === model || (m as any).id === model
+              (m) => m.name === model || (m as any).id === model,
             ) || config.defaultSettings.model
           : config.defaultSettings.model;
 
         // Используем новую систему анализа контекста
         let normalizedSourceUrl = sourceVideoUrl;
 
-        console.log("🔍 configureVideoGeneration sourceVideoUrl resolution:", {
+        console.log('🔍 configureVideoGeneration sourceVideoUrl resolution:', {
           sourceVideoUrl,
           defaultSourceVideoUrl: params?.defaultSourceVideoUrl,
           chatId: params?.chatId,
@@ -177,34 +177,34 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         if (params?.chatId && params?.userMessage) {
           try {
             console.log(
-              "🔍 Analyzing video context with enhanced system (all 4 systems)..."
+              '🔍 Analyzing video context with enhanced system (all 4 systems)...',
             );
             const contextResult = await analyzeVideoContext(
               params.userMessage,
               params.chatId,
               params.currentAttachments,
-              params.session?.user?.id
+              params.session?.user?.id,
             );
 
-            console.log("🔍 Enhanced context analysis result:", contextResult);
+            console.log('🔍 Enhanced context analysis result:', contextResult);
 
-            if (contextResult.sourceUrl && contextResult.confidence !== "low") {
+            if (contextResult.sourceUrl && contextResult.confidence !== 'low') {
               console.log(
-                "🔍 Using sourceUrl from enhanced context analysis:",
+                '🔍 Using sourceUrl from enhanced context analysis:',
                 contextResult.sourceUrl,
-                "confidence:",
+                'confidence:',
                 contextResult.confidence,
-                "reasoning:",
+                'reasoning:',
                 contextResult.reasoning,
-                "metadata:",
-                contextResult.metadata
+                'metadata:',
+                contextResult.metadata,
               );
               normalizedSourceUrl = contextResult.sourceUrl;
             }
           } catch (error) {
             console.warn(
-              "🔍 Error in enhanced context analysis, falling back:",
-              error
+              '🔍 Error in enhanced context analysis, falling back:',
+              error,
             );
           }
         }
@@ -216,8 +216,8 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           /^https?:\/\//.test(params.defaultSourceVideoUrl)
         ) {
           console.log(
-            "🔍 Using defaultSourceVideoUrl from legacy context analysis:",
-            params.defaultSourceVideoUrl
+            '🔍 Using defaultSourceVideoUrl from legacy context analysis:',
+            params.defaultSourceVideoUrl,
           );
           normalizedSourceUrl = params.defaultSourceVideoUrl;
         }
@@ -227,34 +227,34 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           !normalizedSourceUrl &&
           sourceVideoUrl &&
           /^https?:\/\//.test(sourceVideoUrl) &&
-          !sourceVideoUrl.startsWith("attachment://")
+          !sourceVideoUrl.startsWith('attachment://')
         ) {
-          console.log("🔍 Using AI-provided sourceVideoUrl:", sourceVideoUrl);
+          console.log('🔍 Using AI-provided sourceVideoUrl:', sourceVideoUrl);
           normalizedSourceUrl = sourceVideoUrl;
         }
         // Fallback: text-to-video
         if (!normalizedSourceUrl) {
           console.log(
-            "🔍 No valid source video URL available, will be text-to-video"
+            '🔍 No valid source video URL available, will be text-to-video',
           );
         }
 
         // Determine operation type and check balance
-        let operationType = "text-to-video";
+        let operationType = 'text-to-video';
         if (normalizedSourceUrl) {
           // Проверяем, является ли источник изображением или видео
           const isImageSource =
             /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(normalizedSourceUrl) ||
-            normalizedSourceUrl.includes("image/") ||
+            normalizedSourceUrl.includes('image/') ||
             params?.currentAttachments?.some(
               (att) =>
                 att.url === normalizedSourceUrl &&
-                String(att.contentType || "").startsWith("image/")
+                String(att.contentType || '').startsWith('image/'),
             );
 
-          operationType = isImageSource ? "image-to-video" : "video-to-video";
+          operationType = isImageSource ? 'image-to-video' : 'video-to-video';
 
-          console.log("🔍 Operation type determined:", {
+          console.log('🔍 Operation type determined:', {
             sourceUrl: normalizedSourceUrl,
             isImageSource,
             operationType,
@@ -265,7 +265,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
         if (
           params?.userMessage &&
           normalizedSourceUrl &&
-          operationType === "image-to-video"
+          operationType === 'image-to-video'
         ) {
           // Проверяем, содержит ли сообщение запрос на поиск по содержимому
           const semanticSearchPatterns = [
@@ -274,30 +274,30 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           ];
 
           const hasSemanticSearchRequest = semanticSearchPatterns.some(
-            (pattern) => pattern.test(params.userMessage || "")
+            (pattern) => pattern.test(params.userMessage || ''),
           );
 
           // Убираем проверку fallback, так как она блокирует создание видео-артефактов
           // Новая система контекста уже правильно определяет источник изображения
           console.log(
-            "🔍 Skipping fallback check - new context system handles source selection properly"
+            '🔍 Skipping fallback check - new context system handles source selection properly',
           );
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
           params.session || null,
-          "video-generation",
+          'video-generation',
           operationType,
           multipliers,
-          getOperationDisplayName(operationType)
+          getOperationDisplayName(operationType),
         );
 
         if (!balanceCheck.valid) {
-          console.log("🎬 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
+          console.log('🎬 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT');
           return {
             error:
               balanceCheck.userMessage ||
-              "Недостаточно средств для генерации видео",
+              'Недостаточно средств для генерации видео',
             balanceError: true,
             requiredCredits: balanceCheck.cost,
           };
@@ -317,29 +317,29 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
             : {}),
         };
 
-        console.log("🎬 ✅ CREATING VIDEO DOCUMENT WITH PARAMS:", videoParams);
-        console.log("🔍 Final sourceVideoUrl used:", normalizedSourceUrl);
+        console.log('🎬 ✅ CREATING VIDEO DOCUMENT WITH PARAMS:', videoParams);
+        console.log('🔍 Final sourceVideoUrl used:', normalizedSourceUrl);
 
         try {
           // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
           // TODO: Refactor to use proper parameter passing mechanism
           const result = await params.createDocument.execute({
             title: JSON.stringify(videoParams),
-            kind: "video",
+            kind: 'video',
           });
 
-          console.log("🎬 ✅ CREATE DOCUMENT RESULT:", result);
+          console.log('🎬 ✅ CREATE DOCUMENT RESULT:', result);
 
           return {
             ...result,
-            message: `I'm creating ${operationType.replace("-", " ")} with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution and ${selectedDuration.label} duration. Artifact created and generation started.`,
+            message: `I'm creating ${operationType.replace('-', ' ')} with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution and ${selectedDuration.label} duration. Artifact created and generation started.`,
           };
         } catch (error) {
-          console.error("🎬 ❌ CREATE DOCUMENT ERROR:", error);
+          console.error('🎬 ❌ CREATE DOCUMENT ERROR:', error);
           throw error;
         }
       } catch (error: any) {
-        console.error("🎬 ❌ ERROR CREATING VIDEO DOCUMENT:", error);
+        console.error('🎬 ❌ ERROR CREATING VIDEO DOCUMENT:', error);
 
         // Create error artifact for better user feedback
         if (params?.createDocument) {
@@ -347,12 +347,12 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
             const errorResult = await params.createDocument.execute({
               title: JSON.stringify({
                 prompt,
-                status: "error",
-                error: error.message || "Failed to create video document",
+                status: 'error',
+                error: error.message || 'Failed to create video document',
                 timestamp: Date.now(),
-                message: "Ошибка при создании видео",
+                message: 'Ошибка при создании видео',
               }),
-              kind: "video",
+              kind: 'video',
             });
 
             return {
@@ -362,8 +362,8 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
             };
           } catch (artifactError) {
             console.error(
-              "🎬 ❌ Failed to create error artifact:",
-              artifactError
+              '🎬 ❌ Failed to create error artifact:',
+              artifactError,
             );
           }
         }
@@ -380,7 +380,7 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
 // Helper function to find video style (similar to image style finder)
 export function findVideoStyle(
   styleName: string,
-  availableStyles: MediaOption[]
+  availableStyles: MediaOption[],
 ): MediaOption | null {
   const normalizedStyleName = styleName.toLowerCase().trim();
 
@@ -388,7 +388,7 @@ export function findVideoStyle(
   let foundStyle = availableStyles.find(
     (style) =>
       style.label.toLowerCase() === normalizedStyleName ||
-      style.id.toLowerCase() === normalizedStyleName
+      style.id.toLowerCase() === normalizedStyleName,
   );
 
   if (foundStyle) return foundStyle;
@@ -399,7 +399,7 @@ export function findVideoStyle(
       style.label.toLowerCase().includes(normalizedStyleName) ||
       style.id.toLowerCase().includes(normalizedStyleName) ||
       normalizedStyleName.includes(style.label.toLowerCase()) ||
-      normalizedStyleName.includes(style.id.toLowerCase())
+      normalizedStyleName.includes(style.id.toLowerCase()),
   );
 
   return foundStyle || null;

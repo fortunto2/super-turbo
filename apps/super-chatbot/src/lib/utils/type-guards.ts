@@ -5,19 +5,19 @@
 
 // Базовые проверки типов
 export function isString(value: unknown): value is string {
-  return typeof value === "string";
+  return typeof value === 'string';
 }
 
 export function isNumber(value: unknown): value is number {
-  return typeof value === "number" && !Number.isNaN(value);
+  return typeof value === 'number' && !Number.isNaN(value);
 }
 
 export function isBoolean(value: unknown): value is boolean {
-  return typeof value === "boolean";
+  return typeof value === 'boolean';
 }
 
 export function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 export function isArray(value: unknown): value is unknown[] {
@@ -25,7 +25,7 @@ export function isArray(value: unknown): value is unknown[] {
 }
 
 export function isFunction(value: unknown): value is Function {
-  return typeof value === "function";
+  return typeof value === 'function';
 }
 
 // Проверки для специфичных типов
@@ -52,28 +52,28 @@ export function isPositiveInteger(value: unknown): value is number {
 // Проверки для объектов
 export function hasProperty<K extends string>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, unknown> {
   return isObject(obj) && key in obj;
 }
 
 export function hasStringProperty<K extends string>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, string> {
   return hasProperty(obj, key) && isString(obj[key]);
 }
 
 export function hasNumberProperty<K extends string>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, number> {
   return hasProperty(obj, key) && isNumber(obj[key]);
 }
 
 export function hasBooleanProperty<K extends string>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, boolean> {
   return hasProperty(obj, key) && isBoolean(obj[key]);
 }
@@ -88,7 +88,7 @@ export function isNumberArray(value: unknown): value is number[] {
 }
 
 export function isObjectArray(
-  value: unknown
+  value: unknown,
 ): value is Record<string, unknown>[] {
   return isArray(value) && value.every(isObject);
 }
@@ -142,51 +142,51 @@ export function isValidJSON(value: unknown): value is string {
 
 // Проверки для специфичных типов проекта
 export function isVideoGenerationStatus(
-  value: unknown
+  value: unknown,
 ): value is
-  | "idle"
-  | "preparing"
-  | "generating"
-  | "processing"
-  | "completed"
-  | "error" {
+  | 'idle'
+  | 'preparing'
+  | 'generating'
+  | 'processing'
+  | 'completed'
+  | 'error' {
   return (
     isString(value) &&
     [
-      "idle",
-      "preparing",
-      "generating",
-      "processing",
-      "completed",
-      "error",
+      'idle',
+      'preparing',
+      'generating',
+      'processing',
+      'completed',
+      'error',
     ].includes(value)
   );
 }
 
 export function isConnectionStatus(
-  value: unknown
-): value is "disconnected" | "connecting" | "connected" {
+  value: unknown,
+): value is 'disconnected' | 'connecting' | 'connected' {
   return (
     isString(value) &&
-    ["disconnected", "connecting", "connected"].includes(value)
+    ['disconnected', 'connecting', 'connected'].includes(value)
   );
 }
 
 export function isImageFormat(
-  value: unknown
-): value is "jpg" | "jpeg" | "png" | "webp" | "gif" {
+  value: unknown,
+): value is 'jpg' | 'jpeg' | 'png' | 'webp' | 'gif' {
   return (
     isString(value) &&
-    ["jpg", "jpeg", "png", "webp", "gif"].includes(value.toLowerCase())
+    ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(value.toLowerCase())
   );
 }
 
 export function isVideoFormat(
-  value: unknown
-): value is "mp4" | "webm" | "avi" | "mov" {
+  value: unknown,
+): value is 'mp4' | 'webm' | 'avi' | 'mov' {
   return (
     isString(value) &&
-    ["mp4", "webm", "avi", "mov"].includes(value.toLowerCase())
+    ['mp4', 'webm', 'avi', 'mov'].includes(value.toLowerCase())
   );
 }
 
@@ -194,7 +194,7 @@ export function isVideoFormat(
 export function safeGet<T>(obj: unknown, path: string, defaultValue: T): T {
   if (!isObject(obj)) return defaultValue;
 
-  const keys = path.split(".");
+  const keys = path.split('.');
   let current: unknown = obj;
 
   for (const key of keys) {
@@ -211,7 +211,7 @@ export function safeGet<T>(obj: unknown, path: string, defaultValue: T): T {
 export function safeString(
   obj: unknown,
   path: string,
-  defaultValue = ""
+  defaultValue = '',
 ): string {
   const value = safeGet(obj, path, defaultValue);
   return isString(value) ? value : defaultValue;
@@ -220,7 +220,7 @@ export function safeString(
 export function safeNumber(
   obj: unknown,
   path: string,
-  defaultValue = 0
+  defaultValue = 0,
 ): number {
   const value = safeGet(obj, path, defaultValue);
   return isNumber(value) ? value : defaultValue;
@@ -229,7 +229,7 @@ export function safeNumber(
 export function safeBoolean(
   obj: unknown,
   path: string,
-  defaultValue = false
+  defaultValue = false,
 ): boolean {
   const value = safeGet(obj, path, defaultValue);
   return isBoolean(value) ? value : defaultValue;
@@ -238,7 +238,7 @@ export function safeBoolean(
 export function safeArray<T>(
   obj: unknown,
   path: string,
-  defaultValue: T[] = []
+  defaultValue: T[] = [],
 ): T[] {
   const value = safeGet(obj, path, defaultValue);
   return isArray(value) ? (value as T[]) : defaultValue;

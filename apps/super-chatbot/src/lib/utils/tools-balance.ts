@@ -1,18 +1,18 @@
-import { eq } from "drizzle-orm";
-import { user } from "@/lib/db/schema";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { FREE_BALANCE_BY_USER_TYPE } from "@/lib/config/tools-pricing";
-import type { UserType } from "@/app/(auth)/auth";
+import { eq } from 'drizzle-orm';
+import { user } from '@/lib/db/schema';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { FREE_BALANCE_BY_USER_TYPE } from '@/lib/config/tools-pricing';
+import type { UserType } from '@/app/(auth)/auth';
 import {
   checkOperationBalance as checkOperationBalanceShared,
   createBalanceTransaction as createBalanceTransactionShared,
   getOperationCost,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 // Create database connection
-const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
-const client = postgres(databaseUrl, { ssl: "require" });
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+const client = postgres(databaseUrl, { ssl: 'require' });
 const db = drizzle(client);
 
 // Balance interfaces are now imported from @turbo-super/superduperai-api
@@ -34,7 +34,7 @@ export async function getUserToolsBalance(userId: string): Promise<number> {
 
     return result[0]?.balance ?? 0;
   } catch (error) {
-    console.error("Error getting user tools balance:", error);
+    console.error('Error getting user tools balance:', error);
     throw error;
   }
 }
@@ -46,22 +46,22 @@ export async function checkOperationBalance(
   userId: string,
   toolCategory: string,
   operationType: string,
-  multipliers: string[] = []
+  multipliers: string[] = [],
 ): Promise<any> {
   try {
     const currentBalance = await getUserToolsBalance(userId);
     return checkOperationBalanceShared(
       currentBalance,
       toolCategory as
-        | "image-generation"
-        | "video-generation"
-        | "script-generation"
-        | "prompt-enhancement",
+        | 'image-generation'
+        | 'video-generation'
+        | 'script-generation'
+        | 'prompt-enhancement',
       operationType,
-      multipliers
+      multipliers,
     );
   } catch (error) {
-    console.error("Error checking operation balance:", error);
+    console.error('Error checking operation balance:', error);
     throw error;
   }
 }
@@ -71,10 +71,10 @@ export async function checkOperationBalance(
  */
 export async function deductOperationBalance(
   userId: string,
-  toolCategory: keyof typeof import("@/lib/config/tools-pricing").TOOLS_PRICING,
+  toolCategory: keyof typeof import('@/lib/config/tools-pricing').TOOLS_PRICING,
   operationType: string,
   multipliers: string[] = [],
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): Promise<any> {
   try {
     const currentBalance = await getUserToolsBalance(userId);
@@ -82,7 +82,7 @@ export async function deductOperationBalance(
 
     if (currentBalance < amount) {
       throw new Error(
-        `Insufficient balance. Required: ${amount}, Available: ${currentBalance}`
+        `Insufficient balance. Required: ${amount}, Available: ${currentBalance}`,
       );
     }
 
@@ -101,16 +101,16 @@ export async function deductOperationBalance(
       toolCategory,
       currentBalance,
       newBalance,
-      metadata
+      metadata,
     );
 
     console.log(
-      `💳 Balance deducted for user ${userId}: -${amount} credits (${currentBalance} → ${newBalance})`
+      `💳 Balance deducted for user ${userId}: -${amount} credits (${currentBalance} → ${newBalance})`,
     );
 
     return transaction;
   } catch (error) {
-    console.error("Error deducting operation balance:", error);
+    console.error('Error deducting operation balance:', error);
     throw error;
   }
 }
@@ -122,11 +122,11 @@ export async function addUserBalance(
   userId: string,
   amount: number,
   reason?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): Promise<any> {
   try {
     if (amount <= 0) {
-      throw new Error("Amount must be positive");
+      throw new Error('Amount must be positive');
     }
 
     const currentBalance = await getUserToolsBalance(userId);
@@ -141,20 +141,20 @@ export async function addUserBalance(
     // Create transaction record using shared function
     const transaction = createBalanceTransactionShared(
       userId,
-      reason || "manual_addition",
-      "admin",
+      reason || 'manual_addition',
+      'admin',
       currentBalance,
       newBalance,
-      metadata
+      metadata,
     );
 
     console.log(
-      `💰 Balance added for user ${userId}: +${amount} credits (${currentBalance} → ${newBalance})`
+      `💰 Balance added for user ${userId}: +${amount} credits (${currentBalance} → ${newBalance})`,
     );
 
     return transaction;
   } catch (error) {
-    console.error("Error adding user balance:", error);
+    console.error('Error adding user balance:', error);
     throw error;
   }
 }
@@ -164,7 +164,7 @@ export async function addUserBalance(
  */
 export async function initializeUserBalance(
   userId: string,
-  userType: UserType
+  userType: UserType,
 ): Promise<void> {
   try {
     const freeBalance = FREE_BALANCE_BY_USER_TYPE[userType];
@@ -181,11 +181,11 @@ export async function initializeUserBalance(
         .where(eq(user.id, userId));
 
       console.log(
-        `🎁 Initialized ${userType} user ${userId} with ${freeBalance} credits`
+        `🎁 Initialized ${userType} user ${userId} with ${freeBalance} credits`,
       );
     }
   } catch (error) {
-    console.error("Error initializing user balance:", error);
+    console.error('Error initializing user balance:', error);
     // Don't throw error here - this shouldn't block user creation
   }
 }
@@ -196,11 +196,11 @@ export async function initializeUserBalance(
 export async function setUserBalance(
   userId: string,
   newBalance: number,
-  reason?: string
+  reason?: string,
 ): Promise<any> {
   try {
     if (newBalance < 0) {
-      throw new Error("Balance cannot be negative");
+      throw new Error('Balance cannot be negative');
     }
 
     const currentBalance = await getUserToolsBalance(userId);
@@ -212,19 +212,19 @@ export async function setUserBalance(
 
     const transaction = createBalanceTransactionShared(
       userId,
-      reason || "admin_set_balance",
-      "admin",
+      reason || 'admin_set_balance',
+      'admin',
       currentBalance,
-      newBalance
+      newBalance,
     );
 
     console.log(
-      `⚖️ Balance set for user ${userId}: ${currentBalance} → ${newBalance} (${reason || "admin action"})`
+      `⚖️ Balance set for user ${userId}: ${currentBalance} → ${newBalance} (${reason || 'admin action'})`,
     );
 
     return transaction;
   } catch (error) {
-    console.error("Error setting user balance:", error);
+    console.error('Error setting user balance:', error);
     throw error;
   }
 }
@@ -236,7 +236,7 @@ export async function getBalanceStatus(userId: string): Promise<{
   balance: number;
   isLow: boolean;
   isEmpty: boolean;
-  displayColor: "green" | "yellow" | "red";
+  displayColor: 'green' | 'yellow' | 'red';
 }> {
   try {
     const balance = await getUserToolsBalance(userId);
@@ -244,9 +244,9 @@ export async function getBalanceStatus(userId: string): Promise<{
     const isEmpty = balance <= 0;
     const isLow = balance <= 10 && balance > 0;
 
-    let displayColor: "green" | "yellow" | "red" = "green";
-    if (isEmpty) displayColor = "red";
-    else if (isLow) displayColor = "yellow";
+    let displayColor: 'green' | 'yellow' | 'red' = 'green';
+    if (isEmpty) displayColor = 'red';
+    else if (isLow) displayColor = 'yellow';
 
     return {
       balance,
@@ -255,7 +255,7 @@ export async function getBalanceStatus(userId: string): Promise<{
       displayColor,
     };
   } catch (error) {
-    console.error("Error getting balance status:", error);
+    console.error('Error getting balance status:', error);
     throw error;
   }
 }
@@ -265,16 +265,16 @@ export async function getBalanceStatus(userId: string): Promise<{
  */
 export async function validateOperationBalance(
   userId: string,
-  toolCategory: keyof typeof import("@/lib/config/tools-pricing").TOOLS_PRICING,
+  toolCategory: keyof typeof import('@/lib/config/tools-pricing').TOOLS_PRICING,
   operationType: string,
-  multipliers: string[] = []
+  multipliers: string[] = [],
 ): Promise<{ valid: boolean; error?: string; cost?: number }> {
   try {
     const balanceCheck = await checkOperationBalance(
       userId,
       toolCategory,
       operationType,
-      multipliers
+      multipliers,
     );
 
     if (!balanceCheck.hasEnoughBalance) {
@@ -290,10 +290,10 @@ export async function validateOperationBalance(
       cost: balanceCheck.requiredBalance,
     };
   } catch (error) {
-    console.error("Error validating operation balance:", error);
+    console.error('Error validating operation balance:', error);
     return {
       valid: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -303,23 +303,23 @@ export async function createOperationTransaction(
   toolCategory: string,
   operationType: string,
   multipliers: string[] = [],
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): Promise<any> {
   try {
     const currentBalance = await getUserToolsBalance(userId);
     const amount = getOperationCost(
       toolCategory as
-        | "image-generation"
-        | "video-generation"
-        | "script-generation"
-        | "prompt-enhancement",
+        | 'image-generation'
+        | 'video-generation'
+        | 'script-generation'
+        | 'prompt-enhancement',
       operationType,
-      multipliers
+      multipliers,
     );
 
     if (currentBalance < amount) {
       throw new Error(
-        `Insufficient balance. Required: ${amount}, Available: ${currentBalance}`
+        `Insufficient balance. Required: ${amount}, Available: ${currentBalance}`,
       );
     }
 
@@ -338,15 +338,15 @@ export async function createOperationTransaction(
       toolCategory,
       currentBalance,
       newBalance,
-      metadata
+      metadata,
     );
 
     // Here you would typically save the transaction to your database
-    console.log("Transaction created:", transaction);
+    console.log('Transaction created:', transaction);
 
     return transaction;
   } catch (error) {
-    console.error("Error creating operation transaction:", error);
+    console.error('Error creating operation transaction:', error);
     throw error;
   }
 }
@@ -355,11 +355,11 @@ export async function addToBalance(
   userId: string,
   amount: number,
   reason?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): Promise<any> {
   try {
     if (amount <= 0) {
-      throw new Error("Amount must be positive");
+      throw new Error('Amount must be positive');
     }
 
     const currentBalance = await getUserToolsBalance(userId);
@@ -374,17 +374,17 @@ export async function addToBalance(
     // Create transaction record using shared function
     const transaction = createBalanceTransactionShared(
       userId,
-      reason || "manual_addition",
-      "balance_adjustment",
+      reason || 'manual_addition',
+      'balance_adjustment',
       currentBalance,
       newBalance,
-      metadata
+      metadata,
     );
 
-    console.log("Balance added:", transaction);
+    console.log('Balance added:', transaction);
     return transaction;
   } catch (error) {
-    console.error("Error adding to balance:", error);
+    console.error('Error adding to balance:', error);
     throw error;
   }
 }
@@ -392,11 +392,11 @@ export async function addToBalance(
 export async function setBalance(
   userId: string,
   newBalance: number,
-  reason?: string
+  reason?: string,
 ): Promise<any> {
   try {
     if (newBalance < 0) {
-      throw new Error("Balance cannot be negative");
+      throw new Error('Balance cannot be negative');
     }
 
     const currentBalance = await getUserToolsBalance(userId);
@@ -409,16 +409,16 @@ export async function setBalance(
 
     const transaction = createBalanceTransactionShared(
       userId,
-      reason || "admin_set_balance",
-      "balance_adjustment",
+      reason || 'admin_set_balance',
+      'balance_adjustment',
       currentBalance,
-      newBalance
+      newBalance,
     );
 
-    console.log("Balance set:", transaction);
+    console.log('Balance set:', transaction);
     return transaction;
   } catch (error) {
-    console.error("Error setting balance:", error);
+    console.error('Error setting balance:', error);
     throw error;
   }
 }

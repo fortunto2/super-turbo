@@ -149,11 +149,7 @@ const MockBlogModelGenerator = ({
 );
 
 const mockGenerateMetadata = vi.fn(
-  async ({
-    params,
-  }: {
-    params: Promise<{ slug: string; locale: string }>;
-  }) => {
+  async ({ params }: { params: Promise<{ slug: string; locale: string }> }) => {
     const { slug, locale } = await params;
     const post = mockedBlogs.find(
       (p) => p.slug === slug && p.locale === locale
@@ -181,11 +177,7 @@ const mockGenerateMetadata = vi.fn(
 );
 
 const mockBlogPostPage = vi.fn(
-  async ({
-    params,
-  }: {
-    params: Promise<{ slug: string; locale: string }>;
-  }) => {
+  async ({ params }: { params: Promise<{ slug: string; locale: string }> }) => {
     const { slug, locale } = await params;
 
     // Пытаемся найти пост на нужной локали, иначе берем любой с таким же слагом
@@ -437,7 +429,9 @@ describe("Blog Pages", () => {
 
       expect(screen.getByTestId("blog-model-generator")).toBeInTheDocument();
       expect(screen.getByTestId("model-name")).toHaveTextContent("veo_3");
-      expect(screen.getByTestId("model-config")).toContain('"maxDuration":8');
+      expect(screen.getByTestId("model-config")).toHaveTextContent(
+        '"maxDuration":8'
+      );
     });
 
     it("should render blog post with enhanced video model generator", async () => {
@@ -451,7 +445,9 @@ describe("Blog Pages", () => {
       expect(screen.getByTestId("model-name")).toHaveTextContent(
         "enhanced_veo_3"
       );
-      expect(screen.getByTestId("model-config")).toContain('"maxDuration":10');
+      expect(screen.getByTestId("model-config")).toHaveTextContent(
+        '"maxDuration":10'
+      );
     });
 
     it("should render blog post without model generator", async () => {

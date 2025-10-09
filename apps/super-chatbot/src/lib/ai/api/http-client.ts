@@ -2,10 +2,10 @@ import {
   getSuperduperAIConfig,
   createAuthHeaders,
   createAPIURL,
-} from "@/lib/config/superduperai";
+} from '@/lib/config/superduperai';
 
 // HTTP methods
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 // Request options
 export interface RequestOptions {
@@ -38,10 +38,10 @@ export class SuperDuperHttpClient {
    */
   async request<T = any>(
     endpoint: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     const {
-      method = "GET",
+      method = 'GET',
       headers = {},
       body,
       timeout = 30000,
@@ -56,9 +56,9 @@ export class SuperDuperHttpClient {
     };
 
     // Add Content-Type for POST/PUT requests with body
-    if (body && ["POST", "PUT", "PATCH"].includes(method)) {
-      if (!requestHeaders["Content-Type"]) {
-        requestHeaders["Content-Type"] = "application/json";
+    if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      if (!requestHeaders['Content-Type']) {
+        requestHeaders['Content-Type'] = 'application/json';
       }
     }
 
@@ -70,7 +70,7 @@ export class SuperDuperHttpClient {
 
     // Add body if provided
     if (body) {
-      requestInit.body = typeof body === "string" ? body : JSON.stringify(body);
+      requestInit.body = typeof body === 'string' ? body : JSON.stringify(body);
     }
 
     let lastError: Error | null = null;
@@ -79,15 +79,15 @@ export class SuperDuperHttpClient {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         console.log(
-          `🌐 ${method} ${url} (attempt ${attempt + 1}/${retries + 1})`
+          `🌐 ${method} ${url} (attempt ${attempt + 1}/${retries + 1})`,
         );
 
         const response = await fetch(url, requestInit);
 
         // Parse response
         const isJson = response.headers
-          .get("content-type")
-          ?.includes("application/json");
+          .get('content-type')
+          ?.includes('application/json');
         let data: T;
 
         if (isJson) {
@@ -118,11 +118,11 @@ export class SuperDuperHttpClient {
         lastError = error;
         console.error(
           `🌐 ❌ ${method} ${url} - Attempt ${attempt + 1} failed:`,
-          error.message
+          error.message,
         );
 
         // Don't retry on certain errors
-        if (error.name === "AbortError" || error.message.includes("401")) {
+        if (error.name === 'AbortError' || error.message.includes('401')) {
           break;
         }
 
@@ -135,7 +135,7 @@ export class SuperDuperHttpClient {
 
     return {
       success: false,
-      error: lastError?.message || "Request failed after all retries",
+      error: lastError?.message || 'Request failed after all retries',
     };
   }
 
@@ -144,9 +144,9 @@ export class SuperDuperHttpClient {
    */
   async get<T = any>(
     endpoint: string,
-    options: Omit<RequestOptions, "method"> = {}
+    options: Omit<RequestOptions, 'method'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
   /**
@@ -155,11 +155,11 @@ export class SuperDuperHttpClient {
   async post<T = any>(
     endpoint: string,
     data?: any,
-    options: Omit<RequestOptions, "method" | "body"> = {}
+    options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       ...options,
-      method: "POST",
+      method: 'POST',
       body: data,
     });
   }
@@ -170,9 +170,9 @@ export class SuperDuperHttpClient {
   async put<T = any>(
     endpoint: string,
     data?: any,
-    options: Omit<RequestOptions, "method" | "body"> = {}
+    options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: "PUT", body: data });
+    return this.request<T>(endpoint, { ...options, method: 'PUT', body: data });
   }
 
   /**
@@ -180,9 +180,9 @@ export class SuperDuperHttpClient {
    */
   async delete<T = any>(
     endpoint: string,
-    options: Omit<RequestOptions, "method"> = {}
+    options: Omit<RequestOptions, 'method'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 
   /**
@@ -191,11 +191,11 @@ export class SuperDuperHttpClient {
   async patch<T = any>(
     endpoint: string,
     data?: any,
-    options: Omit<RequestOptions, "method" | "body"> = {}
+    options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       ...options,
-      method: "PATCH",
+      method: 'PATCH',
       body: data,
     });
   }
@@ -207,28 +207,28 @@ export const httpClient = new SuperDuperHttpClient();
 // Convenience functions
 export const apiGet = <T = any>(
   endpoint: string,
-  options?: Omit<RequestOptions, "method">
+  options?: Omit<RequestOptions, 'method'>,
 ) => httpClient.get<T>(endpoint, options);
 
 export const apiPost = <T = any>(
   endpoint: string,
   data?: any,
-  options?: Omit<RequestOptions, "method" | "body">
+  options?: Omit<RequestOptions, 'method' | 'body'>,
 ) => httpClient.post<T>(endpoint, data, options);
 
 export const apiPut = <T = any>(
   endpoint: string,
   data?: any,
-  options?: Omit<RequestOptions, "method" | "body">
+  options?: Omit<RequestOptions, 'method' | 'body'>,
 ) => httpClient.put<T>(endpoint, data, options);
 
 export const apiDelete = <T = any>(
   endpoint: string,
-  options?: Omit<RequestOptions, "method">
+  options?: Omit<RequestOptions, 'method'>,
 ) => httpClient.delete<T>(endpoint, options);
 
 export const apiPatch = <T = any>(
   endpoint: string,
   data?: any,
-  options?: Omit<RequestOptions, "method" | "body">
+  options?: Omit<RequestOptions, 'method' | 'body'>,
 ) => httpClient.patch<T>(endpoint, data, options);

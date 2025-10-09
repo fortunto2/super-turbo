@@ -1,7 +1,7 @@
-import type { CoreAssistantMessage, CoreToolMessage, UIMessage } from "ai";
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import type { Document } from "@/lib/db/schema";
+import type { CoreAssistantMessage, CoreToolMessage, UIMessage } from 'ai';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import type { Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,7 +17,7 @@ export const fetcher = async (url: string) => {
 
   if (!res.ok) {
     const error = new Error(
-      "An error occurred while fetching the data."
+      'An error occurred while fetching the data.',
     ) as ApplicationError;
 
     error.info = await res.json();
@@ -30,8 +30,8 @@ export const fetcher = async (url: string) => {
 };
 
 export function getLocalStorage(key: string) {
-  if (typeof window !== "undefined") {
-    return JSON.parse(localStorage.getItem(key) || "[]");
+  if (typeof window !== 'undefined') {
+    return JSON.parse(localStorage.getItem(key) || '[]');
   }
   return [];
 }
@@ -39,18 +39,18 @@ export function getLocalStorage(key: string) {
 export function generateUUID(): string {
   try {
     // Используем crypto.randomUUID если доступно (более надежно)
-    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
       return crypto.randomUUID();
     }
 
     // Fallback на старую реализацию
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
-      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   } catch (error) {
-    console.error("Error generating UUID:", error);
+    console.error('Error generating UUID:', error);
     // В случае ошибки, используем timestamp-based fallback
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substring(2);
@@ -62,13 +62,13 @@ type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
 type ResponseMessage = ResponseMessageWithoutId & { id: string };
 
 export function getMostRecentUserMessage(messages: Array<UIMessage>) {
-  const userMessages = messages.filter((message) => message.role === "user");
+  const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
 
 export function getDocumentTimestampByIndex(
   documents: Array<Document>,
-  index: number
+  index: number,
 ) {
   if (!documents) return new Date();
   if (index > documents.length) return new Date();
@@ -89,5 +89,5 @@ export function getTrailingMessageId({
 }
 
 export function sanitizeText(text: string) {
-  return text.replace("<has_function_call>", "");
+  return text.replace('<has_function_call>', '');
 }

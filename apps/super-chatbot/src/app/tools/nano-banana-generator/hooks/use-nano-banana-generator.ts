@@ -1,18 +1,18 @@
 // AICODE-NOTE: Main hook for Nano Banana image generation functionality
 // Manages state for image generation, progress tracking, and results
 
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { useState, useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   generateNanoBananaImage,
   type NanoBananaImageGenerationRequest,
   type NanoBananaImageResult,
-} from "../api/nano-banana-api";
+} from '../api/nano-banana-api';
 
 export interface GenerationStatus {
-  status: "idle" | "pending" | "processing" | "completed" | "error";
+  status: 'idle' | 'pending' | 'processing' | 'completed' | 'error';
   progress: number;
   message: string;
   estimatedTime: number;
@@ -30,7 +30,7 @@ export interface UseNanoBananaGeneratorReturn {
 
   // Connection state
   isConnected: boolean;
-  connectionStatus: "disconnected" | "connecting" | "connected";
+  connectionStatus: 'disconnected' | 'connecting' | 'connected';
 
   // Actions
   generateImage: (request: NanoBananaImageGenerationRequest) => Promise<void>;
@@ -53,37 +53,37 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
     useState<NanoBananaImageResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>({
-    status: "idle",
+    status: 'idle',
     progress: 0,
-    message: "",
+    message: '',
     estimatedTime: 0,
-    projectId: "",
-    requestId: "",
-    fileId: "",
+    projectId: '',
+    requestId: '',
+    fileId: '',
   });
   const [connectionStatus, setConnectionStatus] = useState<
-    "disconnected" | "connecting" | "connected"
-  >("disconnected");
+    'disconnected' | 'connecting' | 'connected'
+  >('disconnected');
   const [isConnected, setIsConnected] = useState(false);
 
   // Load stored images on mount
   useEffect(() => {
-    const storedImages = localStorage.getItem("nano-banana-images");
+    const storedImages = localStorage.getItem('nano-banana-images');
     if (storedImages) {
       try {
         const parsed = JSON.parse(storedImages);
         setGeneratedImages(parsed);
-        console.log("🍌 📂 Loaded", parsed.length, "stored Nano Banana images");
+        console.log('🍌 📂 Loaded', parsed.length, 'stored Nano Banana images');
         // Failed to execute 'setItem' on 'Storage': Setting the value of 'nano-banana-images' exceeded the quota.
       } catch (error) {
-        console.error("Failed to load stored images:", error);
+        console.error('Failed to load stored images:', error);
       }
     }
   }, []);
 
   // Save images to localStorage
   const saveImages = useCallback((images: NanoBananaImageResult[]) => {
-    localStorage.setItem("nano-banana-images", JSON.stringify(images));
+    localStorage.setItem('nano-banana-images', JSON.stringify(images));
   }, []);
 
   // Main generation function
@@ -91,27 +91,27 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
     async (request: NanoBananaImageGenerationRequest) => {
       try {
         setIsGenerating(true);
-        setConnectionStatus("connected");
+        setConnectionStatus('connected');
         setIsConnected(true);
         setGenerationStatus({
-          status: "pending",
+          status: 'pending',
           progress: 10,
-          message: "Generating image...",
+          message: 'Generating image...',
           estimatedTime: 0,
-          projectId: "",
-          requestId: "",
-          fileId: "",
+          projectId: '',
+          requestId: '',
+          fileId: '',
         });
 
         // Call API
         const result = await generateNanoBananaImage(request);
 
         if (!result.success) {
-          throw new Error(result.error || "Generation failed");
+          throw new Error(result.error || 'Generation failed');
         }
 
         if (!result.data) {
-          throw new Error("No data returned from generation");
+          throw new Error('No data returned from generation');
         }
 
         // Store data in a variable after null check
@@ -124,57 +124,57 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
 
         const newImages = [generatedData, ...generatedImages].slice(
           0,
-          MAX_IMAGES
+          MAX_IMAGES,
         );
         setGeneratedImages(newImages);
         saveImages(newImages);
 
         setGenerationStatus({
-          status: "completed",
+          status: 'completed',
           progress: 100,
-          message: "Image generated",
+          message: 'Image generated',
           estimatedTime: 0,
-          projectId: result.projectId || "",
-          requestId: result.requestId || "",
-          fileId: result.fileId || "",
+          projectId: result.projectId || '',
+          requestId: result.requestId || '',
+          fileId: result.fileId || '',
         });
 
-        toast.success("Nano Banana image generated successfully!");
+        toast.success('Nano Banana image generated successfully!');
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Image generation failed";
-        console.error("Nano Banana generation error:", error);
+          error instanceof Error ? error.message : 'Image generation failed';
+        console.error('Nano Banana generation error:', error);
 
         setGenerationStatus({
-          status: "error",
+          status: 'error',
           progress: 0,
           message: message,
           estimatedTime: 0,
-          projectId: "",
-          requestId: "",
-          fileId: "",
+          projectId: '',
+          requestId: '',
+          fileId: '',
         });
 
         toast.error(message);
       } finally {
         setIsGenerating(false);
-        setConnectionStatus("disconnected");
+        setConnectionStatus('disconnected');
         setIsConnected(false);
       }
     },
-    [generatedImages, saveImages]
+    [generatedImages, saveImages],
   );
 
   const clearCurrentGeneration = useCallback(() => {
     setCurrentGeneration(null);
     setGenerationStatus({
-      status: "idle",
+      status: 'idle',
       progress: 0,
-      message: "",
+      message: '',
       estimatedTime: 0,
-      projectId: "",
-      requestId: "",
-      fileId: "",
+      projectId: '',
+      requestId: '',
+      fileId: '',
     });
   }, []);
 
@@ -183,19 +183,19 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
       const updatedImages = generatedImages.filter((img) => img.id !== imageId);
       setGeneratedImages(updatedImages);
       saveImages(updatedImages);
-      toast.success("Image deleted");
+      toast.success('Image deleted');
     },
-    [generatedImages, saveImages]
+    [generatedImages, saveImages],
   );
 
   const clearAllImages = useCallback(() => {
     setGeneratedImages([]);
     saveImages([]);
-    toast.success("All images cleared");
+    toast.success('All images cleared');
   }, [saveImages]);
 
   const forceCheckResults = useCallback(async () => {
-    toast.info("Checking results...");
+    toast.info('Checking results...');
     // In real implementation, would force polling check
   }, []);
 
@@ -204,25 +204,25 @@ export function useNanoBananaGenerator(): UseNanoBananaGeneratorReturn {
       const response = await fetch(image.url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = `nano-banana-${image.id}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      toast.success("Image downloaded");
+      toast.success('Image downloaded');
     } catch (error) {
-      toast.error("Failed to download image");
+      toast.error('Failed to download image');
     }
   }, []);
 
   const copyImageUrl = useCallback(async (image: NanoBananaImageResult) => {
     try {
       await navigator.clipboard.writeText(image.url);
-      toast.success("Image URL copied to clipboard");
+      toast.success('Image URL copied to clipboard');
     } catch (error) {
-      toast.error("Failed to copy URL");
+      toast.error('Failed to copy URL');
     }
   }, []);
 

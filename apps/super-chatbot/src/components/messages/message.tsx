@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import type { UIMessage } from "ai";
-import cx from "classnames";
-import { AnimatePresence, motion } from "framer-motion";
-import { memo, useState } from "react";
-import type { Vote } from "@/lib/db/schema";
-import { PencilEditIcon, SparklesIcon } from "../common/icons";
-import { MessageActions } from "./message-actions";
+import type { UIMessage } from 'ai';
+import cx from 'classnames';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useState } from 'react';
+import type { Vote } from '@/lib/db/schema';
+import { PencilEditIcon, SparklesIcon } from '../common/icons';
+import { MessageActions } from './message-actions';
 
-import equal from "fast-deep-equal";
-import { sanitizeText } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { MessageEditor } from "./message-editor";
-import { MessageReasoning } from "./message-reasoning";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import { MediaSettings, PreviewAttachment, Markdown } from "../";
+import equal from 'fast-deep-equal';
+import { sanitizeText } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { MessageEditor } from './message-editor';
+import { MessageReasoning } from './message-reasoning';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import { MediaSettings, PreviewAttachment, Markdown } from '../';
 import type {
   ImageGenerationConfig,
   ImageSettings,
   VideoGenerationConfig,
   VideoSettings as VideoSettingsType,
-} from "@/lib/types/media-settings";
-import { useArtifactLegacy } from "@/hooks/use-artifact";
-import { ScriptArtifactViewer } from "@/artifacts/text/client";
-import { Button, cn } from "@turbo-super/ui";
+} from '@/lib/types/media-settings';
+import { useArtifactLegacy } from '@/hooks/use-artifact';
+import { ScriptArtifactViewer } from '@/artifacts/text/client';
+import { Button, cn } from '@turbo-super/ui';
 
 const PurePreviewMessage = ({
   chatId,
@@ -42,15 +42,15 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: UseChatHelpers['setMessages'];
+  reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   selectedChatModel: string;
-  selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers["append"];
+  selectedVisibilityType: 'public' | 'private';
+  append?: UseChatHelpers['append'];
 }) => {
-  const [mode, setMode] = useState<"view" | "edit">("view");
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
   const { setArtifact } = useArtifactLegacy();
 
   return (
@@ -64,14 +64,14 @@ const PurePreviewMessage = ({
       >
         <div
           className={cn(
-            "flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
+            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
             {
-              "w-full": mode === "edit",
-              "group-data-[role=user]/message:w-fit": mode !== "edit",
-            }
+              'w-full': mode === 'edit',
+              'group-data-[role=user]/message:w-fit': mode !== 'edit',
+            },
           )}
         >
-          {message.role === "assistant" && (
+          {message.role === 'assistant' && (
             <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
@@ -80,8 +80,8 @@ const PurePreviewMessage = ({
           )}
 
           <div
-            className={cn("flex flex-col gap-4 w-full", {
-              "min-h-96": message.role === "assistant" && requiresScrollPadding,
+            className={cn('flex flex-col gap-4 w-full', {
+              'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
             {message.experimental_attachments &&
@@ -104,7 +104,7 @@ const PurePreviewMessage = ({
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
 
-              if (type === "reasoning") {
+              if (type === 'reasoning') {
                 return (
                   <MessageReasoning
                     key={key}
@@ -114,22 +114,22 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === "text") {
-                if (mode === "view") {
+              if (type === 'text') {
+                if (mode === 'view') {
                   // --- EMBED ARTIFACT (image/video/text) ---
                   let artifact: any = null;
-                  if (part.text.startsWith("```json")) {
+                  if (part.text.startsWith('```json')) {
                     try {
                       const jsonMatch = part.text.match(
-                        /```json\s*({[\s\S]*?})\s*```/
+                        /```json\s*({[\s\S]*?})\s*```/,
                       );
                       if (jsonMatch?.[1]) {
                         artifact = JSON.parse(jsonMatch[1]);
                       }
                     } catch {}
                   } else if (
-                    part.text.startsWith("{") &&
-                    part.text.endsWith("}")
+                    part.text.startsWith('{') &&
+                    part.text.endsWith('}')
                   ) {
                     try {
                       artifact = JSON.parse(part.text);
@@ -137,7 +137,7 @@ const PurePreviewMessage = ({
                   }
                   if (
                     artifact &&
-                    artifact.kind === "text" &&
+                    artifact.kind === 'text' &&
                     artifact.content
                   ) {
                     return (
@@ -149,12 +149,12 @@ const PurePreviewMessage = ({
                           className="cursor-pointer w-full"
                           onClick={() => {
                             setArtifact({
-                              title: artifact.title || "",
+                              title: artifact.title || '',
                               documentId: artifact.documentId,
-                              kind: "text",
+                              kind: 'text',
                               content: artifact.content,
                               isVisible: true,
-                              status: "idle",
+                              status: 'idle',
                               boundingBox: {
                                 top: 0,
                                 left: 0,
@@ -165,7 +165,7 @@ const PurePreviewMessage = ({
                           }}
                         >
                           <ScriptArtifactViewer
-                            title={artifact.title || ""}
+                            title={artifact.title || ''}
                             content={artifact.content}
                           />
                         </div>
@@ -174,9 +174,9 @@ const PurePreviewMessage = ({
                   }
                   // --- END EMBED ---
                   // Check if this is a resolution selection message
-                  if (part.text.startsWith("Выбрано разрешение:")) {
+                  if (part.text.startsWith('Выбрано разрешение:')) {
                     const resolutionMatch = part.text.match(
-                      /разрешение: (\d+)x(\d+), стиль: (.+?), размер кадра: (.+?), модель: (.+?)(?:, сид: (\d+))?$/
+                      /разрешение: (\d+)x(\d+), стиль: (.+?), размер кадра: (.+?), модель: (.+?)(?:, сид: (\d+))?$/,
                     );
                     if (resolutionMatch) {
                       const [
@@ -213,11 +213,8 @@ const PurePreviewMessage = ({
                   }
 
                   return (
-                    <div
-                      key={key}
-                      className="flex flex-row gap-2 items-start"
-                    >
-                      {message.role === "user" && !isReadonly && (
+                    <div key={key} className="flex flex-row gap-2 items-start">
+                      {message.role === 'user' && !isReadonly && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -225,7 +222,7 @@ const PurePreviewMessage = ({
                               variant="ghost"
                               className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
                               onClick={() => {
-                                setMode("edit");
+                                setMode('edit');
                               }}
                             >
                               <PencilEditIcon />
@@ -237,9 +234,9 @@ const PurePreviewMessage = ({
 
                       <div
                         data-testid="message-content"
-                        className={cn("flex flex-col gap-4", {
-                          "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
-                            message.role === "user",
+                        className={cn('flex flex-col gap-4', {
+                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                            message.role === 'user',
                         })}
                       >
                         <Markdown>{sanitizeText(part.text)}</Markdown>
@@ -248,12 +245,9 @@ const PurePreviewMessage = ({
                   );
                 }
 
-                if (mode === "edit") {
+                if (mode === 'edit') {
                   return (
-                    <div
-                      key={key}
-                      className="flex flex-row gap-2 items-start"
-                    >
+                    <div key={key} className="flex flex-row gap-2 items-start">
                       <div className="size-8" />
 
                       <MessageEditor
@@ -268,23 +262,23 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === "tool-invocation") {
+              if (type === 'tool-invocation') {
                 const { toolInvocation } = part;
                 const { toolName, toolCallId, state, args } = toolInvocation;
 
-                if (state === "call") {
+                if (state === 'call') {
                   return null;
                 }
 
-                if (state === "result") {
+                if (state === 'result') {
                   const { result } = toolInvocation;
 
                   if (
-                    toolName === "configureScriptGeneration" &&
+                    toolName === 'configureScriptGeneration' &&
                     result &&
-                    typeof result === "object" &&
-                    "id" in result &&
-                    "title" in result
+                    typeof result === 'object' &&
+                    'id' in result &&
+                    'title' in result
                   ) {
                     return (
                       <div
@@ -297,10 +291,10 @@ const PurePreviewMessage = ({
                             setArtifact({
                               title: result.title as string,
                               documentId: result.id as string,
-                              kind: "script",
-                              content: "", // Content will be fetched in the artifact viewer
+                              kind: 'script',
+                              content: '', // Content will be fetched in the artifact viewer
                               isVisible: true,
-                              status: "idle",
+                              status: 'idle',
                               boundingBox: {
                                 top: 0,
                                 left: 0,
@@ -312,7 +306,7 @@ const PurePreviewMessage = ({
                         >
                           <ScriptArtifactViewer
                             title={result.title as string}
-                            content={""}
+                            content={''}
                           />
                         </div>
                       </div>
@@ -321,21 +315,18 @@ const PurePreviewMessage = ({
 
                   // Handle image generation configuration
                   if (
-                    toolName === "configureImageGeneration" &&
-                    result?.type === "image-generation-settings"
+                    toolName === 'configureImageGeneration' &&
+                    result?.type === 'image-generation-settings'
                   ) {
                     const config = result as ImageGenerationConfig;
                     return (
-                      <div
-                        key={toolCallId}
-                        className="p-4"
-                      >
+                      <div key={toolCallId} className="p-4">
                         <MediaSettings
                           config={config}
                           onConfirm={(
-                            settings: ImageSettings | VideoSettingsType
+                            settings: ImageSettings | VideoSettingsType,
                           ) => {
-                            console.log("Image settings selected:", settings);
+                            console.log('Image settings selected:', settings);
                           }}
                           selectedChatModel={selectedChatModel}
                           selectedVisibilityType={selectedVisibilityType}
@@ -347,21 +338,18 @@ const PurePreviewMessage = ({
 
                   // Handle video generation configuration
                   if (
-                    toolName === "configureVideoGeneration" &&
-                    result?.type === "video-generation-settings"
+                    toolName === 'configureVideoGeneration' &&
+                    result?.type === 'video-generation-settings'
                   ) {
                     const config = result as VideoGenerationConfig;
                     return (
-                      <div
-                        key={toolCallId}
-                        className="p-4"
-                      >
+                      <div key={toolCallId} className="p-4">
                         <MediaSettings
                           config={config}
                           onConfirm={(
-                            settings: ImageSettings | VideoSettingsType
+                            settings: ImageSettings | VideoSettingsType,
                           ) => {
-                            console.log("Video settings selected:", settings);
+                            console.log('Video settings selected:', settings);
                           }}
                           selectedChatModel={selectedChatModel}
                           selectedVisibilityType={selectedVisibilityType}
@@ -405,11 +393,11 @@ export const PreviewMessage = memo(
     if (!equal(prevProps.vote, nextProps.vote)) return false;
 
     return true;
-  }
+  },
 );
 
 export const ThinkingMessage = () => {
-  const role = "assistant";
+  const role = 'assistant';
 
   return (
     <motion.div
@@ -421,10 +409,10 @@ export const ThinkingMessage = () => {
     >
       <div
         className={cx(
-          "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
+          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
           {
-            "group-data-[role=user]/message:bg-muted": true,
-          }
+            'group-data-[role=user]/message:bg-muted': true,
+          },
         )}
       >
         <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">

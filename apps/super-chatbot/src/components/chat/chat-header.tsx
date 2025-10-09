@@ -1,22 +1,22 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { useWindowSize } from "usehooks-ts";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useWindowSize } from 'usehooks-ts';
 
-import { ModelSelector } from "../common/model-selector";
-import { SidebarToggle } from "../sidebar/sidebar-toggle";
-import { Button } from "@turbo-super/ui";
-import { PlusIcon } from "../common/icons";
-import { useSidebar } from "../ui/sidebar";
-import { memo } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { ModelSelector } from '../common/model-selector';
+import { SidebarToggle } from '../sidebar/sidebar-toggle';
+import { Button } from '@turbo-super/ui';
+import { PlusIcon } from '../common/icons';
+import { useSidebar } from '../ui/sidebar';
+import { memo } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
   type VisibilityType,
   VisibilitySelector,
-} from "../shared/visibility-selector";
-import type { Session } from "next-auth";
-import { MessageCount } from "../messages/message-count";
-import { HeaderUserNav } from "../shared/header-user-nav";
-import { ToolsBalance } from "../tools/tools-balance";
+} from '../shared/visibility-selector';
+import type { Session } from 'next-auth';
+import { MessageCount } from '../messages/message-count';
+import { HeaderUserNav } from '../shared/header-user-nav';
+import { ToolsBalance } from '../tools/tools-balance';
 
 function PureChatHeader({
   chatId,
@@ -49,7 +49,7 @@ function PureChatHeader({
               variant="outline"
               className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
               onClick={() => {
-                router.push("/");
+                router.push('/');
                 router.refresh();
               }}
             >
@@ -79,10 +79,7 @@ function PureChatHeader({
 
       <MessageCount className="order-1 md:order-4" />
 
-      <ToolsBalance
-        variant="header"
-        className="order-1 md:order-5"
-      />
+      <ToolsBalance variant="header" className="order-1 md:order-5" />
 
       <div className="flex-1" />
 

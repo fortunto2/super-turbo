@@ -9,8 +9,8 @@ import type {
   GeminiEditParams,
   GeminiImageResult,
   GeminiEditResult,
-} from "../types/gemini";
-import { callGeminiDirect } from "../gemini-direct";
+} from '../types/gemini';
+import { callGeminiDirect } from '../gemini-direct';
 
 export class NanoBananaProvider {
   /**
@@ -19,19 +19,19 @@ export class NanoBananaProvider {
    */
   async generateImage(
     params: GeminiImageParams,
-    config?: any
+    config?: any,
   ): Promise<GeminiImageResult> {
     console.log(
-      "🍌 🚀 NANO BANANA: Generating image with enhanced prompt (placeholder mode)"
+      '🍌 🚀 NANO BANANA: Generating image with enhanced prompt (placeholder mode)',
     );
-    console.log("🍌 📝 Original Prompt:", params.prompt);
-    console.log("🍌 🎨 Style:", params.style);
-    console.log("🍌 ⚙️ Features:", params.nanoBananaFeatures);
+    console.log('🍌 📝 Original Prompt:', params.prompt);
+    console.log('🍌 🎨 Style:', params.style);
+    console.log('🍌 ⚙️ Features:', params.nanoBananaFeatures);
 
     // Улучшаем промпт с Nano Banana особенностями
     const enhancedPrompt = this.enhancePrompt(params);
 
-    console.log("🍌 ✨ Enhanced Prompt:", enhancedPrompt);
+    console.log('🍌 ✨ Enhanced Prompt:', enhancedPrompt);
 
     // Получаем размеры из aspectRatio
     const dimensions = this.getAspectRatioDimensions(params.aspectRatio);
@@ -39,18 +39,18 @@ export class NanoBananaProvider {
     // Пытаемся сгенерировать реальное изображение через Gemini 2.5 Flash Image (Vertex AI)
     let generatedImageUrl: string | null = null;
     try {
-      const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+      const apiKey = process.env.GOOGLE_AI_API_KEY || '';
       if (apiKey) {
         const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
         const requestBody = {
           contents: [
             {
-              role: "user",
+              role: 'user',
               parts: [{ text: enhancedPrompt }],
             },
           ],
           // Явно просим изображение в ответе
-          responseModalities: ["IMAGE"],
+          responseModalities: ['IMAGE'],
           generationConfig: {
             temperature: 0.4,
             topP: 0.8,
@@ -60,15 +60,15 @@ export class NanoBananaProvider {
         } as any;
 
         const resp = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
         });
 
         if (!resp.ok) {
           const errorText = await resp.text();
           throw new Error(
-            `Gemini Image API error: ${resp.status} - ${errorText}`
+            `Gemini Image API error: ${resp.status} - ${errorText}`,
           );
         }
 
@@ -79,7 +79,7 @@ export class NanoBananaProvider {
           const parts = c?.content?.parts || [];
           for (const part of parts) {
             const inline = part?.inlineData;
-            if (inline?.data && inline?.mimeType?.startsWith("image/")) {
+            if (inline?.data && inline?.mimeType?.startsWith('image/')) {
               generatedImageUrl = `data:${inline.mimeType};base64,${inline.data}`;
               break;
             }
@@ -88,13 +88,13 @@ export class NanoBananaProvider {
         }
       } else {
         console.warn(
-          "⚠️ GOOGLE_AI_API_KEY is not configured; skipping Gemini image call"
+          '⚠️ GOOGLE_AI_API_KEY is not configured; skipping Gemini image call',
         );
       }
     } catch (e) {
       console.warn(
-        "⚠️ Gemini image generation failed, will fallback to placeholder",
-        e
+        '⚠️ Gemini image generation failed, will fallback to placeholder',
+        e,
       );
     }
 
@@ -105,7 +105,7 @@ export class NanoBananaProvider {
         enhancedPrompt,
         dimensions.width,
         dimensions.height,
-        params.style
+        params.style,
       );
 
     const result: GeminiImageResult = {
@@ -125,30 +125,30 @@ export class NanoBananaProvider {
         creativeMode: params.nanoBananaFeatures.creativeMode,
       },
       nanoBananaInfo: {
-        model: "gemini-2.5-flash-image",
+        model: 'gemini-2.5-flash-image',
         capabilities: [
-          "Контекстно-осознанное редактирование",
-          "Хирургическая точность",
-          "Понимание физической логики",
-          "Интеллектуальное освещение",
+          'Контекстно-осознанное редактирование',
+          'Хирургическая точность',
+          'Понимание физической логики',
+          'Интеллектуальное освещение',
         ],
         style: {
           id: params.style,
           label: params.style,
-          description: "Nano Banana style",
+          description: 'Nano Banana style',
         },
         quality: {
           id: params.quality,
           label: params.quality,
           multiplier: 1.0,
-          description: "Nano Banana quality",
+          description: 'Nano Banana quality',
         },
         aspectRatio: {
           id: params.aspectRatio,
           label: params.aspectRatio,
           width: dimensions.width,
           height: dimensions.height,
-          description: "Nano Banana aspect ratio",
+          description: 'Nano Banana aspect ratio',
         },
       },
       geminiResponse: enhancedPrompt,
@@ -156,12 +156,12 @@ export class NanoBananaProvider {
 
     // Параллельно запрашиваем ответ у Gemini 2.5 Flash Lite через Vertex AI (текстовая часть)
     try {
-      const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+      const apiKey = process.env.GOOGLE_AI_API_KEY || '';
       if (apiKey) {
         const geminiText = await callGeminiDirect(
           [
             {
-              role: "user",
+              role: 'user',
               parts: [
                 {
                   text: `Summarize this image generation request in one sentence and list 3 key visual requirements:\n\n${enhancedPrompt}`,
@@ -170,23 +170,23 @@ export class NanoBananaProvider {
             },
           ],
           apiKey,
-          { temperature: 0.6, maxTokens: 256 }
+          { temperature: 0.6, maxTokens: 256 },
         );
         result.geminiResponse = geminiText || enhancedPrompt;
       } else {
         console.warn(
-          "⚠️ GOOGLE_AI_API_KEY is not configured; skipping Gemini direct call"
+          '⚠️ GOOGLE_AI_API_KEY is not configured; skipping Gemini direct call',
         );
       }
     } catch (err) {
       console.warn(
-        "⚠️ Gemini direct call failed, using enhanced prompt only",
-        err
+        '⚠️ Gemini direct call failed, using enhanced prompt only',
+        err,
       );
     }
 
     console.log(
-      "🍌 ✅ NANO BANANA: Image generated (placeholder + Gemini text)"
+      '🍌 ✅ NANO BANANA: Image generated (placeholder + Gemini text)',
     );
     return result;
   }
@@ -197,19 +197,19 @@ export class NanoBananaProvider {
    */
   async editImage(
     params: GeminiEditParams,
-    config?: any
+    config?: any,
   ): Promise<GeminiEditResult> {
-    console.log("🍌 🚀 NANO BANANA: Editing image with real Gemini API");
+    console.log('🍌 🚀 NANO BANANA: Editing image with real Gemini API');
 
     const enhancedEditPrompt = this.enhanceEditPrompt(params);
-    console.log("🍌 ✨ Enhanced Edit Prompt:", enhancedEditPrompt);
+    console.log('🍌 ✨ Enhanced Edit Prompt:', enhancedEditPrompt);
 
     let editedImageUrl: string | null = null;
 
     try {
-      const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+      const apiKey = process.env.GOOGLE_AI_API_KEY || '';
       if (!apiKey) {
-        throw new Error("GOOGLE_AI_API_KEY is not set");
+        throw new Error('GOOGLE_AI_API_KEY is not set');
       }
 
       const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
@@ -217,12 +217,12 @@ export class NanoBananaProvider {
       const requestBody = {
         contents: [
           {
-            role: "user",
+            role: 'user',
             parts: [
               { text: enhancedEditPrompt },
               {
                 inlineData: {
-                  mimeType: "image/png",
+                  mimeType: 'image/png',
                   data: await this.fetchImageAsBase64(params.sourceImageUrl),
                 },
               },
@@ -237,15 +237,15 @@ export class NanoBananaProvider {
       };
 
       const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Gemini edit API error: ${response.status} - ${errorText}`
+          `Gemini edit API error: ${response.status} - ${errorText}`,
         );
       }
 
@@ -256,7 +256,7 @@ export class NanoBananaProvider {
         const parts = c?.content?.parts || [];
         for (const part of parts) {
           const inline = part?.inlineData;
-          if (inline?.data && inline?.mimeType?.startsWith("image/")) {
+          if (inline?.data && inline?.mimeType?.startsWith('image/')) {
             editedImageUrl = `data:${inline.mimeType};base64,${inline.data}`;
             break;
           }
@@ -265,10 +265,10 @@ export class NanoBananaProvider {
       }
 
       if (!editedImageUrl) {
-        throw new Error("No image returned from Gemini API");
+        throw new Error('No image returned from Gemini API');
       }
     } catch (error) {
-      console.error("❌ Gemini image edit error:", error);
+      console.error('❌ Gemini image edit error:', error);
 
       return {
         id: `nano-banana-edit-${Date.now()}`,
@@ -276,7 +276,7 @@ export class NanoBananaProvider {
           `Error: ${enhancedEditPrompt}`,
           1024,
           1024,
-          "realistic"
+          'realistic',
         ),
         editType: params.editType,
         editPrompt: params.editPrompt,
@@ -289,28 +289,28 @@ export class NanoBananaProvider {
           preserveShadows: params.preserveShadows,
         },
         nanoBananaEditInfo: {
-          model: "gemini-2.5-flash-image",
+          model: 'gemini-2.5-flash-image',
           editType: {
             id: params.editType,
             label: params.editType,
-            description: "Nano Banana edit type",
+            description: 'Nano Banana edit type',
           },
           precisionLevel: {
             id: params.precisionLevel,
             label: params.precisionLevel,
-            description: "Nano Banana precision level",
+            description: 'Nano Banana precision level',
           },
           blendMode: {
             id: params.blendMode,
             label: params.blendMode,
-            description: "Nano Banana blend mode",
+            description: 'Nano Banana blend mode',
           },
           capabilities: [
-            "Контекстно-осознанное редактирование",
-            "Хирургическая точность",
-            "Интеллектуальное освещение",
-            "Сохранение стиля",
-            "Естественное смешивание",
+            'Контекстно-осознанное редактирование',
+            'Хирургическая точность',
+            'Интеллектуальное освещение',
+            'Сохранение стиля',
+            'Естественное смешивание',
           ],
         },
       };
@@ -330,28 +330,28 @@ export class NanoBananaProvider {
         preserveShadows: params.preserveShadows,
       },
       nanoBananaEditInfo: {
-        model: "gemini-2.5-flash-image",
+        model: 'gemini-2.5-flash-image',
         editType: {
           id: params.editType,
           label: params.editType,
-          description: "Nano Banana edit type",
+          description: 'Nano Banana edit type',
         },
         precisionLevel: {
           id: params.precisionLevel,
           label: params.precisionLevel,
-          description: "Nano Banana precision level",
+          description: 'Nano Banana precision level',
         },
         blendMode: {
           id: params.blendMode,
           label: params.blendMode,
-          description: "Nano Banana blend mode",
+          description: 'Nano Banana blend mode',
         },
         capabilities: [
-          "Контекстно-осознанное редактирование",
-          "Хирургическая точность",
-          "Интеллектуальное освещение",
-          "Сохранение стиля",
-          "Естественное смешивание",
+          'Контекстно-осознанное редактирование',
+          'Хирургическая точность',
+          'Интеллектуальное освещение',
+          'Сохранение стиля',
+          'Естественное смешивание',
         ],
       },
     };
@@ -364,21 +364,21 @@ export class NanoBananaProvider {
     let enhanced = params.prompt;
 
     if (params.nanoBananaFeatures.enableContextAwareness) {
-      enhanced += ", context-aware editing for natural object relationships";
+      enhanced += ', context-aware editing for natural object relationships';
     }
 
     if (params.nanoBananaFeatures.enableSurgicalPrecision) {
-      enhanced += ", surgical precision in placement and integration";
+      enhanced += ', surgical precision in placement and integration';
     }
 
     if (params.nanoBananaFeatures.creativeMode) {
       enhanced +=
-        ", creative and artistic interpretation while maintaining realism";
+        ', creative and artistic interpretation while maintaining realism';
     }
 
     enhanced += `, ${params.style} style, ${params.quality} quality`;
     enhanced +=
-      ", intelligent lighting and reflections, perfect occlusion handling";
+      ', intelligent lighting and reflections, perfect occlusion handling';
 
     return enhanced;
   }
@@ -390,23 +390,23 @@ export class NanoBananaProvider {
     let enhanced = params.editPrompt;
 
     if (params.nanoBananaEditFeatures.enableContextAwareness) {
-      enhanced += ", maintain relationships between objects and environment";
+      enhanced += ', maintain relationships between objects and environment';
     }
 
     if (params.nanoBananaEditFeatures.enableSurgicalPrecision) {
-      enhanced += ", surgical precision for accurate editing";
+      enhanced += ', surgical precision for accurate editing';
     }
 
     if (params.nanoBananaEditFeatures.preserveOriginalStyle) {
-      enhanced += ", preserve the original style and aesthetic";
+      enhanced += ', preserve the original style and aesthetic';
     }
 
     if (params.nanoBananaEditFeatures.enhanceLighting) {
-      enhanced += ", enhance lighting naturally";
+      enhanced += ', enhance lighting naturally';
     }
 
     if (params.nanoBananaEditFeatures.preserveShadows) {
-      enhanced += ", preserve realistic shadows and reflections";
+      enhanced += ', preserve realistic shadows and reflections';
     }
 
     enhanced += `, ${params.editType} editing with ${params.precisionLevel} precision`;
@@ -423,12 +423,12 @@ export class NanoBananaProvider {
     height: number;
   } {
     const ratios: Record<string, { width: number; height: number }> = {
-      "1:1": { width: 1024, height: 1024 },
-      "16:9": { width: 1024, height: 576 },
-      "9:16": { width: 576, height: 1024 },
-      "4:3": { width: 1024, height: 768 },
-      "3:4": { width: 768, height: 1024 },
-      "21:9": { width: 1024, height: 439 },
+      '1:1': { width: 1024, height: 1024 },
+      '16:9': { width: 1024, height: 576 },
+      '9:16': { width: 576, height: 1024 },
+      '4:3': { width: 1024, height: 768 },
+      '3:4': { width: 768, height: 1024 },
+      '21:9': { width: 1024, height: 439 },
     };
 
     return ratios[aspectRatio] || { width: 1024, height: 1024 };
@@ -441,21 +441,21 @@ export class NanoBananaProvider {
     prompt: string,
     width: number,
     height: number,
-    style: string
+    style: string,
   ): string {
     // Цветовые схемы для разных стилей
     const styleColors: Record<
       string,
       { bg: string; primary: string; text: string }
     > = {
-      realistic: { bg: "#f5f5f5", primary: "#4a90e2", text: "#333" },
-      photorealistic: { bg: "#fafafa", primary: "#3b82f6", text: "#1f2937" },
-      cinematic: { bg: "#1a1a2e", primary: "#ff6b6b", text: "#eee" },
-      anime: { bg: "#fff0f5", primary: "#ff69b4", text: "#444" },
-      cartoon: { bg: "#ffebcd", primary: "#ff8c00", text: "#333" },
-      artistic: { bg: "#f0e6ff", primary: "#9c27b0", text: "#4a148c" },
-      fantasy: { bg: "#e6f3ff", primary: "#6a5acd", text: "#2c1a4d" },
-      "sci-fi": { bg: "#001a33", primary: "#00ffff", text: "#b3ecff" },
+      realistic: { bg: '#f5f5f5', primary: '#4a90e2', text: '#333' },
+      photorealistic: { bg: '#fafafa', primary: '#3b82f6', text: '#1f2937' },
+      cinematic: { bg: '#1a1a2e', primary: '#ff6b6b', text: '#eee' },
+      anime: { bg: '#fff0f5', primary: '#ff69b4', text: '#444' },
+      cartoon: { bg: '#ffebcd', primary: '#ff8c00', text: '#333' },
+      artistic: { bg: '#f0e6ff', primary: '#9c27b0', text: '#4a148c' },
+      fantasy: { bg: '#e6f3ff', primary: '#6a5acd', text: '#2c1a4d' },
+      'sci-fi': { bg: '#001a33', primary: '#00ffff', text: '#b3ecff' },
     };
 
     const colors = styleColors[style] || styleColors.realistic;
@@ -507,7 +507,7 @@ export class NanoBananaProvider {
       </svg>
     `;
 
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
   }
 
   private async fetchImageAsBase64(imageUrl: string): Promise<string> {
@@ -517,7 +517,7 @@ export class NanoBananaProvider {
     }
 
     const buffer = await response.arrayBuffer();
-    return Buffer.from(buffer).toString("base64");
+    return Buffer.from(buffer).toString('base64');
   }
 }
 

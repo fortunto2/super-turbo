@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,9 +8,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
-import { AlertTriangle, Trash2 } from "lucide-react";
+} from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -19,7 +19,7 @@ interface Project {
   createdAt: string;
   userEmail: string;
   userBalance: number;
-  userType: "guest" | "regular";
+  userType: 'guest' | 'regular';
 }
 
 interface DeleteProjectDialogProps {
@@ -48,20 +48,20 @@ export function DeleteProjectDialog({
       const response = await fetch(
         `/api/admin/projects?projectId=${project.projectId}`,
         {
-          method: "DELETE",
-        }
+          method: 'DELETE',
+        },
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to delete project");
+        throw new Error(data.error || 'Failed to delete project');
       }
 
       onSuccess();
     } catch (err: any) {
       setError(err.message);
-      console.error("Error deleting project:", err);
+      console.error('Error deleting project:', err);
     } finally {
       setLoading(false);
     }
@@ -70,10 +70,7 @@ export function DeleteProjectDialog({
   if (!project) return null;
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -104,12 +101,12 @@ export function DeleteProjectDialog({
               <div>
                 <span className="text-sm font-medium">Created:</span>
                 <p className="text-sm">
-                  {new Date(project.createdAt).toLocaleDateString("ru-RU", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
+                  {new Date(project.createdAt).toLocaleDateString('ru-RU', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
                   })}
                 </p>
               </div>
@@ -137,7 +134,7 @@ export function DeleteProjectDialog({
             disabled={loading}
           >
             {loading ? (
-              "Deleting..."
+              'Deleting...'
             ) : (
               <>
                 <Trash2 className="h-4 w-4 mr-2" />

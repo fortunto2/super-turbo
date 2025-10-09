@@ -1,30 +1,30 @@
-import type { DataStreamWriter } from "ai";
-import type { NextResponse } from "next/server";
+import type { DataStreamWriter } from 'ai';
+import type { NextResponse } from 'next/server';
 import {
   validateOperationBalance,
   deductOperationBalance,
-} from "./tools-balance";
+} from './tools-balance';
 import {
   handleBalanceError,
   createBalanceError,
   createBalanceErrorResponse,
-} from "./balance-error-handler";
+} from './balance-error-handler';
 
 /**
  * Middleware для проверки баланса в артефактах с dataStream
  */
 export async function checkBalanceForArtifact(
   userId: string,
-  operation: "image-generation" | "video-generation" | "script-generation",
+  operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
   multipliers: string[],
-  dataStream: DataStreamWriter
+  dataStream: DataStreamWriter,
 ): Promise<{ valid: boolean; errorContent?: string }> {
   const balanceValidation = await validateOperationBalance(
     userId,
     operation,
     operationType,
-    multipliers
+    multipliers,
   );
 
   if (!balanceValidation.valid) {
@@ -32,7 +32,7 @@ export async function checkBalanceForArtifact(
     const errorContent = handleBalanceError(
       balanceError,
       dataStream,
-      operationType
+      operationType,
     );
 
     return { valid: false, errorContent };
@@ -46,21 +46,21 @@ export async function checkBalanceForArtifact(
  */
 export async function checkBalanceForAPI(
   userId: string,
-  operation: "image-generation" | "video-generation" | "script-generation",
+  operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
-  multipliers: string[]
+  multipliers: string[],
 ): Promise<{ valid: boolean; errorResponse?: NextResponse }> {
   const balanceValidation = await validateOperationBalance(
     userId,
     operation,
     operationType,
-    multipliers
+    multipliers,
   );
 
   if (!balanceValidation.valid) {
     const errorResponse = createBalanceErrorResponse(
       balanceValidation,
-      operationType
+      operationType,
     );
 
     return {
@@ -79,10 +79,10 @@ export async function checkBalanceForAPI(
  */
 export async function deductBalanceAfterSuccess(
   userId: string,
-  operation: "image-generation" | "video-generation" | "script-generation",
+  operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
   multipliers: string[],
-  operationDetails: Record<string, any>
+  operationDetails: Record<string, any>,
 ): Promise<void> {
   try {
     await deductOperationBalance(
@@ -90,15 +90,15 @@ export async function deductBalanceAfterSuccess(
       operation,
       operationType,
       multipliers,
-      operationDetails
+      operationDetails,
     );
     console.log(
-      `💳 Balance deducted for user ${userId} after ${operationType}`
+      `💳 Balance deducted for user ${userId} after ${operationType}`,
     );
   } catch (balanceError) {
     console.error(
       `⚠️ Failed to deduct balance after ${operationType}:`,
-      balanceError
+      balanceError,
     );
     // Продолжаем выполнение - операция уже завершена
   }
@@ -109,12 +109,12 @@ export async function deductBalanceAfterSuccess(
  */
 export async function withBalanceCheck<T>(
   userId: string,
-  operation: "image-generation" | "video-generation" | "script-generation",
+  operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
   multipliers: string[],
   dataStream: DataStreamWriter,
   callback: () => Promise<T>,
-  operationDetails?: Record<string, any>
+  operationDetails?: Record<string, any>,
 ): Promise<T | string> {
   // Проверка баланса
   const { valid, errorContent } = await checkBalanceForArtifact(
@@ -122,11 +122,11 @@ export async function withBalanceCheck<T>(
     operation,
     operationType,
     multipliers,
-    dataStream
+    dataStream,
   );
 
   if (!valid) {
-    return errorContent || "Insufficient balance";
+    return errorContent || 'Insufficient balance';
   }
 
   // Выполнение операции
@@ -139,7 +139,7 @@ export async function withBalanceCheck<T>(
       operation,
       operationType,
       multipliers,
-      operationDetails
+      operationDetails,
     );
   }
 

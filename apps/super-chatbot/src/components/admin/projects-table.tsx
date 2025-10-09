@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button, Input, Badge } from "@turbo-super/ui";
+import { useState, useEffect } from 'react';
+import { Button, Input, Badge } from '@turbo-super/ui';
 // Using HTML table elements since Table components are not available in UI library
 import {
   Trash2,
@@ -12,14 +12,14 @@ import {
   Calendar,
   AlertTriangle,
   ExternalLink,
-} from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { DeleteProjectDialog } from "./delete-project-dialog";
+} from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { DeleteProjectDialog } from './delete-project-dialog';
 import {
   getStatusIcon,
   getStatusColor,
   getStatusText,
-} from "@/lib/utils/project-status";
+} from '@/lib/utils/project-status';
 
 interface Project {
   id: string;
@@ -28,9 +28,9 @@ interface Project {
   createdAt: string;
   userEmail: string;
   userBalance: number;
-  userType: "guest" | "regular";
-  status?: "pending" | "processing" | "completed" | "failed";
-  errorStage?: "script" | "entities" | "storyboard";
+  userType: 'guest' | 'regular';
+  status?: 'pending' | 'processing' | 'completed' | 'failed';
+  errorStage?: 'script' | 'entities' | 'storyboard';
   errorMessage?: string;
   completedStages?: string[];
   failedStages?: string[];
@@ -74,7 +74,7 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
 
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        limit: "20",
+        limit: '20',
         ...(searchQuery && { search: searchQuery }),
       });
 
@@ -82,14 +82,14 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
       const data: ProjectsResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error("Failed to fetch projects");
+        throw new Error('Failed to fetch projects');
       }
 
       setProjects(data.projects);
       setPagination(data.pagination);
     } catch (err: any) {
       setError(err.message);
-      console.error("Error fetching projects:", err);
+      console.error('Error fetching projects:', err);
     } finally {
       setLoading(false);
     }
@@ -103,17 +103,17 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (searchTerm) {
-      params.set("search", searchTerm);
+      params.set('search', searchTerm);
     } else {
-      params.delete("search");
+      params.delete('search');
     }
-    params.delete("page"); // Reset to first page
+    params.delete('page'); // Reset to first page
     router.push(`/admin/projects?${params.toString()}`);
   };
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set("page", newPage.toString());
+    params.set('page', newPage.toString());
     router.push(`/admin/projects?${params.toString()}`);
   };
 
@@ -129,12 +129,12 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ru-RU", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -160,10 +160,7 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
   return (
     <div className="space-y-4">
       {/* Search */}
-      <form
-        onSubmit={handleSearch}
-        className="flex gap-2"
-      >
+      <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -216,10 +213,7 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
               </tr>
             ) : (
               projects.map((project) => (
-                <tr
-                  key={project.id}
-                  className="border-b"
-                >
+                <tr key={project.id} className="border-b">
                   <td className="p-4 font-mono text-sm">{project.projectId}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
@@ -230,7 +224,7 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
                   <td className="p-4">
                     <Badge
                       variant={
-                        project.userType === "guest" ? "secondary" : "default"
+                        project.userType === 'guest' ? 'secondary' : 'default'
                       }
                     >
                       {project.userType}
@@ -249,13 +243,13 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">
-                        {getStatusIcon(project.status || "pending")}
+                        {getStatusIcon(project.status || 'pending')}
                       </span>
                       <div className="flex flex-col">
                         <span
-                          className={`text-sm font-medium ${getStatusColor(project.status || "pending")}`}
+                          className={`text-sm font-medium ${getStatusColor(project.status || 'pending')}`}
                         >
-                          {getStatusText(project.status || "pending")}
+                          {getStatusText(project.status || 'pending')}
                         </span>
                         {project.errorStage && (
                           <span className="text-xs text-red-500">
@@ -281,7 +275,7 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
                         onClick={() =>
                           window.open(
                             `/project/video/${project.projectId}/generate`,
-                            "_blank"
+                            '_blank',
                           )
                         }
                         title="Open Project"
@@ -309,8 +303,8 @@ export function ProjectsTable({ page, search }: ProjectsTableProps) {
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
             {pagination.total} projects
           </div>
           <div className="flex items-center gap-2">

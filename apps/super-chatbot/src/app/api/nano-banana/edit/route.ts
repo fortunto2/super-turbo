@@ -1,33 +1,33 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
-import { nanoBananaImageEditing } from "@/lib/ai/tools/nano-banana-image-editing";
-import { createDocument } from "@/lib/ai/tools/create-document";
-import { z } from "zod";
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
+import { nanoBananaImageEditing } from '@/lib/ai/tools/nano-banana-image-editing';
+import { createDocument } from '@/lib/ai/tools/create-document';
+import { z } from 'zod';
 
 // Схема валидации запроса редактирования
 const editRequestSchema = z.object({
   editType: z.enum([
-    "background-replacement",
-    "object-addition",
-    "object-removal",
-    "style-transfer",
-    "color-correction",
-    "resolution-upscale",
-    "face-enhancement",
-    "text-addition",
-    "composition-improvement",
-    "lighting-adjustment",
+    'background-replacement',
+    'object-addition',
+    'object-removal',
+    'style-transfer',
+    'color-correction',
+    'resolution-upscale',
+    'face-enhancement',
+    'text-addition',
+    'composition-improvement',
+    'lighting-adjustment',
   ]),
-  editPrompt: z.string().min(1, "Описание изменений обязательно"),
-  sourceImageUrl: z.string().url("URL исходного изображения обязателен"),
+  editPrompt: z.string().min(1, 'Описание изменений обязательно'),
+  sourceImageUrl: z.string().url('URL исходного изображения обязателен'),
   precisionLevel: z
-    .enum(["automatic", "precise", "surgical"])
+    .enum(['automatic', 'precise', 'surgical'])
     .optional()
-    .default("automatic"),
+    .default('automatic'),
   blendMode: z
-    .enum(["natural", "seamless", "artistic", "realistic"])
+    .enum(['natural', 'seamless', 'artistic', 'realistic'])
     .optional()
-    .default("natural"),
+    .default('natural'),
   preserveOriginalStyle: z.boolean().optional().default(true),
   enhanceLighting: z.boolean().optional().default(true),
   preserveShadows: z.boolean().optional().default(true),
@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
-        { error: "Необходима аутентификация" },
-        { status: 401 }
+        { error: 'Необходима аутентификация' },
+        { status: 401 },
       );
     }
 
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
     // Проверка, что URL исходного изображения предоставлен
     if (!validated.sourceImageUrl) {
       return NextResponse.json(
-        { error: "URL исходного изображения обязателен" },
-        { status: 400 }
+        { error: 'URL исходного изображения обязателен' },
+        { status: 400 },
       );
     }
 
@@ -68,18 +68,18 @@ export async function POST(request: NextRequest) {
       createDocument,
       session,
       defaultSourceImageUrl: validated.sourceImageUrl,
-      chatId: "api-request",
+      chatId: 'api-request',
       userMessage: validated.editPrompt,
       currentAttachments: [{ url: validated.sourceImageUrl }],
     };
 
     // Выполняем сам редактор
     const result = await nanoBananaImageEditing(toolParams).execute(validated, {
-      toolCallId: "nano-banana-edit",
+      toolCallId: 'nano-banana-edit',
       messages: [],
     });
 
-    console.log("🍌 Edit result:", result);
+    console.log('🍌 Edit result:', result);
 
     if (result.error) {
       // Если есть ошибка в результате, возвращаем её
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
           balanceError: result.balanceError,
           requiredCredits: result.requiredCredits,
         },
-        { status: result.balanceError ? 402 : 400 }
+        { status: result.balanceError ? 402 : 400 },
       );
     }
 
@@ -97,28 +97,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result,
-      message: "Редактирование изображения запущено",
+      message: 'Редактирование изображения запущено',
     });
   } catch (err) {
-    console.error("🍌 Error in Nano Banana edit API:", err);
+    console.error('🍌 Error in Nano Banana edit API:', err);
 
     if (err instanceof z.ZodError) {
       // Ошибка валидации
       return NextResponse.json(
         {
-          error: "Ошибка валидации данных",
+          error: 'Ошибка валидации данных',
           details: err.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       {
-        error: "Внутренняя ошибка сервера",
+        error: 'Внутренняя ошибка сервера',
         details: err instanceof Error ? err.message : String(err),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -136,11 +136,11 @@ export async function GET(request: NextRequest) {
     // Вызываем инструмент “без промта”, чтобы получить доступные типы
     const config = await nanoBananaImageEditing(toolParams).execute(
       {
-        editType: "background-replacement",
-        editPrompt: "",
-        sourceImageUrl: "", // dummy
-        precisionLevel: "automatic",
-        blendMode: "natural",
+        editType: 'background-replacement',
+        editPrompt: '',
+        sourceImageUrl: '', // dummy
+        precisionLevel: 'automatic',
+        blendMode: 'natural',
         preserveOriginalStyle: true,
         enhanceLighting: true,
         preserveShadows: true,
@@ -148,9 +148,9 @@ export async function GET(request: NextRequest) {
         batchSize: 1,
       },
       {
-        toolCallId: "nano-banana-edit-info",
+        toolCallId: 'nano-banana-edit-info',
         messages: [],
-      }
+      },
     );
 
     const editTypes = config.nanoBananaEditTypes?.map((t: any) => t.id) ?? [];
@@ -161,16 +161,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: { editTypes, precisionLevels, blendModes },
-      message: "Информация о возможностях редактирования получена",
+      message: 'Информация о возможностях редактирования получена',
     });
   } catch (err) {
-    console.error("🍌 Error in Nano Banana edit info API:", err);
+    console.error('🍌 Error in Nano Banana edit info API:', err);
     return NextResponse.json(
       {
-        error: "Ошибка получения информации",
+        error: 'Ошибка получения информации',
         details: err instanceof Error ? err.message : String(err),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

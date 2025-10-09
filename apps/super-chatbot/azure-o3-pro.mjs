@@ -1,18 +1,18 @@
-import { AzureOpenAI } from "openai";
-import readline from "node:readline/promises";
-import { stdin as input, stdout as output, argv, exit } from "node:process";
-import dotenv from "dotenv";
+import { AzureOpenAI } from 'openai';
+import readline from 'node:readline/promises';
+import { stdin as input, stdout as output, argv, exit } from 'node:process';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 // Можно также использовать dotenv для переменных окружения
-const endpoint   = "https://info-m1wjhthz-eastus2.openai.azure.com/openai/";
-const apiKey     = process.env.AZURE_OPENAI_API_KEY;
-const deployment = "o3-pro";
-const apiVersion = "2025-04-01-preview";
+const endpoint = 'https://info-m1wjhthz-eastus2.openai.azure.com/openai/';
+const apiKey = process.env.AZURE_OPENAI_API_KEY;
+const deployment = 'o3-pro';
+const apiVersion = '2025-04-01-preview';
 
 if (!apiKey) {
-  console.error("AZURE_OPENAI_API_KEY environment variable is not set.");
+  console.error('AZURE_OPENAI_API_KEY environment variable is not set.');
   process.exit(1);
 }
 
@@ -51,31 +51,33 @@ Context: The project is a multi-modal AI platform for text, image, and video gen
 All architectural and implementation decisions must be justified and documented for future AI agents and human collaborators.`;
 
 function printHelp() {
-  console.log(`Super Chatbot o3-pro CLI\n------------------------\nUsage:\n  pnpm exec node azure-o3-pro-demo.mjs           # interactive mode\n  pnpm exec node azure-o3-pro-demo.mjs -i "your question"\n  pnpm exec node azure-o3-pro-demo.mjs --input "your question"\n  pnpm exec node azure-o3-pro-demo.mjs -h\n\nOptions:\n  -i, --input   Provide a single question via command line\n  -h, --help    Show this help message\n\nIn interactive mode:\n  - Type your question and press Enter\n  - Type 'exit' or press Enter on empty line to quit\n`);
+  console.log(
+    `Super Chatbot o3-pro CLI\n------------------------\nUsage:\n  pnpm exec node azure-o3-pro-demo.mjs           # interactive mode\n  pnpm exec node azure-o3-pro-demo.mjs -i "your question"\n  pnpm exec node azure-o3-pro-demo.mjs --input "your question"\n  pnpm exec node azure-o3-pro-demo.mjs -h\n\nOptions:\n  -i, --input   Provide a single question via command line\n  -h, --help    Show this help message\n\nIn interactive mode:\n  - Type your question and press Enter\n  - Type 'exit' or press Enter on empty line to quit\n`,
+  );
 }
 
 async function askO3Pro(userInput) {
   const response = await client.responses.create({
     model: deployment,
     input: [
-      { role: "developer", content: systemPrompt },
-      { role: "user", content: userInput }
+      { role: 'developer', content: systemPrompt },
+      { role: 'user', content: userInput },
     ],
     text: {
       format: {
-        name: "main",
-        type: "json_schema",
+        name: 'main',
+        type: 'json_schema',
         schema: {
-          type: "object",
+          type: 'object',
           properties: {
-            code: { type: "string" },
-            explanation: { type: "string" }
+            code: { type: 'string' },
+            explanation: { type: 'string' },
           },
-          required: ["code", "explanation"],
-          additionalProperties: false
-        }
-      }
-    }
+          required: ['code', 'explanation'],
+          additionalProperties: false,
+        },
+      },
+    },
   });
   const outputText = response.output?.[0]?.text;
   if (outputText) {
@@ -84,21 +86,21 @@ async function askO3Pro(userInput) {
       console.log(`\n--- CODE ---\n${parsed.code}`);
       console.log(`\n--- EXPLANATION ---\n${parsed.explanation}\n`);
     } catch (e) {
-      console.log("\n[Raw output]:\n", outputText);
+      console.log('\n[Raw output]:\n', outputText);
     }
   } else {
-    console.log("[No output received]");
+    console.log('[No output received]');
   }
 }
 
 async function main() {
   // Parse CLI args
   const args = argv.slice(2);
-  if (args.includes("-h") || args.includes("--help")) {
+  if (args.includes('-h') || args.includes('--help')) {
     printHelp();
     exit(0);
   }
-  const inputIdx = args.findIndex(arg => arg === "-i" || arg === "--input");
+  const inputIdx = args.findIndex((arg) => arg === '-i' || arg === '--input');
   if (inputIdx !== -1 && args[inputIdx + 1]) {
     const userInput = args[inputIdx + 1];
     await askO3Pro(userInput);
@@ -107,11 +109,11 @@ async function main() {
 
   // Interactive mode
   const rl = readline.createInterface({ input, output });
-  console.log("Super Chatbot o3-pro CLI (type /help for instructions)");
+  console.log('Super Chatbot o3-pro CLI (type /help for instructions)');
   while (true) {
-    const userInput = (await rl.question("> ")).trim();
-    if (!userInput || userInput.toLowerCase() === "exit") break;
-    if (userInput === "/help") {
+    const userInput = (await rl.question('> ')).trim();
+    if (!userInput || userInput.toLowerCase() === 'exit') break;
+    if (userInput === '/help') {
       printHelp();
       continue;
     }

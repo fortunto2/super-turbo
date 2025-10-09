@@ -3,7 +3,7 @@
  * Автоматически извлекает ключевые слова из промптов и строит поисковый индекс
  */
 
-import type { ChatImage } from "../chat/image-context";
+import type { ChatImage } from '../chat/image-context';
 
 export interface SemanticIndexEntry {
   imageId: string;
@@ -22,214 +22,214 @@ export class SemanticIndex {
   private keywordIndex: Map<string, Set<string>> = new Map();
   private stopWords = new Set([
     // Русские стоп-слова
-    "и",
-    "в",
-    "во",
-    "не",
-    "что",
-    "он",
-    "на",
-    "я",
-    "с",
-    "со",
-    "как",
-    "а",
-    "то",
-    "все",
-    "она",
-    "так",
-    "его",
-    "но",
-    "да",
-    "ты",
-    "к",
-    "у",
-    "же",
-    "вы",
-    "за",
-    "бы",
-    "по",
-    "только",
-    "ее",
-    "мне",
-    "было",
-    "вот",
-    "от",
-    "меня",
-    "еще",
-    "нет",
-    "о",
-    "из",
-    "ему",
-    "теперь",
-    "когда",
-    "даже",
-    "ну",
-    "вдруг",
-    "ли",
-    "если",
-    "уже",
-    "или",
-    "ни",
-    "быть",
-    "был",
-    "него",
-    "до",
-    "вас",
-    "нибудь",
-    "опять",
-    "уж",
-    "вам",
-    "ведь",
-    "там",
-    "потом",
-    "себя",
-    "ничего",
-    "ей",
-    "может",
-    "они",
-    "тут",
-    "где",
-    "есть",
-    "надо",
-    "ней",
-    "для",
-    "мы",
-    "тебя",
-    "их",
-    "чем",
-    "была",
-    "сам",
-    "чтоб",
-    "без",
-    "будто",
-    "чего",
-    "раз",
-    "тоже",
-    "себе",
-    "под",
-    "будет",
-    "ж",
-    "тогда",
-    "кто",
-    "этот",
-    "того",
-    "потому",
-    "этого",
-    "какой",
-    "совсем",
-    "ним",
-    "здесь",
-    "этом",
-    "один",
-    "почти",
-    "мой",
-    "тем",
-    "чтобы",
-    "нее",
-    "сейчас",
-    "были",
-    "куда",
-    "зачем",
-    "всех",
-    "никогда",
-    "можно",
-    "при",
-    "наконец",
-    "два",
-    "об",
-    "другой",
-    "хоть",
-    "после",
-    "над",
-    "больше",
-    "тот",
-    "через",
-    "эти",
-    "нас",
-    "про",
-    "всего",
-    "них",
-    "какая",
-    "много",
-    "разве",
-    "три",
-    "эту",
-    "моя",
-    "впрочем",
-    "хорошо",
-    "свою",
-    "этой",
-    "перед",
-    "иногда",
-    "лучше",
-    "чуть",
-    "том",
-    "нельзя",
-    "такой",
-    "им",
-    "более",
-    "всегда",
-    "конечно",
-    "всю",
-    "между",
+    'и',
+    'в',
+    'во',
+    'не',
+    'что',
+    'он',
+    'на',
+    'я',
+    'с',
+    'со',
+    'как',
+    'а',
+    'то',
+    'все',
+    'она',
+    'так',
+    'его',
+    'но',
+    'да',
+    'ты',
+    'к',
+    'у',
+    'же',
+    'вы',
+    'за',
+    'бы',
+    'по',
+    'только',
+    'ее',
+    'мне',
+    'было',
+    'вот',
+    'от',
+    'меня',
+    'еще',
+    'нет',
+    'о',
+    'из',
+    'ему',
+    'теперь',
+    'когда',
+    'даже',
+    'ну',
+    'вдруг',
+    'ли',
+    'если',
+    'уже',
+    'или',
+    'ни',
+    'быть',
+    'был',
+    'него',
+    'до',
+    'вас',
+    'нибудь',
+    'опять',
+    'уж',
+    'вам',
+    'ведь',
+    'там',
+    'потом',
+    'себя',
+    'ничего',
+    'ей',
+    'может',
+    'они',
+    'тут',
+    'где',
+    'есть',
+    'надо',
+    'ней',
+    'для',
+    'мы',
+    'тебя',
+    'их',
+    'чем',
+    'была',
+    'сам',
+    'чтоб',
+    'без',
+    'будто',
+    'чего',
+    'раз',
+    'тоже',
+    'себе',
+    'под',
+    'будет',
+    'ж',
+    'тогда',
+    'кто',
+    'этот',
+    'того',
+    'потому',
+    'этого',
+    'какой',
+    'совсем',
+    'ним',
+    'здесь',
+    'этом',
+    'один',
+    'почти',
+    'мой',
+    'тем',
+    'чтобы',
+    'нее',
+    'сейчас',
+    'были',
+    'куда',
+    'зачем',
+    'всех',
+    'никогда',
+    'можно',
+    'при',
+    'наконец',
+    'два',
+    'об',
+    'другой',
+    'хоть',
+    'после',
+    'над',
+    'больше',
+    'тот',
+    'через',
+    'эти',
+    'нас',
+    'про',
+    'всего',
+    'них',
+    'какая',
+    'много',
+    'разве',
+    'три',
+    'эту',
+    'моя',
+    'впрочем',
+    'хорошо',
+    'свою',
+    'этой',
+    'перед',
+    'иногда',
+    'лучше',
+    'чуть',
+    'том',
+    'нельзя',
+    'такой',
+    'им',
+    'более',
+    'всегда',
+    'конечно',
+    'всю',
+    'между',
     // Английские стоп-слова
-    "a",
-    "an",
-    "and",
-    "are",
-    "as",
-    "at",
-    "be",
-    "by",
-    "for",
-    "from",
-    "has",
-    "he",
-    "in",
-    "is",
-    "it",
-    "its",
-    "of",
-    "on",
-    "that",
-    "the",
-    "to",
-    "was",
-    "will",
-    "with",
-    "would",
-    "could",
-    "should",
-    "may",
-    "might",
-    "can",
-    "must",
-    "shall",
-    "this",
-    "these",
-    "those",
-    "i",
-    "you",
-    "we",
-    "they",
-    "she",
-    "him",
-    "her",
-    "us",
-    "them",
-    "my",
-    "your",
-    "his",
-    "her",
-    "its",
-    "our",
-    "their",
-    "me",
-    "him",
-    "her",
-    "us",
-    "them",
+    'a',
+    'an',
+    'and',
+    'are',
+    'as',
+    'at',
+    'be',
+    'by',
+    'for',
+    'from',
+    'has',
+    'he',
+    'in',
+    'is',
+    'it',
+    'its',
+    'of',
+    'on',
+    'that',
+    'the',
+    'to',
+    'was',
+    'will',
+    'with',
+    'would',
+    'could',
+    'should',
+    'may',
+    'might',
+    'can',
+    'must',
+    'shall',
+    'this',
+    'these',
+    'those',
+    'i',
+    'you',
+    'we',
+    'they',
+    'she',
+    'him',
+    'her',
+    'us',
+    'them',
+    'my',
+    'your',
+    'his',
+    'her',
+    'its',
+    'our',
+    'their',
+    'me',
+    'him',
+    'her',
+    'us',
+    'them',
   ]);
 
   /**
@@ -256,7 +256,7 @@ export class SemanticIndex {
       this.keywordIndex.get(keyword)?.add(imageId);
     });
 
-    console.log("🔍 SemanticIndex: Added image to index", {
+    console.log('🔍 SemanticIndex: Added image to index', {
       imageId,
       prompt: image.prompt,
       keywords: keywords,
@@ -268,7 +268,7 @@ export class SemanticIndex {
    */
   search(query: string, chatImages: ChatImage[]): SearchResult[] {
     const queryKeywords = this.extractKeywords(query);
-    console.log("🔍 SemanticIndex: Searching with keywords", {
+    console.log('🔍 SemanticIndex: Searching with keywords', {
       query,
       queryKeywords,
     });
@@ -300,7 +300,7 @@ export class SemanticIndex {
 
           const { score, matchedKeywords } = this.calculateRelevance(
             [queryKeyword], // Проверяем только текущее ключевое слово
-            entry.extractedKeywords
+            entry.extractedKeywords,
           );
 
           if (score > 0) {
@@ -328,7 +328,7 @@ export class SemanticIndex {
 
           const { score, matchedKeywords } = this.calculateRelevance(
             [queryKeyword],
-            entry.extractedKeywords
+            entry.extractedKeywords,
           );
 
           if (score > 0) {
@@ -357,12 +357,12 @@ export class SemanticIndex {
             image,
             relevanceScore: normalizedScore,
             matchedKeywords,
-            reasoning: `Найдено совпадение по ключевым словам: ${matchedKeywords.join(", ")}`,
+            reasoning: `Найдено совпадение по ключевым словам: ${matchedKeywords.join(', ')}`,
           });
         }
       });
 
-    console.log("🔍 SemanticIndex: Search results", {
+    console.log('🔍 SemanticIndex: Search results', {
       query,
       resultsCount: results.length,
       topResults: results.slice(0, 3).map((r) => ({
@@ -381,7 +381,7 @@ export class SemanticIndex {
   public extractKeywords(text: string): string[] {
     const words = text
       .toLowerCase()
-      .replace(/[^\w\s\u0400-\u04FF]/g, " ") // Оставляем только буквы и пробелы (включая кириллицу)
+      .replace(/[^\w\s\u0400-\u04FF]/g, ' ') // Оставляем только буквы и пробелы (включая кириллицу)
       .split(/\s+/)
       .filter((word) => word.length > 2 && !this.stopWords.has(word));
 
@@ -394,7 +394,7 @@ export class SemanticIndex {
    */
   private calculateRelevance(
     queryKeywords: string[],
-    imageKeywords: string[]
+    imageKeywords: string[],
   ): {
     score: number;
     matchedKeywords: string[];
@@ -430,8 +430,8 @@ export class SemanticIndex {
       const synonymMatches = imageKeywords.filter((imgKeyword) =>
         synonyms.some(
           (synonym) =>
-            imgKeyword.includes(synonym) || synonym.includes(imgKeyword)
-        )
+            imgKeyword.includes(synonym) || synonym.includes(imgKeyword),
+        ),
       );
 
       if (synonymMatches.length > 0) {
@@ -458,19 +458,19 @@ export class SemanticIndex {
     // Проверяем общие корни для русских слов
     const commonRoots = [
       // Луна/лунный
-      { root: "лун", variants: ["лун", "лунн", "лунн"] },
+      { root: 'лун', variants: ['лун', 'лунн', 'лунн'] },
       // Солнце/солнечный
-      { root: "солн", variants: ["солн", "солнеч"] },
+      { root: 'солн', variants: ['солн', 'солнеч'] },
       // Лес/лесной
-      { root: "лес", variants: ["лес", "лесн"] },
+      { root: 'лес', variants: ['лес', 'лесн'] },
       // Дерево/деревья
-      { root: "дерев", variants: ["дерев", "деревь"] },
+      { root: 'дерев', variants: ['дерев', 'деревь'] },
       // Кот/кота
-      { root: "кот", variants: ["кот", "кот"] },
+      { root: 'кот', variants: ['кот', 'кот'] },
       // Небо/небесный
-      { root: "неб", variants: ["неб", "небес"] },
+      { root: 'неб', variants: ['неб', 'небес'] },
       // Звезда/звезды
-      { root: "звезд", variants: ["звезд", "звезд"] },
+      { root: 'звезд', variants: ['звезд', 'звезд'] },
     ];
 
     const lowerWord1 = word1.toLowerCase();
@@ -478,10 +478,10 @@ export class SemanticIndex {
 
     for (const { root, variants } of commonRoots) {
       const hasVariant1 = variants.some((variant) =>
-        lowerWord1.includes(variant)
+        lowerWord1.includes(variant),
       );
       const hasVariant2 = variants.some((variant) =>
-        lowerWord2.includes(variant)
+        lowerWord2.includes(variant),
       );
 
       if (hasVariant1 && hasVariant2) {
@@ -491,20 +491,20 @@ export class SemanticIndex {
 
     // Проверяем английские общие корни
     const englishRoots = [
-      { root: "sun", variants: ["sun", "sunny", "solar"] },
-      { root: "moon", variants: ["moon", "lunar", "lun"] },
-      { root: "forest", variants: ["forest", "tree", "wood"] },
-      { root: "cat", variants: ["cat", "feline"] },
-      { root: "sky", variants: ["sky", "celestial"] },
-      { root: "star", variants: ["star", "stellar"] },
+      { root: 'sun', variants: ['sun', 'sunny', 'solar'] },
+      { root: 'moon', variants: ['moon', 'lunar', 'lun'] },
+      { root: 'forest', variants: ['forest', 'tree', 'wood'] },
+      { root: 'cat', variants: ['cat', 'feline'] },
+      { root: 'sky', variants: ['sky', 'celestial'] },
+      { root: 'star', variants: ['star', 'stellar'] },
     ];
 
     for (const { root, variants } of englishRoots) {
       const hasVariant1 = variants.some((variant) =>
-        lowerWord1.includes(variant)
+        lowerWord1.includes(variant),
       );
       const hasVariant2 = variants.some((variant) =>
-        lowerWord2.includes(variant)
+        lowerWord2.includes(variant),
       );
 
       if (hasVariant1 && hasVariant2) {
@@ -521,43 +521,43 @@ export class SemanticIndex {
   public findSynonyms(word: string): string[] {
     const synonymMap: Record<string, string[]> = {
       // Природа
-      солнце: ["sun", "солнечный", "sunny", "solar"],
-      луна: ["moon", "лунный", "lunar", "ночной", "night"],
-      звезды: ["stars", "звездный", "stellar"],
-      небо: ["sky", "небесный", "celestial"],
-      облака: ["clouds", "облачный", "cloudy"],
-      море: ["sea", "океан", "ocean", "вода", "water"],
-      лес: ["forest", "деревья", "trees", "природа", "nature"],
-      горы: ["mountains", "горный", "mountainous"],
+      солнце: ['sun', 'солнечный', 'sunny', 'solar'],
+      луна: ['moon', 'лунный', 'lunar', 'ночной', 'night'],
+      звезды: ['stars', 'звездный', 'stellar'],
+      небо: ['sky', 'небесный', 'celestial'],
+      облака: ['clouds', 'облачный', 'cloudy'],
+      море: ['sea', 'океан', 'ocean', 'вода', 'water'],
+      лес: ['forest', 'деревья', 'trees', 'природа', 'nature'],
+      горы: ['mountains', 'горный', 'mountainous'],
 
       // Животные
-      собака: ["dog", "пес", "пёс", "собачка"],
-      кошка: ["cat", "кот", "котик", "котенок"],
-      птица: ["bird", "птичий", "avian"],
-      рыба: ["fish", "рыбный", "piscine"],
+      собака: ['dog', 'пес', 'пёс', 'собачка'],
+      кошка: ['cat', 'кот', 'котик', 'котенок'],
+      птица: ['bird', 'птичий', 'avian'],
+      рыба: ['fish', 'рыбный', 'piscine'],
 
       // Люди
-      девочка: ["girl", "девушка", "woman", "женщина"],
-      мальчик: ["boy", "парень", "man", "мужчина"],
-      ребенок: ["child", "детский", "childish"],
+      девочка: ['girl', 'девушка', 'woman', 'женщина'],
+      мальчик: ['boy', 'парень', 'man', 'мужчина'],
+      ребенок: ['child', 'детский', 'childish'],
 
       // Транспорт
-      машина: ["car", "автомобиль", "авто", "vehicle"],
-      самолет: ["airplane", "plane", "авиация", "aviation"],
-      поезд: ["train", "железнодорожный", "railway"],
-      ракета: ["rocket", "ракетный", "launch", "космический", "spacecraft"],
+      машина: ['car', 'автомобиль', 'авто', 'vehicle'],
+      самолет: ['airplane', 'plane', 'авиация', 'aviation'],
+      поезд: ['train', 'железнодорожный', 'railway'],
+      ракета: ['rocket', 'ракетный', 'launch', 'космический', 'spacecraft'],
 
       // Здания
-      дом: ["house", "здание", "building"],
-      замок: ["castle", "замковый", "castellated"],
+      дом: ['house', 'здание', 'building'],
+      замок: ['castle', 'замковый', 'castellated'],
 
       // Цвета
-      красный: ["red", "краснота", "redness"],
-      синий: ["blue", "синева", "blueness"],
-      зеленый: ["green", "зелень", "greenness"],
-      желтый: ["yellow", "желтизна", "yellowness"],
-      черный: ["black", "чернота", "blackness"],
-      белый: ["white", "белизна", "whitenes"],
+      красный: ['red', 'краснота', 'redness'],
+      синий: ['blue', 'синева', 'blueness'],
+      зеленый: ['green', 'зелень', 'greenness'],
+      желтый: ['yellow', 'желтизна', 'yellowness'],
+      черный: ['black', 'чернота', 'blackness'],
+      белый: ['white', 'белизна', 'whitenes'],
     };
 
     return synonymMap[word] || [];
@@ -572,7 +572,7 @@ export class SemanticIndex {
     // Пока что очищаем весь индекс для простоты
     this.index.clear();
     this.keywordIndex.clear();
-    console.log("🔍 SemanticIndex: Cleared index for chat", chatId);
+    console.log('🔍 SemanticIndex: Cleared index for chat', chatId);
   }
 
   /**
@@ -581,7 +581,7 @@ export class SemanticIndex {
   clear(): void {
     this.index.clear();
     this.keywordIndex.clear();
-    console.log("🔍 SemanticIndex: Index completely cleared");
+    console.log('🔍 SemanticIndex: Index completely cleared');
   }
 
   /**
@@ -596,7 +596,7 @@ export class SemanticIndex {
     const totalKeywords = this.keywordIndex.size;
     const totalKeywordCount = Array.from(this.index.values()).reduce(
       (sum, entry) => sum + entry.extractedKeywords.length,
-      0
+      0,
     );
 
     return {

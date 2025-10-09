@@ -1,14 +1,11 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Sparkles, Video, Image } from "lucide-react";
+import Link from 'next/link';
+import { Sparkles, Video, Image } from 'lucide-react';
 
 export function GeminiChatButton() {
   return (
-    <Link
-      href="/gemini-chat"
-      className="block"
-    >
+    <Link href="/gemini-chat" className="block">
       <div className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors cursor-pointer">
         <Sparkles className="size-4 text-blue-500" />
         <div className="flex-1 min-w-0">

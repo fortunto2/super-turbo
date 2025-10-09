@@ -1,18 +1,25 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import { Button } from '@turbo-super/ui';
 import { Input } from '@turbo-super/ui';
 import { Label } from '@turbo-super/ui';
 import { Badge } from '@turbo-super/ui';
-import { CreditCard, Plus, Minus, Equal, Users } from "lucide-react";
+import { CreditCard, Plus, Minus, Equal, Users } from 'lucide-react';
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@turbo-super/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@turbo-super/ui';
 interface User {
   id: string;
   email: string;
   balance: number;
-  type: "guest" | "regular";
+  type: 'guest' | 'regular';
 }
 
 interface BulkBalanceDialogProps {
@@ -22,7 +29,7 @@ interface BulkBalanceDialogProps {
   onComplete: () => void;
 }
 
-type OperationType = "add" | "subtract" | "set";
+type OperationType = 'add' | 'subtract' | 'set';
 
 export function BulkBalanceDialog({
   selectedUserIds,
@@ -30,24 +37,24 @@ export function BulkBalanceDialog({
   onClose,
   onComplete,
 }: BulkBalanceDialogProps) {
-  const [operation, setOperation] = useState<OperationType>("add");
-  const [amount, setAmount] = useState("50");
+  const [operation, setOperation] = useState<OperationType>('add');
+  const [amount, setAmount] = useState('50');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const selectedUsers = users.filter((u) => selectedUserIds.includes(u.id));
   const totalCurrentBalance = selectedUsers.reduce(
     (sum, user) => sum + user.balance,
-    0
+    0,
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     const numAmount = Number(amount);
     if (Number.isNaN(numAmount) || numAmount < 0) {
-      setError("Please enter a valid amount (0 or greater)");
+      setError('Please enter a valid amount (0 or greater)');
       return;
     }
 
@@ -61,13 +68,13 @@ export function BulkBalanceDialog({
 
         let newBalance: number;
         switch (operation) {
-          case "add":
+          case 'add':
             newBalance = user.balance + numAmount;
             break;
-          case "subtract":
+          case 'subtract':
             newBalance = Math.max(0, user.balance - numAmount);
             break;
-          case "set":
+          case 'set':
             newBalance = numAmount;
             break;
           default:
@@ -75,9 +82,9 @@ export function BulkBalanceDialog({
         }
 
         const response = await fetch(`/api/admin/users/${userId}`, {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ balance: newBalance }),
         });
@@ -93,9 +100,9 @@ export function BulkBalanceDialog({
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to update balances. Please try again."
+          : 'Failed to update balances. Please try again.',
       );
-      console.error("Bulk update error:", err);
+      console.error('Bulk update error:', err);
     } finally {
       setLoading(false);
     }
@@ -104,28 +111,28 @@ export function BulkBalanceDialog({
   const getOperationPreview = () => {
     const numAmount = Number(amount) || 0;
     switch (operation) {
-      case "add":
+      case 'add':
         return `+${numAmount} credits to each user`;
-      case "subtract":
+      case 'subtract':
         return `-${numAmount} credits from each user (minimum 0)`;
-      case "set":
+      case 'set':
         return `Set each user to ${numAmount} credits`;
       default:
-        return "";
+        return '';
     }
   };
 
   const getNewTotalEstimate = () => {
     const numAmount = Number(amount) || 0;
     switch (operation) {
-      case "add":
+      case 'add':
         return totalCurrentBalance + numAmount * selectedUsers.length;
-      case "subtract":
+      case 'subtract':
         return Math.max(
           0,
-          totalCurrentBalance - numAmount * selectedUsers.length
+          totalCurrentBalance - numAmount * selectedUsers.length,
         );
-      case "set":
+      case 'set':
         return numAmount * selectedUsers.length;
       default:
         return totalCurrentBalance;
@@ -133,10 +140,7 @@ export function BulkBalanceDialog({
   };
 
   return (
-    <Dialog
-      open={true}
-      onOpenChange={onClose}
-    >
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -148,10 +152,7 @@ export function BulkBalanceDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Selected Users Preview */}
           <div className="space-y-2">
             <Label>Selected Users ({selectedUsers.length})</Label>
@@ -165,7 +166,7 @@ export function BulkBalanceDialog({
                     <span>{user.email}</span>
                     <Badge
                       variant={
-                        user.type === "regular" ? "default" : "secondary"
+                        user.type === 'regular' ? 'default' : 'secondary'
                       }
                       className="text-xs"
                     >
@@ -188,11 +189,11 @@ export function BulkBalanceDialog({
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => setOperation("add")}
+                onClick={() => setOperation('add')}
                 className={`flex items-center gap-2 p-3 rounded-lg border text-sm transition-colors ${
-                  operation === "add"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:bg-accent"
+                  operation === 'add'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:bg-accent'
                 }`}
               >
                 <Plus className="h-4 w-4" />
@@ -200,11 +201,11 @@ export function BulkBalanceDialog({
               </button>
               <button
                 type="button"
-                onClick={() => setOperation("subtract")}
+                onClick={() => setOperation('subtract')}
                 className={`flex items-center gap-2 p-3 rounded-lg border text-sm transition-colors ${
-                  operation === "subtract"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:bg-accent"
+                  operation === 'subtract'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:bg-accent'
                 }`}
               >
                 <Minus className="h-4 w-4" />
@@ -212,11 +213,11 @@ export function BulkBalanceDialog({
               </button>
               <button
                 type="button"
-                onClick={() => setOperation("set")}
+                onClick={() => setOperation('set')}
                 className={`flex items-center gap-2 p-3 rounded-lg border text-sm transition-colors ${
-                  operation === "set"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:bg-accent"
+                  operation === 'set'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:bg-accent'
                 }`}
               >
                 <Equal className="h-4 w-4" />
@@ -256,7 +257,7 @@ export function BulkBalanceDialog({
                 <strong>Current total:</strong> {totalCurrentBalance} credits
               </p>
               <p>
-                <strong>Estimated new total:</strong> {getNewTotalEstimate()}{" "}
+                <strong>Estimated new total:</strong> {getNewTotalEstimate()}{' '}
                 credits
               </p>
             </div>
@@ -277,11 +278,8 @@ export function BulkBalanceDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Updating..." : `Update ${selectedUsers.length} Users`}
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Updating...' : `Update ${selectedUsers.length} Users`}
             </Button>
           </DialogFooter>
         </form>

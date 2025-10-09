@@ -1,15 +1,15 @@
-import * as React from "react";
+import * as React from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(
-    undefined
+    undefined,
   );
 
   React.useEffect(() => {
     // Проверяем, что мы в браузере
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return;
     }
 
@@ -21,8 +21,8 @@ export function useIsMobile() {
     // Устанавливаем начальное значение
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
 
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, []);
 
   // Возвращаем false по умолчанию, если еще не определили

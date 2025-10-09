@@ -1,27 +1,27 @@
-"use client";
-import { useEffect, useRef, memo } from "react";
-import type { Suggestion } from "@/lib/db/schema";
-import { initialArtifactData, useArtifactLegacy } from "@/hooks/use-artifact";
-import { useArtifactContext } from "@/contexts/artifact-context";
-import { toast } from "../common/toast";
+'use client';
+import { useEffect, useRef, memo } from 'react';
+import type { Suggestion } from '@/lib/db/schema';
+import { initialArtifactData, useArtifactLegacy } from '@/hooks/use-artifact';
+import { useArtifactContext } from '@/contexts/artifact-context';
+import { toast } from '../common/toast';
 import {
   artifactDefinitions,
   type UIArtifact,
   type ArtifactKind,
-} from "../artifacts/artifact";
+} from '../artifacts/artifact';
 
 export type DataStreamDelta = {
   type:
-    | "text-delta"
-    | "sheet-delta"
-    | "image-delta"
-    | "title"
-    | "id"
-    | "suggestion"
-    | "clear"
-    | "finish"
-    | "kind"
-    | "error";
+    | 'text-delta'
+    | 'sheet-delta'
+    | 'image-delta'
+    | 'title'
+    | 'id'
+    | 'suggestion'
+    | 'clear'
+    | 'finish'
+    | 'kind'
+    | 'error';
   content: string | Suggestion;
 };
 
@@ -35,7 +35,7 @@ function PureDataStreamHandler({
   // Throttle logging to avoid spam
   const lastLogTime = useRef<number>(0);
   const logWithThrottle = (message: string, data?: any) => {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       const now = Date.now();
       if (now - lastLogTime.current > 500) {
         // Log at most every 500ms
@@ -60,7 +60,7 @@ function PureDataStreamHandler({
     setArtifact = context.setArtifact;
     setMetadata = context.setMetadata;
   } catch (error) {
-    console.log("🔍 DataStreamHandler: Context not available, using legacy");
+    console.log('🔍 DataStreamHandler: Context not available, using legacy');
     artifact = legacy.artifact;
     setArtifact = legacy.setArtifact;
     setMetadata = legacy.setMetadata;
@@ -101,7 +101,7 @@ function PureDataStreamHandler({
 
       // Find artifact definition once
       const artifactDefinition = artifactDefinitions.find(
-        (def) => def.kind === stableArtifactKind.current
+        (def) => def.kind === stableArtifactKind.current,
       );
 
       (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
@@ -115,110 +115,110 @@ function PureDataStreamHandler({
 
         setArtifact((draftArtifact: UIArtifact | null) => {
           if (!draftArtifact) {
-            return { ...initialArtifactData, status: "streaming" };
+            return { ...initialArtifactData, status: 'streaming' };
           }
 
           switch (delta.type) {
-            case "id":
+            case 'id':
               return {
                 ...draftArtifact,
                 documentId: delta.content as string,
-                status: "streaming",
+                status: 'streaming',
               };
 
-            case "title":
+            case 'title':
               return {
                 ...draftArtifact,
                 title: delta.content as string,
-                status: "streaming",
+                status: 'streaming',
               };
 
-            case "kind": {
+            case 'kind': {
               // Вызываем onCreateDocument когда создается новый артефакт
               const newKind = delta.content as ArtifactKind;
-              console.log("🎯 Creating new artifact with kind:", newKind);
+              console.log('🎯 Creating new artifact with kind:', newKind);
 
               // Проверяем, не создан ли уже артефакт этого типа
               if (
                 draftArtifact.kind === newKind &&
-                draftArtifact.documentId !== "init"
+                draftArtifact.documentId !== 'init'
               ) {
                 console.log(
-                  "🎯 Artifact already created, skipping onCreateDocument"
+                  '🎯 Artifact already created, skipping onCreateDocument',
                 );
                 return {
                   ...draftArtifact,
                   kind: newKind,
-                  status: "streaming",
+                  status: 'streaming',
                   isVisible: true,
                 };
               }
 
               const kindArtifactDefinition = artifactDefinitions.find(
-                (def) => def.kind === newKind
+                (def) => def.kind === newKind,
               );
               if (kindArtifactDefinition?.onCreateDocument) {
-                console.log("🎯 Calling onCreateDocument for:", newKind);
+                console.log('🎯 Calling onCreateDocument for:', newKind);
                 kindArtifactDefinition.onCreateDocument({
                   setArtifact: (updater) => {
-                    if (typeof updater === "function") {
+                    if (typeof updater === 'function') {
                       setArtifact((current: UIArtifact | null) => {
                         const updated = updater(current as UIArtifact);
                         return {
                           ...updated,
                           kind: newKind,
-                          status: "streaming",
+                          status: 'streaming',
                         };
                       });
                     } else {
                       setArtifact({
                         ...updater,
                         kind: newKind,
-                        status: "streaming",
+                        status: 'streaming',
                       });
                     }
                   },
                 });
               } else {
-                console.log("🎯 No onCreateDocument found for:", newKind);
+                console.log('🎯 No onCreateDocument found for:', newKind);
                 // Если нет onCreateDocument, устанавливаем базовые значения
                 setArtifact((current: UIArtifact | null) => ({
                   ...current,
                   kind: newKind,
-                  status: "streaming",
+                  status: 'streaming',
                   isVisible: true,
                 }));
               }
               return {
                 ...draftArtifact,
                 kind: newKind,
-                status: "streaming",
+                status: 'streaming',
                 isVisible: true, // Убеждаемся что артефакт видим
               };
             }
 
-            case "clear":
+            case 'clear':
               return {
                 ...draftArtifact,
-                content: "",
-                status: "streaming",
+                content: '',
+                status: 'streaming',
               };
 
-            case "finish":
+            case 'finish':
               return {
                 ...draftArtifact,
-                status: "idle",
+                status: 'idle',
               };
 
-            case "error":
+            case 'error':
               // Show error toast to user
               toast({
-                type: "error",
+                type: 'error',
                 description: delta.content as string,
               });
               return {
                 ...draftArtifact,
-                status: "error",
+                status: 'error',
               };
 
             default:
@@ -246,5 +246,5 @@ export const DataStreamHandler = memo(
     if (prevLength !== nextLength) return false;
 
     return true;
-  }
+  },
 );

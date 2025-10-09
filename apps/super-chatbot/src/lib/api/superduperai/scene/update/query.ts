@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   type IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__,
   SceneService,
-} from "@turbo-super/api";
-import { sceneKeys } from "../query";
+} from '@turbo-super/api';
+import { sceneKeys } from '../query';
 
 type ISceneUpdate = Parameters<typeof SceneService.sceneUpdate>[0];
 
@@ -30,7 +30,7 @@ export const useSceneUpdate = () => {
       // При успехе обновляем данные конкретной сцены
       queryClient.setQueryData(
         sceneKeys.getById({ id: variables.id }).queryKey,
-        data
+        data,
       );
 
       // Также обновляем список сцен

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
+import { useCallback, useEffect, useState } from 'react';
+import { FileTypeEnum, type ISceneRead } from '@turbo-super/api';
 
 interface UseCanvasSizeProps {
   scene?: ISceneRead | null;
@@ -30,7 +30,7 @@ export function useCanvasSize({
 
     // Создаем временный элемент для получения размеров
     const tempElement = document.createElement(
-      scene.file.type === FileTypeEnum.IMAGE ? "img" : "video"
+      scene.file.type === FileTypeEnum.IMAGE ? 'img' : 'video',
     );
 
     const handleLoad = () => {
@@ -52,7 +52,7 @@ export function useCanvasSize({
 
       const scale = Math.min(
         (containerWidth - toolbarWidth) / naturalWidth,
-        containerHeight / naturalHeight
+        containerHeight / naturalHeight,
       );
       const width = Math.floor(naturalWidth * scale);
       const height = Math.floor(naturalHeight * scale);
@@ -98,8 +98,8 @@ export function useCanvasSize({
 
   // Window resize listener
   useEffect(() => {
-    window.addEventListener("resize", updateCanvasSize);
-    return () => window.removeEventListener("resize", updateCanvasSize);
+    window.addEventListener('resize', updateCanvasSize);
+    return () => window.removeEventListener('resize', updateCanvasSize);
   }, [updateCanvasSize]);
 
   // Update canvas size when scene changes

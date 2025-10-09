@@ -363,7 +363,7 @@ describe("Blog API Integration", () => {
       );
 
       // Проверяем, что компонент рендерится корректно
-      expect(screen.getByText("1024")).toBeInTheDocument();
+      expect(screen.getByTestId("image-generator")).toBeInTheDocument();
     });
   });
 

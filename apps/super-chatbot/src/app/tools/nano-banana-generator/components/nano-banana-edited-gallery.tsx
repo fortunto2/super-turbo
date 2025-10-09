@@ -1,12 +1,12 @@
 // AICODE-NOTE: Gallery component for displaying Nano Banana edited images
 // Shows edited images with actions and metadata specific to editing
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Download,
   Copy,
@@ -17,8 +17,8 @@ import {
   Settings,
   Calendar,
   Palette,
-} from "lucide-react";
-import type { NanoBananaEditResult } from "../api/nano-banana-api";
+} from 'lucide-react';
+import type { NanoBananaEditResult } from '../api/nano-banana-api';
 
 interface NanoBananaEditedGalleryProps {
   images: NanoBananaEditResult[];
@@ -49,28 +49,28 @@ export function NanoBananaEditedGallery({
 
   const getEditTypeBadgeColor = (editType: string) => {
     const colors: Record<string, string> = {
-      remove_object: "bg-red-100 text-red-800",
-      add_object: "bg-green-100 text-green-800",
-      replace_background: "bg-blue-100 text-blue-800",
-      style_transfer: "bg-purple-100 text-purple-800",
-      color_adjustment: "bg-yellow-100 text-yellow-800",
-      lighting_adjustment: "bg-orange-100 text-orange-800",
-      texture_enhancement: "bg-pink-100 text-pink-800",
-      composition_change: "bg-cyan-100 text-cyan-800",
-      artistic_effect: "bg-indigo-100 text-indigo-800",
-      object_replacement: "bg-gray-100 text-gray-800",
+      remove_object: 'bg-red-100 text-red-800',
+      add_object: 'bg-green-100 text-green-800',
+      replace_background: 'bg-blue-100 text-blue-800',
+      style_transfer: 'bg-purple-100 text-purple-800',
+      color_adjustment: 'bg-yellow-100 text-yellow-800',
+      lighting_adjustment: 'bg-orange-100 text-orange-800',
+      texture_enhancement: 'bg-pink-100 text-pink-800',
+      composition_change: 'bg-cyan-100 text-cyan-800',
+      artistic_effect: 'bg-indigo-100 text-indigo-800',
+      object_replacement: 'bg-gray-100 text-gray-800',
     };
-    return colors[editType] || "bg-gray-100 text-gray-800";
+    return colors[editType] || 'bg-gray-100 text-gray-800';
   };
 
   const getPrecisionBadgeColor = (precision: string) => {
     const colors: Record<string, string> = {
-      low: "bg-gray-100 text-gray-800",
-      medium: "bg-yellow-100 text-yellow-800",
-      high: "bg-green-100 text-green-800",
-      ultra: "bg-blue-100 text-blue-800",
+      low: 'bg-gray-100 text-gray-800',
+      medium: 'bg-yellow-100 text-yellow-800',
+      high: 'bg-green-100 text-green-800',
+      ultra: 'bg-blue-100 text-blue-800',
     };
-    return colors[precision] || "bg-gray-100 text-gray-800";
+    return colors[precision] || 'bg-gray-100 text-gray-800';
   };
 
   if (images.length === 0 && !currentEdit) {
@@ -192,11 +192,11 @@ export function NanoBananaEditedGallery({
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Badge className={getEditTypeBadgeColor(image.editType)}>
-                      {image.editType.replace(/_/g, " ")}
+                      {image.editType.replace(/_/g, ' ')}
                     </Badge>
                     <Badge
                       className={getPrecisionBadgeColor(
-                        image.settings.precisionLevel
+                        image.settings.precisionLevel,
                       )}
                     >
                       {image.settings.precisionLevel}
@@ -210,28 +210,19 @@ export function NanoBananaEditedGallery({
                   {/* Nano Banana Features */}
                   <div className="flex items-center space-x-2 ">
                     {image.settings.preserveOriginalStyle && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         <Settings className="size-3 mr-1" />
                         Style
                       </Badge>
                     )}
                     {image.settings.enhanceLighting && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         <Zap className="size-3 mr-1" />
                         Lighting
                       </Badge>
                     )}
                     {image.settings.preserveShadows && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         <Palette className="size-3 mr-1" />
                         Shadows
                       </Badge>
@@ -277,11 +268,11 @@ export function NanoBananaEditedGallery({
                   <Badge
                     className={getEditTypeBadgeColor(selectedImage.editType)}
                   >
-                    {selectedImage.editType.replace(/_/g, " ")}
+                    {selectedImage.editType.replace(/_/g, ' ')}
                   </Badge>
                   <Badge
                     className={getPrecisionBadgeColor(
-                      selectedImage.settings.precisionLevel
+                      selectedImage.settings.precisionLevel,
                     )}
                   >
                     {selectedImage.settings.precisionLevel}

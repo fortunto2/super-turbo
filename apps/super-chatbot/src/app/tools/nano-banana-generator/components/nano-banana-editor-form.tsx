@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Button,
   Card,
@@ -12,7 +12,7 @@ import {
   Textarea,
   Separator,
   Badge,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 import {
   Select,
   SelectContent,
@@ -20,9 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
-} from "../../../../components/ui";
-import { Edit3, Zap, Palette } from "lucide-react";
-import type { NanoBananaImageEditingRequest } from "../api/nano-banana-api";
+} from '../../../../components/ui';
+import { Edit3, Zap, Palette } from 'lucide-react';
+import type { NanoBananaImageEditingRequest } from '../api/nano-banana-api';
 
 interface NanoBananaEditorFormProps {
   onEdit: (request: NanoBananaImageEditingRequest) => Promise<void>;
@@ -39,34 +39,34 @@ export function NanoBananaEditorForm({
   isEditing,
   config = {
     editTypes: [
-      "remove_object",
-      "add_object",
-      "replace_background",
-      "style_transfer",
-      "color_adjustment",
-      "lighting_adjustment",
-      "texture_enhancement",
-      "composition_change",
-      "artistic_effect",
-      "object_replacement",
+      'remove_object',
+      'add_object',
+      'replace_background',
+      'style_transfer',
+      'color_adjustment',
+      'lighting_adjustment',
+      'texture_enhancement',
+      'composition_change',
+      'artistic_effect',
+      'object_replacement',
     ],
-    precisionLevels: ["low", "medium", "high", "ultra"],
+    precisionLevels: ['low', 'medium', 'high', 'ultra'],
     blendModes: [
-      "normal",
-      "overlay",
-      "soft_light",
-      "hard_light",
-      "multiply",
-      "screen",
+      'normal',
+      'overlay',
+      'soft_light',
+      'hard_light',
+      'multiply',
+      'screen',
     ],
   },
 }: NanoBananaEditorFormProps) {
   const [formData, setFormData] = useState<NanoBananaImageEditingRequest>({
-    editType: "object-removal",
-    editPrompt: "",
-    sourceImageUrl: "",
-    precisionLevel: "automatic",
-    blendMode: "natural",
+    editType: 'object-removal',
+    editPrompt: '',
+    sourceImageUrl: '',
+    precisionLevel: 'automatic',
+    blendMode: 'natural',
     preserveOriginalStyle: true,
     enhanceLighting: true,
     preserveShadows: true,
@@ -102,7 +102,7 @@ export function NanoBananaEditorForm({
 
   const updateFormData = (
     field: keyof NanoBananaImageEditingRequest,
-    value: any
+    value: any,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -110,49 +110,49 @@ export function NanoBananaEditorForm({
   // Поля, зависящие от editType (оставил как есть)
   const getEditTypeSpecificFields = () => {
     switch (formData.editType) {
-      case "remove_object":
+      case 'remove_object':
         return (
           <Input
             placeholder="e.g., 'person in the background'"
-            value={formData.objectToRemove || ""}
-            onChange={(e) => updateFormData("objectToRemove", e.target.value)}
+            value={formData.objectToRemove || ''}
+            onChange={(e) => updateFormData('objectToRemove', e.target.value)}
             disabled={isEditing}
           />
         );
-      case "add_object":
+      case 'add_object':
         return (
           <Input
             placeholder="e.g., 'a golden retriever'"
-            value={formData.targetObject || ""}
-            onChange={(e) => updateFormData("targetObject", e.target.value)}
+            value={formData.targetObject || ''}
+            onChange={(e) => updateFormData('targetObject', e.target.value)}
             disabled={isEditing}
           />
         );
-      case "replace_background":
+      case 'replace_background':
         return (
           <Input
             placeholder="e.g., 'beach sunset'"
-            value={formData.newBackground || ""}
-            onChange={(e) => updateFormData("newBackground", e.target.value)}
+            value={formData.newBackground || ''}
+            onChange={(e) => updateFormData('newBackground', e.target.value)}
             disabled={isEditing}
           />
         );
-      case "style_transfer":
+      case 'style_transfer':
         return (
           <Input
             placeholder="e.g., 'Van Gogh style'"
-            value={formData.styleToTransfer || ""}
-            onChange={(e) => updateFormData("styleToTransfer", e.target.value)}
+            value={formData.styleToTransfer || ''}
+            onChange={(e) => updateFormData('styleToTransfer', e.target.value)}
             disabled={isEditing}
           />
         );
-      case "object_replacement":
+      case 'object_replacement':
         return (
           <Input
             placeholder="e.g., 'replace the car with a bicycle'"
-            value={formData.replacementObject || ""}
+            value={formData.replacementObject || ''}
             onChange={(e) =>
-              updateFormData("replacementObject", e.target.value)
+              updateFormData('replacementObject', e.target.value)
             }
             disabled={isEditing}
           />
@@ -168,19 +168,13 @@ export function NanoBananaEditorForm({
         <CardTitle className="flex items-center gap-2">
           <Edit3 className="size-5 text-green-600" />
           <span>Nano Banana Image Editor</span>
-          <Badge
-            variant="secondary"
-            className="ml-auto"
-          >
+          <Badge variant="secondary" className="ml-auto">
             AI-Powered
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Source Image */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Source Image *</Label>
@@ -198,7 +192,7 @@ export function NanoBananaEditorForm({
                 onClick={() => {
                   setImageFile(null);
                   setImagePreview(null);
-                  updateFormData("sourceImageUrl", "");
+                  updateFormData('sourceImageUrl', '');
                 }}
                 disabled={isEditing || !imageFile}
               >
@@ -218,8 +212,8 @@ export function NanoBananaEditorForm({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Edit Type *</Label>
             <Select
-              value={formData.editType || ""}
-              onValueChange={(value) => updateFormData("editType", value)}
+              value={formData.editType || ''}
+              onValueChange={(value) => updateFormData('editType', value)}
               disabled={isEditing}
             >
               <SelectTrigger>
@@ -227,12 +221,9 @@ export function NanoBananaEditorForm({
               </SelectTrigger>
               <SelectContent>
                 {config.editTypes.map((type) => (
-                  <SelectItem
-                    key={type}
-                    value={type}
-                  >
+                  <SelectItem key={type} value={type}>
                     {type
-                      .replace(/_/g, " ")
+                      .replace(/_/g, ' ')
                       .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </SelectItem>
                 ))}
@@ -246,7 +237,7 @@ export function NanoBananaEditorForm({
             <Textarea
               placeholder="Describe what you want to edit..."
               value={formData.editPrompt}
-              onChange={(e) => updateFormData("editPrompt", e.target.value)}
+              onChange={(e) => updateFormData('editPrompt', e.target.value)}
               disabled={isEditing}
             />
           </div>
@@ -261,8 +252,8 @@ export function NanoBananaEditorForm({
             <div className="space-y-2">
               <Label className="text-sm font-medium">Precision Level</Label>
               <Select
-                value={formData.precisionLevel || ""}
-                onValueChange={(v) => updateFormData("precisionLevel", v)}
+                value={formData.precisionLevel || ''}
+                onValueChange={(v) => updateFormData('precisionLevel', v)}
                 disabled={isEditing}
               >
                 <SelectTrigger>
@@ -270,10 +261,7 @@ export function NanoBananaEditorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.precisionLevels.map((lvl) => (
-                    <SelectItem
-                      key={lvl}
-                      value={lvl}
-                    >
+                    <SelectItem key={lvl} value={lvl}>
                       {lvl}
                     </SelectItem>
                   ))}
@@ -284,8 +272,8 @@ export function NanoBananaEditorForm({
             <div className="space-y-2">
               <Label className="text-sm font-medium">Blend Mode</Label>
               <Select
-                value={formData.blendMode || ""}
-                onValueChange={(v) => updateFormData("blendMode", v)}
+                value={formData.blendMode || ''}
+                onValueChange={(v) => updateFormData('blendMode', v)}
                 disabled={isEditing}
               >
                 <SelectTrigger>
@@ -293,11 +281,8 @@ export function NanoBananaEditorForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.blendModes.map((mode) => (
-                    <SelectItem
-                      key={mode}
-                      value={mode}
-                    >
-                      {mode.replace(/_/g, " ")}
+                    <SelectItem key={mode} value={mode}>
+                      {mode.replace(/_/g, ' ')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -312,11 +297,11 @@ export function NanoBananaEditorForm({
               <Input
                 type="number"
                 placeholder="Random seed"
-                value={formData.seed || ""}
+                value={formData.seed || ''}
                 onChange={(e) =>
                   updateFormData(
-                    "seed",
-                    e.target.value ? Number(e.target.value) : undefined
+                    'seed',
+                    e.target.value ? Number(e.target.value) : undefined,
                   )
                 }
                 disabled={isEditing}
@@ -325,8 +310,8 @@ export function NanoBananaEditorForm({
             <div className="space-y-2">
               <Label className="text-sm font-medium">Batch Size</Label>
               <Select
-                value={formData.batchSize?.toString() || "1"}
-                onValueChange={(v) => updateFormData("batchSize", Number(v))}
+                value={formData.batchSize?.toString() || '1'}
+                onValueChange={(v) => updateFormData('batchSize', Number(v))}
                 disabled={isEditing}
               >
                 <SelectTrigger>
@@ -358,7 +343,7 @@ export function NanoBananaEditorForm({
                 <Switch
                   checked={formData.preserveOriginalStyle || false}
                   onCheckedChange={(c) =>
-                    updateFormData("preserveOriginalStyle", c)
+                    updateFormData('preserveOriginalStyle', c)
                   }
                   disabled={isEditing}
                 />
@@ -367,7 +352,7 @@ export function NanoBananaEditorForm({
                 <Label className="text-sm font-medium">Enhance Lighting</Label>
                 <Switch
                   checked={formData.enhanceLighting || false}
-                  onCheckedChange={(c) => updateFormData("enhanceLighting", c)}
+                  onCheckedChange={(c) => updateFormData('enhanceLighting', c)}
                   disabled={isEditing}
                 />
               </div>
@@ -375,7 +360,7 @@ export function NanoBananaEditorForm({
                 <Label className="text-sm font-medium">Preserve Shadows</Label>
                 <Switch
                   checked={formData.preserveShadows || false}
-                  onCheckedChange={(c) => updateFormData("preserveShadows", c)}
+                  onCheckedChange={(c) => updateFormData('preserveShadows', c)}
                   disabled={isEditing}
                 />
               </div>

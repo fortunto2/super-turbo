@@ -1,5 +1,5 @@
-import type { Session } from "next-auth";
-import { validateOperationBalance } from "./tools-balance";
+import type { Session } from 'next-auth';
+import { validateOperationBalance } from './tools-balance';
 
 export interface BalanceCheckResult {
   valid: boolean;
@@ -14,10 +14,10 @@ export interface BalanceCheckResult {
  */
 export async function checkBalanceBeforeArtifact(
   session: Session | null,
-  operation: "image-generation" | "video-generation" | "script-generation",
+  operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
   multipliers: string[],
-  operationDisplayName: string
+  operationDisplayName: string,
 ): Promise<BalanceCheckResult> {
   // Если пользователь не авторизован, разрешаем операцию
   // (может быть гостевой режим или другая логика)
@@ -26,7 +26,7 @@ export async function checkBalanceBeforeArtifact(
   }
 
   console.log(
-    `💳 Checking balance for ${operationType} before creating artifact...`
+    `💳 Checking balance for ${operationType} before creating artifact...`,
   );
 
   try {
@@ -34,7 +34,7 @@ export async function checkBalanceBeforeArtifact(
       session.user.id,
       operation,
       operationType,
-      multipliers
+      multipliers,
     );
 
     if (!balanceValidation.valid) {
@@ -42,7 +42,7 @@ export async function checkBalanceBeforeArtifact(
 
       const userMessage = formatBalanceErrorForUser(
         balanceValidation,
-        operationDisplayName
+        operationDisplayName,
       );
 
       return {
@@ -56,7 +56,7 @@ export async function checkBalanceBeforeArtifact(
     }
 
     console.log(
-      `💳 Balance validated: ${balanceValidation.cost} credits required for ${operationType}`
+      `💳 Balance validated: ${balanceValidation.cost} credits required for ${operationType}`,
     );
 
     return {
@@ -69,7 +69,7 @@ export async function checkBalanceBeforeArtifact(
     console.error(`💳 Error checking balance for ${operationType}:`, error);
     return {
       valid: false,
-      error: "Ошибка проверки баланса",
+      error: 'Ошибка проверки баланса',
       userMessage: `Не удалось проверить баланс для ${operationDisplayName}. Попробуйте позже.`,
     };
   }
@@ -80,13 +80,13 @@ export async function checkBalanceBeforeArtifact(
  */
 function formatBalanceErrorForUser(
   balanceValidation: { error?: string; cost?: number },
-  operationDisplayName: string
+  operationDisplayName: string,
 ): string {
   if (balanceValidation.cost) {
     return `Недостаточно средств для ${operationDisplayName}. Требуется: ${balanceValidation.cost} кредитов. Пожалуйста, пополните баланс.`;
   }
 
-  return `Недостаточно средств для ${operationDisplayName}. ${balanceValidation.error || "Пополните баланс."}`;
+  return `Недостаточно средств для ${operationDisplayName}. ${balanceValidation.error || 'Пополните баланс.'}`;
 }
 
 /**
@@ -94,14 +94,14 @@ function formatBalanceErrorForUser(
  */
 export function getOperationDisplayName(operationType: string): string {
   const operationNames: Record<string, string> = {
-    "text-to-image": "генерации изображения",
-    "image-to-image": "редактирования изображения",
-    "text-to-video": "генерации видео",
-    "image-to-video": "создания видео из изображения",
-    "basic-script": "генерации сценария",
-    "image-generation": "генерации изображения",
-    "video-generation": "генерации видео",
-    "script-generation": "генерации сценария",
+    'text-to-image': 'генерации изображения',
+    'image-to-image': 'редактирования изображения',
+    'text-to-video': 'генерации видео',
+    'image-to-video': 'создания видео из изображения',
+    'basic-script': 'генерации сценария',
+    'image-generation': 'генерации изображения',
+    'video-generation': 'генерации видео',
+    'script-generation': 'генерации сценария',
   };
 
   return operationNames[operationType] || operationType;

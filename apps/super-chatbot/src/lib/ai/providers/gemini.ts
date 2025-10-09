@@ -7,13 +7,13 @@
 import {
   getGeminiConfig,
   getGeminiGenerationConfig,
-} from "../../config/gemini";
+} from '../../config/gemini';
 import type {
   GeminiImageParams,
   GeminiEditParams,
   GeminiImageResult,
   GeminiEditResult,
-} from "../types/gemini";
+} from '../types/gemini';
 
 export class GeminiImageProvider {
   private config: any;
@@ -30,28 +30,28 @@ export class GeminiImageProvider {
   async generateImage(params: GeminiImageParams): Promise<GeminiImageResult> {
     try {
       console.log(
-        "🍌 🚀 GEMINI API: Starting image generation with Nano Banana"
+        '🍌 🚀 GEMINI API: Starting image generation with Nano Banana',
       );
-      console.log("🍌 📝 Prompt:", params.prompt);
-      console.log("🍌 🎨 Style:", params.style);
-      console.log("🍌 ⚙️ Features:", params.nanoBananaFeatures);
+      console.log('🍌 📝 Prompt:', params.prompt);
+      console.log('🍌 🎨 Style:', params.style);
+      console.log('🍌 ⚙️ Features:', params.nanoBananaFeatures);
 
       // Создаем улучшенный промпт с Nano Banana особенностями
       let enhancedPrompt = params.prompt;
 
       if (params.nanoBananaFeatures.enableContextAwareness) {
         enhancedPrompt +=
-          " Use context-aware editing to understand relationships between objects and environment.";
+          ' Use context-aware editing to understand relationships between objects and environment.';
       }
 
       if (params.nanoBananaFeatures.enableSurgicalPrecision) {
         enhancedPrompt +=
-          " Apply surgical precision for accurate placement and integration of elements.";
+          ' Apply surgical precision for accurate placement and integration of elements.';
       }
 
       if (params.nanoBananaFeatures.creativeMode) {
         enhancedPrompt +=
-          " Be creative and artistic in interpretation while maintaining realism.";
+          ' Be creative and artistic in interpretation while maintaining realism.';
       }
 
       // Используем прямой HTTP вызов как в gemini-direct.ts
@@ -60,7 +60,7 @@ export class GeminiImageProvider {
       const requestBody = {
         contents: [
           {
-            role: "user",
+            role: 'user',
             parts: [{ text: enhancedPrompt }],
           },
         ],
@@ -73,9 +73,9 @@ export class GeminiImageProvider {
       };
 
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
@@ -90,12 +90,12 @@ export class GeminiImageProvider {
       // Обрабатываем ответ
       const result = await this.processGenerationResponse(data, params);
 
-      console.log("🍌 ✅ GEMINI API: Image generation completed");
+      console.log('🍌 ✅ GEMINI API: Image generation completed');
       return result;
     } catch (error) {
-      console.error("🍌 ❌ GEMINI API ERROR:", error);
+      console.error('🍌 ❌ GEMINI API ERROR:', error);
       throw new Error(
-        `Nano Banana image generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Nano Banana image generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -105,27 +105,27 @@ export class GeminiImageProvider {
    */
   async editImage(params: GeminiEditParams): Promise<GeminiEditResult> {
     try {
-      console.log("🍌 🚀 GEMINI API: Starting image editing with Nano Banana");
-      console.log("🍌 ✏️ Edit prompt:", params.editPrompt);
-      console.log("🍌 🎯 Edit type:", params.editType);
-      console.log("🍌 ⚙️ Features:", params.nanoBananaEditFeatures);
+      console.log('🍌 🚀 GEMINI API: Starting image editing with Nano Banana');
+      console.log('🍌 ✏️ Edit prompt:', params.editPrompt);
+      console.log('🍌 🎯 Edit type:', params.editType);
+      console.log('🍌 ⚙️ Features:', params.nanoBananaEditFeatures);
 
       // Создаем улучшенный промпт для редактирования
       let enhancedEditPrompt = params.editPrompt;
 
       if (params.nanoBananaEditFeatures.enableContextAwareness) {
         enhancedEditPrompt +=
-          " Use context-aware editing to understand relationships between objects and environment.";
+          ' Use context-aware editing to understand relationships between objects and environment.';
       }
 
       if (params.nanoBananaEditFeatures.enableSurgicalPrecision) {
         enhancedEditPrompt +=
-          " Apply surgical precision for accurate placement and integration of elements.";
+          ' Apply surgical precision for accurate placement and integration of elements.';
       }
 
       if (params.nanoBananaEditFeatures.creativeMode) {
         enhancedEditPrompt +=
-          " Be creative and artistic in interpretation while maintaining realism.";
+          ' Be creative and artistic in interpretation while maintaining realism.';
       }
 
       // Используем прямой HTTP вызов как в generateImage
@@ -134,12 +134,12 @@ export class GeminiImageProvider {
       const requestBody = {
         contents: [
           {
-            role: "user",
+            role: 'user',
             parts: [
               { text: enhancedEditPrompt },
               {
                 inlineData: {
-                  mimeType: "image/png",
+                  mimeType: 'image/png',
                   data: params.imageData || params.sourceImageUrl, // Используем imageData или sourceImageUrl
                 },
               },
@@ -155,9 +155,9 @@ export class GeminiImageProvider {
       };
 
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
@@ -172,12 +172,12 @@ export class GeminiImageProvider {
       // Обрабатываем ответ
       const result = await this.processEditResponse(data, params);
 
-      console.log("🍌 ✅ GEMINI API: Image editing completed");
+      console.log('🍌 ✅ GEMINI API: Image editing completed');
       return result;
     } catch (error) {
-      console.error("🍌 ❌ GEMINI API ERROR:", error);
+      console.error('🍌 ❌ GEMINI API ERROR:', error);
       throw new Error(
-        `Nano Banana image editing failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Nano Banana image editing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -187,19 +187,19 @@ export class GeminiImageProvider {
    */
   private async processGenerationResponse(
     response: any,
-    params: GeminiImageParams
+    params: GeminiImageParams,
   ): Promise<GeminiImageResult> {
     const candidates = response.candidates;
 
     if (!candidates || candidates.length === 0) {
-      throw new Error("No candidates returned from Gemini API");
+      throw new Error('No candidates returned from Gemini API');
     }
 
     const candidate = candidates[0];
     const content = candidate.content;
 
     if (!content || !content.parts) {
-      throw new Error("No content parts returned from Gemini API");
+      throw new Error('No content parts returned from Gemini API');
     }
 
     // Получаем текстовый ответ от Gemini
@@ -213,7 +213,7 @@ export class GeminiImageProvider {
     }
 
     if (!textResponse) {
-      throw new Error("No text response returned from Gemini API");
+      throw new Error('No text response returned from Gemini API');
     }
 
     // Создаем заглушку изображения с описанием от Gemini
@@ -228,8 +228,8 @@ export class GeminiImageProvider {
           ${params.prompt.substring(0, 50)}...
         </text>
       </svg>
-    `
-    ).toString("base64")}`;
+    `,
+    ).toString('base64')}`;
 
     return {
       id: `nano-banana-${Date.now()}`,
@@ -248,30 +248,30 @@ export class GeminiImageProvider {
         creativeMode: params.nanoBananaFeatures.creativeMode,
       },
       nanoBananaInfo: {
-        model: "gemini-2.5-flash-image",
+        model: 'gemini-2.5-flash-image',
         capabilities: [
-          "Контекстно-осознанное редактирование",
-          "Хирургическая точность",
-          "Понимание физической логики",
-          "Интеллектуальное освещение",
+          'Контекстно-осознанное редактирование',
+          'Хирургическая точность',
+          'Понимание физической логики',
+          'Интеллектуальное освещение',
         ],
         style: {
           id: params.style,
           label: params.style,
-          description: "Nano Banana style",
+          description: 'Nano Banana style',
         },
         quality: {
           id: params.quality,
           label: params.quality,
           multiplier: 1.0,
-          description: "Nano Banana quality",
+          description: 'Nano Banana quality',
         },
         aspectRatio: {
           id: params.aspectRatio,
           label: params.aspectRatio,
           width: 1024,
           height: 1024,
-          description: "Nano Banana aspect ratio",
+          description: 'Nano Banana aspect ratio',
         },
       },
       geminiResponse: textResponse, // Добавляем ответ Gemini для отладки
@@ -283,19 +283,19 @@ export class GeminiImageProvider {
    */
   private async processEditResponse(
     response: any,
-    params: GeminiEditParams
+    params: GeminiEditParams,
   ): Promise<GeminiEditResult> {
     const candidates = response.candidates;
 
     if (!candidates || candidates.length === 0) {
-      throw new Error("No candidates returned from Gemini API");
+      throw new Error('No candidates returned from Gemini API');
     }
 
     const candidate = candidates[0];
     const content = candidate.content;
 
     if (!content || !content.parts) {
-      throw new Error("No content parts returned from Gemini API");
+      throw new Error('No content parts returned from Gemini API');
     }
 
     // Получаем текстовый ответ от Gemini
@@ -309,7 +309,7 @@ export class GeminiImageProvider {
     }
 
     if (!textResponse) {
-      throw new Error("No text response returned from Gemini API");
+      throw new Error('No text response returned from Gemini API');
     }
 
     // Создаем заглушку изображения с описанием от Gemini
@@ -324,8 +324,8 @@ export class GeminiImageProvider {
           ${params.editPrompt.substring(0, 50)}...
         </text>
       </svg>
-    `
-    ).toString("base64")}`;
+    `,
+    ).toString('base64')}`;
 
     return {
       id: `nano-banana-edit-${Date.now()}`,
@@ -341,28 +341,28 @@ export class GeminiImageProvider {
         preserveShadows: params.preserveShadows,
       },
       nanoBananaEditInfo: {
-        model: "gemini-2.5-flash-image",
+        model: 'gemini-2.5-flash-image',
         editType: {
           id: params.editType,
           label: params.editType,
-          description: "Nano Banana edit type",
+          description: 'Nano Banana edit type',
         },
         precisionLevel: {
           id: params.precisionLevel,
           label: params.precisionLevel,
-          description: "Nano Banana precision level",
+          description: 'Nano Banana precision level',
         },
         blendMode: {
           id: params.blendMode,
           label: params.blendMode,
-          description: "Nano Banana blend mode",
+          description: 'Nano Banana blend mode',
         },
         capabilities: [
-          "Контекстно-осознанное редактирование",
-          "Хирургическая точность",
-          "Интеллектуальное освещение",
-          "Сохранение стиля",
-          "Естественное смешивание",
+          'Контекстно-осознанное редактирование',
+          'Хирургическая точность',
+          'Интеллектуальное освещение',
+          'Сохранение стиля',
+          'Естественное смешивание',
         ],
       },
       geminiResponse: textResponse, // Добавляем ответ Gemini для отладки

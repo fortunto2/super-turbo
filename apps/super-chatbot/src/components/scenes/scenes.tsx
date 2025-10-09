@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { ArrowLeft, Eye, Grid3X3, List } from "lucide-react";
-import type { ISceneRead } from "@turbo-super/api";
-import Image from "next/image";
-import { ScenesList } from "./scenes-drag-wrapper";
-import { cn, Textarea } from "@turbo-super/ui";
-import { debounce } from "lodash";
-import { useSceneList, useSceneUpdate, useSceneUpdateOrder } from "@/lib/api";
-import { ScrollArea } from "../ui";
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { ArrowLeft, Eye, Grid3X3, List } from 'lucide-react';
+import type { ISceneRead } from '@turbo-super/api';
+import Image from 'next/image';
+import { ScenesList } from './scenes-drag-wrapper';
+import { cn, Textarea } from '@turbo-super/ui';
+import { debounce } from 'lodash';
+import { useSceneList, useSceneUpdate, useSceneUpdateOrder } from '@/lib/api';
+import { ScrollArea } from '../ui';
 
 export function Scenes() {
   const params = useParams();
@@ -24,7 +24,7 @@ export function Scenes() {
   const { mutateAsync: updateOrder } = useSceneUpdateOrder();
   const { mutateAsync: updateScene } = useSceneUpdate();
 
-  const [viewMode, setViewMode] = useState<"compact" | "full">("full");
+  const [viewMode, setViewMode] = useState<'compact' | 'full'>('full');
 
   const handleUpdateOrder = async (scene: ISceneRead, order: number) => {
     if (!sceneId) return;
@@ -36,7 +36,7 @@ export function Scenes() {
         },
       });
     } catch (e) {
-      console.error("Select file error", e);
+      console.error('Select file error', e);
     }
   };
 
@@ -56,7 +56,7 @@ export function Scenes() {
         },
       });
     } catch (e) {
-      console.error("Scene update error", e);
+      console.error('Scene update error', e);
     }
   };
 
@@ -94,8 +94,8 @@ export function Scenes() {
   return (
     <aside
       style={{
-        width: viewMode === "compact" ? "6%" : "20%",
-        minWidth: viewMode === "compact" ? "160px" : "350px",
+        width: viewMode === 'compact' ? '6%' : '20%',
+        minWidth: viewMode === 'compact' ? '160px' : '350px',
       }}
       className="bg-card border border-border rounded-xl p-2 overflow-hidden "
     >
@@ -106,29 +106,29 @@ export function Scenes() {
         className="w-full h-full scroll-vertical flex flex-col gap-2 pr-3"
       >
         <div className="flex items-center justify-between mb-2 size-full">
-          {viewMode === "full" && (
+          {viewMode === 'full' && (
             <h3 className="text-sm font-medium text-muted-foreground">
               Scenes
             </h3>
           )}
           <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
             <button
-              onClick={() => setViewMode("full")}
+              onClick={() => setViewMode('full')}
               className={`p-1.5 rounded-md transition-all duration-200 ${
-                viewMode === "full"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                viewMode === 'full'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Full"
             >
               <List className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setViewMode("compact")}
+              onClick={() => setViewMode('compact')}
               className={`p-1.5 rounded-md transition-all duration-200 ${
-                viewMode === "compact"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                viewMode === 'compact'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Compact"
             >
@@ -144,7 +144,7 @@ export function Scenes() {
               className="flex items-center gap-2 px-2 py-2 rounded-lg border border-border animate-pulse"
             >
               <div className="size-12 rounded-md bg-muted" />
-              {viewMode === "full" && (
+              {viewMode === 'full' && (
                 <div className="flex flex-col gap-1">
                   <div className="h-3 w-20 bg-muted rounded" />
                   <div className="h-2 w-14 bg-muted rounded" />
@@ -158,10 +158,7 @@ export function Scenes() {
             onDragChange={handleDragChange}
           >
             {(scene, index) => (
-              <div
-                key={scene.id}
-                className="flex flex-col flex-grow relative"
-              >
+              <div key={scene.id} className="flex flex-col flex-grow relative">
                 <Scene
                   scene={scene}
                   isActive={sceneId === scene.id}
@@ -189,7 +186,7 @@ const Scene = ({
 }: {
   scene: ISceneRead;
   projectId: string;
-  viewMode: "compact" | "full";
+  viewMode: 'compact' | 'full';
   isActive: boolean;
   index: number;
   onTextChange: (scene: ISceneRead, text: string) => void;
@@ -198,7 +195,7 @@ const Scene = ({
 
   const sceneText = scene.action_description;
 
-  const [text, setText] = useState(sceneText ?? "");
+  const [text, setText] = useState(sceneText ?? '');
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -206,7 +203,7 @@ const Scene = ({
     setText(value);
   };
 
-  if (viewMode === "full") {
+  if (viewMode === 'full') {
     return (
       <button
         key={scene.id}
@@ -215,8 +212,8 @@ const Scene = ({
         }
         className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg  transition-all duration-300  ${
           isActive
-            ? "border-primary ring-2 ring-primary/20"
-            : "hover:bg-muted/60 hover:border-primary/40"
+            ? 'border-primary ring-2 ring-primary/20'
+            : 'hover:bg-muted/60 hover:border-primary/40'
         }`}
       >
         <div className="size-12 rounded-md bg-black overflow-hidden flex items-center justify-center">
@@ -237,11 +234,11 @@ const Scene = ({
           <Textarea
             color="gray"
             className={cn(
-              "no-scrollbar h-full grow shadow-none outline-none bg-transparent resize-none w-full border-none p-0",
+              'no-scrollbar h-full grow shadow-none outline-none bg-transparent resize-none w-full border-none p-0',
               {
                 // ["line-clamp-none"]: isActive,
-                "line-clamp-3": !isActive,
-              }
+                'line-clamp-3': !isActive,
+              },
             )}
             value={text}
             onChange={handleChange}
@@ -274,8 +271,8 @@ const Scene = ({
       }
       className={`w-full flex items-center justify-center px-2 py-2 rounded-lg border transition-all duration-300  ${
         isActive
-          ? "border-primary  ring-2 ring-primary/20"
-          : "border-border hover:bg-muted/60 hover:border-primary/40"
+          ? 'border-primary  ring-2 ring-primary/20'
+          : 'border-border hover:bg-muted/60 hover:border-primary/40'
       }`}
     >
       <div className="size-12 rounded-md bg-black overflow-hidden flex items-center justify-center">

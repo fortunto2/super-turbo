@@ -8,7 +8,10 @@ interface DebugParametersProps {
   title?: string;
 }
 
-export function DebugParameters({ data, title = 'Debug: Generation Parameters' }: DebugParametersProps) {
+export function DebugParameters({
+  data,
+  title = 'Debug: Generation Parameters',
+}: DebugParametersProps) {
   const [showDebug, setShowDebug] = useState(false);
 
   if (!data) {
@@ -21,12 +24,14 @@ export function DebugParameters({ data, title = 'Debug: Generation Parameters' }
         onClick={() => setShowDebug(!showDebug)}
         className="flex items-center gap-2 text-sm font-medium mb-3 hover:text-gray-700 transition-colors w-full"
       >
-        <span className={`transform transition-transform ${showDebug ? 'rotate-90' : ''}`}>
+        <span
+          className={`transform transition-transform ${showDebug ? 'rotate-90' : ''}`}
+        >
           ▶
         </span>
         {title}
       </button>
-      
+
       {showDebug && (
         <div className="mt-2 space-y-3">
           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
@@ -49,4 +54,4 @@ export function DebugParameters({ data, title = 'Debug: Generation Parameters' }
       )}
     </div>
   );
-} 
+}

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button, Label, Separator } from "@turbo-super/ui";
+import { useState, useEffect } from 'react';
+import { Button, Label, Separator } from '@turbo-super/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import type { DocumentFilters } from "../page";
-import type { ArtifactKind } from "@/components/artifacts/artifact";
+} from '@/components/ui/select';
+import type { DocumentFilters } from '../page';
+import type { ArtifactKind } from '@/components/artifacts/artifact';
 
 interface GalleryFiltersProps {
   filters: DocumentFilters;
@@ -19,16 +19,16 @@ interface GalleryFiltersProps {
 }
 
 const ARTIFACT_TYPES: Array<{ value: ArtifactKind; label: string }> = [
-  { value: "image", label: "Images" },
-  { value: "video", label: "Videos" },
-  { value: "text", label: "Text" },
-  { value: "sheet", label: "Sheets" },
+  { value: 'image', label: 'Images' },
+  { value: 'video', label: 'Videos' },
+  { value: 'text', label: 'Text' },
+  { value: 'sheet', label: 'Sheets' },
 ];
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "Newest First" },
-  { value: "oldest", label: "Oldest First" },
-  { value: "popular", label: "Most Popular" },
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'popular', label: 'Most Popular' },
 ];
 
 export function GalleryFilters({
@@ -42,7 +42,7 @@ export function GalleryFilters({
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await fetch("/api/config/models");
+        const response = await fetch('/api/config/models');
         if (response.ok) {
           const data = await response.json();
           const allModels = [
@@ -52,7 +52,7 @@ export function GalleryFilters({
           setModels(Array.from(new Set(allModels)));
         }
       } catch (error) {
-        console.error("Failed to fetch models:", error);
+        console.error('Failed to fetch models:', error);
       }
     };
     fetchModels();
@@ -60,8 +60,8 @@ export function GalleryFilters({
 
   const handleReset = () => {
     onFiltersChange({
-      visibility: "all",
-      sort: "newest",
+      visibility: 'all',
+      sort: 'newest',
     });
   };
 
@@ -99,10 +99,7 @@ export function GalleryFilters({
         <Label>Type</Label>
         <div className="space-y-2 mt-2">
           {ARTIFACT_TYPES.map((type) => (
-            <label
-              key={type.value}
-              className="flex items-center gap-2"
-            >
+            <label key={type.value} className="flex items-center gap-2">
               <input
                 type="checkbox"
                 className="rounded"
@@ -128,7 +125,7 @@ export function GalleryFilters({
           <div>
             <Label>Model</Label>
             <Select
-              value={filters.model || ""}
+              value={filters.model || ''}
               onValueChange={(value) =>
                 onFiltersChange({
                   ...filters,
@@ -142,10 +139,7 @@ export function GalleryFilters({
               <SelectContent>
                 <SelectItem value="">All models</SelectItem>
                 {models.map((model) => (
-                  <SelectItem
-                    key={model}
-                    value={model}
-                  >
+                  <SelectItem key={model} value={model}>
                     {model}
                   </SelectItem>
                 ))}
@@ -170,10 +164,7 @@ export function GalleryFilters({
           </SelectTrigger>
           <SelectContent>
             {SORT_OPTIONS.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-              >
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}
@@ -184,11 +175,7 @@ export function GalleryFilters({
       <Separator />
 
       {/* Reset Button */}
-      <Button
-        variant="outline"
-        className="w-full"
-        onClick={handleReset}
-      >
+      <Button variant="outline" className="w-full" onClick={handleReset}>
         Clear Filters
       </Button>
     </div>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export interface StoredImage {
   id: string;
@@ -39,18 +39,18 @@ export interface StoredVideo {
 }
 
 // Storage keys
-const IMAGES_STORAGE_KEY = "super-chatbot-generated-images";
-const VIDEOS_STORAGE_KEY = "super-chatbot-generated-videos";
+const IMAGES_STORAGE_KEY = 'super-chatbot-generated-images';
+const VIDEOS_STORAGE_KEY = 'super-chatbot-generated-videos';
 const MAX_STORED_IMAGES = 50;
 const MAX_STORED_VIDEOS = 30;
 
 // Safe localStorage operations
 function safeLocalStorageOperation<T>(operation: () => T, fallback: T): T {
   try {
-    if (typeof window === "undefined") return fallback;
+    if (typeof window === 'undefined') return fallback;
     return operation();
   } catch (error) {
-    console.warn("LocalStorage operation failed:", error);
+    console.warn('LocalStorage operation failed:', error);
     return fallback;
   }
 }
@@ -64,17 +64,17 @@ export function saveImage(image: StoredImage): void {
     const isDuplicate = existing.some(
       (img) =>
         img.id === image.id ||
-        (img.url === image.url && img.timestamp === image.timestamp)
+        (img.url === image.url && img.timestamp === image.timestamp),
     );
 
     if (isDuplicate) {
-      console.log("🖼️ Image already stored, skipping duplicate");
+      console.log('🖼️ Image already stored, skipping duplicate');
       return;
     }
 
     const updated = [image, ...existing].slice(0, MAX_STORED_IMAGES);
     localStorage.setItem(IMAGES_STORAGE_KEY, JSON.stringify(updated));
-    console.log("🖼️ ✅ Image saved to localStorage:", image.id);
+    console.log('🖼️ ✅ Image saved to localStorage:', image.id);
   }, undefined);
 }
 
@@ -92,14 +92,14 @@ export function deleteStoredImage(imageId: string): void {
     const existing = getStoredImages();
     const filtered = existing.filter((img) => img.id !== imageId);
     localStorage.setItem(IMAGES_STORAGE_KEY, JSON.stringify(filtered));
-    console.log("🖼️ 🗑️ Image deleted from localStorage:", imageId);
+    console.log('🖼️ 🗑️ Image deleted from localStorage:', imageId);
   }, undefined);
 }
 
 export function clearStoredImages(): void {
   safeLocalStorageOperation(() => {
     localStorage.removeItem(IMAGES_STORAGE_KEY);
-    console.log("🖼️ 🗑️ All stored images cleared");
+    console.log('🖼️ 🗑️ All stored images cleared');
   }, undefined);
 }
 
@@ -111,17 +111,17 @@ export function saveVideo(video: StoredVideo): void {
     const isDuplicate = existing.some(
       (vid) =>
         vid.id === video.id ||
-        (vid.url === video.url && vid.timestamp === video.timestamp)
+        (vid.url === video.url && vid.timestamp === video.timestamp),
     );
 
     if (isDuplicate) {
-      console.log("🎥 Video already stored, skipping duplicate");
+      console.log('🎥 Video already stored, skipping duplicate');
       return;
     }
 
     const updated = [video, ...existing].slice(0, MAX_STORED_VIDEOS);
     localStorage.setItem(VIDEOS_STORAGE_KEY, JSON.stringify(updated));
-    console.log("🎥 ✅ Video saved to localStorage:", video.id);
+    console.log('🎥 ✅ Video saved to localStorage:', video.id);
   }, undefined);
 }
 
@@ -139,14 +139,14 @@ export function deleteStoredVideo(videoId: string): void {
     const existing = getStoredVideos();
     const filtered = existing.filter((vid) => vid.id !== videoId);
     localStorage.setItem(VIDEOS_STORAGE_KEY, JSON.stringify(filtered));
-    console.log("🎥 🗑️ Video deleted from localStorage:", videoId);
+    console.log('🎥 🗑️ Video deleted from localStorage:', videoId);
   }, undefined);
 }
 
 export function clearStoredVideos(): void {
   safeLocalStorageOperation(() => {
     localStorage.removeItem(VIDEOS_STORAGE_KEY);
-    console.log("🎥 🗑️ All stored videos cleared");
+    console.log('🎥 🗑️ All stored videos cleared');
   }, undefined);
 }
 
@@ -161,10 +161,10 @@ export function getStorageUsage(): {
       const images = getStoredImages();
       const videos = getStoredVideos();
       const totalSizeKB = Math.round(
-        (JSON.stringify(images).length + JSON.stringify(videos).length) / 1024
+        (JSON.stringify(images).length + JSON.stringify(videos).length) / 1024,
       );
       return { images: images.length, videos: videos.length, totalSizeKB };
     },
-    { images: 0, videos: 0, totalSizeKB: 0 }
+    { images: 0, videos: 0, totalSizeKB: 0 },
   );
 }

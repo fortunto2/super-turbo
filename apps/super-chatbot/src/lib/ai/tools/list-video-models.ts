@@ -1,38 +1,38 @@
-import { tool } from "ai";
-import { z } from "zod";
+import { tool } from 'ai';
+import { z } from 'zod';
 // AICODE-NOTE: Updated to use new dynamic model system from SuperDuperAI config
-import { getAvailableVideoModels } from "@/lib/config/superduperai";
+import { getAvailableVideoModels } from '@/lib/config/superduperai';
 
 export const listVideoModels = tool({
   description:
-    "List all available video generation models from SuperDuperAI API with their capabilities, pricing, and requirements. Use this to see what models are available before generating videos.",
-  parameters: z.object({
+    'List all available video generation models from SuperDuperAI API with their capabilities, pricing, and requirements. Use this to see what models are available before generating videos.',
+  inputSchema: z.object({
     format: z
-      .enum(["detailed", "simple", "agent-friendly"])
+      .enum(['detailed', 'simple', 'agent-friendly'])
       .optional()
       .describe(
-        "Format of the output: detailed (full info), simple (names only), agent-friendly (formatted for AI agents)"
+        'Format of the output: detailed (full info), simple (names only), agent-friendly (formatted for AI agents)',
       ),
     filterByPrice: z
       .number()
       .optional()
-      .describe("Filter models by maximum price per second"),
+      .describe('Filter models by maximum price per second'),
     filterByDuration: z
       .number()
       .optional()
-      .describe("Filter models that support this duration in seconds"),
-    excludeVip: z.boolean().optional().describe("Exclude VIP-only models"),
+      .describe('Filter models that support this duration in seconds'),
+    excludeVip: z.boolean().optional().describe('Exclude VIP-only models'),
   }),
   execute: async ({
-    format = "agent-friendly",
+    format = 'agent-friendly',
     filterByPrice,
     filterByDuration,
     excludeVip,
   }) => {
     try {
       console.log(
-        "🎬 📋 Listing video models from SuperDuperAI with format:",
-        format
+        '🎬 📋 Listing video models from SuperDuperAI with format:',
+        format,
       );
 
       // AICODE-NOTE: Get models from our new dynamic system
@@ -43,7 +43,7 @@ export const listVideoModels = tool({
       if (filterByPrice) {
         videoModels = videoModels.filter(
           (m) =>
-            (m.params.price_per_second || m.params.price || 0) <= filterByPrice
+            (m.params.price_per_second || m.params.price || 0) <= filterByPrice,
         );
       }
 
@@ -52,7 +52,7 @@ export const listVideoModels = tool({
           (m) =>
             (m.params.max_duration ||
               m.params.available_durations?.[0] ||
-              60) >= filterByDuration
+              60) >= filterByDuration,
         );
       }
 
@@ -60,7 +60,7 @@ export const listVideoModels = tool({
         videoModels = videoModels.filter((m) => !m.params.is_vip);
       }
 
-      if (format === "agent-friendly") {
+      if (format === 'agent-friendly') {
         const agentInfo = {
           models: videoModels.map((m) => ({
             id: m.name, // Use name as id
@@ -71,12 +71,12 @@ export const listVideoModels = tool({
             vip_required: m.params.is_vip || false,
             supported_resolutions: `${m.params.max_width || 1920}x${m.params.max_height || 1080}`,
             frame_rates: m.params.frame_rates || [24, 30],
-            aspect_ratios: m.params.aspect_ratios || ["16:9"],
+            aspect_ratios: m.params.aspect_ratios || ['16:9'],
           })),
           usage_examples: [
             'Use model ID like "comfyui/ltx" when calling configureVideoGeneration',
-            "Check max_duration before setting video duration",
-            "Consider price_per_second for cost optimization",
+            'Check max_duration before setting video duration',
+            'Consider price_per_second for cost optimization',
           ],
           total: videoModels.length,
         };
@@ -88,7 +88,7 @@ export const listVideoModels = tool({
         };
       }
 
-      if (format === "simple") {
+      if (format === 'simple') {
         const simpleList = videoModels.map((m) => ({
           id: m.name,
           name: m.name,
@@ -117,10 +117,10 @@ export const listVideoModels = tool({
           height: m.params.max_height || 1080,
         },
         supported_frame_rates: m.params.frame_rates || [24, 30],
-        supported_aspect_ratios: m.params.aspect_ratios || ["16:9"],
-        supported_qualities: m.params.qualities || ["hd"],
+        supported_aspect_ratios: m.params.aspect_ratios || ['16:9'],
+        supported_qualities: m.params.qualities || ['hd'],
         vip_required: m.params.is_vip || false,
-        workflow_path: m.params.workflow_path || "",
+        workflow_path: m.params.workflow_path || '',
       }));
 
       return {
@@ -135,13 +135,13 @@ export const listVideoModels = tool({
         },
       };
     } catch (error: any) {
-      console.error("🎬 ❌ Error listing video models:", error);
+      console.error('🎬 ❌ Error listing video models:', error);
       return {
         success: false,
         error:
-          error?.message || "Failed to list video models from SuperDuperAI API",
+          error?.message || 'Failed to list video models from SuperDuperAI API',
         message:
-          "Could not retrieve video models. Please check SUPERDUPERAI_TOKEN and SUPERDUPERAI_URL environment variables.",
+          'Could not retrieve video models. Please check SUPERDUPERAI_TOKEN and SUPERDUPERAI_URL environment variables.',
       };
     }
   },
@@ -149,24 +149,24 @@ export const listVideoModels = tool({
 
 export const findBestVideoModel = tool({
   description:
-    "Find the best video model from SuperDuperAI based on specific requirements like price, duration, and VIP access. Use this to automatically select the optimal model for your needs.",
-  parameters: z.object({
+    'Find the best video model from SuperDuperAI based on specific requirements like price, duration, and VIP access. Use this to automatically select the optimal model for your needs.',
+  inputSchema: z.object({
     maxPrice: z
       .number()
       .optional()
-      .describe("Maximum price per second you want to pay"),
+      .describe('Maximum price per second you want to pay'),
     preferredDuration: z
       .number()
       .optional()
-      .describe("Preferred video duration in seconds"),
+      .describe('Preferred video duration in seconds'),
     vipAllowed: z
       .boolean()
       .optional()
-      .describe("Whether VIP models are allowed (default: true)"),
+      .describe('Whether VIP models are allowed (default: true)'),
     prioritizeQuality: z
       .boolean()
       .optional()
-      .describe("Prioritize quality over price (default: false)"),
+      .describe('Prioritize quality over price (default: false)'),
   }),
   execute: async ({
     maxPrice,
@@ -175,7 +175,7 @@ export const findBestVideoModel = tool({
     prioritizeQuality = false,
   }) => {
     try {
-      console.log("🎬 🔍 Finding best video model with criteria:", {
+      console.log('🎬 🔍 Finding best video model with criteria:', {
         maxPrice,
         preferredDuration,
         vipAllowed,
@@ -189,13 +189,13 @@ export const findBestVideoModel = tool({
       // Apply filters
       if (maxPrice) {
         candidates = candidates.filter(
-          (m) => (m.params.price_per_second || m.params.price || 0) <= maxPrice
+          (m) => (m.params.price_per_second || m.params.price || 0) <= maxPrice,
         );
       }
 
       if (preferredDuration) {
         candidates = candidates.filter(
-          (m) => (m.params.max_duration || 60) >= preferredDuration
+          (m) => (m.params.max_duration || 60) >= preferredDuration,
         );
       }
 
@@ -206,9 +206,9 @@ export const findBestVideoModel = tool({
       if (candidates.length === 0) {
         return {
           success: false,
-          message: "No video model found matching your criteria",
+          message: 'No video model found matching your criteria',
           suggestion:
-            "Try relaxing your requirements (higher price limit, allow VIP models, etc.)",
+            'Try relaxing your requirements (higher price limit, allow VIP models, etc.)',
           available_models: allModels.map((m) => ({
             id: m.name,
             name: m.name,
@@ -226,14 +226,14 @@ export const findBestVideoModel = tool({
         bestModel = candidates.sort(
           (a, b) =>
             (b.params.price_per_second || b.params.price || 0) -
-            (a.params.price_per_second || a.params.price || 0)
+            (a.params.price_per_second || a.params.price || 0),
         )[0];
       } else {
         // Sort by price ascending (cheapest first)
         bestModel = candidates.sort(
           (a, b) =>
             (a.params.price_per_second || a.params.price || 0) -
-            (b.params.price_per_second || b.params.price || 0)
+            (b.params.price_per_second || b.params.price || 0),
         )[0];
       }
 
@@ -251,18 +251,18 @@ export const findBestVideoModel = tool({
             height: bestModel.params.max_height || 1080,
           },
           vip_required: bestModel.params.is_vip || false,
-          recommendation_reason: `Selected based on ${prioritizeQuality ? "quality" : "price"} optimization`,
+          recommendation_reason: `Selected based on ${prioritizeQuality ? 'quality' : 'price'} optimization`,
         },
         message: `Best model found: ${bestModel.name} at $${bestModel.params.price_per_second || bestModel.params.price || 0}/sec`,
         usage_tip: `Use model ID "${bestModel.name}" when calling configureVideoGeneration`,
       };
     } catch (error: any) {
-      console.error("🎬 ❌ Error finding best video model:", error);
+      console.error('🎬 ❌ Error finding best video model:', error);
       return {
         success: false,
-        error: error?.message || "Failed to find best video model",
+        error: error?.message || 'Failed to find best video model',
         message:
-          "Could not find optimal video model. Please check SuperDuperAI API connection.",
+          'Could not find optimal video model. Please check SuperDuperAI API connection.',
       };
     }
   },

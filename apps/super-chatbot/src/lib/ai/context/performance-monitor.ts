@@ -3,7 +3,7 @@
  * Отслеживает метрики производительности, точность и использование ресурсов
  */
 
-import type { MediaContext } from "./universal-context";
+import type { MediaContext } from './universal-context';
 
 interface PerformanceMetrics {
   operation: string;
@@ -35,7 +35,7 @@ interface ResourceUsage {
 }
 
 interface SystemHealth {
-  status: "healthy" | "warning" | "critical";
+  status: 'healthy' | 'warning' | 'critical';
   issues: string[];
   recommendations: string[];
   uptime: number;
@@ -61,7 +61,7 @@ export class ContextPerformanceMonitor {
     averageResponseTime: 0,
   };
   private systemHealth: SystemHealth = {
-    status: "healthy",
+    status: 'healthy',
     issues: [],
     recommendations: [],
     uptime: Date.now(),
@@ -88,7 +88,7 @@ export class ContextPerformanceMonitor {
    */
   startOperation(
     operation: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): () => void {
     const startTime = performance.now();
     const metric: PerformanceMetrics = {
@@ -129,7 +129,7 @@ export class ContextPerformanceMonitor {
     this.checkPerformanceThresholds(metric);
 
     console.log(
-      `📊 PerformanceMonitor: ${metric.operation} completed in ${Math.round(metric.duration)}ms (${metric.success ? "success" : "failed"})`
+      `📊 PerformanceMonitor: ${metric.operation} completed in ${Math.round(metric.duration)}ms (${metric.success ? 'success' : 'failed'})`,
     );
   }
 
@@ -145,13 +145,13 @@ export class ContextPerformanceMonitor {
 
     // Обновляем распределение уверенности
     switch (context.confidence) {
-      case "high":
+      case 'high':
         this.accuracyMetrics.confidenceDistribution.high++;
         break;
-      case "medium":
+      case 'medium':
         this.accuracyMetrics.confidenceDistribution.medium++;
         break;
-      case "low":
+      case 'low':
         this.accuracyMetrics.confidenceDistribution.low++;
         break;
     }
@@ -165,7 +165,7 @@ export class ContextPerformanceMonitor {
     this.updateAverageConfidence();
 
     console.log(
-      `📊 PerformanceMonitor: Accuracy updated: ${Math.round(this.accuracyMetrics.accuracyRate * 100)}%`
+      `📊 PerformanceMonitor: Accuracy updated: ${Math.round(this.accuracyMetrics.accuracyRate * 100)}%`,
     );
   }
 
@@ -196,7 +196,7 @@ export class ContextPerformanceMonitor {
     if (recentMetrics.length > 0) {
       const totalDuration = recentMetrics.reduce(
         (sum, metric) => sum + metric.duration,
-        0
+        0,
       );
       this.resourceUsage.averageResponseTime =
         totalDuration / recentMetrics.length;
@@ -212,7 +212,7 @@ export class ContextPerformanceMonitor {
     // Проверяем время ответа
     if (metric.duration > this.performanceThresholds.maxResponseTime) {
       issues.push(
-        `Slow response time: ${Math.round(metric.duration)}ms for ${metric.operation}`
+        `Slow response time: ${Math.round(metric.duration)}ms for ${metric.operation}`,
       );
     }
 
@@ -222,17 +222,17 @@ export class ContextPerformanceMonitor {
       this.performanceThresholds.minAccuracyRate
     ) {
       issues.push(
-        `Low accuracy rate: ${Math.round(this.accuracyMetrics.accuracyRate * 100)}%`
+        `Low accuracy rate: ${Math.round(this.accuracyMetrics.accuracyRate * 100)}%`,
       );
     }
 
     // Обновляем статус здоровья
     if (issues.length > 0) {
-      this.systemHealth.status = issues.length > 3 ? "critical" : "warning";
+      this.systemHealth.status = issues.length > 3 ? 'critical' : 'warning';
       this.systemHealth.issues = issues;
       this.generateRecommendations();
     } else {
-      this.systemHealth.status = "healthy";
+      this.systemHealth.status = 'healthy';
       this.systemHealth.issues = [];
       this.systemHealth.recommendations = [];
     }
@@ -250,10 +250,10 @@ export class ContextPerformanceMonitor {
       this.performanceThresholds.maxResponseTime
     ) {
       recommendations.push(
-        "Consider optimizing database queries or adding more caching"
+        'Consider optimizing database queries or adding more caching',
       );
       recommendations.push(
-        "Review complex pattern matching algorithms for optimization"
+        'Review complex pattern matching algorithms for optimization',
       );
     }
 
@@ -262,10 +262,10 @@ export class ContextPerformanceMonitor {
       this.accuracyMetrics.accuracyRate <
       this.performanceThresholds.minAccuracyRate
     ) {
-      recommendations.push("Review and expand pattern matching rules");
-      recommendations.push("Consider improving semantic search algorithms");
+      recommendations.push('Review and expand pattern matching rules');
+      recommendations.push('Consider improving semantic search algorithms');
       recommendations.push(
-        "Add more training data for user preference learning"
+        'Add more training data for user preference learning',
       );
     }
 
@@ -273,9 +273,9 @@ export class ContextPerformanceMonitor {
     if (
       this.resourceUsage.memoryUsage > this.performanceThresholds.maxMemoryUsage
     ) {
-      recommendations.push("Implement memory cleanup for old cache entries");
+      recommendations.push('Implement memory cleanup for old cache entries');
       recommendations.push(
-        "Consider reducing cache size or implementing LRU eviction"
+        'Consider reducing cache size or implementing LRU eviction',
       );
     }
 
@@ -284,9 +284,9 @@ export class ContextPerformanceMonitor {
       this.resourceUsage.cacheHitRate <
       this.performanceThresholds.minCacheHitRate
     ) {
-      recommendations.push("Review cache key generation strategy");
+      recommendations.push('Review cache key generation strategy');
       recommendations.push(
-        "Consider increasing cache TTL for frequently accessed data"
+        'Consider increasing cache TTL for frequently accessed data',
       );
     }
 
@@ -310,14 +310,14 @@ export class ContextPerformanceMonitor {
 
     if (failureRate > 0.1) {
       // Более 10% ошибок
-      this.systemHealth.status = "critical";
+      this.systemHealth.status = 'critical';
       this.systemHealth.issues.push(
-        `High failure rate: ${Math.round(failureRate * 100)}%`
+        `High failure rate: ${Math.round(failureRate * 100)}%`,
       );
     }
 
     console.log(
-      `📊 PerformanceMonitor: Health check completed - Status: ${this.systemHealth.status}`
+      `📊 PerformanceMonitor: Health check completed - Status: ${this.systemHealth.status}`,
     );
   }
 
@@ -326,7 +326,7 @@ export class ContextPerformanceMonitor {
    */
   private updateResourceUsage(): void {
     // Получаем информацию о памяти (упрощенная версия)
-    if (typeof process !== "undefined" && process.memoryUsage) {
+    if (typeof process !== 'undefined' && process.memoryUsage) {
       const memUsage = process.memoryUsage();
       this.resourceUsage.memoryUsage = memUsage.heapUsed;
     }
@@ -376,24 +376,24 @@ export class ContextPerformanceMonitor {
   /**
    * Экспортирует метрики в формате для анализа
    */
-  exportMetrics(format: "json" | "csv" = "json"): string {
-    if (format === "csv") {
+  exportMetrics(format: 'json' | 'csv' = 'json'): string {
+    if (format === 'csv') {
       const headers = [
-        "operation",
-        "duration",
-        "success",
-        "timestamp",
-        "error",
+        'operation',
+        'duration',
+        'success',
+        'timestamp',
+        'error',
       ];
       const rows = this.metrics.map((metric) => [
         metric.operation,
         metric.duration,
         metric.success,
         new Date(metric.startTime).toISOString(),
-        metric.error || "",
+        metric.error || '',
       ]);
 
-      return [headers, ...rows].map((row) => row.join(",")).join("\n");
+      return [headers, ...rows].map((row) => row.join(',')).join('\n');
     }
 
     return JSON.stringify(
@@ -405,7 +405,7 @@ export class ContextPerformanceMonitor {
         timestamp: new Date().toISOString(),
       },
       null,
-      2
+      2,
     );
   }
 
@@ -417,13 +417,13 @@ export class ContextPerformanceMonitor {
     const initialCount = this.metrics.length;
 
     this.metrics = this.metrics.filter(
-      (metric) => metric.startTime > cutoffTime
+      (metric) => metric.startTime > cutoffTime,
     );
 
     const removedCount = initialCount - this.metrics.length;
     if (removedCount > 0) {
       console.log(
-        `📊 PerformanceMonitor: Cleaned up ${removedCount} old metrics`
+        `📊 PerformanceMonitor: Cleaned up ${removedCount} old metrics`,
       );
     }
   }
@@ -441,14 +441,14 @@ export class ContextPerformanceMonitor {
       averageConfidence: 0,
     };
     this.systemHealth = {
-      status: "healthy",
+      status: 'healthy',
       issues: [],
       recommendations: [],
       uptime: Date.now(),
       lastHealthCheck: new Date(),
     };
 
-    console.log("📊 PerformanceMonitor: All metrics reset");
+    console.log('📊 PerformanceMonitor: All metrics reset');
   }
 
   /**
@@ -464,7 +464,7 @@ export class ContextPerformanceMonitor {
     this.performanceThresholds.minCacheHitRate =
       thresholds.minCacheHitRate ?? this.performanceThresholds.minCacheHitRate;
 
-    console.log("📊 PerformanceMonitor: Thresholds updated");
+    console.log('📊 PerformanceMonitor: Thresholds updated');
   }
 }
 

@@ -1,13 +1,13 @@
-import { getVideoGenerationConfig } from "@/lib/config/media-settings-factory";
+import { getVideoGenerationConfig } from '@/lib/config/media-settings-factory';
 import {
   type GenerationSourceEnum,
   GenerationTypeEnum,
-} from "@turbo-super/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { useNextGenerateVideo } from "@/lib/api";
+} from '@turbo-super/api';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { useNextGenerateVideo } from '@/lib/api';
 
 type IGenerationConfigRead = {
   name: string;
@@ -31,7 +31,7 @@ export function AnimatingTool({
   const [models, setModels] = useState<IGenerationConfigRead[]>([]);
   const [model, setModel] = useState<IGenerationConfigRead>();
   const [duration, setDuration] = useState<number>(5);
-  const [prompt, setPrompt] = useState<string>("");
+  const [prompt, setPrompt] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
@@ -47,18 +47,18 @@ export function AnimatingTool({
         const videoConfig = await getVideoGenerationConfig();
 
         const imageToVideoModels = videoConfig.availableModels.filter(
-          (m) => m.type === GenerationTypeEnum.IMAGE_TO_VIDEO
+          (m) => m.type === GenerationTypeEnum.IMAGE_TO_VIDEO,
         );
         setModel(imageToVideoModels[0]);
         setModels(imageToVideoModels);
       } catch (error) {
-        console.error("🎬 ❌ Failed to load configuration:", error);
+        console.error('🎬 ❌ Failed to load configuration:', error);
         setConfigError(
           error instanceof Error
             ? error.message
-            : "Failed to load configuration"
+            : 'Failed to load configuration',
         );
-        toast.error("Failed to load video generation models");
+        toast.error('Failed to load video generation models');
       } finally {
         setIsLoadingConfig(false);
       }
@@ -77,27 +77,27 @@ export function AnimatingTool({
       const resp = await fetch(imageUrl);
       const blob = await resp.blob();
       const file = new File([blob], `scene-${sceneId}.jpg`, {
-        type: blob.type || "image/jpeg",
+        type: blob.type || 'image/jpeg',
       });
 
       const form = new FormData();
-      form.append("prompt", prompt || "Animate this image");
-      form.append("model", model?.name || "veo3");
-      form.append("resolution", "1280x720 (HD)");
-      form.append("style", "base");
-      form.append("shotSize", "medium_shot");
-      form.append("duration", String(duration));
-      form.append("frameRate", String(30));
-      form.append("generationType", "image-to-video");
-      form.append("file", file);
-      form.append("projectId", projectId);
-      form.append("sceneId", sceneId);
+      form.append('prompt', prompt || 'Animate this image');
+      form.append('model', model?.name || 'veo3');
+      form.append('resolution', '1280x720 (HD)');
+      form.append('style', 'base');
+      form.append('shotSize', 'medium_shot');
+      form.append('duration', String(duration));
+      form.append('frameRate', String(30));
+      form.append('generationType', 'image-to-video');
+      form.append('file', file);
+      form.append('projectId', projectId);
+      form.append('sceneId', sceneId);
 
       const json = await generateVideoMutation.mutateAsync(form);
       const newFileId = json?.fileId || json?.projectId;
       if (newFileId) onStarted(newFileId);
     } catch (e: any) {
-      setError(e?.message || "Generation failed");
+      setError(e?.message || 'Generation failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -163,10 +163,7 @@ export function AnimatingTool({
               <option value="Veo3">Veo3</option>
             ) : (
               models.map((m) => (
-                <option
-                  key={m.name}
-                  value={m.name}
-                >
+                <option key={m.name} value={m.name}>
                   {m.label || m.name}
                 </option>
               ))
@@ -189,10 +186,7 @@ export function AnimatingTool({
             {(
               model?.params?.available_durations || [3, 5, 8, 10, 15, 20, 30]
             ).map((d: number) => (
-              <option
-                key={d}
-                value={String(d)}
-              >
+              <option key={d} value={String(d)}>
                 {d}
               </option>
             ))}
@@ -205,7 +199,7 @@ export function AnimatingTool({
             onClick={handleGenerate}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Generating..." : "Generate"}
+            {isSubmitting ? 'Generating...' : 'Generate'}
           </button>
         </div>
       </div>

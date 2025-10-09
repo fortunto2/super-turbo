@@ -1,5 +1,5 @@
-import { auth } from "@/app/(auth)/auth";
-import { NextResponse } from "next/server";
+import { auth } from '@/app/(auth)/auth';
+import { NextResponse } from 'next/server';
 
 /**
  * Проверяет, является ли текущий пользователь администратором
@@ -13,7 +13,7 @@ export async function checkAdminPermissions(): Promise<{
   if (!session?.user) {
     return {
       isAdmin: false,
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+      error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
     };
   }
 
@@ -21,16 +21,16 @@ export async function checkAdminPermissions(): Promise<{
   // В реальном приложении это должно проверяться через базу данных
   // или через Auth0 роли
   const isAdmin =
-    session.user.email?.endsWith("@superduperai.com") ||
-    session.user.email === "admin@example.com" ||
-    process.env.NODE_ENV === "development";
+    session.user.email?.endsWith('@superduperai.com') ||
+    session.user.email === 'admin@example.com' ||
+    process.env.NODE_ENV === 'development';
 
   if (!isAdmin) {
     return {
       isAdmin: false,
       error: NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 }
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 },
       ),
     };
   }

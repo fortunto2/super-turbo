@@ -9,10 +9,14 @@ console.log('🔍 Диагностика проблем с Auth0 конфигу�
 // Проверяем переменные окружения
 const envVars = {
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? '✅ Настроен' : '❌ Отсутствует',
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET
+    ? '✅ Настроен'
+    : '❌ Отсутствует',
   VERCEL_URL: process.env.VERCEL_URL,
   AUTH_AUTH0_ID: process.env.AUTH_AUTH0_ID ? '✅ Настроен' : '❌ Отсутствует',
-  AUTH_AUTH0_SECRET: process.env.AUTH_AUTH0_SECRET ? '✅ Настроен' : '❌ Отсутствует',
+  AUTH_AUTH0_SECRET: process.env.AUTH_AUTH0_SECRET
+    ? '✅ Настроен'
+    : '❌ Отсутствует',
   AUTH_AUTH0_ISSUER: process.env.AUTH_AUTH0_ISSUER,
   NODE_ENV: process.env.NODE_ENV,
 };
@@ -27,8 +31,11 @@ Object.entries(envVars).forEach(([key, value]) => {
 });
 
 // Определяем правильный URL
-const nextAuthUrl = process.env.NEXTAUTH_URL || 
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+const nextAuthUrl =
+  process.env.NEXTAUTH_URL ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000');
 
 console.log(`\n🌐 Определенный NEXTAUTH_URL: ${nextAuthUrl}`);
 
@@ -36,7 +43,9 @@ console.log(`\n🌐 Определенный NEXTAUTH_URL: ${nextAuthUrl}`);
 console.log('\n🎯 Что нужно проверить в Auth0 консоли:');
 console.log('1. Allowed Callback URLs:');
 console.log(`   - ${nextAuthUrl}/api/auth/callback/auth0`);
-console.log('   - http://localhost:3000/api/auth/callback/auth0 (для разработки)');
+console.log(
+  '   - http://localhost:3000/api/auth/callback/auth0 (для разработки)',
+);
 
 console.log('\n2. Allowed Logout URLs:');
 console.log(`   - ${nextAuthUrl}`);
@@ -50,9 +59,13 @@ console.log('\n4. Application Type:');
 console.log('   - Single Page Application (SPA)');
 
 console.log('\n🔧 Рекомендации для NextAuth v5:');
-console.log('1. Убедитесь, что в Auth0 консоли добавлены правильные callback URLs');
+console.log(
+  '1. Убедитесь, что в Auth0 консоли добавлены правильные callback URLs',
+);
 console.log('2. Проверьте, что NEXTAUTH_URL установлен в переменных окружения');
-console.log('3. Убедитесь, что NEXTAUTH_SECRET установлен (обязательно для v5)');
+console.log(
+  '3. Убедитесь, что NEXTAUTH_SECRET установлен (обязательно для v5)',
+);
 console.log('4. Проверьте, что домен в Auth0 соответствует продакшен домену');
 console.log('5. Убедитесь, что приложение в Auth0 настроено как SPA');
 
@@ -68,4 +81,4 @@ console.log('NEXTAUTH_SECRET=your-secret-key-here');
 console.log('\n⚠️  Важно для NextAuth v5:');
 console.log('- NEXTAUTH_SECRET обязателен для работы в продакшене');
 console.log('- trustHost: true добавлен в конфигурацию для безопасности');
-console.log('- URL настраивается через переменную окружения NEXTAUTH_URL'); 
+console.log('- URL настраивается через переменную окружения NEXTAUTH_URL');

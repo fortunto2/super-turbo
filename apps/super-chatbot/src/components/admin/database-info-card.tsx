@@ -1,19 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import {
-  Database,
-  HardDrive,
-  Server,
-  Wifi,
-} from "lucide-react";
+} from '@turbo-super/ui';
+import { Database, HardDrive, Server, Wifi } from 'lucide-react';
 
 interface DatabaseInfo {
   databaseSize: string;
@@ -30,17 +25,17 @@ export function DatabaseInfoCard() {
   useEffect(() => {
     const fetchDatabaseInfo = async () => {
       try {
-        const response = await fetch("/api/admin/system/stats");
+        const response = await fetch('/api/admin/system/stats');
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch database info");
+          throw new Error(data.error || 'Failed to fetch database info');
         }
 
         setInfo(data.stats.system);
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching database info:", err);
+        console.error('Error fetching database info:', err);
       } finally {
         setLoading(false);
       }
@@ -133,7 +128,7 @@ export function DatabaseInfoCard() {
               <span className="text-sm font-medium">PostgreSQL Version</span>
             </div>
             <div className="text-lg font-bold">
-              {info.postgresVersion.split(" ")[0] || "Unknown"}
+              {info.postgresVersion.split(' ')[0] || 'Unknown'}
             </div>
             <div className="text-xs text-muted-foreground">
               Database version
@@ -145,7 +140,7 @@ export function DatabaseInfoCard() {
               <span className="text-sm font-medium">Active Connections</span>
             </div>
             <div className="text-lg font-bold">
-              {info.activeConnections || "N/A"}
+              {info.activeConnections || 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground">
               Current connections

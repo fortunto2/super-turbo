@@ -3,7 +3,7 @@
  * Улучшают производительность за счет кэширования часто используемых данных
  */
 
-import type { ComponentType } from "react";
+import type { ComponentType } from 'react';
 
 // Простой in-memory кэш
 class MemoryCache<T> {
@@ -78,7 +78,7 @@ class MemoryCache<T> {
 export const apiCache = new MemoryCache<any>(50, 2 * 60 * 1000); // 2 минуты
 export const componentCache = new MemoryCache<ComponentType<any>>(
   20,
-  10 * 60 * 1000
+  10 * 60 * 1000,
 ); // 10 минут
 export const dataCache = new MemoryCache<any>(100, 5 * 60 * 1000); // 5 минут
 
@@ -86,7 +86,7 @@ export const dataCache = new MemoryCache<any>(100, 5 * 60 * 1000); // 5 мину
 export function withApiCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  ttl?: number
+  ttl?: number,
 ): Promise<T> {
   const cached = apiCache.get(key);
   if (cached) {
@@ -103,7 +103,7 @@ export function withApiCache<T>(
 export function withComponentCache<T extends ComponentType<any>>(
   key: string,
   component: T,
-  ttl?: number
+  ttl?: number,
 ): T {
   const cached = componentCache.get(key);
   if (cached) {
@@ -130,7 +130,7 @@ export function withAutoInvalidation<T>(
   key: string,
   fetcher: () => Promise<T>,
   ttl?: number,
-  invalidateKeys?: string[]
+  invalidateKeys?: string[],
 ): Promise<T> {
   const cached = apiCache.get(key);
   if (cached) {
@@ -156,7 +156,7 @@ export function withDependencyCache<T>(
   key: string,
   fetcher: () => Promise<T>,
   dependencies: string[],
-  ttl?: number
+  ttl?: number,
 ): Promise<T> {
   // Проверяем зависимости
   const hasValidDependencies = dependencies.every((dep) => apiCache.has(dep));
@@ -174,7 +174,7 @@ export function withTaggedCache<T>(
   key: string,
   fetcher: () => Promise<T>,
   tags: string[],
-  ttl?: number
+  ttl?: number,
 ): Promise<T> {
   const cached = apiCache.get(key);
   if (cached) {
@@ -231,13 +231,13 @@ export function getCacheStats() {
 }
 
 // Автоматическая очистка кэша каждые 5 минут
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   setInterval(
     () => {
       apiCache.cleanup();
       componentCache.cleanup();
       dataCache.cleanup();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }

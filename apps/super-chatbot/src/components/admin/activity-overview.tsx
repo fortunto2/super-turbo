@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+} from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Users,
   FileText,
@@ -16,7 +16,7 @@ import {
   TrendingUp,
   Award,
   BarChart3,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface ActivityData {
   recentUsers: number;
@@ -42,17 +42,17 @@ export function ActivityOverview() {
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        const response = await fetch("/api/admin/system/stats");
+        const response = await fetch('/api/admin/system/stats');
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch activity data");
+          throw new Error(data.error || 'Failed to fetch activity data');
         }
 
         setActivity(data.stats.activity);
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching activity data:", err);
+        console.error('Error fetching activity data:', err);
       } finally {
         setLoading(false);
       }
@@ -152,9 +152,9 @@ export function ActivityOverview() {
                     <div>
                       <p className="text-sm font-medium">{creator.userEmail}</p>
                       <p className="text-xs text-muted-foreground">
-                        {creator.userEmail.includes("guest")
-                          ? "Guest User"
-                          : "Registered User"}
+                        {creator.userEmail.includes('guest')
+                          ? 'Guest User'
+                          : 'Registered User'}
                       </p>
                     </div>
                   </div>
@@ -200,9 +200,9 @@ export function ActivityOverview() {
                     <div>
                       <p className="text-sm font-medium">{creator.userEmail}</p>
                       <p className="text-xs text-muted-foreground">
-                        {creator.userEmail.includes("guest")
-                          ? "Guest User"
-                          : "Registered User"}
+                        {creator.userEmail.includes('guest')
+                          ? 'Guest User'
+                          : 'Registered User'}
                       </p>
                     </div>
                   </div>

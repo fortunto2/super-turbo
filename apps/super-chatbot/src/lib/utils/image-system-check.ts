@@ -1,6 +1,6 @@
 // System health check for image generation
-import { imageMonitor } from "@/artifacts/image";
-import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
+import { imageMonitor } from '@/artifacts/image';
+import { imageWebsocketStore } from '@/artifacts/image/stores/image-websocket-store';
 
 export interface SystemHealthReport {
   timestamp: number;
@@ -30,38 +30,38 @@ export function performSystemHealthCheck(): SystemHealthReport {
 
   // Check WebSocket health
   if (!websocketDebug.isConnected && websocketDebug.totalHandlers > 0) {
-    issues.push("WebSocket disconnected but handlers exist");
-    recommendations.push("Check network connection and restart WebSocket");
+    issues.push('WebSocket disconnected but handlers exist');
+    recommendations.push('Check network connection and restart WebSocket');
   }
 
   if (websocketDebug.totalHandlers > 8) {
-    issues.push("Too many WebSocket handlers detected");
-    recommendations.push("Consider cleaning up old handlers");
+    issues.push('Too many WebSocket handlers detected');
+    recommendations.push('Consider cleaning up old handlers');
   }
 
   // Check for image mix-ups
   if (monitoringDebug.duplicateImages.length > 0) {
     issues.push(
-      `${monitoringDebug.duplicateImages.length} duplicate images detected`
+      `${monitoringDebug.duplicateImages.length} duplicate images detected`,
     );
-    recommendations.push("Check for race conditions in image assignment");
+    recommendations.push('Check for race conditions in image assignment');
   }
 
   if (monitoringDebug.mixedUpImages.length > 0) {
     issues.push(
-      `${monitoringDebug.mixedUpImages.length} mixed-up images detected`
+      `${monitoringDebug.mixedUpImages.length} mixed-up images detected`,
     );
-    recommendations.push("Verify project isolation is working correctly");
+    recommendations.push('Verify project isolation is working correctly');
   }
 
   // Check for recent errors
   const recentErrors = monitoringDebug.recentRequests.filter(
-    (req) => req.status.includes("error") || req.status.includes("failed")
+    (req) => req.status.includes('error') || req.status.includes('failed'),
   ).length;
 
   if (recentErrors > 2) {
     issues.push(`${recentErrors} recent errors detected`);
-    recommendations.push("Check API connectivity and authentication");
+    recommendations.push('Check API connectivity and authentication');
   }
 
   return {
@@ -88,19 +88,19 @@ export function performSystemHealthCheck(): SystemHealthReport {
 export function logSystemHealth() {
   const report = performSystemHealthCheck();
 
-  console.group("🔍 Image Generation System Health Check");
-  console.log("📊 Report:", report);
+  console.group('🔍 Image Generation System Health Check');
+  console.log('📊 Report:', report);
 
   if (report.issues.length > 0) {
-    console.group("⚠️ Issues Found:");
+    console.group('⚠️ Issues Found:');
     report.issues.forEach((issue) => console.warn(issue));
     console.groupEnd();
 
-    console.group("💡 Recommendations:");
+    console.group('💡 Recommendations:');
     report.recommendations.forEach((rec) => console.info(rec));
     console.groupEnd();
   } else {
-    console.log("✅ No issues detected");
+    console.log('✅ No issues detected');
   }
 
   console.groupEnd();
@@ -110,14 +110,14 @@ export function logSystemHealth() {
 
 // Auto-check function that can be called periodically
 export function startPeriodicHealthCheck(intervalMs = 30000) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const interval = setInterval(() => {
     const report = performSystemHealthCheck();
 
     // Only log if there are issues
     if (report.issues.length > 0) {
-      console.warn("🚨 Image system health issues detected:", report.issues);
+      console.warn('🚨 Image system health issues detected:', report.issues);
     }
   }, intervalMs);
 
@@ -130,7 +130,7 @@ export function startPeriodicHealthCheck(intervalMs = 30000) {
 // Stop periodic health check
 export function stopPeriodicHealthCheck() {
   if (
-    typeof window !== "undefined" &&
+    typeof window !== 'undefined' &&
     (window as any).imageHealthCheckInterval
   ) {
     clearInterval((window as any).imageHealthCheckInterval);

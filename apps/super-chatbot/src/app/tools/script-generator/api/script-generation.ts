@@ -1,10 +1,10 @@
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
 
 export interface ScriptGenerationParams {
   prompt: string;
-  scriptType?: "video" | "presentation" | "story" | "dialogue" | "narrative";
-  length?: "short" | "medium" | "long";
-  tone?: "formal" | "casual" | "professional" | "creative" | "educational";
+  scriptType?: 'video' | 'presentation' | 'story' | 'dialogue' | 'narrative';
+  length?: 'short' | 'medium' | 'long';
+  tone?: 'formal' | 'casual' | 'professional' | 'creative' | 'educational';
   targetAudience?: string;
   includeStructure?: boolean;
 }
@@ -21,21 +21,21 @@ export interface ScriptGenerationResult {
 }
 
 export async function generateScriptApi(
-  params: ScriptGenerationParams
+  params: ScriptGenerationParams,
 ): Promise<ScriptGenerationResult> {
   try {
     const payload = {
       prompt: params.prompt,
-      scriptType: params.scriptType || "video",
-      length: params.length || "medium",
-      tone: params.tone || "professional",
-      targetAudience: params.targetAudience || "general audience",
+      scriptType: params.scriptType || 'video',
+      length: params.length || 'medium',
+      tone: params.tone || 'professional',
+      targetAudience: params.targetAudience || 'general audience',
       includeStructure: params.includeStructure || true,
     };
 
     const response = await fetch(API_NEXT_ROUTES.GENERATE_SCRIPT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
@@ -53,7 +53,7 @@ export async function generateScriptApi(
     if (!result.success) {
       return {
         success: false,
-        error: result.error || "Script generation failed",
+        error: result.error || 'Script generation failed',
       };
     }
 
@@ -67,10 +67,10 @@ export async function generateScriptApi(
       structure: result.structure,
     };
   } catch (error) {
-    console.error("Script generation API error:", error);
+    console.error('Script generation API error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
 }

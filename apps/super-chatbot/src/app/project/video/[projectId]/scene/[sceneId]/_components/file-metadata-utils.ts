@@ -1,4 +1,4 @@
-import type { IFileRead, FileTypeEnum } from "@turbo-super/api";
+import type { IFileRead, FileTypeEnum } from '@turbo-super/api';
 
 export interface FileMetadata {
   type: FileTypeEnum;
@@ -47,7 +47,7 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
     // Извлекаем references
     if (imgGen.references && imgGen.references.length > 0) {
       metadata.references = imgGen.references.map((ref) => ({
-        type: "image",
+        type: 'image',
         ...(ref.reference?.url && { url: ref.reference.url }),
         ...(ref.reference?.id && { name: ref.reference.id }),
       }));
@@ -56,7 +56,7 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
 
   if (file.video_generation) {
     const vidGen = file.video_generation;
-    metadata.prompt = vidGen.prompt ?? "";
+    metadata.prompt = vidGen.prompt ?? '';
     if (vidGen.negative_prompt)
       metadata.negativePrompt = vidGen.negative_prompt;
     if (vidGen.seed !== undefined) metadata.seed = vidGen.seed;
@@ -81,7 +81,7 @@ export function extractFileMetadata(file: IFileRead): FileMetadata {
     // Извлекаем references
     if (vidGen.references && vidGen.references.length > 0) {
       metadata.references = vidGen.references.map((ref) => ({
-        type: "video",
+        type: 'video',
         ...(ref.reference?.url && { url: ref.reference.url }),
         ...(ref.reference?.id && { name: ref.reference.id }),
       }));

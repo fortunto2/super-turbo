@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import { Button } from '@turbo-super/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
-import { Trash2, Video } from "lucide-react";
-import type { GeneratedVideo } from "../hooks/use-video-generator";
-import { VideoPreviewModal } from "./video-preview-modal";
-import { VideoCard } from "./video-card";
+import { Trash2, Video } from 'lucide-react';
+import type { GeneratedVideo } from '../hooks/use-video-generator';
+import { VideoPreviewModal } from './video-preview-modal';
+import { VideoCard } from './video-card';
 
 interface VideoGalleryProps {
   videos: GeneratedVideo[];
@@ -26,7 +26,7 @@ export function VideoGallery({
   onCopyVideoUrl,
 }: VideoGalleryProps) {
   const [selectedVideo, setSelectedVideo] = useState<GeneratedVideo | null>(
-    null
+    null,
   );
   const [videoErrors, setVideoErrors] = useState<Set<string>>(new Set());
 

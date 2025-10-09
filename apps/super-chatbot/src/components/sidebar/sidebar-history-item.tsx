@@ -1,4 +1,4 @@
-import type { Chat } from "@/lib/db/schema";
+import type { Chat } from '@/lib/db/schema';
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -11,8 +11,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "../ui/";
-import Link from "next/link";
+} from '../ui/';
+import Link from 'next/link';
 
 import {
   CheckCircleFillIcon,
@@ -21,9 +21,9 @@ import {
   MoreHorizontalIcon,
   ShareIcon,
   TrashIcon,
-} from "../common/icons";
-import { memo } from "react";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
+} from '../common/icons';
+import { memo } from 'react';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
 const PureChatItem = ({
   chat,
@@ -43,14 +43,8 @@ const PureChatItem = ({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton
-        asChild
-        isActive={isActive}
-      >
-        <Link
-          href={`/chat/${chat.id}`}
-          onClick={() => setOpenMobile(false)}
-        >
+      <SidebarMenuButton asChild isActive={isActive}>
+        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
           <span>{chat.title}</span>
         </Link>
       </SidebarMenuButton>
@@ -66,10 +60,7 @@ const PureChatItem = ({
           </SidebarMenuAction>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          side="bottom"
-          align="end"
-        >
+        <DropdownMenuContent side="bottom" align="end">
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
               <ShareIcon />
@@ -80,28 +71,28 @@ const PureChatItem = ({
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType("private");
+                    setVisibilityType('private');
                   }}
                 >
                   <div className="flex flex-row gap-2 items-center">
                     <LockIcon size={12} />
                     <span>Private</span>
                   </div>
-                  {visibilityType === "private" ? (
+                  {visibilityType === 'private' ? (
                     <CheckCircleFillIcon />
                   ) : null}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType("public");
+                    setVisibilityType('public');
                   }}
                 >
                   <div className="flex flex-row gap-2 items-center">
                     <GlobeIcon />
                     <span>Public</span>
                   </div>
-                  {visibilityType === "public" ? <CheckCircleFillIcon /> : null}
+                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>

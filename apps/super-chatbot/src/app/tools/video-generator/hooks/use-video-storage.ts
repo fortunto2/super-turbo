@@ -3,14 +3,14 @@
  * Вынесен в отдельный файл для лучшей организации кода
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from 'react';
 import {
   saveVideo as saveVideoToStorage,
   getStoredVideos,
   deleteStoredVideo,
   clearStoredVideos as clearStoredVideosFromStorage,
-} from "@/lib/utils/local-storage";
-import type { GeneratedVideo } from "./types";
+} from '@/lib/utils/local-storage';
+import type { GeneratedVideo } from './types';
 
 export function useVideoStorage() {
   const [storedVideos, setStoredVideos] = useState<GeneratedVideo[]>([]);

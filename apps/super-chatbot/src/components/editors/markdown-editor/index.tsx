@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { ForwardedRef } from "react";
-import { useEffect, useState } from "react";
-import type { MDXEditorMethods, MDXEditorProps } from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
-import styles from "./styles.module.scss";
-import { cn } from "@turbo-super/ui";
+import type { ForwardedRef } from 'react';
+import { useEffect, useState } from 'react';
+import type { MDXEditorMethods, MDXEditorProps } from '@mdxeditor/editor';
+import '@mdxeditor/editor/style.css';
+import styles from './styles.module.scss';
+import { cn } from '@turbo-super/ui';
 
 export const MarkdownEditor = ({
   editorRef,
@@ -38,21 +38,21 @@ export const MarkdownEditor = ({
           { InsertCodeBlock },
           { codeMirrorPlugin },
         ] = await Promise.all([
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
-          import("@mdxeditor/editor"),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
+          import('@mdxeditor/editor'),
         ]);
 
         // CSS будет импортирован статически в начале файла
@@ -60,7 +60,7 @@ export const MarkdownEditor = ({
         const EditorComponent = (editorProps: any) => (
           <MDXEditor
             {...editorProps}
-            contentEditableClassName={cn("prose", styles.editor)}
+            contentEditableClassName={cn('prose', styles.editor)}
             plugins={[
               toolbarPlugin({
                 toolbarContents: () => (
@@ -80,12 +80,12 @@ export const MarkdownEditor = ({
               quotePlugin(),
               thematicBreakPlugin(),
               codeBlockPlugin({
-                defaultCodeBlockLanguage: "txt",
+                defaultCodeBlockLanguage: 'txt',
               }),
               codeMirrorPlugin({
                 codeBlockLanguages: {
-                  json: "json",
-                  txt: "text",
+                  json: 'json',
+                  txt: 'text',
                 },
               }),
               markdownShortcutPlugin(),
@@ -96,7 +96,7 @@ export const MarkdownEditor = ({
         setEditor(() => EditorComponent);
         setIsLoading(false);
       } catch (error) {
-        console.error("Failed to load MDXEditor:", error);
+        console.error('Failed to load MDXEditor:', error);
         setIsLoading(false);
       }
     };
@@ -108,8 +108,8 @@ export const MarkdownEditor = ({
     return (
       <div
         className={cn(
-          "flex items-center justify-center h-64 w-full",
-          className
+          'flex items-center justify-center h-64 w-full',
+          className,
         )}
       >
         <div className="text-gray-500">Loading editor...</div>
@@ -121,8 +121,8 @@ export const MarkdownEditor = ({
     return (
       <div
         className={cn(
-          "flex items-center justify-center h-64 w-full",
-          className
+          'flex items-center justify-center h-64 w-full',
+          className,
         )}
       >
         <div className="text-red-500">Failed to load editor</div>
@@ -130,11 +130,5 @@ export const MarkdownEditor = ({
     );
   }
 
-  return (
-    <Editor
-      {...props}
-      ref={editorRef}
-      className={className}
-    />
-  );
+  return <Editor {...props} ref={editorRef} className={className} />;
 };

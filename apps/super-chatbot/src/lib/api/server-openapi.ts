@@ -1,14 +1,14 @@
-import { OpenAPI } from "@turbo-super/api";
-import { getSuperduperAIConfig } from "@/lib/config/superduperai";
+import { OpenAPI } from '@turbo-super/api';
+import { getSuperduperAIConfig } from '@/lib/config/superduperai';
 
 /**
  * Инициализирует OpenAPI клиент на сервере с токеном из переменных окружения
  * Используется в серверных компонентах и API роутах
  */
 export function initializeServerOpenAPI(): void {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     throw new Error(
-      "initializeServerOpenAPI should only be called on the server"
+      'initializeServerOpenAPI should only be called on the server',
     );
   }
 

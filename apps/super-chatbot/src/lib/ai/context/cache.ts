@@ -3,7 +3,7 @@
  * Кэширует результаты анализа контекста изображений, видео и аудио
  */
 
-import type { MediaContext } from "./universal-context";
+import type { MediaContext } from './universal-context';
 
 interface CachedContext {
   context: MediaContext;
@@ -48,7 +48,7 @@ export class ContextCache {
   async getCachedContext(
     chatId: string,
     messageHash: string,
-    mediaType: string
+    mediaType: string,
   ): Promise<MediaContext | null> {
     this.stats.totalRequests++;
 
@@ -58,7 +58,7 @@ export class ContextCache {
     if (cached && this.isValid(cached)) {
       this.stats.hits++;
       console.log(
-        `🎯 ContextCache: Cache HIT for ${mediaType} in chat ${chatId}`
+        `🎯 ContextCache: Cache HIT for ${mediaType} in chat ${chatId}`,
       );
       return cached.context;
     }
@@ -71,7 +71,7 @@ export class ContextCache {
 
     this.stats.misses++;
     console.log(
-      `❌ ContextCache: Cache MISS for ${mediaType} in chat ${chatId}`
+      `❌ ContextCache: Cache MISS for ${mediaType} in chat ${chatId}`,
     );
     return null;
   }
@@ -83,7 +83,7 @@ export class ContextCache {
     chatId: string,
     messageHash: string,
     mediaType: string,
-    context: MediaContext
+    context: MediaContext,
   ): Promise<void> {
     const key = this.generateKey(chatId, messageHash, mediaType);
 
@@ -102,7 +102,7 @@ export class ContextCache {
 
     this.cache.set(key, cachedContext);
     console.log(
-      `💾 ContextCache: Cached ${mediaType} context for chat ${chatId}`
+      `💾 ContextCache: Cached ${mediaType} context for chat ${chatId}`,
     );
   }
 
@@ -112,7 +112,7 @@ export class ContextCache {
   private generateKey(
     chatId: string,
     messageHash: string,
-    mediaType: string
+    mediaType: string,
   ): string {
     return `${chatId}:${mediaType}:${messageHash}`;
   }
@@ -148,7 +148,7 @@ export class ContextCache {
    * Удаляет самую старую запись при превышении лимита
    */
   private evictOldest(): void {
-    let oldestKey = "";
+    let oldestKey = '';
     let oldestTime = Date.now();
 
     for (const [key, cached] of this.cache.entries()) {
@@ -180,7 +180,7 @@ export class ContextCache {
 
     if (cleared > 0) {
       console.log(
-        `🧹 ContextCache: Cleared ${cleared} entries for chat ${chatId}`
+        `🧹 ContextCache: Cleared ${cleared} entries for chat ${chatId}`,
       );
     }
   }
@@ -228,9 +228,9 @@ export class ContextCache {
  */
 export function generateMessageHash(
   message: string,
-  attachments?: any[]
+  attachments?: any[],
 ): string {
-  const crypto = require("node:crypto");
+  const crypto = require('node:crypto');
 
   // Создаем строку для хэширования
   let hashInput = message.toLowerCase().trim();
@@ -238,14 +238,14 @@ export function generateMessageHash(
   // Добавляем информацию о вложениях
   if (attachments && attachments.length > 0) {
     const attachmentInfo = attachments
-      .map((att) => `${att.url || ""}:${att.contentType || ""}`)
+      .map((att) => `${att.url || ''}:${att.contentType || ''}`)
       .sort()
-      .join("|");
+      .join('|');
     hashInput += `|attachments:${attachmentInfo}`;
   }
 
   // Генерируем MD5 хэш
-  return crypto.createHash("md5").update(hashInput).digest("hex");
+  return crypto.createHash('md5').update(hashInput).digest('hex');
 }
 
 /**
@@ -274,7 +274,7 @@ export function getCacheKey(
   chatId: string,
   message: string,
   mediaType: string,
-  attachments?: any[]
+  attachments?: any[],
 ): string {
   const messageHash = generateMessageHash(message, attachments);
   return `${chatId}:${mediaType}:${messageHash}`;

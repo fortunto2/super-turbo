@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   useProjectEventHandler,
@@ -7,10 +7,10 @@ import {
   useSceneEventHandler,
   useProjectVideoEventHandler,
   useEntityEventHandler,
-} from "@/hooks/event-handlers";
+} from '@/hooks/event-handlers';
 
-import type { ReactNode } from "react";
-import { use } from "react";
+import type { ReactNode } from 'react';
+import { use } from 'react';
 
 type Params = {
   projectId: string;

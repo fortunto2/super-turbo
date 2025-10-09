@@ -1,4 +1,4 @@
-import type { IGenerationConfigRead } from "@turbo-super/api";
+import type { IGenerationConfigRead } from '@turbo-super/api';
 
 // Extended model type with UI-friendly fields
 export interface AdaptedModel extends IGenerationConfigRead {
@@ -23,7 +23,7 @@ export interface MediaResolution {
   height: number;
   label: string;
   aspectRatio?: string;
-  qualityType?: "hd" | "full_hd";
+  qualityType?: 'hd' | 'full_hd';
 }
 
 // Image-specific types
@@ -37,7 +37,7 @@ export interface ImageSettings {
 }
 
 export interface ImageGenerationConfig {
-  type: "image-generation-settings";
+  type: 'image-generation-settings';
   availableResolutions: MediaResolution[];
   availableStyles: MediaOption[];
   availableShotSizes: MediaOption[];
@@ -59,7 +59,7 @@ export interface VideoSettings {
 }
 
 export interface VideoGenerationConfig {
-  type: "video-generation-settings";
+  type: 'video-generation-settings';
   availableResolutions: MediaResolution[];
   availableStyles: MediaOption[];
   availableShotSizes: MediaOption[];
@@ -81,7 +81,7 @@ export interface AudioSettings {
 }
 
 export interface AudioGenerationConfig {
-  type: "audio-generation-settings";
+  type: 'audio-generation-settings';
   availableModels: AdaptedModel[];
   availableVoices: MediaOption[];
   availableLanguages: MediaOption[];

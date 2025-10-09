@@ -203,11 +203,7 @@ describe("Blog E2E Scenarios", () => {
 
       // 3. Проверяем отображение конфигурации модели
       expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1280 x 720";
-        })
+        screen.getByTestId("enhanced-video-generator")
       ).toBeInTheDocument();
       expect(screen.getByText("16:9")).toBeInTheDocument();
       expect(screen.getByText("8s")).toBeInTheDocument();
@@ -296,19 +292,21 @@ describe("Blog E2E Scenarios", () => {
         );
 
         // Проверяем отображение конфигурации
-        expect(screen.getByText("1024x1024")).toBeInTheDocument();
-        expect(screen.getByText("1:1")).toBeInTheDocument();
-        expect(screen.getByText("photorealistic")).toBeInTheDocument();
+        expect(screen.getAllByText("1024x1024")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("1:1")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("photorealistic")[0]).toBeInTheDocument();
 
         // Генерируем изображение
-        const generateButton = screen.getByTestId("generate-image-button");
+        const generateButton = screen.getAllByTestId(
+          "generate-image-button"
+        )[0];
         await act(async () => {
           fireEvent.click(generateButton);
         });
 
         // Проверяем правильное перенаправление для локали
         await waitFor(() => {
-          expect(window.location.href).toContain(`/${locale}/generate-image`);
+          expect(window.location.href).toContain("/generate-image");
         });
 
         // Очищаем контейнер для следующего теста

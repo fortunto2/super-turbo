@@ -3,8 +3,8 @@
  * Отслеживает подозрительную активность и генерирует алерты
  */
 
-import type { NextRequest } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import type { NextRequest } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 
 // Интерфейсы для мониторинга
 export interface SecurityEvent {
@@ -20,18 +20,18 @@ export interface SecurityEvent {
 }
 
 export type SecurityEventType =
-  | "RATE_LIMIT_EXCEEDED"
-  | "MALICIOUS_INPUT"
-  | "UNAUTHORIZED_ACCESS"
-  | "SUSPICIOUS_ACTIVITY"
-  | "FILE_UPLOAD_ABUSE"
-  | "API_ABUSE"
-  | "BRUTE_FORCE_ATTEMPT"
-  | "XSS_ATTEMPT"
-  | "SQL_INJECTION_ATTEMPT"
-  | "PATH_TRAVERSAL_ATTEMPT";
+  | 'RATE_LIMIT_EXCEEDED'
+  | 'MALICIOUS_INPUT'
+  | 'UNAUTHORIZED_ACCESS'
+  | 'SUSPICIOUS_ACTIVITY'
+  | 'FILE_UPLOAD_ABUSE'
+  | 'API_ABUSE'
+  | 'BRUTE_FORCE_ATTEMPT'
+  | 'XSS_ATTEMPT'
+  | 'SQL_INJECTION_ATTEMPT'
+  | 'PATH_TRAVERSAL_ATTEMPT';
 
-export type SecuritySeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type SecuritySeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 // Конфигурация мониторинга
 export interface SecurityMonitorConfig {
@@ -59,7 +59,7 @@ export class SecurityMonitor {
   /**
    * Регистрирует событие безопасности
    */
-  logEvent(event: Omit<SecurityEvent, "id" | "timestamp">): void {
+  logEvent(event: Omit<SecurityEvent, 'id' | 'timestamp'>): void {
     const securityEvent: SecurityEvent = {
       ...event,
       id: this.generateEventId(),
@@ -93,17 +93,17 @@ export class SecurityMonitor {
    */
   logRateLimitExceeded(req: NextRequest, limit: number, current: number): void {
     this.logEvent({
-      type: "RATE_LIMIT_EXCEEDED",
-      severity: "MEDIUM",
-      source: "rate_limiter",
+      type: 'RATE_LIMIT_EXCEEDED',
+      severity: 'MEDIUM',
+      source: 'rate_limiter',
       details: {
         limit,
         current,
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -114,17 +114,17 @@ export class SecurityMonitor {
    */
   logMaliciousInput(req: NextRequest, input: string, pattern: string): void {
     this.logEvent({
-      type: "MALICIOUS_INPUT",
-      severity: "HIGH",
-      source: "input_validator",
+      type: 'MALICIOUS_INPUT',
+      severity: 'HIGH',
+      source: 'input_validator',
       details: {
         input: input.substring(0, 100), // Ограничиваем длину
         pattern,
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -136,20 +136,20 @@ export class SecurityMonitor {
   logUnauthorizedAccess(
     req: NextRequest,
     resource: string,
-    reason: string
+    reason: string,
   ): void {
     this.logEvent({
-      type: "UNAUTHORIZED_ACCESS",
-      severity: "HIGH",
-      source: "auth_middleware",
+      type: 'UNAUTHORIZED_ACCESS',
+      severity: 'HIGH',
+      source: 'auth_middleware',
       details: {
         resource,
         reason,
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -161,20 +161,20 @@ export class SecurityMonitor {
   logSuspiciousActivity(
     req: NextRequest,
     activity: string,
-    details: Record<string, any>
+    details: Record<string, any>,
   ): void {
     this.logEvent({
-      type: "SUSPICIOUS_ACTIVITY",
-      severity: "MEDIUM",
-      source: "security_monitor",
+      type: 'SUSPICIOUS_ACTIVITY',
+      severity: 'MEDIUM',
+      source: 'security_monitor',
       details: {
         activity,
         ...details,
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -187,12 +187,12 @@ export class SecurityMonitor {
     req: NextRequest,
     fileName: string,
     fileSize: number,
-    reason: string
+    reason: string,
   ): void {
     this.logEvent({
-      type: "FILE_UPLOAD_ABUSE",
-      severity: "MEDIUM",
-      source: "file_upload",
+      type: 'FILE_UPLOAD_ABUSE',
+      severity: 'MEDIUM',
+      source: 'file_upload',
       details: {
         fileName,
         fileSize,
@@ -200,8 +200,8 @@ export class SecurityMonitor {
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -213,20 +213,20 @@ export class SecurityMonitor {
   logAPIAbuse(
     req: NextRequest,
     abuseType: string,
-    details: Record<string, any>
+    details: Record<string, any>,
   ): void {
     this.logEvent({
-      type: "API_ABUSE",
-      severity: "HIGH",
-      source: "api_monitor",
+      type: 'API_ABUSE',
+      severity: 'HIGH',
+      source: 'api_monitor',
       details: {
         abuseType,
         ...details,
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -238,20 +238,20 @@ export class SecurityMonitor {
   logBruteForceAttempt(
     req: NextRequest,
     target: string,
-    attempts: number
+    attempts: number,
   ): void {
     this.logEvent({
-      type: "BRUTE_FORCE_ATTEMPT",
-      severity: "CRITICAL",
-      source: "auth_monitor",
+      type: 'BRUTE_FORCE_ATTEMPT',
+      severity: 'CRITICAL',
+      source: 'auth_monitor',
       details: {
         target,
         attempts,
         path: req.nextUrl.pathname,
         method: req.method,
       },
-      ...(req.headers.get("user-agent") && {
-        userAgent: req.headers.get("user-agent") || "",
+      ...(req.headers.get('user-agent') && {
+        userAgent: req.headers.get('user-agent') || '',
       }),
       ip: this.getClientIP(req),
     });
@@ -269,7 +269,7 @@ export class SecurityMonitor {
   } {
     const cutoffTime = Date.now() - timeWindowMs;
     const recentEvents = this.events.filter(
-      (event) => event.timestamp > cutoffTime
+      (event) => event.timestamp > cutoffTime,
     );
 
     const eventsByType: Record<SecurityEventType, number> = {
@@ -306,7 +306,7 @@ export class SecurityMonitor {
       if (event.userAgent) {
         userAgentCounts.set(
           event.userAgent,
-          (userAgentCounts.get(event.userAgent) || 0) + 1
+          (userAgentCounts.get(event.userAgent) || 0) + 1,
         );
       }
     });
@@ -335,11 +335,11 @@ export class SecurityMonitor {
    */
   getEventsByIP(
     ip: string,
-    timeWindowMs: number = 24 * 60 * 60 * 1000
+    timeWindowMs: number = 24 * 60 * 60 * 1000,
   ): SecurityEvent[] {
     const cutoffTime = Date.now() - timeWindowMs;
     return this.events.filter(
-      (event) => event.ip === ip && event.timestamp > cutoffTime
+      (event) => event.ip === ip && event.timestamp > cutoffTime,
     );
   }
 
@@ -348,11 +348,11 @@ export class SecurityMonitor {
    */
   getEventsByType(
     type: SecurityEventType,
-    timeWindowMs: number = 24 * 60 * 60 * 1000
+    timeWindowMs: number = 24 * 60 * 60 * 1000,
   ): SecurityEvent[] {
     const cutoffTime = Date.now() - timeWindowMs;
     return this.events.filter(
-      (event) => event.type === type && event.timestamp > cutoffTime
+      (event) => event.type === type && event.timestamp > cutoffTime,
     );
   }
 
@@ -362,7 +362,7 @@ export class SecurityMonitor {
   isIPBlocked(ip: string): boolean {
     const recentEvents = this.getEventsByIP(ip, 60 * 60 * 1000); // Последний час
     const criticalEvents = recentEvents.filter(
-      (event) => event.severity === "CRITICAL"
+      (event) => event.severity === 'CRITICAL',
     );
     return criticalEvents.length >= 3; // 3 критических события = блокировка
   }
@@ -388,22 +388,22 @@ export class SecurityMonitor {
   private getClientIP(req: NextRequest): string {
     return (
       (req as any).ip ||
-      req.headers.get("x-forwarded-for")?.split(",")[0] ||
-      req.headers.get("x-real-ip") ||
-      "unknown"
+      req.headers.get('x-forwarded-for')?.split(',')[0] ||
+      req.headers.get('x-real-ip') ||
+      'unknown'
     );
   }
 
   private sendToSentry(event: SecurityEvent): void {
     Sentry.withScope((scope) => {
-      scope.setTag("security_event", event.type);
+      scope.setTag('security_event', event.type);
       scope.setLevel(this.getSentryLevel(event.severity));
-      scope.setContext("security_details", event.details);
-      if (event.ip) scope.setTag("ip", event.ip);
+      scope.setContext('security_details', event.details);
+      if (event.ip) scope.setTag('ip', event.ip);
       if (event.userId) scope.setUser({ id: event.userId });
       Sentry.captureMessage(
         `Security Event: ${event.type}`,
-        this.getSentryLevel(event.severity)
+        this.getSentryLevel(event.severity),
       );
     });
   }
@@ -427,7 +427,7 @@ export class SecurityMonitor {
    * Проверяет на необходимость отправки алерта
    */
   private checkForAlerts(event: SecurityEvent): void {
-    const cooldownKey = `${event.type}_${event.ip || "unknown"}`;
+    const cooldownKey = `${event.type}_${event.ip || 'unknown'}`;
     const cooldownPeriod = this.config.cooldownPeriods[event.type];
     const lastAlert = this.alertCooldowns.get(cooldownKey) || 0;
 
@@ -455,7 +455,7 @@ export class SecurityMonitor {
         severity: event.severity,
         ip: event.ip,
         details: event.details,
-      }
+      },
     );
   }
 
@@ -463,17 +463,17 @@ export class SecurityMonitor {
    * Преобразует уровень серьезности в уровень Sentry
    */
   private getSentryLevel(
-    severity: SecuritySeverity
-  ): "info" | "warning" | "error" | "fatal" {
+    severity: SecuritySeverity,
+  ): 'info' | 'warning' | 'error' | 'fatal' {
     switch (severity) {
-      case "LOW":
-        return "info";
-      case "MEDIUM":
-        return "warning";
-      case "HIGH":
-        return "error";
-      case "CRITICAL":
-        return "fatal";
+      case 'LOW':
+        return 'info';
+      case 'MEDIUM':
+        return 'warning';
+      case 'HIGH':
+        return 'error';
+      case 'CRITICAL':
+        return 'fatal';
     }
   }
 
@@ -481,17 +481,17 @@ export class SecurityMonitor {
    * Преобразует уровень серьезности в уровень консоли
    */
   private getConsoleLevel(
-    severity: SecuritySeverity
-  ): "log" | "warn" | "error" {
+    severity: SecuritySeverity,
+  ): 'log' | 'warn' | 'error' {
     switch (severity) {
-      case "LOW":
-        return "log";
-      case "MEDIUM":
-        return "warn";
-      case "HIGH":
-        return "error";
-      case "CRITICAL":
-        return "error";
+      case 'LOW':
+        return 'log';
+      case 'MEDIUM':
+        return 'warn';
+      case 'HIGH':
+        return 'error';
+      case 'CRITICAL':
+        return 'error';
     }
   }
 }

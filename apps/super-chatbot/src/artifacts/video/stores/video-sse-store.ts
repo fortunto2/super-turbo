@@ -47,20 +47,20 @@ class VideoSSEStore {
   addProjectHandlers(
     projectId: string,
     handlers: VideoEventHandler[],
-    requestId?: string
+    requestId?: string,
   ) {
     if (!projectId) {
-      console.error("❌ Cannot add video handlers without projectId");
+      console.error('❌ Cannot add video handlers without projectId');
       return;
     }
 
     console.log(
-      "➕ Adding video SSE handlers for project:",
+      '➕ Adding video SSE handlers for project:',
       projectId,
-      "count:",
+      'count:',
       handlers.length,
-      "requestId:",
-      requestId
+      'requestId:',
+      requestId,
     );
 
     // Initialize project handler array if not exists
@@ -73,7 +73,7 @@ class VideoSSEStore {
 
     // Check project-specific handler limit
     if (projectHandlerList.length >= this.maxHandlersPerProject) {
-      console.warn("⚠️ Max handlers per project limit reached for:", projectId);
+      console.warn('⚠️ Max handlers per project limit reached for:', projectId);
       // Remove oldest handler to make room
       projectHandlerList.shift();
     }
@@ -93,28 +93,28 @@ class VideoSSEStore {
     });
 
     console.log(
-      "➕ Video project",
+      '➕ Video project',
       projectId,
-      "now has",
+      'now has',
       projectHandlerList.length,
-      "SSE handlers"
+      'SSE handlers',
     );
   }
 
   // AICODE-NOTE: Remove handlers for a specific project
   removeProjectHandlers(
     projectId: string,
-    handlersToRemove: VideoEventHandler[]
+    handlersToRemove: VideoEventHandler[],
   ) {
     if (!projectId || !this.projectHandlers.has(projectId)) {
       return;
     }
 
     console.log(
-      "➖ Removing video SSE handlers for project:",
+      '➖ Removing video SSE handlers for project:',
       projectId,
-      "count:",
-      handlersToRemove.length
+      'count:',
+      handlersToRemove.length,
     );
 
     const projectHandlerList = this.projectHandlers.get(projectId);
@@ -122,7 +122,7 @@ class VideoSSEStore {
 
     handlersToRemove.forEach((handlerToRemove) => {
       const index = projectHandlerList.findIndex(
-        (ph) => ph.handler === handlerToRemove
+        (ph) => ph.handler === handlerToRemove,
       );
       if (index > -1) {
         projectHandlerList.splice(index, 1);
@@ -130,18 +130,18 @@ class VideoSSEStore {
     });
 
     console.log(
-      "➖ Video project",
+      '➖ Video project',
       projectId,
-      "now has",
+      'now has',
       projectHandlerList.length,
-      "SSE handlers"
+      'SSE handlers',
     );
 
     // Clean up empty project
     if (projectHandlerList.length === 0) {
       this.projectHandlers.delete(projectId);
       this.activeProjects.delete(projectId);
-      console.log("🧹 Cleaned up empty video project:", projectId);
+      console.log('🧹 Cleaned up empty video project:', projectId);
     }
 
     // Schedule disconnect if no handlers remain for any project
@@ -162,7 +162,7 @@ class VideoSSEStore {
   // AICODE-NOTE: Schedule disconnect with proper cleanup
   private scheduleDisconnect() {
     console.log(
-      "🔌 No video SSE handlers left, scheduling disconnect in 1000ms"
+      '🔌 No video SSE handlers left, scheduling disconnect in 1000ms',
     );
 
     if (this.disconnectTimeout) {
@@ -172,12 +172,12 @@ class VideoSSEStore {
     this.disconnectTimeout = setTimeout(() => {
       if (this.getTotalHandlersCount() === 0) {
         console.log(
-          "🔌 Actually disconnecting video SSE after timeout - no handlers remain"
+          '🔌 Actually disconnecting video SSE after timeout - no handlers remain',
         );
         this.disconnect();
       } else {
         console.log(
-          "🔌 Video SSE disconnect cancelled - handlers were re-added"
+          '🔌 Video SSE disconnect cancelled - handlers were re-added',
         );
       }
     }, 1000);
@@ -188,7 +188,7 @@ class VideoSSEStore {
     // Check connection handler limit
     if (this.connectionHandlers.length >= this.maxConnectionHandlers) {
       console.warn(
-        "⚠️ Max video connection handlers limit reached, rejecting new handler"
+        '⚠️ Max video connection handlers limit reached, rejecting new handler',
       );
       return;
     }
@@ -202,41 +202,41 @@ class VideoSSEStore {
   // AICODE-NOTE: Remove connection state handler
   removeConnectionHandler(handler: (connected: boolean) => void) {
     this.connectionHandlers = this.connectionHandlers.filter(
-      (h) => h !== handler
+      (h) => h !== handler,
     );
   }
 
   // AICODE-NOTE: Notify all connection handlers of state change
   private notifyConnectionState(connected: boolean) {
     console.log(
-      "📡 Notifying video SSE connection state:",
+      '📡 Notifying video SSE connection state:',
       connected,
-      "to",
+      'to',
       this.connectionHandlers.length,
-      "handlers"
+      'handlers',
     );
     this.connectionHandlers.forEach((handler) => {
       try {
         handler(connected);
       } catch (error) {
-        console.error("❌ Error in video SSE connection handler:", error);
+        console.error('❌ Error in video SSE connection handler:', error);
       }
     });
   }
 
   // AICODE-NOTE: Force cleanup method for React Strict Mode
   forceCleanup() {
-    console.log("🧹 Force video SSE cleanup initiated");
-    console.log("🧹 Current handlers:", this.getTotalHandlersCount());
-    console.log("🧹 Connection handlers:", this.connectionHandlers.length);
-    console.log("🧹 Active projects:", Array.from(this.activeProjects));
+    console.log('🧹 Force video SSE cleanup initiated');
+    console.log('🧹 Current handlers:', this.getTotalHandlersCount());
+    console.log('🧹 Connection handlers:', this.connectionHandlers.length);
+    console.log('🧹 Active projects:', Array.from(this.activeProjects));
 
     // Clear all handlers but be more conservative during development (React Strict Mode)
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     if (isDevelopment && this.getTotalHandlersCount() < 5) {
       console.log(
-        "🧹 Skipping force cleanup in development with few handlers (React Strict Mode)"
+        '🧹 Skipping force cleanup in development with few handlers (React Strict Mode)',
       );
       return;
     }
@@ -246,7 +246,7 @@ class VideoSSEStore {
     this.activeProjects.clear();
 
     if (this.eventSource && this.eventSource.readyState === EventSource.OPEN) {
-      console.log("🧹 Closing video SSE connection");
+      console.log('🧹 Closing video SSE connection');
       this.eventSource.close();
     }
     this.eventSource = null;
@@ -256,7 +256,7 @@ class VideoSSEStore {
 
   // AICODE-NOTE: Clean up specific project
   cleanupProject(projectId: string) {
-    console.log("🧹 Video SSE cleaning up project:", projectId);
+    console.log('🧹 Video SSE cleaning up project:', projectId);
 
     this.projectHandlers.delete(projectId);
     this.activeProjects.delete(projectId);
@@ -278,15 +278,15 @@ class VideoSSEStore {
       activeProjects: Array.from(this.activeProjects),
       projectHandlerCounts: Object.fromEntries(
         Array.from(this.projectHandlers.entries()).map(
-          ([projectId, handlers]) => [projectId, handlers.length]
-        )
+          ([projectId, handlers]) => [projectId, handlers.length],
+        ),
       ),
     };
   }
 
   // AICODE-NOTE: Disconnect SSE connection
   disconnect() {
-    console.log("🔌 Disconnecting video SSE connection");
+    console.log('🔌 Disconnecting video SSE connection');
 
     if (this.disconnectTimeout) {
       clearTimeout(this.disconnectTimeout);
@@ -309,7 +309,7 @@ class VideoSSEStore {
   initConnection(
     url: string,
     handlers: VideoEventHandler[],
-    requestId?: string
+    requestId?: string,
   ) {
     // Extract ID from URL for tracking (supports both file.{fileId} and project.{projectId})
     const fileIdMatch = url?.match(/file\.([^/]+)/);
@@ -321,18 +321,18 @@ class VideoSSEStore {
 
     if (!trackingId) {
       console.error(
-        "❌ Cannot extract file/project ID from video SSE URL:",
-        url
+        '❌ Cannot extract file/project ID from video SSE URL:',
+        url,
       );
       return;
     }
 
     console.log(
-      "🔌 Initializing video SSE connection for ID:",
+      '🔌 Initializing video SSE connection for ID:',
       trackingId,
-      fileId ? "(file)" : "(project)"
+      fileId ? '(file)' : '(project)',
     );
-    console.log("🔌 Video SSE URL:", url);
+    console.log('🔌 Video SSE URL:', url);
 
     // Track current ID
     this.currentProjectId = trackingId;
@@ -342,8 +342,8 @@ class VideoSSEStore {
     const channel = fileId ? `file.${fileId}` : `project.${projectId}`;
     const sseUrl = `/api/events/${channel}`;
 
-    console.log("🔌 Video SSE Channel:", channel);
-    console.log("🔌 Final video SSE URL:", sseUrl);
+    console.log('🔌 Video SSE Channel:', channel);
+    console.log('🔌 Final video SSE URL:', sseUrl);
 
     // Store current channel
     this.currentChannel = channel;
@@ -360,10 +360,10 @@ class VideoSSEStore {
     // Close existing connection if different channel
     if (this.eventSource && this.currentChannel !== channel) {
       console.log(
-        "🔄 Switching video SSE channel from",
+        '🔄 Switching video SSE channel from',
         this.currentChannel,
-        "to",
-        channel
+        'to',
+        channel,
       );
       this.eventSource.close();
       this.eventSource = null;
@@ -375,14 +375,14 @@ class VideoSSEStore {
       this.eventSource.readyState === EventSource.CLOSED
     ) {
       try {
-        console.log("🆕 Creating new video SSE connection to:", sseUrl);
+        console.log('🆕 Creating new video SSE connection to:', sseUrl);
 
         // AICODE-NOTE: Create EventSource for video events
         this.eventSource = new EventSource(sseUrl);
 
         // AICODE-NOTE: Handle successful connection
         this.eventSource.onopen = () => {
-          console.log("🔌 ✅ Video SSE connected to channel:", channel);
+          console.log('🔌 ✅ Video SSE connected to channel:', channel);
           this.notifyConnectionState(true);
         };
 
@@ -390,25 +390,25 @@ class VideoSSEStore {
         this.eventSource.onmessage = (event) => {
           try {
             const message: VideoSSEMessage = JSON.parse(event.data);
-            console.log("📡 Video SSE message received:", message);
+            console.log('📡 Video SSE message received:', message);
 
             // Handle the message with all registered handlers for the project
             this.handleMessage(message);
           } catch (error) {
             console.error(
-              "❌ Video SSE message parse error:",
+              '❌ Video SSE message parse error:',
               error,
-              "Raw data:",
-              event.data
+              'Raw data:',
+              event.data,
             );
           }
         };
 
         // AICODE-NOTE: Handle SSE errors (automatic reconnection by browser)
         this.eventSource.onerror = (error) => {
-          console.error("❌ Video SSE error:", error);
+          console.error('❌ Video SSE error:', error);
           console.log(
-            "🔄 Browser will handle video SSE reconnection automatically"
+            '🔄 Browser will handle video SSE reconnection automatically',
           );
 
           // Note: EventSource handles reconnection automatically
@@ -418,13 +418,13 @@ class VideoSSEStore {
           }
         };
       } catch (error) {
-        console.error("❌ Failed to create video SSE connection:", error);
+        console.error('❌ Failed to create video SSE connection:', error);
         this.notifyConnectionState(false);
       }
     } else {
       console.log(
-        "🔄 Reusing existing video SSE connection for channel:",
-        channel
+        '🔄 Reusing existing video SSE connection for channel:',
+        channel,
       );
       // Connection already exists, just notify it's connected
       this.notifyConnectionState(true);
@@ -438,7 +438,7 @@ class VideoSSEStore {
 
     if (!messageProjectId) {
       console.warn(
-        "⚠️ Video SSE message without project ID, broadcasting to all handlers"
+        '⚠️ Video SSE message without project ID, broadcasting to all handlers',
       );
       // Broadcast to all handlers if no project ID
       for (const handlers of this.projectHandlers.values()) {
@@ -446,7 +446,7 @@ class VideoSSEStore {
           try {
             handler(message);
           } catch (error) {
-            console.error("❌ Error in video SSE message handler:", error);
+            console.error('❌ Error in video SSE message handler:', error);
           }
         });
       }
@@ -457,20 +457,20 @@ class VideoSSEStore {
     const projectHandlers = this.projectHandlers.get(messageProjectId);
     if (projectHandlers) {
       console.log(
-        "📡 Sending video SSE message to",
+        '📡 Sending video SSE message to',
         projectHandlers.length,
-        "handlers for project:",
-        messageProjectId
+        'handlers for project:',
+        messageProjectId,
       );
       projectHandlers.forEach(({ handler }) => {
         try {
           handler(message);
         } catch (error) {
-          console.error("❌ Error in video SSE project handler:", error);
+          console.error('❌ Error in video SSE project handler:', error);
         }
       });
     } else {
-      console.log("📡 No handlers found for video project:", messageProjectId);
+      console.log('📡 No handlers found for video project:', messageProjectId);
     }
   }
 

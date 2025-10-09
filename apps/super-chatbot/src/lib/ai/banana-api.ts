@@ -8,7 +8,7 @@ export interface BananaModel {
   name: string;
   description: string;
   framework: string;
-  status: "active" | "inactive";
+  status: 'active' | 'inactive';
 }
 
 export interface BananaInferenceRequest {
@@ -23,7 +23,7 @@ export interface BananaInferenceRequest {
 
 export interface BananaInferenceResponse {
   id: string;
-  status: "success" | "error" | "processing";
+  status: 'success' | 'error' | 'processing';
   outputs?: any;
   error?: string;
   metrics?: {
@@ -37,7 +37,7 @@ export interface BananaDeployment {
   id: string;
   name: string;
   modelId: string;
-  status: "running" | "stopped" | "deploying";
+  status: 'running' | 'stopped' | 'deploying';
   endpoint: string;
   replicas: number;
   gpuType: string;
@@ -50,25 +50,25 @@ export async function getBananaModels(): Promise<BananaModel[]> {
   // В реальной интеграции здесь будет API вызов к Banana
   return [
     {
-      id: "llama-2-7b-chat",
-      name: "Llama 2 7B Chat",
-      description: "Conversational AI model for chat applications",
-      framework: "PyTorch",
-      status: "active",
+      id: 'llama-2-7b-chat',
+      name: 'Llama 2 7B Chat',
+      description: 'Conversational AI model for chat applications',
+      framework: 'PyTorch',
+      status: 'active',
     },
     {
-      id: "stable-diffusion-xl",
-      name: "Stable Diffusion XL",
-      description: "High-quality image generation model",
-      framework: "PyTorch",
-      status: "active",
+      id: 'stable-diffusion-xl',
+      name: 'Stable Diffusion XL',
+      description: 'High-quality image generation model',
+      framework: 'PyTorch',
+      status: 'active',
     },
     {
-      id: "whisper-large-v2",
-      name: "Whisper Large V2",
-      description: "Speech-to-text transcription model",
-      framework: "PyTorch",
-      status: "active",
+      id: 'whisper-large-v2',
+      name: 'Whisper Large V2',
+      description: 'Speech-to-text transcription model',
+      framework: 'PyTorch',
+      status: 'active',
     },
   ];
 }
@@ -77,20 +77,20 @@ export async function getBananaModels(): Promise<BananaModel[]> {
  * Запускает inference на Banana
  */
 export async function runBananaInference(
-  request: BananaInferenceRequest
+  request: BananaInferenceRequest,
 ): Promise<BananaInferenceResponse> {
   const apiKey = process.env.BANANA_API_KEY;
 
   if (!apiKey) {
-    throw new Error("BANANA_API_KEY not configured");
+    throw new Error('BANANA_API_KEY not configured');
   }
 
   try {
     // В реальной интеграции здесь будет вызов к Banana API
-    const response = await fetch("https://api.banana.dev/start/v4/", {
-      method: "POST",
+    const response = await fetch('https://api.banana.dev/start/v4/', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
@@ -108,7 +108,7 @@ export async function runBananaInference(
 
     return {
       id: data.id,
-      status: "success",
+      status: 'success',
       outputs: data.outputs,
       metrics: {
         inferenceTime: data.metrics?.inferenceTime || 0,
@@ -117,11 +117,11 @@ export async function runBananaInference(
       },
     };
   } catch (error) {
-    console.error("Banana inference error:", error);
+    console.error('Banana inference error:', error);
     return {
       id: crypto.randomUUID(),
-      status: "error",
-      error: error instanceof Error ? error.message : "Unknown error",
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -133,12 +133,12 @@ export async function getBananaDeployments(): Promise<BananaDeployment[]> {
   const apiKey = process.env.BANANA_API_KEY;
 
   if (!apiKey) {
-    throw new Error("BANANA_API_KEY not configured");
+    throw new Error('BANANA_API_KEY not configured');
   }
 
   try {
     // В реальной интеграции здесь будет вызов к Banana API
-    const response = await fetch("https://api.banana.dev/deployments", {
+    const response = await fetch('https://api.banana.dev/deployments', {
       headers: {
         Authorization: `Bearer ${apiKey}`,
       },
@@ -152,7 +152,7 @@ export async function getBananaDeployments(): Promise<BananaDeployment[]> {
 
     return data.deployments || [];
   } catch (error) {
-    console.error("Banana deployments error:", error);
+    console.error('Banana deployments error:', error);
     return [];
   }
 }
@@ -166,26 +166,26 @@ export async function createBananaDeployment(
   config: {
     replicas?: number;
     gpuType?: string;
-  } = {}
+  } = {},
 ): Promise<BananaDeployment> {
   const apiKey = process.env.BANANA_API_KEY;
 
   if (!apiKey) {
-    throw new Error("BANANA_API_KEY not configured");
+    throw new Error('BANANA_API_KEY not configured');
   }
 
   try {
-    const response = await fetch("https://api.banana.dev/deploy", {
-      method: "POST",
+    const response = await fetch('https://api.banana.dev/deploy', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         modelId,
         name,
         replicas: config.replicas || 1,
-        gpuType: config.gpuType || "A10G",
+        gpuType: config.gpuType || 'A10G',
       }),
     });
 
@@ -199,13 +199,13 @@ export async function createBananaDeployment(
       id: data.id,
       name: data.name,
       modelId: data.modelId,
-      status: "deploying",
+      status: 'deploying',
       endpoint: data.endpoint,
       replicas: data.replicas,
       gpuType: data.gpuType,
     };
   } catch (error) {
-    console.error("Banana deployment creation error:", error);
+    console.error('Banana deployment creation error:', error);
     throw error;
   }
 }

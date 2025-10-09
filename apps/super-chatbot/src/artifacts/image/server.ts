@@ -1,157 +1,155 @@
-import { createDocumentHandler } from "@/lib/artifacts/server";
-import { generateImageWithStrategy } from "@turbo-super/api";
-import { getSuperduperAIConfig } from "@/lib/config/superduperai";
-import { getStyles } from "@/lib/ai/api/get-styles";
-import type { MediaOption, MediaResolution } from "@/lib/types/media-settings";
-import type { ImageModel } from "@/lib/config/superduperai";
-import { getAvailableImageModels } from "@/lib/config/superduperai";
-import { selectImageToImageModel } from "@/lib/generation/model-utils";
-import { getMessagesByChatId } from "@/lib/db/queries";
-import {
-  deductOperationBalance,
-} from "@/lib/utils/tools-balance";
+import { createDocumentHandler } from '@/lib/artifacts/server';
+import { generateImageWithStrategy } from '@turbo-super/api';
+import { getSuperduperAIConfig } from '@/lib/config/superduperai';
+import { getStyles } from '@/lib/ai/api/get-styles';
+import type { MediaOption, MediaResolution } from '@/lib/types/media-settings';
+import type { ImageModel } from '@/lib/config/superduperai';
+import { getAvailableImageModels } from '@/lib/config/superduperai';
+import { selectImageToImageModel } from '@/lib/generation/model-utils';
+import { getMessagesByChatId } from '@/lib/db/queries';
+import { deductOperationBalance } from '@/lib/utils/tools-balance';
 
 // Import the same constants as in configure-image-generation
 const RESOLUTIONS: MediaResolution[] = [
   {
     width: 1344,
     height: 768,
-    label: "1344x768",
-    aspectRatio: "16:9",
-    qualityType: "hd",
+    label: '1344x768',
+    aspectRatio: '16:9',
+    qualityType: 'hd',
   },
   {
     width: 1920,
     height: 1080,
-    label: "1920×1080",
-    aspectRatio: "16:9",
-    qualityType: "full_hd",
+    label: '1920×1080',
+    aspectRatio: '16:9',
+    qualityType: 'full_hd',
   },
   {
     width: 1664,
     height: 1216,
-    label: "1664x1216",
-    aspectRatio: "4:3",
-    qualityType: "full_hd",
+    label: '1664x1216',
+    aspectRatio: '4:3',
+    qualityType: 'full_hd',
   },
   {
     width: 1152,
     height: 896,
-    label: "1152x896",
-    aspectRatio: "4:3",
-    qualityType: "hd",
+    label: '1152x896',
+    aspectRatio: '4:3',
+    qualityType: 'hd',
   },
   {
     width: 1024,
     height: 1024,
-    label: "1024x1024",
-    aspectRatio: "1:1",
-    qualityType: "hd",
+    label: '1024x1024',
+    aspectRatio: '1:1',
+    qualityType: 'hd',
   },
   {
     width: 1408,
     height: 1408,
-    label: "1408×1408",
-    aspectRatio: "1:1",
-    qualityType: "full_hd",
+    label: '1408×1408',
+    aspectRatio: '1:1',
+    qualityType: 'full_hd',
   },
   {
     width: 1408,
     height: 1760,
-    label: "1408×1760",
-    aspectRatio: "4:5",
-    qualityType: "full_hd",
+    label: '1408×1760',
+    aspectRatio: '4:5',
+    qualityType: 'full_hd',
   },
   {
     width: 1024,
     height: 1280,
-    label: "1024x1280",
-    aspectRatio: "4:5",
-    qualityType: "hd",
+    label: '1024x1280',
+    aspectRatio: '4:5',
+    qualityType: 'hd',
   },
   {
     width: 1080,
     height: 1920,
-    label: "1080×1920",
-    aspectRatio: "9:16",
-    qualityType: "full_hd",
+    label: '1080×1920',
+    aspectRatio: '9:16',
+    qualityType: 'full_hd',
   },
   {
     width: 768,
     height: 1344,
-    label: "768x1344",
-    aspectRatio: "9:16",
-    qualityType: "hd",
+    label: '768x1344',
+    aspectRatio: '9:16',
+    qualityType: 'hd',
   },
 ];
 
 const SHOT_SIZES: MediaOption[] = [
   {
-    id: "extreme_long_shot",
-    label: "Extreme Long Shot",
-    description: "Shows vast landscapes or cityscapes with tiny subjects",
+    id: 'extreme_long_shot',
+    label: 'Extreme Long Shot',
+    description: 'Shows vast landscapes or cityscapes with tiny subjects',
   },
   {
-    id: "long_shot",
-    label: "Long Shot",
-    description: "Shows full body of subject with surrounding environment",
+    id: 'long_shot',
+    label: 'Long Shot',
+    description: 'Shows full body of subject with surrounding environment',
   },
   {
-    id: "medium_shot",
-    label: "Medium Shot",
-    description: "Shows subject from waist up, good for conversations",
+    id: 'medium_shot',
+    label: 'Medium Shot',
+    description: 'Shows subject from waist up, good for conversations',
   },
   {
-    id: "medium_close_up",
-    label: "Medium Close-Up",
-    description: "Shows subject from chest up, good for portraits",
+    id: 'medium_close_up',
+    label: 'Medium Close-Up',
+    description: 'Shows subject from chest up, good for portraits',
   },
   {
-    id: "close_up",
-    label: "Close-Up",
+    id: 'close_up',
+    label: 'Close-Up',
     description: "Shows a subject's face or a small object in detail",
   },
   {
-    id: "extreme_close_up",
-    label: "Extreme Close-Up",
+    id: 'extreme_close_up',
+    label: 'Extreme Close-Up',
     description:
-      "Shows extreme detail of a subject, like eyes or small objects",
+      'Shows extreme detail of a subject, like eyes or small objects',
   },
   {
-    id: "two_shot",
-    label: "Two-Shot",
-    description: "Shows two subjects in frame, good for interactions",
+    id: 'two_shot',
+    label: 'Two-Shot',
+    description: 'Shows two subjects in frame, good for interactions',
   },
   {
-    id: "detail_shot",
-    label: "Detail Shot",
-    description: "Focuses on a specific object or part of a subject",
+    id: 'detail_shot',
+    label: 'Detail Shot',
+    description: 'Focuses on a specific object or part of a subject',
   },
 ];
 
 // AICODE-NOTE: IMAGE_MODELS now loaded dynamically from API via getAvailableImageModels()
 
-export const imageDocumentHandler = createDocumentHandler<"image">({
-  kind: "image",
+export const imageDocumentHandler = createDocumentHandler<'image'>({
+  kind: 'image',
   onCreateDocument: async ({ id: chatId, title, dataStream, session }) => {
-    let draftContent = "";
+    let draftContent = '';
     try {
       // Parse the title to extract image generation parameters
       const params = JSON.parse(title);
       const {
         prompt,
-        style = { id: "flux_steampunk", label: "Steampunk" },
+        style = { id: 'flux_steampunk', label: 'Steampunk' },
         resolution = {
           width: 1024,
           height: 1024,
-          label: "1024x1024",
-          aspectRatio: "1:1",
-          qualityType: "hd",
+          label: '1024x1024',
+          aspectRatio: '1:1',
+          qualityType: 'hd',
         },
-        model = { id: "flux-dev", label: "Flux Dev" },
+        model = { id: 'flux-dev', label: 'Flux Dev' },
         // Use label form for shot size to match API enum expectations
-        shotSize = { id: "Medium Shot", label: "Medium Shot" },
-        negativePrompt = "",
+        shotSize = { id: 'Medium Shot', label: 'Medium Shot' },
+        negativePrompt = '',
         seed,
         batchSize,
       } = params;
@@ -164,7 +162,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       try {
         availableModels = await getAvailableImageModels();
       } catch (error) {
-        console.error("🎨 ❌ Failed to load dynamic models:", error);
+        console.error('🎨 ❌ Failed to load dynamic models:', error);
         availableModels = await getAvailableImageModels();
       }
 
@@ -172,8 +170,8 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       let availableStyles: MediaOption[] = [];
       try {
         const response = await getStyles();
-        if ("error" in response) {
-          console.error("🎨 ❌ FAILED TO GET STYLES:", response.error);
+        if ('error' in response) {
+          console.error('🎨 ❌ FAILED TO GET STYLES:', response.error);
         } else {
           availableStyles = response.items.map((style) => ({
             id: style.name,
@@ -181,52 +179,52 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           }));
         }
       } catch (err) {
-        console.error("🎨 ❌ ERROR GETTING STYLES:", err);
+        console.error('🎨 ❌ ERROR GETTING STYLES:', err);
       }
 
       // Resolve source image URL (support attachment:// and missing param via chat history)
       const config = getSuperduperAIConfig();
       let effectiveSourceImageUrl: string | undefined = params.sourceImageUrl;
 
-      console.log("🔍 Image artifact: resolving source image URL:", {
+      console.log('🔍 Image artifact: resolving source image URL:', {
         sourceImageUrl: params.sourceImageUrl,
         chatId,
         needsResolve:
           !effectiveSourceImageUrl ||
-          effectiveSourceImageUrl.startsWith("attachment://"),
+          effectiveSourceImageUrl.startsWith('attachment://'),
       });
 
       try {
         const needsResolve =
           !effectiveSourceImageUrl ||
-          effectiveSourceImageUrl.startsWith("attachment://");
+          effectiveSourceImageUrl.startsWith('attachment://');
         if (needsResolve) {
           const history = await getMessagesByChatId({ id: chatId });
-          console.log("🔍 Image artifact: searching chat history:", {
+          console.log('🔍 Image artifact: searching chat history:', {
             historyLength: history.length,
           });
 
           for (let i = history.length - 1; i >= 0; i--) {
             const m = history[i] as any;
-            console.log("🔍 Image artifact: checking message:", {
+            console.log('🔍 Image artifact: checking message:', {
               role: m.role,
               hasAttachments: !!m.attachments,
               attachmentsLength: m.attachments?.length || 0,
               attachments: m.attachments,
             });
 
-            if (m.role === "user" && Array.isArray(m.attachments)) {
+            if (m.role === 'user' && Array.isArray(m.attachments)) {
               const img = m.attachments.find(
                 (a: any) =>
-                  typeof a?.url === "string" &&
+                  typeof a?.url === 'string' &&
                   /^https?:\/\//.test(a.url) &&
-                  String(a?.contentType || "").startsWith("image/")
+                  String(a?.contentType || '').startsWith('image/'),
               );
               if (img?.url) {
                 effectiveSourceImageUrl = img.url;
                 console.log(
-                  "🔍 Image artifact: found source image in history:",
-                  img.url
+                  '🔍 Image artifact: found source image in history:',
+                  img.url,
                 );
                 break;
               }
@@ -235,17 +233,17 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         }
       } catch (error) {
         console.error(
-          "🔍 Image artifact: error searching chat history:",
-          error
+          '🔍 Image artifact: error searching chat history:',
+          error,
         );
       }
 
       // Decide generation type based on resolved source URL
       const generationType = effectiveSourceImageUrl
-        ? "image-to-image"
-        : "text-to-image";
+        ? 'image-to-image'
+        : 'text-to-image';
 
-      console.log("🔍 Image artifact: generation type determined:", {
+      console.log('🔍 Image artifact: generation type determined:', {
         effectiveSourceImageUrl,
         generationType,
       });
@@ -253,7 +251,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       // If image-to-image, create File object from URL instead of uploading
       let sourceFile: File | undefined = undefined;
       if (
-        generationType === "image-to-image" &&
+        generationType === 'image-to-image' &&
         effectiveSourceImageUrl &&
         /^https?:\/\//.test(effectiveSourceImageUrl)
       ) {
@@ -263,28 +261,28 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
             throw new Error(`Failed to fetch source image: ${resp.status}`);
           const blob = await resp.blob();
           const filename =
-            effectiveSourceImageUrl.split("/").pop() || "source-image.jpg";
+            effectiveSourceImageUrl.split('/').pop() || 'source-image.jpg';
           sourceFile = new File([blob], filename, { type: blob.type });
-          console.log("🔍 Image artifact: created File object from URL:", {
+          console.log('🔍 Image artifact: created File object from URL:', {
             filename,
             size: sourceFile.size,
             type: sourceFile.type,
           });
         } catch (e) {
           console.error(
-            "🎨 ❌ Failed to create File from source image URL:",
-            e
+            '🎨 ❌ Failed to create File from source image URL:',
+            e,
           );
         }
       }
 
       // Remap model for image-to-image if needed (e.g., inpainting variant)
       let modelForGeneration: any = model;
-      if (generationType === "image-to-image") {
+      if (generationType === 'image-to-image') {
         try {
-          const rawName = (model as any)?.name || (model as any)?.id || "";
+          const rawName = (model as any)?.name || (model as any)?.id || '';
           const availableModels = await getAvailableImageModels();
-          console.log("🔍 Image artifact: remapping model for img2img:", {
+          console.log('🔍 Image artifact: remapping model for img2img:', {
             originalModel: rawName,
             availableModels: availableModels.map((m) => m.name),
           });
@@ -292,12 +290,12 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           const mapped = await selectImageToImageModel(
             rawName,
             getAvailableImageModels,
-            { allowInpainting: true }
+            { allowInpainting: true },
           );
 
           // Force fal-ai/flux-pro/kontext for img2img as it's proven to work
           const kontextModel = availableModels.find(
-            (m) => m.name === "fal-ai/flux-pro/kontext"
+            (m) => m.name === 'fal-ai/flux-pro/kontext',
           );
 
           if (kontextModel) {
@@ -306,34 +304,34 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
               name: kontextModel.name,
             };
             console.log(
-              "🔍 Image artifact: FORCED kontext model for img2img:",
-              kontextModel.name
+              '🔍 Image artifact: FORCED kontext model for img2img:',
+              kontextModel.name,
             );
           } else {
             // Fallback to mapped model if kontext not available
             if (mapped) {
               modelForGeneration = { ...(model as any), name: mapped };
               console.log(
-                "🔍 Image artifact: fallback to mapped model:",
-                mapped
+                '🔍 Image artifact: fallback to mapped model:',
+                mapped,
               );
             } else {
               console.log(
-                "🔍 Image artifact: kontext model not found, using original:",
-                rawName
+                '🔍 Image artifact: kontext model not found, using original:',
+                rawName,
               );
             }
           }
         } catch (error) {
-          console.error("🔍 Image artifact: error remapping model:", error);
+          console.error('🔍 Image artifact: error remapping model:', error);
         }
       }
       // For image-to-image: require sourceFile and send minimal payload (no style/resolution/shotSize)
-      if (generationType === "image-to-image" && !sourceFile) {
+      if (generationType === 'image-to-image' && !sourceFile) {
         draftContent = JSON.stringify({
-          status: "failed",
+          status: 'failed',
           error:
-            "Failed to get source image for image-to-image (attachment did not resolve to URL)",
+            'Failed to get source image for image-to-image (attachment did not resolve to URL)',
           prompt,
         });
         return draftContent;
@@ -346,7 +344,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         seed,
         batchSize,
       };
-      if (generationType === "image-to-image") {
+      if (generationType === 'image-to-image') {
         generationParams.file = sourceFile;
         if (
           effectiveSourceImageUrl &&
@@ -367,7 +365,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       }
 
       console.log(
-        "🔍 Image artifact: calling generateImageWithStrategy with params:",
+        '🔍 Image artifact: calling generateImageWithStrategy with params:',
         {
           generationType,
           generationParams,
@@ -375,16 +373,16 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
             url: config.url,
             hasToken: !!config.token,
           },
-        }
+        },
       );
 
       const result = await generateImageWithStrategy(
         generationType,
         generationParams,
-        config
+        config,
       );
 
-      console.log("🔍 Image artifact: generateImageWithStrategy result:", {
+      console.log('🔍 Image artifact: generateImageWithStrategy result:', {
         success: result.success,
         projectId: result.projectId,
         requestId: result.requestId,
@@ -397,7 +395,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
 
       if (!result.success) {
         draftContent = JSON.stringify({
-          status: "failed",
+          status: 'failed',
           error: result.error,
           prompt: prompt,
         });
@@ -406,7 +404,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
 
       // Формируем content только с выбранными параметрами (без available опций для оптимизации)
       draftContent = JSON.stringify({
-        status: "pending",
+        status: 'pending',
         projectId: result.projectId || chatId,
         requestId: result.requestId,
         fileId: result.fileId,
@@ -422,7 +420,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         timestamp: Date.now(),
         message:
           result.message ||
-          "Image generation started, connecting to WebSocket...",
+          'Image generation started, connecting to WebSocket...',
       });
 
       // Deduct balance after successful generation start
@@ -432,14 +430,14 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
           const multipliers: string[] = [];
 
           // Check style for quality multipliers
-          if (style?.id?.includes("high-quality"))
-            multipliers.push("high-quality");
-          if (style?.id?.includes("ultra-quality"))
-            multipliers.push("ultra-quality");
+          if (style?.id?.includes('high-quality'))
+            multipliers.push('high-quality');
+          if (style?.id?.includes('ultra-quality'))
+            multipliers.push('ultra-quality');
 
           await deductOperationBalance(
             session.user.id,
-            "image-generation",
+            'image-generation',
             operationType,
             multipliers,
             {
@@ -448,24 +446,24 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
               prompt: prompt.substring(0, 100),
               operationType,
               timestamp: new Date().toISOString(),
-            }
+            },
           );
           console.log(
-            `💳 Balance deducted for user ${session.user.id} after image generation start`
+            `💳 Balance deducted for user ${session.user.id} after image generation start`,
           );
         } catch (balanceError) {
           console.error(
-            "⚠️ Failed to deduct balance after image generation:",
-            balanceError
+            '⚠️ Failed to deduct balance after image generation:',
+            balanceError,
           );
           // Continue - image generation already started
         }
       }
     } catch (error: any) {
-      console.error("🎨 ❌ IMAGE GENERATION ERROR:", error);
+      console.error('🎨 ❌ IMAGE GENERATION ERROR:', error);
       draftContent = JSON.stringify({
-        status: "failed",
-        error: error?.message || "Failed to parse image parameters",
+        status: 'failed',
+        error: error?.message || 'Failed to parse image parameters',
       });
     }
     return draftContent;
@@ -478,18 +476,18 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         try {
           const existingContent = JSON.parse(draftContent);
           if (
-            existingContent.status === "completed" &&
+            existingContent.status === 'completed' &&
             existingContent.imageUrl
           ) {
             console.log(
-              "🎨 ⚠️ Document already completed with image, skipping update to prevent reset"
+              '🎨 ⚠️ Document already completed with image, skipping update to prevent reset',
             );
             return draftContent; // Return existing content without recreating
           }
         } catch (parseError) {
           // If we can't parse existing content, proceed with update
           console.log(
-            "🎨 ℹ️ Could not parse existing content, proceeding with update"
+            '🎨 ℹ️ Could not parse existing content, proceeding with update',
           );
         }
       }
@@ -499,18 +497,18 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       const params = JSON.parse(description);
       const {
         prompt,
-        style = { id: "flux_steampunk", label: "Steampunk" },
+        style = { id: 'flux_steampunk', label: 'Steampunk' },
         resolution = {
           width: 1024,
           height: 1024,
-          label: "1024x1024",
-          aspectRatio: "1:1",
-          qualityType: "hd",
+          label: '1024x1024',
+          aspectRatio: '1:1',
+          qualityType: 'hd',
         },
-        model = { id: "flux-dev", label: "Flux Dev" },
+        model = { id: 'flux-dev', label: 'Flux Dev' },
         // Use label form for shot size to match API enum expectations
-        shotSize = { id: "Medium Shot", label: "Medium Shot" },
-        negativePrompt = "",
+        shotSize = { id: 'Medium Shot', label: 'Medium Shot' },
+        negativePrompt = '',
         seed,
         batchSize,
       } = params;
@@ -522,17 +520,17 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       try {
         const needsResolve =
           !effectiveSourceImageUrl ||
-          effectiveSourceImageUrl.startsWith("attachment://");
+          effectiveSourceImageUrl.startsWith('attachment://');
         if (needsResolve) {
           const history = await getMessagesByChatId({ id: chatId });
           for (let i = history.length - 1; i >= 0; i--) {
             const m = history[i] as any;
-            if (m.role === "user" && Array.isArray(m.attachments)) {
+            if (m.role === 'user' && Array.isArray(m.attachments)) {
               const img = m.attachments.find(
                 (a: any) =>
-                  typeof a?.url === "string" &&
+                  typeof a?.url === 'string' &&
                   /^https?:\/\//.test(a.url) &&
-                  String(a?.contentType || "").startsWith("image/")
+                  String(a?.contentType || '').startsWith('image/'),
               );
               if (img?.url) {
                 effectiveSourceImageUrl = img.url;
@@ -544,13 +542,13 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       } catch (_) {}
 
       const generationType = effectiveSourceImageUrl
-        ? "image-to-image"
-        : "text-to-image";
+        ? 'image-to-image'
+        : 'text-to-image';
 
       // If img2img with source URL, create File object instead of uploading
       let sourceFile: File | undefined = undefined;
       if (
-        generationType === "image-to-image" &&
+        generationType === 'image-to-image' &&
         effectiveSourceImageUrl &&
         /^https?:\/\//.test(effectiveSourceImageUrl)
       ) {
@@ -560,44 +558,44 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
             throw new Error(`Failed to fetch source image: ${resp.status}`);
           const blob = await resp.blob();
           const filename =
-            effectiveSourceImageUrl.split("/").pop() || "source-image.jpg";
+            effectiveSourceImageUrl.split('/').pop() || 'source-image.jpg';
           sourceFile = new File([blob], filename, { type: blob.type });
           console.log(
-            "🔍 Image artifact update: created File object from URL:",
+            '🔍 Image artifact update: created File object from URL:',
             {
               filename,
               size: sourceFile.size,
               type: sourceFile.type,
-            }
+            },
           );
         } catch (e) {
           console.error(
-            "🎨 ❌ Failed to create File from source image URL:",
-            e
+            '🎨 ❌ Failed to create File from source image URL:',
+            e,
           );
         }
       }
 
       // Remap model for image-to-image
       let modelForUpdate: any = model;
-      if (generationType === "image-to-image") {
+      if (generationType === 'image-to-image') {
         try {
-          const rawName = (model as any)?.name || (model as any)?.id || "";
+          const rawName = (model as any)?.name || (model as any)?.id || '';
           const mapped = await selectImageToImageModel(
             rawName,
             getAvailableImageModels,
-            { allowInpainting: true }
+            { allowInpainting: true },
           );
           if (mapped) {
             modelForUpdate = { ...(model as any), name: mapped };
           }
         } catch (_) {}
       }
-      if (generationType === "image-to-image" && !sourceFile) {
+      if (generationType === 'image-to-image' && !sourceFile) {
         draftContent = JSON.stringify({
-          status: "failed",
+          status: 'failed',
           error:
-            "Failed to get source image for image-to-image (attachment did not resolve to URL)",
+            'Failed to get source image for image-to-image (attachment did not resolve to URL)',
           prompt,
         });
         return draftContent;
@@ -610,7 +608,7 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         seed,
         batchSize,
       };
-      if (generationType === "image-to-image") {
+      if (generationType === 'image-to-image') {
         updateParams.file = sourceFile;
         if (
           effectiveSourceImageUrl &&
@@ -627,18 +625,18 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
       const result = await generateImageWithStrategy(
         generationType,
         updateParams,
-        config
+        config,
       );
       if (!result.success) {
         draftContent = JSON.stringify({
-          status: "failed",
+          status: 'failed',
           error: result.error,
           prompt: prompt,
         });
         return draftContent;
       }
       draftContent = JSON.stringify({
-        status: "pending",
+        status: 'pending',
         projectId: result.projectId || chatId,
         requestId: result.requestId,
         fileId: result.fileId,
@@ -654,13 +652,13 @@ export const imageDocumentHandler = createDocumentHandler<"image">({
         timestamp: Date.now(),
         message:
           result.message ||
-          "Image generation started, connecting to WebSocket...",
+          'Image generation started, connecting to WebSocket...',
       });
     } catch (error: any) {
-      console.error("🎨 ❌ IMAGE GENERATION ERROR:", error);
+      console.error('🎨 ❌ IMAGE GENERATION ERROR:', error);
       draftContent = JSON.stringify({
-        status: "failed",
-        error: error?.message || "Failed to update image parameters",
+        status: 'failed',
+        error: error?.message || 'Failed to update image parameters',
       });
     }
     return draftContent;

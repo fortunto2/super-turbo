@@ -1,8 +1,8 @@
-import type { MutationKey } from "@tanstack/react-query";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectKeys } from "../../project/query";
-import { sceneKeys } from "../../scene/query";
-import { ProjectService } from "@turbo-super/api";
+import type { MutationKey } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { projectKeys } from '../../project/query';
+import { sceneKeys } from '../../scene/query';
+import { ProjectService } from '@turbo-super/api';
 
 type IProjectVideoScript2Storyboard = Parameters<
   typeof ProjectService.projectScript2Storyboard

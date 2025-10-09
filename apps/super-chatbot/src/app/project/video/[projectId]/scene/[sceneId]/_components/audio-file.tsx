@@ -2,12 +2,12 @@ import {
   FileTypeEnum,
   type IFileRead,
   type ISceneRead,
-} from "@turbo-super/api";
-import { FileMetadataModal } from "./file-metadata-modal";
-import { hasMetadata } from "./file-metadata-utils";
-import { useMemo, useState } from "react";
-import { Play, Download, Info, MicVocal, AudioLines } from "lucide-react";
-import { useSceneUpdate } from "@/lib/api";
+} from '@turbo-super/api';
+import { FileMetadataModal } from './file-metadata-modal';
+import { hasMetadata } from './file-metadata-utils';
+import { useMemo, useState } from 'react';
+import { Play, Download, Info, MicVocal, AudioLines } from 'lucide-react';
+import { useSceneUpdate } from '@/lib/api';
 
 interface AudioFileProps {
   file: IFileRead;
@@ -19,7 +19,7 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
   const { mutate: update, isPending: isSelecting } = useSceneUpdate();
 
   const type = useMemo(() => {
-    return file.type === FileTypeEnum.VOICEOVER ? "voiceover" : "soundeffect";
+    return file.type === FileTypeEnum.VOICEOVER ? 'voiceover' : 'soundeffect';
   }, [file.type]);
 
   const handleSelect = async () => {
@@ -30,9 +30,9 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
       | { voiceover_id: string | null }
       | { sound_effect_id: string | null }
       | undefined;
-    if (type === "voiceover") {
+    if (type === 'voiceover') {
       id = { voiceover_id: file?.id ?? null };
-    } else if (type === "soundeffect") {
+    } else if (type === 'soundeffect') {
       id = { sound_effect_id: file?.id ?? null };
     }
 
@@ -46,7 +46,7 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
         },
       });
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.error('Error selecting file:', error);
     }
   };
 
@@ -70,7 +70,7 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
         audio.onended = () => setIsPlaying(false);
         audio.onerror = () => setIsPlaying(false);
       } catch (error) {
-        console.error("Error playing audio:", error);
+        console.error('Error playing audio:', error);
         setIsPlaying(false);
       }
     }
@@ -81,21 +81,21 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
     event.stopPropagation();
     if (file.url) {
       try {
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = file.url;
         link.download = `${type}-${file.id}.mp3`;
-        link.target = "_blank";
+        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       } catch (error) {
-        console.error("Error downloading file:", error);
+        console.error('Error downloading file:', error);
       }
     }
   };
 
   const getTypeIcon = () => {
-    return type === "voiceover" ? (
+    return type === 'voiceover' ? (
       <MicVocal className="w-5 h-5" />
     ) : (
       <AudioLines className="w-5 h-5" />
@@ -120,8 +120,8 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
       <div
         className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
           isActive
-            ? "border-primary ring-2 ring-primary bg-primary/5"
-            : "border-border hover:border-primary/60 hover:shadow-md bg-muted/20"
+            ? 'border-primary ring-2 ring-primary bg-primary/5'
+            : 'border-border hover:border-primary/60 hover:shadow-md bg-muted/20'
         }`}
       >
         {/* Иконка типа файла */}
@@ -135,7 +135,7 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
             onClick={handlePlayClick}
             disabled={!file.url || isPlaying || isSelecting}
             className="p-2 bg-primary text-primary-foreground rounded-md transition-all duration-200 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            title={isPlaying ? "Playing..." : "Play audio"}
+            title={isPlaying ? 'Playing...' : 'Play audio'}
           >
             <Play className="size-5" />
           </button>
@@ -168,7 +168,7 @@ export function AudioFile({ file, isActive, scene }: AudioFileProps) {
         <button
           onClick={handleSelect}
           disabled={isSelecting}
-          className={`absolute inset-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200 z-0 ${isSelecting ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`absolute inset-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200 z-0 ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''}`}
           title="Select this file"
         />
       )}

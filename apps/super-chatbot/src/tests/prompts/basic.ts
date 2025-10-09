@@ -16,7 +16,10 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
   USER_NEXTJS: {
     role: 'user',
     content: [
-      { type: 'text', text: 'Create a cinematic wide shot of a futuristic cityscape at sunset with flying cars and neon lights, photorealistic style' },
+      {
+        type: 'text',
+        text: 'Create a cinematic wide shot of a futuristic cityscape at sunset with flying cars and neon lights, photorealistic style',
+      },
     ],
   },
   USER_IMAGE_ATTACHMENT: {

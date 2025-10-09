@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 
 // Простые метрики в памяти
 const simpleMetrics = {
@@ -36,22 +36,22 @@ export async function GET(request: NextRequest) {
         errors: data.errors,
         averageTime: data.count > 0 ? data.totalTime / data.count : 0,
         errorRate: data.count > 0 ? (data.errors / data.count) * 100 : 0,
-      })
+      }),
     );
 
     const response = {
-      status: "success",
+      status: 'success',
       data: {
         system: systemMetrics,
         api: {
           endpoints: apiMetrics,
           totalRequests: Array.from(simpleMetrics.requests.values()).reduce(
             (sum, data) => sum + data.count,
-            0
+            0,
           ),
           totalErrors: Array.from(simpleMetrics.requests.values()).reduce(
             (sum, data) => sum + data.errors,
-            0
+            0,
           ),
         },
         summary: {
@@ -67,19 +67,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response, {
       status: 200,
       headers: {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
     });
   } catch (error) {
     return NextResponse.json(
       {
-        status: "error",
-        message: "Failed to retrieve metrics",
-        error: error instanceof Error ? error.message : "Unknown error",
+        status: 'error',
+        message: 'Failed to retrieve metrics',
+        error: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

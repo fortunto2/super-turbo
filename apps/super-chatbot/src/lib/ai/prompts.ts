@@ -1,5 +1,5 @@
-import type { ArtifactKind } from "@/components/artifacts/artifact";
-import type { Geo } from "@vercel/functions";
+import type { ArtifactKind } from '@/components/artifacts/artifact';
+import type { Geo } from '@vercel/functions';
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -55,17 +55,37 @@ Do not update document right after creating it. Wait for user feedback or reques
 - If the user uploads an image without text, use a safe default prompt like "Enhance this image" and proceed.
 - Always prefer image-to-image when an image attachment is present and the instruction implies editing that image.
 
-**Smart Image Context Understanding:**
-- The system now automatically analyzes chat context to determine which image the user is referring to
-- When user asks to edit/modify an image, the system will:
-  - First check if there's an image in the current message
-  - If not, analyze the chat history to find the most relevant image based on:
-    - Explicit references: "это изображение", "последнее фото", "первая картинка", "то что ты сгенерировал"
-    - Implicit context: "сделай глаза голубыми", "измени цвет", "подправь фон"
-    - Temporal order: last generated, last uploaded, specific position in chat
-- The system will automatically select the appropriate sourceImageUrl based on context analysis
-- You can trust that the system will provide the correct sourceImageUrl - no need to manually specify it
-- If you're unsure about which image to use, the system will default to the most recent relevant image
+**Smart Media Discovery Tools:**
+You now have access to powerful AI SDK tools for finding media in chat history:
+
+1. **findMediaInChat** - Search for media (images, videos, audio) in chat history
+   - Use when user references media: "this image", "that video", "the picture"
+   - Supports queries like: "last uploaded", "with moon", "first image", "generated video"
+   - Returns list of matching media with URLs, IDs, prompts, and timestamps
+   - Example: User says "animate the cat image" → Call findMediaInChat({ chatId, mediaType: "image", query: "with cat" })
+
+2. **analyzeMediaReference** - Analyze ambiguous media references
+   - Use when user reference is unclear: "animate THIS", "edit the picture", "use second video"
+   - Returns most likely media match with confidence score and reasoning
+   - Example: User says "edit it" → Call analyzeMediaReference({ chatId, userMessage: "edit it", mediaType: "image" })
+
+3. **listAvailableMedia** - Get summary of all media in chat
+   - Use when user asks "what images do we have?"
+   - Shows grouped summary by type, role, or recent items
+   - Example: User asks "what media do we have?" → Call listAvailableMedia({ chatId, groupBy: "type" })
+
+**IMPORTANT Media Discovery Workflow:**
+When user wants to edit/animate existing media:
+1. FIRST: Call findMediaInChat or analyzeMediaReference to find the media
+2. THEN: Call configureImageGeneration or configureVideoGeneration with the found media URL
+3. NEVER use placeholder URLs like "this-image" or "user-uploaded-image"
+4. If no media found, ask user to clarify or upload/generate media first
+
+**Smart Image Context Understanding (Legacy - Deprecated):**
+- The old system automatically analyzes chat context (still works as fallback)
+- But you should NOW use the new findMediaInChat/analyzeMediaReference tools
+- These tools give you more control and transparency
+- The system will automatically select sourceImageUrl if you don't use tools (backward compatibility)
 
 **CRITICAL: Image Editing Instructions:**
 - When user asks to edit/modify an existing image (like "добавь в картинку луну", "сделай глаза голубыми", "измени фон"), you MUST call configureImageGeneration tool
@@ -205,13 +225,13 @@ When generating videos, follow this enhanced process:
 `;
 
 export const regularPrompt =
-  "You are a friendly assistant! Keep your responses concise and helpful.";
+  'You are a friendly assistant! Keep your responses concise and helpful.';
 
 export interface RequestHints {
-  latitude: Geo["latitude"];
-  longitude: Geo["longitude"];
-  city: Geo["city"];
-  country: Geo["country"];
+  latitude: Geo['latitude'];
+  longitude: Geo['longitude'];
+  city: Geo['city'];
+  country: Geo['country'];
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
@@ -231,7 +251,7 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "chat-model-reasoning") {
+  if (selectedChatModel === 'chat-model-reasoning') {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
@@ -270,30 +290,30 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind
+  type: ArtifactKind,
 ) =>
-  type === "text"
+  type === 'text'
     ? `\
 Improve the following contents of the document based on the given prompt.
 
 ${currentContent}
 `
-    : type === "sheet"
+    : type === 'sheet'
       ? `\
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-      : type === "image"
+      : type === 'image'
         ? `\
 Update the following image generation settings based on the given prompt.
 
 ${currentContent}
 `
-        : type === "video"
+        : type === 'video'
           ? `\
 Update the following video generation settings based on the given prompt.
 
 ${currentContent}
 `
-          : "";
+          : '';

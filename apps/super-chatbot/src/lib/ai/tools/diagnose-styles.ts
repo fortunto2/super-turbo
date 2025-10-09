@@ -1,5 +1,5 @@
-import { getStyles } from "../api/get-styles";
-import type { MediaOption } from "@/lib/types/media-settings";
+import { getStyles } from '../api/get-styles';
+import type { MediaOption } from '@/lib/types/media-settings';
 
 export interface StyleDiagnosticResult {
   success: boolean;
@@ -12,20 +12,20 @@ export interface StyleDiagnosticResult {
 
 export async function diagnoseStyles(): Promise<StyleDiagnosticResult> {
   try {
-    console.log("🔍 Starting style diagnostic...");
+    console.log('🔍 Starting style diagnostic...');
 
     const response = await getStyles();
 
-    if ("error" in response) {
+    if ('error' in response) {
       return {
         success: false,
         totalStyles: 0,
         sampleStyles: [],
         styleMapping: {},
         recommendations: [
-          "API request failed. Check authentication token.",
-          "Verify API endpoint is accessible.",
-          "Check network connectivity.",
+          'API request failed. Check authentication token.',
+          'Verify API endpoint is accessible.',
+          'Check network connectivity.',
         ],
         error: response.error,
       };
@@ -44,19 +44,19 @@ export async function diagnoseStyles(): Promise<StyleDiagnosticResult> {
     // Analyze style patterns
     const styleMapping: Record<string, string> = {};
     const commonTerms = [
-      "realistic",
-      "cinematic",
-      "anime",
-      "fantasy",
-      "steampunk",
-      "cartoon",
+      'realistic',
+      'cinematic',
+      'anime',
+      'fantasy',
+      'steampunk',
+      'cartoon',
     ];
 
     for (const term of commonTerms) {
       const matchingStyle = styles.find(
         (s) =>
           s.id.toLowerCase().includes(term) ||
-          s.label.toLowerCase().includes(term)
+          s.label.toLowerCase().includes(term),
       );
       if (matchingStyle) {
         styleMapping[term] = matchingStyle.id;
@@ -65,18 +65,18 @@ export async function diagnoseStyles(): Promise<StyleDiagnosticResult> {
 
     const recommendations = [
       `Found ${styles.length} styles from API`,
-      "Common style patterns:",
+      'Common style patterns:',
       ...Object.entries(styleMapping).map(
-        ([term, id]) => `  "${term}" -> ${id}`
+        ([term, id]) => `  "${term}" -> ${id}`,
       ),
-      "",
-      "Recommendations:",
-      "1. Use exact style IDs when possible",
-      "2. Implement fallback to available styles",
-      "3. Add validation before API calls",
+      '',
+      'Recommendations:',
+      '1. Use exact style IDs when possible',
+      '2. Implement fallback to available styles',
+      '3. Add validation before API calls',
     ];
 
-    console.log("🔍 ✅ Style diagnostic completed successfully");
+    console.log('🔍 ✅ Style diagnostic completed successfully');
 
     return {
       success: true,
@@ -86,7 +86,7 @@ export async function diagnoseStyles(): Promise<StyleDiagnosticResult> {
       recommendations,
     };
   } catch (error: any) {
-    console.error("🔍 ❌ Style diagnostic failed:", error);
+    console.error('🔍 ❌ Style diagnostic failed:', error);
 
     return {
       success: false,
@@ -94,11 +94,11 @@ export async function diagnoseStyles(): Promise<StyleDiagnosticResult> {
       sampleStyles: [],
       styleMapping: {},
       recommendations: [
-        "Diagnostic failed. Check:",
-        "1. API endpoint availability",
-        "2. Authentication token validity",
-        "3. Network configuration",
-        "4. CORS settings if running in browser",
+        'Diagnostic failed. Check:',
+        '1. API endpoint availability',
+        '2. Authentication token validity',
+        '3. Network configuration',
+        '4. CORS settings if running in browser',
       ],
       error: error.message,
     };
@@ -108,7 +108,7 @@ export async function diagnoseStyles(): Promise<StyleDiagnosticResult> {
 // Function to test style matching
 export function testStyleMatching(
   userInput: string,
-  availableStyles: MediaOption[]
+  availableStyles: MediaOption[],
 ): {
   found: boolean;
   matchedStyle?: MediaOption;
@@ -121,7 +121,7 @@ export function testStyleMatching(
   const exactMatch = availableStyles.find(
     (s) =>
       s.id.toLowerCase() === normalizedInput ||
-      s.label.toLowerCase() === normalizedInput
+      s.label.toLowerCase() === normalizedInput,
   );
 
   if (exactMatch) {
@@ -138,7 +138,7 @@ export function testStyleMatching(
       s.id.toLowerCase().includes(normalizedInput) ||
       s.label.toLowerCase().includes(normalizedInput) ||
       normalizedInput.includes(s.id.toLowerCase()) ||
-      normalizedInput.includes(s.label.toLowerCase())
+      normalizedInput.includes(s.label.toLowerCase()),
   );
 
   if (partialMatches.length > 0) {
@@ -160,7 +160,7 @@ export function testStyleMatching(
     found: false,
     suggestions: [
       `No match found for "${userInput}"`,
-      "Available options:",
+      'Available options:',
       ...suggestions,
     ],
   };

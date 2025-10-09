@@ -1,7 +1,7 @@
-import type { DataStreamWriter } from "ai";
+import type { DataStreamWriter } from 'ai';
 
 export interface BalanceError {
-  type: "insufficient_balance" | "payment_required" | "quota_exceeded";
+  type: 'insufficient_balance' | 'payment_required' | 'quota_exceeded';
   message: string;
   cost?: number;
   availableCredits?: number;
@@ -15,21 +15,19 @@ export interface BalanceError {
 export function handleBalanceError(
   error: BalanceError,
   dataStream: DataStreamWriter,
-  operationType = "operation"
+  operationType = 'operation',
 ): string {
   const errorMessage = formatBalanceErrorMessage(error, operationType);
 
   console.error(`💳 Balance error for ${operationType}:`, error);
 
-  // Записываем ошибку в dataStream для показа пользователю
-  dataStream.writeData({
-    type: "error",
-    content: errorMessage,
-  });
+  // AICODE-NOTE: AI SDK 5.0 - custom 'error' type removed
+  // Errors are now thrown and handled by the framework
+  // Balance errors should be returned in tool response, not streamed
 
   // Возвращаем JSON с ошибкой для сохранения в документе
   return JSON.stringify({
-    status: "failed",
+    status: 'failed',
     error: errorMessage,
     errorType: error.type,
     timestamp: Date.now(),
@@ -41,19 +39,19 @@ export function handleBalanceError(
  */
 function formatBalanceErrorMessage(
   error: BalanceError,
-  operationType: string
+  operationType: string,
 ): string {
   switch (error.type) {
-    case "insufficient_balance":
+    case 'insufficient_balance':
       if (error.requiredCredits && error.availableCredits !== undefined) {
         return `Недостаточно средств для ${getOperationDisplayName(operationType)}. Требуется: ${error.requiredCredits} кредитов, доступно: ${error.availableCredits} кредитов. Пожалуйста, пополните баланс.`;
       }
       return `Недостаточно средств для ${getOperationDisplayName(operationType)}. ${error.message}`;
 
-    case "payment_required":
+    case 'payment_required':
       return `Для выполнения ${getOperationDisplayName(operationType)} требуется оплата. ${error.message}`;
 
-    case "quota_exceeded":
+    case 'quota_exceeded':
       return `Превышен лимит для ${getOperationDisplayName(operationType)}. ${error.message}`;
 
     default:
@@ -66,13 +64,13 @@ function formatBalanceErrorMessage(
  */
 function getOperationDisplayName(operationType: string): string {
   const operationNames: Record<string, string> = {
-    "text-to-image": "генерации изображения",
-    "image-to-image": "редактирования изображения",
-    "text-to-video": "генерации видео",
-    "image-to-video": "создания видео из изображения",
-    "image-generation": "генерации изображения",
-    "video-generation": "генерации видео",
-    operation: "операции",
+    'text-to-image': 'генерации изображения',
+    'image-to-image': 'редактирования изображения',
+    'text-to-video': 'генерации видео',
+    'image-to-video': 'создания видео из изображения',
+    'image-generation': 'генерации изображения',
+    'video-generation': 'генерации видео',
+    operation: 'операции',
   };
 
   return operationNames[operationType] || operationType;
@@ -83,11 +81,11 @@ function getOperationDisplayName(operationType: string): string {
  */
 export function createBalanceError(
   balanceValidation: { valid: boolean; error?: string; cost?: number },
-  availableCredits?: number
+  availableCredits?: number,
 ): BalanceError {
   return {
-    type: "insufficient_balance",
-    message: balanceValidation.error || "Недостаточно средств",
+    type: 'insufficient_balance',
+    message: balanceValidation.error || 'Недостаточно средств',
     ...(balanceValidation.cost !== undefined && {
       cost: balanceValidation.cost,
     }),
@@ -103,7 +101,7 @@ export function createBalanceError(
  */
 export function createBalanceErrorResponse(
   balanceValidation: { valid: boolean; error?: string; cost?: number },
-  operationType = "operation"
+  operationType = 'operation',
 ) {
   const balanceError = createBalanceError(balanceValidation);
   const errorMessage = formatBalanceErrorMessage(balanceError, operationType);
@@ -112,7 +110,7 @@ export function createBalanceErrorResponse(
 
   return {
     success: false,
-    error: "Insufficient balance",
+    error: 'Insufficient balance',
     message: errorMessage,
     details: balanceValidation.error,
     requiredCredits: balanceValidation.cost,

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
 import {
   Users,
   FileText,
@@ -9,7 +9,7 @@ import {
   TrendingUp,
   Database,
   Clock,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface SystemStats {
   overview: {
@@ -52,17 +52,17 @@ export function SystemStatsCards() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("/api/admin/system/stats");
+        const response = await fetch('/api/admin/system/stats');
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch system stats");
+          throw new Error(data.error || 'Failed to fetch system stats');
         }
 
         setStats(data.stats);
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching system stats:", err);
+        console.error('Error fetching system stats:', err);
       } finally {
         setLoading(false);
       }
@@ -112,46 +112,46 @@ export function SystemStatsCards() {
 
   const statCards = [
     {
-      title: "Total Users",
+      title: 'Total Users',
       value: stats.overview.totalUsers,
       description: `${stats.overview.guestUsers} guests, ${stats.overview.regularUsers} registered`,
       icon: Users,
-      color: "text-blue-500",
+      color: 'text-blue-500',
     },
     {
-      title: "Total Documents",
+      title: 'Total Documents',
       value: stats.overview.totalDocuments,
       description: `${stats.content.images} images, ${stats.content.videos} videos`,
       icon: FileText,
-      color: "text-green-500",
+      color: 'text-green-500',
     },
     {
-      title: "Total Projects",
+      title: 'Total Projects',
       value: stats.overview.totalProjects,
-      description: "User-created projects",
+      description: 'User-created projects',
       icon: Activity,
-      color: "text-purple-500",
+      color: 'text-purple-500',
     },
     {
-      title: "Recent Activity",
+      title: 'Recent Activity',
       value: stats.activity.recentDocuments,
-      description: "Documents created in last 24h",
+      description: 'Documents created in last 24h',
       icon: TrendingUp,
-      color: "text-orange-500",
+      color: 'text-orange-500',
     },
     {
-      title: "Database Size",
+      title: 'Database Size',
       value: stats.system.databaseSize,
       description: stats.system.databaseName,
       icon: Database,
-      color: "text-cyan-500",
+      color: 'text-cyan-500',
     },
     {
-      title: "System Uptime",
+      title: 'System Uptime',
       value: formatUptime(stats.system.uptime),
-      description: "Current session uptime",
+      description: 'Current session uptime',
       icon: Clock,
-      color: "text-emerald-500",
+      color: 'text-emerald-500',
     },
   ];
 

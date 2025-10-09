@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import { Button } from '@turbo-super/ui';
 import {
   Card,
@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from '@turbo-super/ui';
 import { Separator } from '@turbo-super/ui';
-import { Copy, Check, X, Sparkles, Loader2 } from "lucide-react";
-import type { EnhancementResult as EnhancementResultType } from "../hooks/use-prompt-enhancer";
+import { Copy, Check, X, Sparkles, Loader2 } from 'lucide-react';
+import type { EnhancementResult as EnhancementResultType } from '../hooks/use-prompt-enhancer';
 
 interface EnhancementResultProps {
   result: EnhancementResultType | null;
@@ -105,18 +105,14 @@ export function EnhancementResult({
               </span>
             )}
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClear}
-          >
+          <Button variant="ghost" size="sm" onClick={onClear}>
             <X className="size-4" />
           </Button>
         </div>
         <CardDescription>
           {result.error
-            ? "Enhancement failed, showing original prompt."
-            : "Your prompt has been enhanced with AI-powered improvements."}
+            ? 'Enhancement failed, showing original prompt.'
+            : 'Your prompt has been enhanced with AI-powered improvements.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -129,10 +125,10 @@ export function EnhancementResult({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleCopy(result.originalPrompt, "original")}
+              onClick={() => handleCopy(result.originalPrompt, 'original')}
               className="h-6 px-2"
             >
-              {copiedText === "original" ? (
+              {copiedText === 'original' ? (
                 <Check className="size-3 text-green-600" />
               ) : (
                 <Copy className="size-3" />
@@ -155,10 +151,10 @@ export function EnhancementResult({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleCopy(result.enhancedPrompt, "enhanced")}
+              onClick={() => handleCopy(result.enhancedPrompt, 'enhanced')}
               className="h-6 px-2"
             >
-              {copiedText === "enhanced" ? (
+              {copiedText === 'enhanced' ? (
                 <Check className="size-3 text-green-600" />
               ) : (
                 <Copy className="size-3" />
@@ -183,11 +179,11 @@ export function EnhancementResult({
                   variant="ghost"
                   size="sm"
                   onClick={() =>
-                    handleCopy(result.negativePrompt || "", "negative")
+                    handleCopy(result.negativePrompt || '', 'negative')
                   }
                   className="h-6 px-2"
                 >
-                  {copiedText === "negative" ? (
+                  {copiedText === 'negative' ? (
                     <Check className="size-3 text-green-600" />
                   ) : (
                     <Copy className="size-3" />
@@ -260,10 +256,10 @@ export function EnhancementResult({
         <div className="grid grid-cols-1 gap-2">
           <Button
             variant="outline"
-            onClick={() => handleCopy(result.enhancedPrompt, "enhanced")}
+            onClick={() => handleCopy(result.enhancedPrompt, 'enhanced')}
             className="w-full"
           >
-            {copiedText === "enhanced" ? (
+            {copiedText === 'enhanced' ? (
               <>
                 <Check className="size-4 mr-2 text-green-600" />
                 Copied Enhanced Prompt!
@@ -280,11 +276,11 @@ export function EnhancementResult({
             <Button
               variant="outline"
               onClick={() =>
-                handleCopy(result.negativePrompt || "", "negative")
+                handleCopy(result.negativePrompt || '', 'negative')
               }
               className="w-full"
             >
-              {copiedText === "negative" ? (
+              {copiedText === 'negative' ? (
                 <>
                   <Check className="size-4 mr-2 text-green-600" />
                   Copied Negative Prompt!

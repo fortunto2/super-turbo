@@ -1,6 +1,6 @@
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
-import { Inpainting } from "@turbo-super/features";
-import { useState, useEffect } from "react";
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
+import { Inpainting } from '@turbo-super/features';
+import { useState, useEffect } from 'react';
 
 export const ImageEditing = ({
   imageUrl,
@@ -35,8 +35,8 @@ export const ImageEditing = ({
   const isGenerating = externalIsGenerating || internalIsGenerating;
 
   useEffect(() => {
-    if (editMode === "advanced-edit") {
-      console.log("Advanced edit mode activated");
+    if (editMode === 'advanced-edit') {
+      console.log('Advanced edit mode activated');
     }
   }, [editMode, imageUrl]);
 
@@ -47,16 +47,16 @@ export const ImageEditing = ({
   // Polling function for inpainting
   const startInpaintingPolling = async (
     newProjectId: string,
-    newPrompt: string
+    newPrompt: string,
   ) => {
     try {
-      console.log("🔄 Starting inpainting polling for project:", newProjectId);
+      console.log('🔄 Starting inpainting polling for project:', newProjectId);
 
       // Polling function for inpainting result
       const checkInpaintingResult = async (attempts = 0): Promise<void> => {
         if (attempts > 30) {
           // 5 minutes max
-          throw new Error("Inpainting timeout");
+          throw new Error('Inpainting timeout');
         }
 
         await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
@@ -68,15 +68,15 @@ export const ImageEditing = ({
             const fileData = await checkResponse.json();
             if (fileData.url) {
               // Success! Update existing artifact with inpainting result
-              console.log("✅ Inpainting completed:", fileData.url);
+              console.log('✅ Inpainting completed:', fileData.url);
 
               // Update existing artifact with the result
               setArtifact((prev) => ({
                 ...prev,
                 isVisible: true,
-                kind: "image",
+                kind: 'image',
                 content: JSON.stringify({
-                  status: "completed",
+                  status: 'completed',
                   imageUrl: fileData.url, // Use inpainting result URL
                   prompt: newPrompt,
                   projectId: newProjectId,
@@ -88,20 +88,20 @@ export const ImageEditing = ({
               // AICODE-NOTE: Save the inpainting result to chat so it can be used for future inpainting
               // This ensures the fileId is properly stored in the database
               try {
-                const saveResponse = await fetch("/api/save-message", {
-                  method: "POST",
+                const saveResponse = await fetch('/api/save-message', {
+                  method: 'POST',
                   headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
                     chatId: chatId,
                     message: {
                       id: `inpainting-${newProjectId}`,
-                      role: "assistant",
+                      role: 'assistant',
                       content: `Inpainting result: ${newPrompt}`,
                       parts: [
                         {
-                          type: "text",
+                          type: 'text',
                           text: `Inpainting result: ${newPrompt}`,
                         },
                       ],
@@ -109,7 +109,7 @@ export const ImageEditing = ({
                         {
                           name: `[FILE_ID:${newProjectId}] ${newPrompt}`,
                           url: fileData.url, // Use inpainting result URL
-                          contentType: "image/png",
+                          contentType: 'image/png',
                           thumbnailUrl: fileData.thumbnail_url,
                         },
                       ],
@@ -119,16 +119,16 @@ export const ImageEditing = ({
 
                 if (saveResponse.ok) {
                   console.log(
-                    "✅ Inpainting result saved to chat with fileId:",
-                    newProjectId
+                    '✅ Inpainting result saved to chat with fileId:',
+                    newProjectId,
                   );
                 } else {
-                  console.warn("⚠️ Failed to save inpainting result to chat");
+                  console.warn('⚠️ Failed to save inpainting result to chat');
                 }
               } catch (error) {
                 console.error(
-                  "❌ Error saving inpainting result to chat:",
-                  error
+                  '❌ Error saving inpainting result to chat:',
+                  error,
                 );
               }
 
@@ -138,9 +138,9 @@ export const ImageEditing = ({
           }
         } catch (error) {
           console.log(
-            "Inpainting polling attempt",
+            'Inpainting polling attempt',
             attempts + 1,
-            "failed, retrying..."
+            'failed, retrying...',
           );
         }
 
@@ -150,7 +150,7 @@ export const ImageEditing = ({
 
       await checkInpaintingResult();
     } catch (error) {
-      console.error("Inpainting polling error:", error);
+      console.error('Inpainting polling error:', error);
       setInternalIsGenerating(false);
     }
   };
@@ -160,29 +160,29 @@ export const ImageEditing = ({
     mask: File;
     config: string;
   }) => {
-    console.log("Inpainting completed:", result);
+    console.log('Inpainting completed:', result);
 
     // Block immediately when inpainting starts
     setInternalIsGenerating(true);
 
     try {
       const formData = new FormData();
-      formData.append("prompt", result.prompt);
-      formData.append("mask", result.mask);
-      formData.append("config", result.config);
-      formData.append("generationType", "image-to-image");
-      formData.append("mask", result.mask);
+      formData.append('prompt', result.prompt);
+      formData.append('mask', result.mask);
+      formData.append('config', result.config);
+      formData.append('generationType', 'image-to-image');
+      formData.append('mask', result.mask);
 
       // Extract fileId from image URL
       const extractFileIdFromUrl = (url: string): string | null => {
-        console.log("🔍 extractFileIdFromUrl: Analyzing URL:", url);
+        console.log('🔍 extractFileIdFromUrl: Analyzing URL:', url);
 
         // Try to extract fileId from URL (e.g., from /file/{fileId})
         const fileIdMatch = url?.match(/\/file\/([^/]+)/);
         if (fileIdMatch?.[1]) {
           console.log(
-            "🔍 extractFileIdFromUrl: Found fileId from /file/ pattern:",
-            fileIdMatch[1]
+            '🔍 extractFileIdFromUrl: Found fileId from /file/ pattern:',
+            fileIdMatch[1],
           );
           return fileIdMatch[1];
         }
@@ -192,20 +192,20 @@ export const ImageEditing = ({
         const generatedMatch = url?.match(/generated\/image\/[^/]+\/([^/]+)\./);
         if (generatedMatch?.[1]) {
           console.log(
-            "🔍 extractFileIdFromUrl: Found fileId from generated pattern:",
-            generatedMatch[1]
+            '🔍 extractFileIdFromUrl: Found fileId from generated pattern:',
+            generatedMatch[1],
           );
           return generatedMatch[1];
         }
 
         // Additional pattern for generated image URLs without leading slash
         const generatedMatch2 = url?.match(
-          /generated\/image\/[^/]+\/([^/]+)\./
+          /generated\/image\/[^/]+\/([^/]+)\./,
         );
         if (generatedMatch2?.[1]) {
           console.log(
-            "🔍 extractFileIdFromUrl: Found fileId from generated pattern (no slash):",
-            generatedMatch2[1]
+            '🔍 extractFileIdFromUrl: Found fileId from generated pattern (no slash):',
+            generatedMatch2[1],
           );
           return generatedMatch2[1];
         }
@@ -214,8 +214,8 @@ export const ImageEditing = ({
         const altMatch = url?.match(/\/([a-f0-9-]{36})\./);
         if (altMatch?.[1]) {
           console.log(
-            "🔍 extractFileIdFromUrl: Found fileId from UUID pattern:",
-            altMatch[1]
+            '🔍 extractFileIdFromUrl: Found fileId from UUID pattern:',
+            altMatch[1],
           );
           return altMatch[1];
         }
@@ -223,15 +223,15 @@ export const ImageEditing = ({
         // AICODE-NOTE: If we can't extract fileId from URL, return null
         // This prevents using chatId as a fallback option
         console.log(
-          "🔍 extractFileIdFromUrl: No fileId found in URL - cannot proceed with inpainting"
+          '🔍 extractFileIdFromUrl: No fileId found in URL - cannot proceed with inpainting',
         );
         return null;
       };
 
       // Add sourceImageId and sourceImageUrl for inpainting
-      console.log("🔧 Chat inpainting - Starting fileId extraction:", {
-        fileId: fileId || "none",
-        projectId: projectId || "none",
+      console.log('🔧 Chat inpainting - Starting fileId extraction:', {
+        fileId: fileId || 'none',
+        projectId: projectId || 'none',
         imageUrl: imageUrl,
       });
 
@@ -241,47 +241,47 @@ export const ImageEditing = ({
       // If no fileId, don't do inpainting
       const sourceImageId = fileId || extractedFileId;
 
-      console.log("🔧 Chat inpainting - sourceImageId selection:", {
-        fileId: fileId || "none",
-        extractedFileId: extractedFileId || "none",
-        projectId: projectId || "none",
+      console.log('🔧 Chat inpainting - sourceImageId selection:', {
+        fileId: fileId || 'none',
+        extractedFileId: extractedFileId || 'none',
+        projectId: projectId || 'none',
         finalSourceImageId: sourceImageId,
         imageUrl: imageUrl,
       });
 
       if (sourceImageId) {
-        formData.append("sourceImageId", sourceImageId);
-        formData.append("sourceImageUrl", imageUrl);
-        formData.append("model", "comfyui/flux/inpainting");
+        formData.append('sourceImageId', sourceImageId);
+        formData.append('sourceImageUrl', imageUrl);
+        formData.append('model', 'comfyui/flux/inpainting');
         console.log(
-          "🔧 Chat inpainting - using sourceImageId:",
+          '🔧 Chat inpainting - using sourceImageId:',
           sourceImageId,
-          "source:",
+          'source:',
           fileId
-            ? "fileId prop"
+            ? 'fileId prop'
             : extractedFileId
-              ? "extracted from URL"
-              : "none",
-          "imageUrl:",
-          imageUrl
+              ? 'extracted from URL'
+              : 'none',
+          'imageUrl:',
+          imageUrl,
         );
       } else {
         console.error(
-          "❌ Chat inpainting - sourceImageId is missing! Cannot proceed with inpainting."
+          '❌ Chat inpainting - sourceImageId is missing! Cannot proceed with inpainting.',
         );
         setInternalIsGenerating(false);
         return;
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
         {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        }
+        },
       );
       const data = await response.json();
-      console.log("Inpainting response:", data);
+      console.log('Inpainting response:', data);
 
       // If successful, create new artifact and start polling
       if (data.success && data.projectId) {
@@ -289,9 +289,9 @@ export const ImageEditing = ({
         setArtifact((prev) => ({
           ...prev,
           isVisible: true,
-          kind: "image",
+          kind: 'image',
           content: JSON.stringify({
-            status: "pending",
+            status: 'pending',
             imageUrl: imageUrl, // Show original image
             prompt: result.prompt,
             projectId: data.projectId,
@@ -306,11 +306,11 @@ export const ImageEditing = ({
         // Start polling for the result
         await startInpaintingPolling(data.projectId, result.prompt);
       } else {
-        console.error("Inpainting failed:", data);
+        console.error('Inpainting failed:', data);
         setInternalIsGenerating(false);
       }
     } catch (error) {
-      console.error("Error during inpainting:", error);
+      console.error('Error during inpainting:', error);
       setInternalIsGenerating(false);
     }
   };
@@ -332,7 +332,7 @@ export const ImageEditing = ({
             disabled={isGenerating}
             className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isGenerating ? "Processing..." : "Save"}
+            {isGenerating ? 'Processing...' : 'Save'}
           </button>
         </div>
       </div>

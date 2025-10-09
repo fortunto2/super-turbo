@@ -1,10 +1,10 @@
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
-import { useState, useCallback } from "react";
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
+import { useState, useCallback } from 'react';
 
 export interface EnhancementParams {
   originalPrompt: string;
-  mediaType?: "image" | "video" | "text" | "general";
-  enhancementLevel?: "basic" | "detailed" | "creative";
+  mediaType?: 'image' | 'video' | 'text' | 'general';
+  enhancementLevel?: 'basic' | 'detailed' | 'creative';
   targetAudience?: string;
   includeNegativePrompt?: boolean;
   modelHint?: string;
@@ -37,15 +37,15 @@ export function usePromptEnhancer() {
     async (params: EnhancementParams) => {
       if (isEnhancing) return;
 
-      console.log("🚀 Starting prompt enhancement...", params);
+      console.log('🚀 Starting prompt enhancement...', params);
       setIsEnhancing(true);
       setError(null);
 
       try {
         const response = await fetch(API_NEXT_ROUTES.ENHANCE_PROMPT, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(params),
         });
@@ -55,24 +55,24 @@ export function usePromptEnhancer() {
         }
 
         const result = await response.json();
-        console.log("✅ Enhancement completed:", result);
+        console.log('✅ Enhancement completed:', result);
 
         setEnhancementResult(result);
         setError(null);
       } catch (error) {
-        console.error("❌ Enhancement failed:", error);
+        console.error('❌ Enhancement failed:', error);
         const errorMessage =
-          error instanceof Error ? error.message : "Unknown error occurred";
+          error instanceof Error ? error.message : 'Unknown error occurred';
         setError(errorMessage);
 
         // Set fallback result
         setEnhancementResult({
           originalPrompt: params.originalPrompt,
           enhancedPrompt: params.originalPrompt,
-          mediaType: params.mediaType || "general",
-          enhancementLevel: params.enhancementLevel || "basic",
+          mediaType: params.mediaType || 'general',
+          enhancementLevel: params.enhancementLevel || 'basic',
           improvements: [],
-          reasoning: "Enhancement failed, showing original prompt",
+          reasoning: 'Enhancement failed, showing original prompt',
           error: errorMessage,
           fallback: true,
         });
@@ -80,7 +80,7 @@ export function usePromptEnhancer() {
         setIsEnhancing(false);
       }
     },
-    [isEnhancing]
+    [isEnhancing],
   );
 
   const clearResult = useCallback(() => {
@@ -91,10 +91,10 @@ export function usePromptEnhancer() {
   const copyToClipboard = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      console.log("✅ Copied to clipboard:", text);
+      console.log('✅ Copied to clipboard:', text);
       return true;
     } catch (error) {
-      console.error("❌ Failed to copy to clipboard:", error);
+      console.error('❌ Failed to copy to clipboard:', error);
       return false;
     }
   }, []);

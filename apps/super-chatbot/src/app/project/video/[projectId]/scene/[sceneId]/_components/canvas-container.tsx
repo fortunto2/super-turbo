@@ -1,7 +1,7 @@
-import type { ISceneRead } from "@turbo-super/api";
-import { Layer } from "@turbo-super/features";
-import { CanvasWrapper } from "./canvas-wrapper";
-import { MediaPreview } from "./media-preview";
+import type { ISceneRead } from '@turbo-super/api';
+import { Layer } from '@turbo-super/features';
+import { CanvasWrapper } from './canvas-wrapper';
+import { MediaPreview } from './media-preview';
 
 interface CanvasContainerProps {
   scene: ISceneRead;
@@ -46,13 +46,13 @@ export function CanvasContainer({
 
         {scene.file?.url && (
           <Layer
-            active={activeTool === "inpainting"}
+            active={activeTool === 'inpainting'}
             setCanvas={setCanvas}
             imageUrl={scene.file.url}
           />
         )}
 
-        {activeTool !== "inpainting" &&
+        {activeTool !== 'inpainting' &&
           canvasSize.width > 0 &&
           canvasSize.height > 0 && (
             <CanvasWrapper

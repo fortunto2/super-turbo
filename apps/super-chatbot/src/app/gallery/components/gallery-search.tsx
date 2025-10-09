@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Input, Button } from "@turbo-super/ui";
-import { CrossIcon } from "@/components/common/icons";
-import { useDebounceCallback } from "usehooks-ts";
+import { useState } from 'react';
+import { Input, Button } from '@turbo-super/ui';
+import { CrossIcon } from '@/components/common/icons';
+import { useDebounceCallback } from 'usehooks-ts';
 
 interface GallerySearchProps {
   value: string;
@@ -22,8 +22,8 @@ export function GallerySearch({ value, onChange }: GallerySearchProps) {
   };
 
   const handleClear = () => {
-    setLocalValue("");
-    onChange("");
+    setLocalValue('');
+    onChange('');
   };
 
   return (

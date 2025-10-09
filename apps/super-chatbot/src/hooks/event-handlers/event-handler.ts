@@ -4,12 +4,12 @@ import {
   type IProjectRead,
   type ITaskRead,
   type WSMessage,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
-import { useQueryClient } from "@tanstack/react-query";
-import { projectKeys } from "@/lib/api";
-import { unshiftOrReplace } from "@/lib/utils/array";
-import type { EventHandler } from "@/lib/utils/event-source-store-factory";
+import { useQueryClient } from '@tanstack/react-query';
+import { projectKeys } from '@/lib/api';
+import { unshiftOrReplace } from '@/lib/utils/array';
+import type { EventHandler } from '@/lib/utils/event-source-store-factory';
 
 export const useProjectEventHandler = (projectId: string): EventHandler => {
   const queryClient = useQueryClient();
@@ -23,7 +23,7 @@ export const useProjectEventHandler = (projectId: string): EventHandler => {
       queryClient.setQueryData(queryKey, (oldData: IProjectRead) => {
         return {
           ...oldData,
-          data: unshiftOrReplace(oldData.data, object, "type"),
+          data: unshiftOrReplace(oldData.data, object, 'type'),
         };
       });
     } else if (eventData.type === WSMessageTypeEnum.TASK) {
@@ -38,7 +38,7 @@ export const useProjectEventHandler = (projectId: string): EventHandler => {
       queryClient.setQueryData(queryKey, (oldData: IProjectRead) => {
         return {
           ...oldData,
-          tasks: unshiftOrReplace(oldData.tasks, object, "id"),
+          tasks: unshiftOrReplace(oldData.tasks, object, 'id'),
         };
       });
     }

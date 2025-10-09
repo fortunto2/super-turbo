@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "@turbo-super/ui";
-import { Loader2, Download, CheckCircle } from "lucide-react";
-import type { IFileRead } from "@turbo-super/api";
-import { useProjectVideoRenderStore } from "@/lib/store";
+import { useEffect, useMemo } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '@turbo-super/ui';
+import { Loader2, Download, CheckCircle } from 'lucide-react';
+import type { IFileRead } from '@turbo-super/api';
+import { useProjectVideoRenderStore } from '@/lib/store';
 
 // Simple Progress component since it's not available in UI library
 function ProgressBar({
@@ -43,8 +43,8 @@ export const ProjectVideoExportDialog: React.FC<
   onClose,
   onExport,
   onDownload,
-  title = "Export Video",
-  description = "Confirm video export from storyboard",
+  title = 'Export Video',
+  description = 'Confirm video export from storyboard',
   isRendering,
   isPending,
 }) => {
@@ -76,21 +76,18 @@ export const ProjectVideoExportDialog: React.FC<
 
   const exportText = useMemo(() => {
     if (!isRendering) {
-      return "Confirm and export →";
+      return 'Confirm and export →';
     }
     if (progress === 100) {
-      return "Downloading...";
+      return 'Downloading...';
     }
-    return progress === null ? "Preparing..." : `Rendering... ${progress}%`;
+    return progress === null ? 'Preparing...' : `Rendering... ${progress}%`;
   }, [isRendering, progress]);
 
   const isDisabled = isPending || isRendering;
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={onClose}
-    >
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold">

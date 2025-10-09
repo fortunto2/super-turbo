@@ -1,32 +1,32 @@
-import { tool, generateText, generateObject } from "ai";
-import { z } from "zod";
-import { myProvider } from "../providers";
-import { createAzure } from "@ai-sdk/azure";
+import { tool, generateText, generateObject } from 'ai';
+import { z } from 'zod';
+import { myProvider } from '../providers';
+import { createAzure } from '@ai-sdk/azure';
 
 // Initialize Azure provider for VEO3
 const resourceName = process.env.AZURE_OPENAI_RESOURCE_NAME;
 const apiKey = process.env.AZURE_OPENAI_API_KEY;
 
 if (!resourceName || !apiKey) {
-  throw new Error("Azure OpenAI configuration is missing");
+  throw new Error('Azure OpenAI configuration is missing');
 }
 
 const azure = createAzure({
   resourceName,
   apiKey,
-  apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
+  apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2024-12-01-preview',
 });
 
 // VEO3 Model configuration
 const VEO3_MODEL_CONFIG = {
-  "gpt-4.1": {
-    name: "GPT-4.1",
-    deploymentName: "gpt-4.1",
+  'gpt-4.1': {
+    name: 'GPT-4.1',
+    deploymentName: 'gpt-4.1',
     maxChars: { short: 500, medium: 1000, long: 2000 },
     maxTokens: { short: 150, medium: 300, long: 600 },
     supportsSystem: true,
     isReasoning: false,
-    type: "chat",
+    type: 'chat',
   },
 } as const;
 
@@ -64,55 +64,55 @@ type ExtendedVEO3Schema = BaseVEO3Schema & {
 function createVEO3Schema(
   focusTypes: string[],
   includeAudio: boolean,
-  hasCharacterSpeech: boolean
+  hasCharacterSpeech: boolean,
 ) {
   const baseSchema: ExtendedVEO3Schema = {
     scene_description: z
       .string()
       .describe(
-        "Detailed description of the overall scene, what's happening, who's involved, and general atmosphere"
+        "Detailed description of the overall scene, what's happening, who's involved, and general atmosphere",
       ),
     visual_style: z
       .string()
       .describe(
-        "Overall look and feel - specify if cinematic, realistic, animated, stylized, or surreal"
+        'Overall look and feel - specify if cinematic, realistic, animated, stylized, or surreal',
       ),
     camera_movement: z
       .string()
       .describe(
-        "Specific camera movements - slow pan, static shot, tracking shot, aerial zoom, etc."
+        'Specific camera movements - slow pan, static shot, tracking shot, aerial zoom, etc.',
       ),
     main_subject: z
       .string()
       .describe(
-        "Primary person, character, or object that should be the focus of the video"
+        'Primary person, character, or object that should be the focus of the video',
       ),
     background_setting: z
       .string()
-      .describe("Specific location or environment where scene takes place"),
+      .describe('Specific location or environment where scene takes place'),
     lighting_mood: z
       .string()
       .describe(
-        "Type of lighting and emotional tone - golden hour, dramatic shadows, soft lighting, etc."
+        'Type of lighting and emotional tone - golden hour, dramatic shadows, soft lighting, etc.',
       ),
     color_palette: z
       .string()
       .describe(
-        "Dominant colors or tones - bold, pastel, muted, monochrome, warm, cool, etc."
+        'Dominant colors or tones - bold, pastel, muted, monochrome, warm, cool, etc.',
       ),
     total_character_count: z
       .number()
-      .describe("Total character count of the enhanced prompt"),
+      .describe('Total character count of the enhanced prompt'),
     focus_areas: z
       .array(z.string())
-      .describe("Applied focus types for this enhancement"),
+      .describe('Applied focus types for this enhancement'),
   };
 
   if (includeAudio) {
     baseSchema.audio_cue = z
       .string()
       .describe(
-        "Detailed sound design: character dialogue, ambient sounds, music, sound effects, voice characteristics"
+        'Detailed sound design: character dialogue, ambient sounds, music, sound effects, voice characteristics',
       );
   }
 
@@ -122,52 +122,52 @@ function createVEO3Schema(
         z.object({
           character_name: z
             .string()
-            .describe("Name or identifier of the character"),
+            .describe('Name or identifier of the character'),
           dialogue: z
             .string()
-            .describe("Exact speech/dialogue in original language"),
+            .describe('Exact speech/dialogue in original language'),
           language: z
             .string()
             .optional()
-            .describe("Language of the dialogue if specified"),
-        })
+            .describe('Language of the dialogue if specified'),
+        }),
       )
       .optional()
-      .describe("Extracted character speech information for audio processing");
+      .describe('Extracted character speech information for audio processing');
   }
 
-  if (focusTypes.includes("character")) {
+  if (focusTypes.includes('character')) {
     baseSchema.character_details = z
       .string()
       .optional()
       .describe(
-        "Additional character appearance, expressions, and personality details"
+        'Additional character appearance, expressions, and personality details',
       );
   }
 
-  if (focusTypes.includes("action")) {
+  if (focusTypes.includes('action')) {
     baseSchema.action_sequence = z
       .string()
       .optional()
       .describe(
-        "Detailed breakdown of movements, timing, and dynamic interactions"
+        'Detailed breakdown of movements, timing, and dynamic interactions',
       );
   }
 
-  if (focusTypes.includes("cinematic")) {
+  if (focusTypes.includes('cinematic')) {
     baseSchema.cinematography_notes = z
       .string()
       .optional()
       .describe(
-        "Professional filming techniques, composition, and visual effects"
+        'Professional filming techniques, composition, and visual effects',
       );
   }
 
-  if (focusTypes.includes("safe")) {
+  if (focusTypes.includes('safe')) {
     baseSchema.safety_compliance = z
       .string()
       .optional()
-      .describe("Notes on content safety and family-friendly elements");
+      .describe('Notes on content safety and family-friendly elements');
   }
 
   return z.object(baseSchema);
@@ -175,45 +175,45 @@ function createVEO3Schema(
 
 export const enhancePromptUnified = tool({
   description:
-    "AI Prompt Enhancer that combines general prompt enhancement and VEO3-specific video prompt enhancement. Automatically translates text, applies prompt engineering best practices, and optimizes for specific media types and AI models. Supports both general enhancement mode and VEO3 structured video enhancement mode.",
-  parameters: z.object({
+    'AI Prompt Enhancer that combines general prompt enhancement and VEO3-specific video prompt enhancement. Automatically translates text, applies prompt engineering best practices, and optimizes for specific media types and AI models. Supports both general enhancement mode and VEO3 structured video enhancement mode.',
+  inputSchema: z.object({
     originalPrompt: z
       .string()
       .describe(
-        "The original prompt text that needs enhancement. Can be in any language, simple or complex."
+        'The original prompt text that needs enhancement. Can be in any language, simple or complex.',
       ),
     mode: z
-      .enum(["general", "veo3"])
+      .enum(['general', 'veo3'])
       .describe(
-        "Enhancement mode: general (for images/text) or veo3 (for structured video prompts)"
+        'Enhancement mode: general (for images/text) or veo3 (for structured video prompts)',
       ),
 
     // General mode parameters
     mediaType: z
-      .enum(["image", "video", "text", "general"])
+      .enum(['image', 'video', 'text', 'general'])
       .optional()
-      .describe("The type of content being generated (for general mode)."),
+      .describe('The type of content being generated (for general mode).'),
     enhancementLevel: z
-      .enum(["basic", "detailed", "creative"])
+      .enum(['basic', 'detailed', 'creative'])
       .optional()
       .describe(
-        "Level of enhancement for general mode: basic, detailed, or creative"
+        'Level of enhancement for general mode: basic, detailed, or creative',
       ),
     targetAudience: z
       .string()
       .optional()
       .describe(
-        'Target audience or use case (e.g., "professional presentation", "social media")'
+        'Target audience or use case (e.g., "professional presentation", "social media")',
       ),
     includeNegativePrompt: z
       .boolean()
       .optional()
-      .describe("Whether to generate a negative prompt for what to avoid"),
+      .describe('Whether to generate a negative prompt for what to avoid'),
     modelHint: z
       .string()
       .optional()
       .describe(
-        "Specific AI model being used to optimize prompt for that model"
+        'Specific AI model being used to optimize prompt for that model',
       ),
 
     // VEO3 mode parameters
@@ -222,17 +222,17 @@ export const enhancePromptUnified = tool({
       .min(200)
       .max(10000)
       .optional()
-      .describe("Character limit for VEO3 mode (default: 1000)"),
+      .describe('Character limit for VEO3 mode (default: 1000)'),
     focusType: z
       .string()
       .optional()
       .describe(
-        "Focus types for VEO3 mode (comma-separated: character,action,cinematic,safe)"
+        'Focus types for VEO3 mode (comma-separated: character,action,cinematic,safe)',
       ),
     includeAudio: z
       .boolean()
       .optional()
-      .describe("Include audio cues in VEO3 enhancement"),
+      .describe('Include audio cues in VEO3 enhancement'),
     promptData: z
       .object({
         characters: z
@@ -242,13 +242,13 @@ export const enhancePromptUnified = tool({
               name: z.string(),
               description: z.string(),
               speech: z.string(),
-            })
+            }),
           )
           .optional(),
         language: z.string().optional(),
       })
       .optional()
-      .describe("Character data for VEO3 mode"),
+      .describe('Character data for VEO3 mode'),
     moodboard: z
       .object({
         images: z
@@ -259,32 +259,32 @@ export const enhancePromptUnified = tool({
               base64: z.string().optional(),
               tags: z.array(
                 z.enum([
-                  "character",
-                  "style",
-                  "background",
-                  "lighting",
-                  "mood",
-                  "action",
-                ])
+                  'character',
+                  'style',
+                  'background',
+                  'lighting',
+                  'mood',
+                  'action',
+                ]),
               ),
               description: z.string().optional(),
               weight: z.number().min(0.1).max(1.0).default(1.0),
-            })
+            }),
           )
           .refine((images) => images.every((img) => img.url || img.base64), {
-            message: "Each image must have either url or base64",
+            message: 'Each image must have either url or base64',
           }),
         enabled: z.boolean().default(false),
       })
       .optional()
-      .describe("Moodboard images for VEO3 mode"),
+      .describe('Moodboard images for VEO3 mode'),
   }),
   execute: async ({
     originalPrompt,
-    mode = "general",
+    mode = 'general',
     // General mode parameters
-    mediaType = "general",
-    enhancementLevel = "detailed",
+    mediaType = 'general',
+    enhancementLevel = 'detailed',
     targetAudience,
     includeNegativePrompt = false,
     modelHint,
@@ -295,7 +295,7 @@ export const enhancePromptUnified = tool({
     promptData,
     moodboard,
   }) => {
-    console.log("🚀 enhancePromptUnified called with:", {
+    console.log('🚀 enhancePromptUnified called with:', {
       originalPrompt,
       mode,
       mediaType,
@@ -310,7 +310,7 @@ export const enhancePromptUnified = tool({
     });
 
     try {
-      if (mode === "general") {
+      if (mode === 'general') {
         return await enhanceGeneralPrompt({
           originalPrompt,
           mediaType,
@@ -319,7 +319,7 @@ export const enhancePromptUnified = tool({
           includeNegativePrompt,
           ...(modelHint && { modelHint }),
         });
-      } else if (mode === "veo3") {
+      } else if (mode === 'veo3') {
         return await enhanceVEO3Prompt({
           originalPrompt,
           customLimit,
@@ -332,9 +332,9 @@ export const enhancePromptUnified = tool({
         throw new Error(`Unknown enhancement mode: ${mode}`);
       }
     } catch (error) {
-      console.error("❌ Error in unified prompt enhancement:", error);
+      console.error('❌ Error in unified prompt enhancement:', error);
       return {
-        error: `Failed to enhance prompt: ${error instanceof Error ? error.message : "Unknown error"}`,
+        error: `Failed to enhance prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
         originalPrompt,
         enhancedPrompt: originalPrompt, // Return original as fallback
         fallback: true,
@@ -366,7 +366,7 @@ async function enhanceGeneralPrompt(params: {
   const systemPrompt = buildSystemPrompt(
     mediaType,
     enhancementLevel,
-    modelHint
+    modelHint,
   );
 
   // Build user prompt with context
@@ -375,20 +375,20 @@ async function enhanceGeneralPrompt(params: {
     mediaType,
     enhancementLevel,
     targetAudience,
-    includeNegativePrompt
+    includeNegativePrompt,
   );
 
-  console.log("🔄 Calling LLM for general prompt enhancement...");
+  console.log('🔄 Calling LLM for general prompt enhancement...');
 
   const result = await generateText({
-    model: myProvider.languageModel("artifact-model"),
+    model: myProvider.languageModel('artifact-model'),
     system: systemPrompt,
     prompt: userPrompt,
     temperature: 0.7,
     maxTokens: 1000,
   });
 
-  console.log("✅ LLM response received:", result.text);
+  console.log('✅ LLM response received:', result.text);
 
   // Parse the enhanced prompt from LLM response
   const parsedResult = parseEnhancementResult(result.text, originalPrompt);
@@ -402,12 +402,12 @@ async function enhanceGeneralPrompt(params: {
     modelHint,
     improvements: parsedResult.improvements,
     reasoning: parsedResult.reasoning,
-    mode: "general",
+    mode: 'general',
     usage: {
       copyPrompt:
-        "Copy the enhanced prompt to use in image/video generation tools",
+        'Copy the enhanced prompt to use in image/video generation tools',
       negativePrompt: parsedResult.negativePrompt
-        ? "Use the negative prompt to avoid unwanted elements"
+        ? 'Use the negative prompt to avoid unwanted elements'
         : undefined,
     },
   };
@@ -437,13 +437,13 @@ async function enhanceVEO3Prompt(params: {
     !process.env.AZURE_OPENAI_API_KEY
   ) {
     throw new Error(
-      "Azure OpenAI not configured. Please set AZURE_OPENAI_RESOURCE_NAME and AZURE_OPENAI_API_KEY environment variables."
+      'Azure OpenAI not configured. Please set AZURE_OPENAI_RESOURCE_NAME and AZURE_OPENAI_API_KEY environment variables.',
     );
   }
 
   // Process focus types
   const focusTypes = focusType
-    ? focusType.split(",").map((type) => type.trim())
+    ? focusType.split(',').map((type) => type.trim())
     : [];
 
   // Check if we have characters with speech
@@ -453,8 +453,8 @@ async function enhanceVEO3Prompt(params: {
     false;
 
   // Process moodboard images
-  let moodboardContext = "";
-  let moodboardImages: Array<{ type: "image"; image: string }> = [];
+  let moodboardContext = '';
+  let moodboardImages: Array<{ type: 'image'; image: string }> = [];
 
   if (moodboard?.enabled && moodboard.images?.length > 0) {
     const imagesByTag: Record<
@@ -480,24 +480,24 @@ async function enhanceVEO3Prompt(params: {
 
     const tagDescriptions = {
       character:
-        "character appearance, expressions, clothing, and personality traits",
+        'character appearance, expressions, clothing, and personality traits',
       style:
-        "visual style, artistic approach, cinematography, and overall aesthetic",
-      background: "environments, settings, locations, and background elements",
+        'visual style, artistic approach, cinematography, and overall aesthetic',
+      background: 'environments, settings, locations, and background elements',
       lighting:
-        "lighting conditions, mood, time of day, and atmospheric effects",
-      mood: "emotional tone, atmosphere, and feeling",
-      action: "movements, activities, dynamics, and interactions",
+        'lighting conditions, mood, time of day, and atmospheric effects',
+      mood: 'emotional tone, atmosphere, and feeling',
+      action: 'movements, activities, dynamics, and interactions',
     };
 
-    moodboardContext = "\n\nMOODBOARD VISUAL REFERENCES:\n";
+    moodboardContext = '\n\nMOODBOARD VISUAL REFERENCES:\n';
     moodboardContext +=
-      "The user has provided visual references to guide the enhancement. PRIORITIZE incorporating these visual elements prominently into the appropriate VEO3 sections:\n\n";
+      'The user has provided visual references to guide the enhancement. PRIORITIZE incorporating these visual elements prominently into the appropriate VEO3 sections:\n\n';
 
     Object.entries(imagesByTag).forEach(([tag, images]) => {
-      moodboardContext += `${tag.toUpperCase()} REFERENCES (${images.length} image${images.length > 1 ? "s" : ""}):\n`;
+      moodboardContext += `${tag.toUpperCase()} REFERENCES (${images.length} image${images.length > 1 ? 's' : ''}):\n`;
       images.forEach((img) => {
-        moodboardContext += `- Image ${img.index}${img.description ? `: ${img.description}` : ""} (weight: ${img.weight}) - INTEGRATE PROMINENTLY\n`;
+        moodboardContext += `- Image ${img.index}${img.description ? `: ${img.description}` : ''} (weight: ${img.weight}) - INTEGRATE PROMINENTLY\n`;
       });
       moodboardContext += `MANDATORY: Incorporate specific visual elements from these references into ${tagDescriptions[tag as keyof typeof tagDescriptions]} sections. Reference the moodboard images directly in your descriptions.\n\n`;
     });
@@ -505,23 +505,23 @@ async function enhanceVEO3Prompt(params: {
     moodboardImages = moodboard.images
       .filter((img: any) => img.url || img.base64)
       .map((img: any) => ({
-        type: "image" as const,
+        type: 'image' as const,
         image: img.url || `data:image/jpeg;base64,${img.base64}`,
       }));
   }
 
   // Extract character speech for context
-  let characterSpeechInfo = "";
+  let characterSpeechInfo = '';
   if (hasCharacterSpeech && promptData?.characters) {
     const charactersWithSpeech = promptData.characters.filter((char: any) =>
-      char.speech.trim()
+      char.speech.trim(),
     );
     characterSpeechInfo = `\n\nCHARACTER SPEECH CONTEXT:\n${charactersWithSpeech
       .map(
         (char: any) =>
-          `- ${char.name || "Character"}: "${char.speech}" ${promptData.language ? `(in ${promptData.language})` : ""}`
+          `- ${char.name || 'Character'}: "${char.speech}" ${promptData.language ? `(in ${promptData.language})` : ''}`,
       )
-      .join("\n")}\n`;
+      .join('\n')}\n`;
   }
 
   const targetChars = Math.floor(customLimit * 0.75);
@@ -531,24 +531,24 @@ async function enhanceVEO3Prompt(params: {
   // Create focus-specific instruction
   const focusInstructions = {
     character:
-      "FOCUS ON CHARACTER: Pay special attention to character development, appearance details, facial expressions, body language, and personality traits. Allocate extra detail budget to character descriptions.",
+      'FOCUS ON CHARACTER: Pay special attention to character development, appearance details, facial expressions, body language, and personality traits. Allocate extra detail budget to character descriptions.',
     action:
-      "FOCUS ON ACTION: Emphasize dynamic movements, activities, and sequences. Add details about how actions unfold, timing, and physical interactions with the environment.",
+      'FOCUS ON ACTION: Emphasize dynamic movements, activities, and sequences. Add details about how actions unfold, timing, and physical interactions with the environment.',
     cinematic:
-      "FOCUS ON CINEMATOGRAPHY: Enhance camera work, lighting, and visual composition with professional filming techniques. Focus on visual storytelling and cinematic quality.",
-    safe: "SAFE CONTENT MODE: Ensure all content strictly complies with Google VEO3 content policies. Focus on family-friendly, educational, artistic content suitable for all audiences.",
+      'FOCUS ON CINEMATOGRAPHY: Enhance camera work, lighting, and visual composition with professional filming techniques. Focus on visual storytelling and cinematic quality.',
+    safe: 'SAFE CONTENT MODE: Ensure all content strictly complies with Google VEO3 content policies. Focus on family-friendly, educational, artistic content suitable for all audiences.',
   };
 
-  let focusInstruction = "";
+  let focusInstruction = '';
   if (focusTypes.length > 0) {
     const validFocusTypes = focusTypes.filter(
-      (type) => type in focusInstructions
+      (type) => type in focusInstructions,
     );
     if (validFocusTypes.length > 0) {
       const instructions = validFocusTypes.map(
-        (type) => focusInstructions[type as keyof typeof focusInstructions]
+        (type) => focusInstructions[type as keyof typeof focusInstructions],
       );
-      focusInstruction = `\n\nAPPLIED FOCUS STRATEGIES:\n${instructions.join("\n\n")}\n`;
+      focusInstruction = `\n\nAPPLIED FOCUS STRATEGIES:\n${instructions.join('\n\n')}\n`;
     }
   }
 
@@ -556,7 +556,7 @@ async function enhanceVEO3Prompt(params: {
   const veo3Schema = createVEO3Schema(
     focusTypes,
     includeAudio,
-    hasCharacterSpeech
+    hasCharacterSpeech,
   );
 
   const enhancementPrompt = `Enhance this VEO3 video prompt using structured output format. Target length: ${targetChars} characters (max: ${maxChars}): "${originalPrompt}"${focusInstruction}${characterSpeechInfo}${moodboardContext}
@@ -566,7 +566,7 @@ CRITICAL REQUIREMENTS:
 2. LENGTH: Stay under ${targetChars} characters total across all sections
 3. STRUCTURE: Use the exact VEO3 format with all required sections
 4. QUALITY: Professional video production terminology and specific details
-${moodboard?.enabled ? "5. VISUAL REFERENCES: Incorporate visual elements from the provided moodboard images into relevant sections" : ""}
+${moodboard?.enabled ? '5. VISUAL REFERENCES: Incorporate visual elements from the provided moodboard images into relevant sections' : ''}
 
 VEO3 ENHANCEMENT GUIDELINES:
 - Scene Description: Overall action, participants, atmosphere
@@ -576,7 +576,7 @@ VEO3 ENHANCEMENT GUIDELINES:
 - Background Setting: Specific location and environment
 - Lighting/Mood: Lighting type and emotional tone
 - Color Palette: Dominant colors and visual tones
-${includeAudio ? "- Audio Cue: Sound design, dialogue, ambient sounds, music" : ""}
+${includeAudio ? '- Audio Cue: Sound design, dialogue, ambient sounds, music' : ''}
 
 ${
   moodboard?.enabled
@@ -590,12 +590,12 @@ ${
 - MANDATORY: Transform at least 30% of each tagged section to reflect the visual references
 
 `
-    : ""
+    : ''
 }SMART LENGTH DISTRIBUTION:
-${focusTypes.includes("character") ? "- Allocate 30% to character descriptions and main subject" : ""}
-${focusTypes.includes("action") ? "- Allocate 25% each to scene description and camera movement" : ""}
-${focusTypes.includes("cinematic") ? "- Allocate 25% to camera movement, 20% each to visual style and lighting" : ""}
-${focusTypes.includes("safe") ? "- Ensure all content is family-friendly and policy-compliant" : ""}
+${focusTypes.includes('character') ? '- Allocate 30% to character descriptions and main subject' : ''}
+${focusTypes.includes('action') ? '- Allocate 25% each to scene description and camera movement' : ''}
+${focusTypes.includes('cinematic') ? '- Allocate 25% to camera movement, 20% each to visual style and lighting' : ''}
+${focusTypes.includes('safe') ? '- Ensure all content is family-friendly and policy-compliant' : ''}
 
 ENHANCEMENT PRINCIPLES:
 1. Preserve original intent and core elements
@@ -606,18 +606,18 @@ ENHANCEMENT PRINCIPLES:
 6. Add cultural context (described in English)
 7. Include specific color and lighting details
 8. Preserve direct speech in original language
-${moodboard?.enabled ? "9. Incorporate visual references from moodboard images" : ""}
+${moodboard?.enabled ? '9. Incorporate visual references from moodboard images' : ''}
 
 Generate a structured enhancement that follows VEO3 format exactly.`;
 
   // Configure model for structured output
-  const modelConfig = VEO3_MODEL_CONFIG["gpt-4.1"];
+  const modelConfig = VEO3_MODEL_CONFIG['gpt-4.1'];
   const modelInstance = azure(modelConfig.deploymentName);
 
   // Prepare messages for multimodal input
   const messages = [
     {
-      role: "system" as const,
+      role: 'system' as const,
       content: `You are an expert VEO3 video prompt engineer with structured output capabilities. 
 
 CRITICAL INSTRUCTIONS:
@@ -628,19 +628,19 @@ CRITICAL INSTRUCTIONS:
 5. Apply focus-specific enhancements as requested
 6. Include character count tracking
 7. Extract character speech information if present
-${moodboard?.enabled ? "8. Analyze provided moodboard images and incorporate visual elements" : ""}
+${moodboard?.enabled ? '8. Analyze provided moodboard images and incorporate visual elements' : ''}
 
 FOCUS STRATEGY APPLICATION:
-${focusTypes.map((type) => `- ${type.toUpperCase()}: ${focusInstructions[type as keyof typeof focusInstructions]}`).join("\n")}
+${focusTypes.map((type) => `- ${type.toUpperCase()}: ${focusInstructions[type as keyof typeof focusInstructions]}`).join('\n')}
 
 Your output will be automatically formatted for VEO3 usage.`,
     },
     {
-      role: "user" as const,
+      role: 'user' as const,
       content:
         moodboardImages.length > 0
           ? [
-              { type: "text" as const, text: enhancementPrompt },
+              { type: 'text' as const, text: enhancementPrompt },
               ...moodboardImages,
             ]
           : enhancementPrompt,
@@ -653,8 +653,8 @@ Your output will be automatically formatted for VEO3 usage.`,
     temperature: 0.7,
     messages,
     schema: veo3Schema,
-    schemaName: "VEO3VideoPromptEnhancement",
-    schemaDescription: `Enhanced VEO3 video prompt with dynamic structured output. Contains ${includeAudio ? "audio-enabled" : "audio-disabled"} sections${hasCharacterSpeech ? " with character speech extraction" : ""}${focusTypes.length > 0 ? ` and focus enhancements for: ${focusTypes.join(", ")}` : ""}${moodboard?.enabled ? ` with ${moodboard.images?.length || 0} moodboard image references` : ""}. Target length: ${targetChars} characters.`,
+    schemaName: 'VEO3VideoPromptEnhancement',
+    schemaDescription: `Enhanced VEO3 video prompt with dynamic structured output. Contains ${includeAudio ? 'audio-enabled' : 'audio-disabled'} sections${hasCharacterSpeech ? ' with character speech extraction' : ''}${focusTypes.length > 0 ? ` and focus enhancements for: ${focusTypes.join(', ')}` : ''}${moodboard?.enabled ? ` with ${moodboard.images?.length || 0} moodboard image references` : ''}. Target length: ${targetChars} characters.`,
   });
 
   // Format the structured output back to VEO3 format
@@ -674,7 +674,7 @@ BACKGROUND SETTING: ${structuredData.background_setting}
 LIGHTING/MOOD: ${structuredData.lighting_mood}`;
 
   // Add audio section if enabled
-  if (includeAudio && "audio_cue" in structuredData) {
+  if (includeAudio && 'audio_cue' in structuredData) {
     formattedPrompt += `\n\nAUDIO CUE: ${structuredData.audio_cue}`;
   }
 
@@ -692,7 +692,7 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
     model: modelConfig.name,
     focusTypes: structuredData.focus_areas || focusTypes,
     includeAudio,
-    mode: "veo3",
+    mode: 'veo3',
     metadata: {
       structuredData,
       hasCharacterSpeech,
@@ -700,16 +700,16 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
         ? structuredData.character_speech
         : null,
       focusEnhancements: {
-        character: focusTypes.includes("character")
+        character: focusTypes.includes('character')
           ? structuredData.character_details
           : null,
-        action: focusTypes.includes("action")
+        action: focusTypes.includes('action')
           ? structuredData.action_sequence
           : null,
-        cinematic: focusTypes.includes("cinematic")
+        cinematic: focusTypes.includes('cinematic')
           ? structuredData.cinematography_notes
           : null,
-        safe: focusTypes.includes("safe")
+        safe: focusTypes.includes('safe')
           ? structuredData.safety_compliance
           : null,
       },
@@ -719,13 +719,13 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
             imageCount: moodboard.images?.length || 0,
             tags: [
               ...new Set(
-                moodboard.images?.flatMap((img: any) => img.tags) || []
+                moodboard.images?.flatMap((img: any) => img.tags) || [],
               ),
             ],
             totalWeight:
               moodboard.images?.reduce(
                 (sum: number, img: any) => sum + img.weight,
-                0
+                0,
               ) || 0,
           }
         : {
@@ -742,7 +742,7 @@ LIGHTING/MOOD: ${structuredData.lighting_mood}`;
 function buildSystemPrompt(
   mediaType: string,
   enhancementLevel: string,
-  modelHint?: string
+  modelHint?: string,
 ): string {
   const basePrompt = `You are a professional prompt engineering expert specializing in improving prompts for AI generation. Your task is to enhance user prompts to achieve the best possible results.
 
@@ -786,14 +786,14 @@ GENERAL ENHANCEMENT FOCUS:
 
   const levelGuidance = {
     basic:
-      "Apply minimal enhancements - focus on translation, basic cleanup, and essential quality terms.",
+      'Apply minimal enhancements - focus on translation, basic cleanup, and essential quality terms.',
     detailed:
-      "Apply comprehensive enhancements - add professional terminology, improve structure, include quality descriptors.",
+      'Apply comprehensive enhancements - add professional terminology, improve structure, include quality descriptors.',
     creative:
-      "Apply maximum enhancements - add artistic language, advanced composition terms, creative direction guidance.",
+      'Apply maximum enhancements - add artistic language, advanced composition terms, creative direction guidance.',
   };
 
-  let modelOptimization = "";
+  let modelOptimization = '';
   if (modelHint) {
     modelOptimization = `
 MODEL OPTIMIZATION for ${modelHint}:
@@ -823,7 +823,7 @@ function buildUserPrompt(
   mediaType: string,
   enhancementLevel: string,
   targetAudience?: string,
-  includeNegativePrompt?: boolean
+  includeNegativePrompt?: boolean,
 ): string {
   let prompt = `Please enhance this prompt for ${mediaType} generation:
 
@@ -855,23 +855,23 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
       return {
         enhancedPrompt: parsed.enhancedPrompt || originalPrompt,
         negativePrompt: parsed.negativePrompt || undefined,
-        improvements: parsed.improvements || ["LLM enhancement applied"],
-        reasoning: parsed.reasoning || "Enhanced using AI prompt engineering",
+        improvements: parsed.improvements || ['LLM enhancement applied'],
+        reasoning: parsed.reasoning || 'Enhanced using AI prompt engineering',
       };
     }
 
     // Fallback: extract enhanced prompt from text
-    const lines = llmResponse.split("\n").filter((line) => line.trim());
+    const lines = llmResponse.split('\n').filter((line) => line.trim());
     let enhancedPrompt = originalPrompt;
 
     // Look for enhanced prompt indicators
     for (const line of lines) {
       if (
-        line.toLowerCase().includes("enhanced") ||
-        line.toLowerCase().includes("improved") ||
-        line.toLowerCase().includes("prompt:")
+        line.toLowerCase().includes('enhanced') ||
+        line.toLowerCase().includes('improved') ||
+        line.toLowerCase().includes('prompt:')
       ) {
-        const promptText = line.replace(/^[^:]*:?\s*/, "").trim();
+        const promptText = line.replace(/^[^:]*:?\s*/, '').trim();
         if (promptText.length > 10) {
           enhancedPrompt = promptText;
           break;
@@ -882,16 +882,16 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
     return {
       enhancedPrompt,
       negativePrompt: undefined,
-      improvements: ["LLM enhancement applied"],
-      reasoning: "Enhanced using AI prompt engineering",
+      improvements: ['LLM enhancement applied'],
+      reasoning: 'Enhanced using AI prompt engineering',
     };
   } catch (error) {
-    console.error("Failed to parse LLM response:", error);
+    console.error('Failed to parse LLM response:', error);
     return {
       enhancedPrompt: originalPrompt,
       negativePrompt: undefined,
-      improvements: ["Enhancement failed, returned original"],
-      reasoning: "Error in processing enhancement",
+      improvements: ['Enhancement failed, returned original'],
+      reasoning: 'Error in processing enhancement',
     };
   }
 }

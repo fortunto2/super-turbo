@@ -1,7 +1,7 @@
 // AICODE-NOTE: Nano Banana API functions for all four main functionalities
 // Provides typed interfaces for image generation, editing, prompt enhancement, and style guide
 
-"use client";
+'use client';
 
 // Types for Nano Banana operations
 export interface NanoBananaImageGenerationRequest {
@@ -127,14 +127,14 @@ export interface NanoBananaStyleInfo {
 
 // API Functions
 export async function generateNanoBananaImage(
-  request: NanoBananaImageGenerationRequest
+  request: NanoBananaImageGenerationRequest,
 ): Promise<NanoBananaApiResponse<NanoBananaImageResult>> {
   try {
     // Прямой минимальный вызов: без контекста, сразу Vertex Image
-    const response = await fetch("/api/nano-banana/direct-image", {
-      method: "POST",
+    const response = await fetch('/api/nano-banana/direct-image', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ prompt: request.prompt }),
     });
@@ -143,7 +143,7 @@ export async function generateNanoBananaImage(
     if (!response.ok || !data?.success || !data?.url) {
       return {
         success: false,
-        error: data?.error || "Failed to generate image",
+        error: data?.error || 'Failed to generate image',
       };
     }
 
@@ -153,10 +153,10 @@ export async function generateNanoBananaImage(
       prompt: request.prompt,
       timestamp: Date.now(),
       settings: {
-        style: String(request.style || ""),
-        quality: String(request.quality || ""),
-        aspectRatio: String(request.aspectRatio || ""),
-        ...(typeof request.seed === "number" ? { seed: request.seed } : {}),
+        style: String(request.style || ''),
+        quality: String(request.quality || ''),
+        aspectRatio: String(request.aspectRatio || ''),
+        ...(typeof request.seed === 'number' ? { seed: request.seed } : {}),
         enableContextAwareness: Boolean(request.enableContextAwareness),
         enableSurgicalPrecision: Boolean(request.enableSurgicalPrecision),
         creativeMode: Boolean(request.creativeMode),
@@ -165,22 +165,22 @@ export async function generateNanoBananaImage(
 
     return { success: true, data: result };
   } catch (error) {
-    console.error("Nano Banana image generation error:", error);
+    console.error('Nano Banana image generation error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Generation failed",
+      error: error instanceof Error ? error.message : 'Generation failed',
     };
   }
 }
 
 export async function editNanoBananaImage(
-  request: NanoBananaImageEditingRequest
+  request: NanoBananaImageEditingRequest,
 ): Promise<NanoBananaApiResponse<NanoBananaEditResult>> {
   try {
-    const response = await fetch("/api/nano-banana/edit", {
-      method: "POST",
+    const response = await fetch('/api/nano-banana/edit', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
     });
@@ -188,22 +188,22 @@ export async function editNanoBananaImage(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Nano Banana image editing error:", error);
+    console.error('Nano Banana image editing error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Editing failed",
+      error: error instanceof Error ? error.message : 'Editing failed',
     };
   }
 }
 
 export async function enhanceNanoBananaPrompt(
-  request: NanoBananaPromptEnhancementRequest
+  request: NanoBananaPromptEnhancementRequest,
 ): Promise<NanoBananaApiResponse<NanoBananaEnhancedPrompt>> {
   try {
-    const response = await fetch("/api/nano-banana/enhance-prompt", {
-      method: "POST",
+    const response = await fetch('/api/nano-banana/enhance-prompt', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
     });
@@ -211,22 +211,22 @@ export async function enhanceNanoBananaPrompt(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Nano Banana prompt enhancement error:", error);
+    console.error('Nano Banana prompt enhancement error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Enhancement failed",
+      error: error instanceof Error ? error.message : 'Enhancement failed',
     };
   }
 }
 
 export async function getNanoBananaStyleGuide(
-  request: NanoBananaStyleGuideRequest = {}
+  request: NanoBananaStyleGuideRequest = {},
 ): Promise<NanoBananaApiResponse<any>> {
   try {
-    const response = await fetch("/api/nano-banana/style-guide", {
-      method: "POST",
+    const response = await fetch('/api/nano-banana/style-guide', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
     });
@@ -234,11 +234,11 @@ export async function getNanoBananaStyleGuide(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Nano Banana style guide error:", error);
+    console.error('Nano Banana style guide error:', error);
     return {
       success: false,
       error:
-        error instanceof Error ? error.message : "Style guide fetch failed",
+        error instanceof Error ? error.message : 'Style guide fetch failed',
     };
   }
 }
@@ -256,23 +256,23 @@ export async function getNanoBananaConfig(): Promise<{
 }> {
   // Минимальная локальная конфигурация, чтобы UI работал без внешних API
   return {
-    styles: ["realistic", "photorealistic", "cinematic", "anime", "artistic"],
-    qualityLevels: ["high", "standard"],
-    aspectRatios: ["1:1", "16:9", "9:16", "4:3", "3:4"],
-    editTypes: ["background-replacement", "object-removal", "style-transfer"],
-    precisionLevels: ["automatic", "high", "ultra"],
-    blendModes: ["natural", "overlay", "multiply"],
+    styles: ['realistic', 'photorealistic', 'cinematic', 'anime', 'artistic'],
+    qualityLevels: ['high', 'standard'],
+    aspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+    editTypes: ['background-replacement', 'object-removal', 'style-transfer'],
+    precisionLevels: ['automatic', 'high', 'ultra'],
+    blendModes: ['natural', 'overlay', 'multiply'],
     enhancementTechniques: [
-      "context-aware-editing",
-      "surgical-precision",
-      "lighting-mastery",
-      "physical-logic",
+      'context-aware-editing',
+      'surgical-precision',
+      'lighting-mastery',
+      'physical-logic',
     ],
     techniques: [
-      "context-aware-editing",
-      "surgical-precision",
-      "lighting-mastery",
-      "physical-logic",
+      'context-aware-editing',
+      'surgical-precision',
+      'lighting-mastery',
+      'physical-logic',
     ],
   };
 }

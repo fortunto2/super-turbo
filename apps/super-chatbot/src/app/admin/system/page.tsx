@@ -1,10 +1,10 @@
-import { Suspense } from "react";
-import { SystemStatsCards } from "@/components/admin/system-stats-cards";
-import { SystemHealthMonitor } from "@/components/admin/system-health-monitor";
-import { ActivityOverview } from "@/components/admin/activity-overview";
-import { DatabaseInfoCard } from "@/components/admin/database-info-card";
-import { PerformanceMetricsCard } from "@/components/admin/performance-metrics-card";
-import { UptimeStatusCard } from "@/components/admin/uptime-status-card";
+import { Suspense } from 'react';
+import { SystemStatsCards } from '@/components/admin/system-stats-cards';
+import { SystemHealthMonitor } from '@/components/admin/system-health-monitor';
+import { ActivityOverview } from '@/components/admin/activity-overview';
+import { DatabaseInfoCard } from '@/components/admin/database-info-card';
+import { PerformanceMetricsCard } from '@/components/admin/performance-metrics-card';
+import { UptimeStatusCard } from '@/components/admin/uptime-status-card';
 
 export default async function SystemPage() {
   return (

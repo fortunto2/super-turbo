@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import {
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { CheckCircle, ArrowLeft, Coins } from "lucide-react";
-import Link from "next/link";
+} from '@turbo-super/ui';
+import { CheckCircle, ArrowLeft, Coins } from 'lucide-react';
+import Link from 'next/link';
 
 interface PaymentSuccessData {
   sessionId: string;
   amount: number;
   currency: string;
   creditAmount?: number;
-  status: "success" | "processing" | "error";
+  status: 'success' | 'processing' | 'error';
 }
 
 export default function PaymentSuccessPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
   const [paymentData, setPaymentData] = useState<PaymentSuccessData | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export default function PaymentSuccessPage() {
       // Проверяем статус платежа через webhook
       const checkPaymentStatus = async () => {
         try {
-          console.log("🔍 Checking payment status for session:", sessionId);
+          console.log('🔍 Checking payment status for session:', sessionId);
 
           // Здесь можно добавить проверку статуса платежа через Stripe API
           // Пока используем моковые данные
@@ -41,13 +41,13 @@ export default function PaymentSuccessPage() {
           setPaymentData({
             sessionId,
             amount: 100,
-            currency: "usd",
+            currency: 'usd',
             creditAmount: 100,
-            status: "success",
+            status: 'success',
           });
           setLoading(false);
         } catch (error) {
-          console.error("❌ Error checking payment status:", error);
+          console.error('❌ Error checking payment status:', error);
           setLoading(false);
         }
       };
@@ -110,7 +110,7 @@ export default function PaymentSuccessPage() {
                 Сумма платежа:
               </span>
               <span className="text-sm font-medium">
-                ${(paymentData.amount / 100).toFixed(2)}{" "}
+                ${(paymentData.amount / 100).toFixed(2)}{' '}
                 {paymentData.currency.toUpperCase()}
               </span>
             </div>
@@ -126,22 +126,13 @@ export default function PaymentSuccessPage() {
           </div>
 
           <div className="flex gap-3">
-            <Link
-              href="/"
-              className="flex-1"
-            >
-              <Button
-                className="w-full"
-                variant="outline"
-              >
+            <Link href="/" className="flex-1">
+              <Button className="w-full" variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Вернуться
               </Button>
             </Link>
-            <Link
-              href="/tools"
-              className="flex-1"
-            >
+            <Link href="/tools" className="flex-1">
               <Button className="w-full">
                 <Coins className="w-4 h-4 mr-2" />
                 Использовать инструменты

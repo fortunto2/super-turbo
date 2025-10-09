@@ -1,5 +1,5 @@
-import { ArrowLeft, Eye } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowLeft, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ErrorStateProps {
   projectId?: string;

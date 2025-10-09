@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Suspense } from "react";
-import ScriptGeneratorForm from "./components/script-generator-form";
-import ScriptGenerationResult from "./components/script-generation-result";
-import { useScriptGenerator } from "./hooks/use-script-generator";
-import { Separator } from "@turbo-super/ui";
-import { Wand2, Sparkles } from "lucide-react";
+import { Suspense } from 'react';
+import ScriptGeneratorForm from './components/script-generator-form';
+import ScriptGenerationResult from './components/script-generation-result';
+import { useScriptGenerator } from './hooks/use-script-generator';
+import { Separator } from '@turbo-super/ui';
+import { Wand2, Sparkles } from 'lucide-react';
 
 export default function ScriptGeneratorPage() {
   const scriptGenerator = useScriptGenerator();

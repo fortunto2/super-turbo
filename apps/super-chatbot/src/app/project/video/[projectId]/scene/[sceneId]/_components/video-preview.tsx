@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from 'react';
 
 interface VideoPreviewProps {
   url: string;
@@ -80,16 +80,16 @@ export function VideoPreview({
     const handleVideoEnd = () => setIsVideoEnded(true);
     const handleMusicEnd = () => setIsMusicEnded(true);
 
-    voiceover?.addEventListener("ended", handleVoiceoverEnd);
-    soundEffect?.addEventListener("ended", handleSoundFXEnd);
-    video?.addEventListener("ended", handleVideoEnd);
-    music?.addEventListener("ended", handleMusicEnd);
+    voiceover?.addEventListener('ended', handleVoiceoverEnd);
+    soundEffect?.addEventListener('ended', handleSoundFXEnd);
+    video?.addEventListener('ended', handleVideoEnd);
+    music?.addEventListener('ended', handleMusicEnd);
 
     return () => {
-      voiceover?.removeEventListener("ended", handleVoiceoverEnd);
-      soundEffect?.removeEventListener("ended", handleSoundFXEnd);
-      video?.removeEventListener("ended", handleVideoEnd);
-      music?.removeEventListener("ended", handleMusicEnd);
+      voiceover?.removeEventListener('ended', handleVoiceoverEnd);
+      soundEffect?.removeEventListener('ended', handleSoundFXEnd);
+      video?.removeEventListener('ended', handleVideoEnd);
+      music?.removeEventListener('ended', handleMusicEnd);
     };
   }, []);
 
@@ -160,26 +160,17 @@ export function VideoPreview({
         <track kind="captions" />
       </video>
       {voiceoverSrc && (
-        <audio
-          ref={voiceoverRef}
-          src={voiceoverSrc}
-        >
+        <audio ref={voiceoverRef} src={voiceoverSrc}>
           <track kind="captions" />
         </audio>
       )}
       {soundEffectSrc && (
-        <audio
-          ref={soundFXRef}
-          src={soundEffectSrc}
-        >
+        <audio ref={soundFXRef} src={soundEffectSrc}>
           <track kind="captions" />
         </audio>
       )}
       {musicSrc && (
-        <audio
-          ref={musicRef}
-          src={musicSrc}
-        >
+        <audio ref={musicRef} src={musicSrc}>
           <track kind="captions" />
         </audio>
       )}

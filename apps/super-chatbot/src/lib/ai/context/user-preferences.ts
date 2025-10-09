@@ -3,8 +3,8 @@
  * Анализирует выборы пользователя и улучшает точность контекстного анализа
  */
 
-import type { ChatMedia, MediaContext } from "./universal-context";
-import { semanticIndex } from "./semantic-index";
+import type { ChatMedia, MediaContext } from './universal-context';
+import { semanticIndex } from './semantic-index';
 
 interface UserChoice {
   chatId: string;
@@ -22,7 +22,7 @@ interface UserPreference {
   pattern: string;
   preference: {
     preferredMediaTypes: string[];
-    preferredRoles: ("user" | "assistant")[];
+    preferredRoles: ('user' | 'assistant')[];
     preferredTimeframes: number[][]; // в часах, массив диапазонов [min, max]
     keywordWeights: Record<string, number>;
   };
@@ -61,7 +61,7 @@ export class UserPreferenceLearner {
     selectedMedia: ChatMedia,
     availableOptions: ChatMedia[],
     confidence: number,
-    reasoning: string
+    reasoning: string,
   ): Promise<void> {
     if (!this.learningEnabled) return;
 
@@ -84,12 +84,12 @@ export class UserPreferenceLearner {
         selectedMedia: selectedMedia.url,
         confidence,
         reasoning,
-      }
+      },
     );
 
     // Запускаем обучение асинхронно
     this.learnFromChoice(choice).catch((error) => {
-      console.error("🧠 UserPreferenceLearner: Learning failed:", error);
+      console.error('🧠 UserPreferenceLearner: Learning failed:', error);
     });
   }
 
@@ -144,8 +144,8 @@ export class UserPreferenceLearner {
   private normalizeMessage(message: string): string {
     return message
       .toLowerCase()
-      .replace(/[^\w\s]/g, "")
-      .replace(/\s+/g, " ")
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
       .trim()
       .substring(0, 50); // Ограничиваем длину
   }
@@ -155,7 +155,7 @@ export class UserPreferenceLearner {
    */
   private findExistingPreference(
     userId: string,
-    pattern: string
+    pattern: string,
   ): UserPreference | null {
     const userPrefs = this.userPreferences.get(userId) || [];
     return userPrefs.find((pref) => pref.pattern === pattern) || null;
@@ -167,7 +167,7 @@ export class UserPreferenceLearner {
   private async createPreference(
     userId: string,
     pattern: string,
-    choice: UserChoice
+    choice: UserChoice,
   ): Promise<void> {
     const { selectedMedia, availableOptions, userMessage } = choice;
 
@@ -176,7 +176,7 @@ export class UserPreferenceLearner {
       userId,
       pattern,
       preference: {
-        preferredMediaTypes: [selectedMedia.mediaType || "image"],
+        preferredMediaTypes: [selectedMedia.mediaType || 'image'],
         preferredRoles: [selectedMedia.role],
         preferredTimeframes: this.calculateTimeframe(selectedMedia.timestamp),
         keywordWeights: this.extractKeywordWeights(userMessage, selectedMedia),
@@ -202,7 +202,7 @@ export class UserPreferenceLearner {
       {
         pattern,
         preference: preference.preference,
-      }
+      },
     );
   }
 
@@ -211,7 +211,7 @@ export class UserPreferenceLearner {
    */
   private async updatePreference(
     preference: UserPreference,
-    choice: UserChoice
+    choice: UserChoice,
   ): Promise<void> {
     const { selectedMedia, userMessage } = choice;
 
@@ -222,11 +222,11 @@ export class UserPreferenceLearner {
     // Обновляем предпочтения на основе нового выбора
     if (
       !preference.preference.preferredMediaTypes.includes(
-        selectedMedia.mediaType || "image"
+        selectedMedia.mediaType || 'image',
       )
     ) {
       preference.preference.preferredMediaTypes.push(
-        selectedMedia.mediaType || "image"
+        selectedMedia.mediaType || 'image',
       );
     }
 
@@ -268,7 +268,7 @@ export class UserPreferenceLearner {
    */
   private extractKeywordWeights(
     message: string,
-    media: ChatMedia
+    media: ChatMedia,
   ): Record<string, number> {
     const weights: Record<string, number> = {};
     const messageWords = message.toLowerCase().split(/\s+/);
@@ -322,7 +322,7 @@ export class UserPreferenceLearner {
     userId: string,
     userMessage: string,
     candidates: ChatMedia[],
-    baseContext: MediaContext
+    baseContext: MediaContext,
   ): Promise<MediaContext> {
     const userPrefs = this.userPreferences.get(userId) || [];
     if (userPrefs.length === 0) return baseContext;
@@ -346,7 +346,7 @@ export class UserPreferenceLearner {
         // Бонус за предпочтительный тип медиа
         if (
           pref.preference.preferredMediaTypes.includes(
-            candidate.mediaType || "image"
+            candidate.mediaType || 'image',
           )
         ) {
           score += 0.3 * pref.accuracy;
@@ -366,7 +366,7 @@ export class UserPreferenceLearner {
           pref.preference.preferredTimeframes.some(
             (timeframe: number[]) =>
               hoursDiff >= (timeframe[0] || 0) &&
-              hoursDiff <= (timeframe[1] || 24)
+              hoursDiff <= (timeframe[1] || 24),
           )
         ) {
           score += 0.2 * pref.accuracy;
@@ -380,7 +380,7 @@ export class UserPreferenceLearner {
               if (promptWords.some((word) => word.includes(keyword))) {
                 score += weight * pref.accuracy * 0.1;
               }
-            }
+            },
           );
         }
       });
@@ -402,7 +402,7 @@ export class UserPreferenceLearner {
         ...baseContext,
         sourceUrl: bestCandidate.url,
         ...(bestCandidate.id && { sourceId: bestCandidate.id }),
-        confidence: "high" as const,
+        confidence: 'high' as const,
         reasoning: `${baseContext.reasoning} + пользовательские предпочтения (score: ${Math.round((scoredCandidates[0]?.score || 0) * 100)})`,
       };
     }
@@ -460,7 +460,7 @@ export class UserPreferenceLearner {
 
     // Очищаем старые выборы пользователей
     this.userChoices = this.userChoices.filter(
-      (choice) => choice.timestamp > cutoffDate
+      (choice) => choice.timestamp > cutoffDate,
     );
 
     // Очищаем старые предпочтения
@@ -474,7 +474,7 @@ export class UserPreferenceLearner {
     }
 
     console.log(
-      `🧠 UserPreferenceLearner: Cleaned up data older than ${daysToKeep} days`
+      `🧠 UserPreferenceLearner: Cleaned up data older than ${daysToKeep} days`,
     );
   }
 
@@ -484,7 +484,7 @@ export class UserPreferenceLearner {
   setLearningEnabled(enabled: boolean): void {
     this.learningEnabled = enabled;
     console.log(
-      `🧠 UserPreferenceLearner: Learning ${enabled ? "enabled" : "disabled"}`
+      `🧠 UserPreferenceLearner: Learning ${enabled ? 'enabled' : 'disabled'}`,
     );
   }
 }

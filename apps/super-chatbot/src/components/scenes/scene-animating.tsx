@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { Canvas } from "fabric";
-import { Control } from "@turbo-super/features";
-import { Button } from "@turbo-super/ui";
-import { X, Sparkles } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import { Canvas } from 'fabric';
+import { Control } from '@turbo-super/features';
+import { Button } from '@turbo-super/ui';
+import { X, Sparkles } from 'lucide-react';
 
 interface SceneAnimatingProps {
   imageUrl: string;
@@ -63,7 +63,7 @@ export function SceneAnimating({
   }, []);
 
   const handleActiveChange = (tool: string | null) => {
-    setIsActive(tool === "inpainting");
+    setIsActive(tool === 'inpainting');
   };
 
   const handleComplete = (result: {
@@ -74,7 +74,7 @@ export function SceneAnimating({
     // For animating, we use the same inpainting interface but with different config
     onComplete({
       ...result,
-      config: "comfyui/ltx", // Default animating config
+      config: 'comfyui/ltx', // Default animating config
     });
   };
 
@@ -85,11 +85,7 @@ export function SceneAnimating({
           <Sparkles className="size-5 text-primary" />
           <h3 className="text-lg font-semibold">Animating</h3>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-        >
+        <Button variant="ghost" size="sm" onClick={onClose}>
           <X className="size-4" />
         </Button>
       </div>
@@ -101,7 +97,7 @@ export function SceneAnimating({
           className="absolute inset-0 w-full h-full"
           style={{
             zIndex: isActive ? 10 : -1,
-            pointerEvents: isActive ? "auto" : "none",
+            pointerEvents: isActive ? 'auto' : 'none',
           }}
         >
           <canvas
@@ -109,7 +105,7 @@ export function SceneAnimating({
             className="w-full h-full block"
             style={{
               opacity: isActive ? 0.5 : 0,
-              display: "block",
+              display: 'block',
             }}
           />
         </div>

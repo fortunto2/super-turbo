@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Input } from '@turbo-super/ui';
+import { Label } from '@turbo-super/ui';
 
-import { CreditCard, Plus, Minus } from "lucide-react";
+import { CreditCard, Plus, Minus } from 'lucide-react';
 
 import {
   Dialog,
@@ -14,12 +14,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 interface User {
   id: string;
   email: string;
   balance: number;
-  type: "guest" | "regular";
+  type: 'guest' | 'regular';
 }
 
 interface EditUserDialogProps {
@@ -35,15 +35,15 @@ export function EditUserDialog({
 }: EditUserDialogProps) {
   const [balance, setBalance] = useState(user?.balance?.toString());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     const newBalance = Number(balance);
     if (Number.isNaN(newBalance) || newBalance < 0) {
-      setError("Please enter a valid balance (0 or greater)");
+      setError('Please enter a valid balance (0 or greater)');
       return;
     }
 
@@ -51,16 +51,16 @@ export function EditUserDialog({
       setLoading(true);
 
       const response = await fetch(`/api/admin/users/${user?.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ balance: newBalance }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update balance");
+        throw new Error(errorData.error || 'Failed to update balance');
       }
 
       const updatedUser = await response.json();
@@ -69,9 +69,9 @@ export function EditUserDialog({
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to update balance. Please try again."
+          : 'Failed to update balance. Please try again.',
       );
-      console.error("Update balance error:", err);
+      console.error('Update balance error:', err);
     } finally {
       setLoading(false);
     }
@@ -84,10 +84,7 @@ export function EditUserDialog({
   };
 
   return (
-    <Dialog
-      open={true}
-      onOpenChange={onClose}
-    >
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -99,10 +96,7 @@ export function EditUserDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="balance">Current Balance</Label>
             <div className="flex items-center gap-2">
@@ -176,11 +170,8 @@ export function EditUserDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Updating..." : "Update Balance"}
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Balance'}
             </Button>
           </DialogFooter>
         </form>

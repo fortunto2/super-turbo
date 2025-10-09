@@ -16,7 +16,7 @@ async function sendMcpRequest(method, params = {}) {
       jsonrpc: '2.0',
       method: method,
       params: params,
-      id: Date.now()
+      id: Date.now(),
     });
 
     const options = {
@@ -26,17 +26,17 @@ async function sendMcpRequest(method, params = {}) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(postData)
-      }
+        'Content-Length': Buffer.byteLength(postData),
+      },
     };
 
     const req = http.request(options, (res) => {
       let data = '';
-      
+
       res.on('data', (chunk) => {
         data += chunk;
       });
-      
+
       res.on('end', () => {
         try {
           const response = JSON.parse(data);
@@ -62,7 +62,7 @@ async function testToolsList() {
   try {
     const response = await sendMcpRequest('tools/list');
     console.log('✅ Список инструментов получен:');
-    response.result.tools.forEach(tool => {
+    response.result.tools.forEach((tool) => {
       console.log(`  - ${tool.name}: ${tool.description}`);
     });
     return true;
@@ -77,7 +77,7 @@ async function testToolCall(toolName, args) {
   try {
     const response = await sendMcpRequest('tools/call', {
       name: toolName,
-      arguments: args
+      arguments: args,
     });
     console.log('✅ Инструмент вызван успешно:');
     console.log('Ответ:', response.result.content[0].text);
@@ -115,7 +115,7 @@ async function runTests() {
   await testToolCall('generate_image', {
     prompt: 'Красивый закат над океаном',
     model: 'dall-e-3',
-    resolution: '1024x1024'
+    resolution: '1024x1024',
   });
   console.log('');
 
@@ -123,7 +123,7 @@ async function runTests() {
   await testToolCall('enhance_prompt', {
     originalPrompt: 'создай картинку кота',
     mediaType: 'image',
-    enhancementLevel: 'detailed'
+    enhancementLevel: 'detailed',
   });
   console.log('');
 
@@ -131,17 +131,19 @@ async function runTests() {
   await testToolCall('generate_script', {
     prompt: 'Создай скрипт для видео о приготовлении пиццы',
     scriptType: 'video',
-    length: 'medium'
+    length: 'medium',
   });
   console.log('');
 
   console.log('🎉 Все тесты завершены!');
-  console.log('\n📖 Для использования MCP в AI клиентах см. docs/mcp-usage-guide.md');
+  console.log(
+    '\n📖 Для использования MCP в AI клиентах см. docs/mcp-usage-guide.md',
+  );
 }
 
 // Запуск тестов
 if (require.main === module) {
-  runTests().catch(error => {
+  runTests().catch((error) => {
     console.error('💥 Критическая ошибка:', error.message);
     process.exit(1);
   });

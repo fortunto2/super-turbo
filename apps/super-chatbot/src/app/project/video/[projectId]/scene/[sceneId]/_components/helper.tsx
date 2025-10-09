@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { type IFileRead, TaskStatusEnum } from "@turbo-super/api";
-import { Eye } from "lucide-react";
+import { type IFileRead, TaskStatusEnum } from '@turbo-super/api';
+import { Eye } from 'lucide-react';
 
 // ---------- Reusable small components ----------
 export function Loader() {
@@ -41,10 +41,10 @@ export function Placeholder({ text }: { text: string }) {
 
 export function FileGenerationStatus({ file }: { file: IFileRead }) {
   const isLoading = file.tasks?.find(
-    (task) => task.status === TaskStatusEnum.IN_PROGRESS
+    (task) => task.status === TaskStatusEnum.IN_PROGRESS,
   );
   const isError = file.tasks?.find(
-    (task) => task.status === TaskStatusEnum.ERROR
+    (task) => task.status === TaskStatusEnum.ERROR,
   );
   return (
     <>

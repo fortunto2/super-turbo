@@ -20,32 +20,38 @@ export async function fixMissingThumbnail(fileId: string): Promise<boolean> {
     }
 
     const fileData: FileData = await fileResponse.json();
-    
+
     if (!fileData.thumbnail_url) {
       console.warn('No thumbnail_url available for file:', fileId);
       return false;
     }
 
     // 2. Update document in database with thumbnail
-    const updateResponse = await fetch(`/api/document?id=${encodeURIComponent(fileId)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        thumbnailUrl: fileData.thumbnail_url,
-        metadata: {
-          imageUrl: fileData.url,
+    const updateResponse = await fetch(
+      `/api/document?id=${encodeURIComponent(fileId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           thumbnailUrl: fileData.thumbnail_url,
-          fixedThumbnail: true,
-          fixedAt: new Date().toISOString(),
-        }
-      }),
-    });
+          metadata: {
+            imageUrl: fileData.url,
+            thumbnailUrl: fileData.thumbnail_url,
+            fixedThumbnail: true,
+            fixedAt: new Date().toISOString(),
+          },
+        }),
+      },
+    );
 
     if (updateResponse.ok) {
       console.log('✅ Successfully fixed thumbnail for file:', fileId);
       return true;
     } else {
-      console.error('❌ Failed to update thumbnail in database:', updateResponse.status);
+      console.error(
+        '❌ Failed to update thumbnail in database:',
+        updateResponse.status,
+      );
       return false;
     }
   } catch (error) {
@@ -54,18 +60,20 @@ export async function fixMissingThumbnail(fileId: string): Promise<boolean> {
   }
 }
 
-export async function fixMultipleThumbnails(fileIds: string[]): Promise<number> {
+export async function fixMultipleThumbnails(
+  fileIds: string[],
+): Promise<number> {
   let fixedCount = 0;
-  
+
   for (const fileId of fileIds) {
     const success = await fixMissingThumbnail(fileId);
     if (success) {
       fixedCount++;
     }
     // Small delay to avoid overwhelming the API
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  
+
   console.log(`🔧 Fixed thumbnails for ${fixedCount}/${fileIds.length} files`);
   return fixedCount;
 }
@@ -74,9 +82,9 @@ export async function fixMultipleThumbnails(fileIds: string[]): Promise<number> 
 export function fixAllMissingThumbnails() {
   const fileIds = [
     'dfa614ca-2952-4459-a619-d7d62b5172ec', // mongoose image
-    'fda3fa8d-efcc-44c9-b776-10412acb259f', // futuristic cityscape 
+    'fda3fa8d-efcc-44c9-b776-10412acb259f', // futuristic cityscape
     // Add more file IDs as needed
   ];
-  
+
   return fixMultipleThumbnails(fileIds);
-} 
+}

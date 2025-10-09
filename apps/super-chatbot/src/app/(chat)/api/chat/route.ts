@@ -1,9 +1,9 @@
 import {
-  appendClientMessage,
-  appendResponseMessages,
-  createDataStream,
   smoothStream,
   streamText,
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
 } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
@@ -48,6 +48,9 @@ import {
 import { enhancePromptUnified } from "@/lib/ai/tools/enhance-prompt-unified";
 import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
+import { findMediaInChat } from "@/lib/ai/tools/find-media-in-chat";
+import { analyzeMediaReference } from "@/lib/ai/tools/analyze-media-reference";
+import { listAvailableMedia } from "@/lib/ai/tools/list-available-media";
 import { isProductionEnvironment } from "@/lib/constants";
 
 export const maxDuration = 60;
@@ -573,10 +576,11 @@ export const POST = withMonitoring(async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
-      messages: convertDBMessagesToUIMessages(previousMessages),
-      message: normalizeMessage(messageToProcess),
-    });
+    // Convert DB messages to UI messages
+    const uiMessages = convertDBMessagesToUIMessages(previousMessages);
+
+    // Append new user message to the array
+    const messages = [...uiMessages, normalizeMessage(messageToProcess)];
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -700,16 +704,8 @@ export const POST = withMonitoring(async function POST(request: Request) {
       // Continue execution, as we can proceed without DB record
     }
 
-    const stream = createDataStream({
-      execute: async (dataStream) => {
-        const enhancedDataStream = {
-          ...dataStream,
-          end: () => {},
-          error: (error: Error) => {
-            console.error("Stream error:", error);
-          },
-        };
-
+    const stream = createUIMessageStream({
+      execute: async ({ writer }) => {
         // Анализируем контекст изображения
         let defaultSourceImageUrl: string | undefined;
         try {
@@ -789,15 +785,15 @@ export const POST = withMonitoring(async function POST(request: Request) {
         const tools = {
           createDocument: createDocument({
             session,
-            dataStream: enhancedDataStream,
+            writer,
           }),
           updateDocument: updateDocument({
             session,
-            dataStream: enhancedDataStream,
+            writer,
           }),
           requestSuggestions: requestSuggestions({
             session,
-            dataStream: enhancedDataStream,
+            writer,
           }),
         };
 
@@ -881,27 +877,38 @@ export const POST = withMonitoring(async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: enhancedMessages,
-          maxSteps: 5,
-          experimental_activeTools:
+          messages: convertToModelMessages(enhancedMessages),
+          activeTools:
             selectedChatModel === "chat-model-reasoning"
               ? []
               : [
+                  // Media context analysis tools (AI-powered, no patterns)
+                  "analyzeMediaReference",
+                  "findMediaInChat",
+                  "listAvailableMedia",
+                  // Generation tools
                   "configureImageGeneration",
                   "configureVideoGeneration",
                   "configureScriptGeneration",
                   "listVideoModels",
                   "findBestVideoModel",
                   "enhancePromptUnified",
+                  // Document tools
                   "createDocument",
                   "updateDocument",
                   "requestSuggestions",
                 ],
           experimental_transform: smoothStream({ chunking: "word" }),
-          experimental_generateMessageId: generateUUID,
 
           tools: {
             ...tools,
+
+            // New AI SDK tools for media discovery
+            findMediaInChat,
+            analyzeMediaReference,
+            listAvailableMedia,
+
+            // Existing generation tools
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
               session,
@@ -933,98 +940,23 @@ export const POST = withMonitoring(async function POST(request: Request) {
             enhancePromptUnified,
           },
           // Note: explicit toolChoice removed due to type constraints; tool remains available
-          onFinish: async ({ response }) => {
-            console.log("🔍 onFinish called with response:", {
-              messagesCount: response.messages.length,
-              hasAssistantMessages: response.messages.some(
-                (m) => m.role === "assistant"
-              ),
-              responseKeys: Object.keys(response),
-            });
-
-            if (session.user?.id) {
-              try {
-                const assistantMessages = response.messages.filter(
-                  (message) => message.role === "assistant"
-                );
-
-                if (assistantMessages.length === 0) {
-                  console.warn("No assistant messages found in response");
-                  return;
-                }
-
-                const assistantId = getTrailingMessageId({
-                  messages: assistantMessages,
-                });
-
-                if (!assistantId) {
-                  console.warn("No assistant message ID found");
-                  return;
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [messageToProcess as any],
-                  responseMessages: response.messages,
-                });
-
-                if (!assistantMessage) {
-                  console.warn("Failed to append response messages");
-                  return;
-                }
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-
-                console.log("🔍 Assistant message saved successfully");
-
-                // Отправляем команду перенаправления на страницу чата
-                // Это происходит только после успешного создания чата
-                try {
-                  dataStream.writeData({
-                    type: "redirect",
-                    url: `/chat/${id}`,
-                  });
-                  console.log(
-                    "🔍 Redirect command sent to client:",
-                    `/chat/${id}`
-                  );
-                } catch (redirectError) {
-                  console.error(
-                    "🔍 Failed to send redirect command:",
-                    redirectError
-                  );
-                }
-              } catch (error) {
-                console.error("🔍 Failed to save assistant message:", error);
-                if (error instanceof Error) {
-                  console.error("🔍 Error stack:", error.stack);
-                }
-                // Не выбрасываем ошибку, чтобы не прерывать поток
-              }
-            }
-          },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
           },
         });
 
-        result.consumeStream();
+        console.log("🔍 streamText result created, merging to UI stream...");
 
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
+        // AICODE-FIX: AI SDK 5.0 - use writer.append() instead of writer.merge()
+        // The merge() method has been replaced with append() in AI SDK v5
+        try {
+          await writer.append(result);
+          console.log("🔍 Stream append completed successfully");
+        } catch (error) {
+          console.error("🔍 Stream append error:", error);
+          throw error;
+        }
       },
       onError: (error: any) => {
         console.error("🔍 DataStream onError called with:", error);
@@ -1035,11 +967,13 @@ export const POST = withMonitoring(async function POST(request: Request) {
     const streamContext = getStreamContext();
 
     if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream)
+      const resumableStream = await streamContext.resumableStream(
+        streamId,
+        () => stream
       );
+      return createUIMessageStreamResponse({ stream: resumableStream });
     } else {
-      return new Response(stream);
+      return createUIMessageStreamResponse({ stream });
     }
   } catch (error) {
     console.error("❌ Main error in POST /api/chat:", error);
@@ -1147,13 +1081,13 @@ export async function GET(request: Request) {
       return new Response("No recent stream found", { status: 404 });
     }
 
-    const emptyDataStream = createDataStream({
+    const emptyStream = createUIMessageStream({
       execute: () => {},
     });
 
     const stream = await streamContext.resumableStream(
       recentStreamId,
-      () => emptyDataStream
+      () => emptyStream
     );
 
     /*
@@ -1166,35 +1100,34 @@ export async function GET(request: Request) {
         const mostRecentMessage = messages.at(-1);
 
         if (!mostRecentMessage) {
-          return new Response(emptyDataStream, { status: 200 });
+          return new Response(emptyStream);
         }
 
         if (mostRecentMessage.role !== "assistant") {
-          return new Response(emptyDataStream, { status: 200 });
+          return new Response(emptyStream);
         }
 
         const messageCreatedAt = new Date(mostRecentMessage.createdAt);
 
         if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
-          return new Response(emptyDataStream, { status: 200 });
+          return new Response(emptyStream);
         }
 
-        const restoredStream = createDataStream({
-          execute: (buffer) => {
-            buffer.writeData({
-              type: "append-message",
-              message: JSON.stringify(mostRecentMessage),
-            });
+        // AICODE-NOTE: AI SDK 5.0 - removed custom data-status event
+        // Messages should be restored directly via GET response, not via writeData
+        const restoredStream = createUIMessageStream({
+          execute: () => {
+            // Stream is empty - client will restore from database
           },
         });
 
-        return new Response(restoredStream, { status: 200 });
+        return new Response(restoredStream);
       } catch (error) {
         return formatErrorResponse(error, "GET chat/restoreStream");
       }
     }
 
-    return new Response(stream, { status: 200 });
+    return new Response(stream);
   } catch (error) {
     return formatErrorResponse(error, "GET chat");
   }

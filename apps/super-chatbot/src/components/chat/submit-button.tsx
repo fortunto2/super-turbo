@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useFormStatus } from "react-dom";
+import { useFormStatus } from 'react-dom';
 
-import { LoaderIcon } from "../common/icons";
+import { LoaderIcon } from '../common/icons';
 
-import { Button } from "@turbo-super/ui";
+import { Button } from '@turbo-super/ui';
 export function SubmitButton({
   children,
   isSuccessful,
@@ -16,7 +16,7 @@ export function SubmitButton({
 
   return (
     <Button
-      type={pending ? "button" : "submit"}
+      type={pending ? 'button' : 'submit'}
       aria-disabled={pending || isSuccessful}
       disabled={pending || isSuccessful}
       className="relative"
@@ -29,11 +29,8 @@ export function SubmitButton({
         </span>
       )}
 
-      <output
-        aria-live="polite"
-        className="sr-only"
-      >
-        {pending || isSuccessful ? "Loading" : "Submit form"}
+      <output aria-live="polite" className="sr-only">
+        {pending || isSuccessful ? 'Loading' : 'Submit form'}
       </output>
     </Button>
   );

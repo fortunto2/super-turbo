@@ -1,23 +1,23 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { NextResponse, type NextRequest } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { prompt } = await request.json();
-    if (!prompt || typeof prompt !== "string") {
-      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 });
     }
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY || "";
+    const apiKey = process.env.GOOGLE_AI_API_KEY || '';
     if (!apiKey) {
       return NextResponse.json(
-        { error: "GOOGLE_AI_API_KEY not configured" },
-        { status: 500 }
+        { error: 'GOOGLE_AI_API_KEY not configured' },
+        { status: 500 },
       );
     }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const body = {
       contents: [
         {
-          role: "user",
+          role: 'user',
           parts: [{ text: prompt }],
         },
       ],
@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
     } as const;
 
     const resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       const errorText = await resp.text();
       return NextResponse.json(
         { error: `Vertex error ${resp.status}`, details: errorText },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       const parts = c?.content?.parts || [];
       for (const part of parts) {
         const inline = part?.inlineData;
-        if (inline?.data && inline?.mimeType?.startsWith("image/")) {
+        if (inline?.data && inline?.mimeType?.startsWith('image/')) {
           imageDataUrl = `data:${inline.mimeType};base64,${inline.data}`;
           break;
         }
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
 
     if (!imageDataUrl) {
       return NextResponse.json(
-        { error: "No image returned by Vertex", raw: data },
-        { status: 502 }
+        { error: 'No image returned by Vertex', raw: data },
+        { status: 502 },
       );
     }
 
@@ -80,10 +80,10 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     return NextResponse.json(
       {
-        error: "Internal error",
+        error: 'Internal error',
         details: e instanceof Error ? e.message : String(e),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

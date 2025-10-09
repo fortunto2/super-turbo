@@ -1,37 +1,37 @@
-import { ToolsNavigation } from "@/components/tools/tools-navigation";
-import type { ReactNode } from "react";
+import { ToolsNavigation } from '@/components/tools/tools-navigation';
+import type { ReactNode } from 'react';
 
 const TOOL_TITLES: Record<string, { title: string; description: string }> = {
-  "": {
-    title: "AI Tools",
+  '': {
+    title: 'AI Tools',
     description:
-      "Powerful AI-powered tools for generating high-quality images, videos, and enhancing your prompts. Choose the tool that fits your creative needs.",
+      'Powerful AI-powered tools for generating high-quality images, videos, and enhancing your prompts. Choose the tool that fits your creative needs.',
   },
-  "/tools/image-generator": {
-    title: "AI Image Generator",
+  '/tools/image-generator': {
+    title: 'AI Image Generator',
     description:
-      "Generate high-quality images using advanced AI models from SuperDuperAI. Create stunning visuals from text or images.",
+      'Generate high-quality images using advanced AI models from SuperDuperAI. Create stunning visuals from text or images.',
   },
-  "/tools/video-generator": {
-    title: "AI Video Generator",
+  '/tools/video-generator': {
+    title: 'AI Video Generator',
     description:
-      "Generate high-quality videos using advanced AI models from SuperDuperAI. Create professional videos from text descriptions with models like VEO3, KLING, LTX, and more.",
+      'Generate high-quality videos using advanced AI models from SuperDuperAI. Create professional videos from text descriptions with models like VEO3, KLING, LTX, and more.',
   },
-  "/tools/prompt-enhancer": {
-    title: "Prompt Enhancer",
+  '/tools/prompt-enhancer': {
+    title: 'Prompt Enhancer',
     description:
-      "Enhance your prompts for better AI results. Get suggestions and improvements instantly.",
+      'Enhance your prompts for better AI results. Get suggestions and improvements instantly.',
   },
-  "/tools/prompt-enhancer-veo3": {
-    title: "Prompt Enhancer Veo3",
+  '/tools/prompt-enhancer-veo3': {
+    title: 'Prompt Enhancer Veo3',
     description:
-      "Enhance your prompts for better AI results. Get suggestions and improvements instantly.",
+      'Enhance your prompts for better AI results. Get suggestions and improvements instantly.',
   },
 };
 
 export default function ToolsLayout({ children }: { children: ReactNode }) {
   const pathname =
-    typeof window !== "undefined" ? window.location.pathname : "";
+    typeof window !== 'undefined' ? window.location.pathname : '';
   const tool = Object.keys(TOOL_TITLES)
     .sort((a, b) => b.length - a.length)
     .find((key) => pathname.startsWith(key));

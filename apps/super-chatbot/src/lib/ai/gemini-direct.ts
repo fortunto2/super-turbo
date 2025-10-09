@@ -4,7 +4,7 @@
  */
 
 export interface GeminiMessage {
-  role: "user" | "model";
+  role: 'user' | 'model';
   parts: Array<{
     text: string;
   }>;
@@ -40,7 +40,7 @@ export async function callGeminiDirect(
   options: {
     temperature?: number;
     maxTokens?: number;
-  } = {}
+  } = {},
 ): Promise<string> {
   const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
@@ -55,15 +55,15 @@ export async function callGeminiDirect(
   };
 
   try {
-    console.log("🔍 Gemini API request:", {
+    console.log('🔍 Gemini API request:', {
       url,
       body: JSON.stringify(requestBody, null, 2),
     });
 
     const response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
     });
@@ -76,11 +76,11 @@ export async function callGeminiDirect(
     const data: GeminiResponse = await response.json();
 
     // Добавляем отладочную информацию
-    console.log("🔍 Gemini API response:", JSON.stringify(data, null, 2));
+    console.log('🔍 Gemini API response:', JSON.stringify(data, null, 2));
 
     if (!data.candidates || data.candidates.length === 0) {
-      console.error("🔍 No candidates in response:", data);
-      throw new Error("No response from Gemini API");
+      console.error('🔍 No candidates in response:', data);
+      throw new Error('No response from Gemini API');
     }
 
     const candidate = data.candidates?.[0];
@@ -89,12 +89,12 @@ export async function callGeminiDirect(
       !candidate.content.parts ||
       candidate.content.parts.length === 0
     ) {
-      throw new Error("Empty response from Gemini API");
+      throw new Error('Empty response from Gemini API');
     }
 
-    return candidate.content.parts[0]?.text || "";
+    return candidate.content.parts[0]?.text || '';
   } catch (error) {
-    console.error("Gemini direct API error:", error);
+    console.error('Gemini direct API error:', error);
     throw error;
   }
 }
@@ -104,12 +104,12 @@ export async function callGeminiDirect(
  */
 export function convertToGeminiMessages(chatMessages: any[]): GeminiMessage[] {
   return chatMessages
-    .filter((msg) => msg.role === "user" || msg.role === "assistant")
+    .filter((msg) => msg.role === 'user' || msg.role === 'assistant')
     .map((msg) => ({
-      role: msg.role === "assistant" ? "model" : "user",
+      role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [
         {
-          text: msg.content || msg.parts?.[0]?.text || "",
+          text: msg.content || msg.parts?.[0]?.text || '',
         },
       ],
     }));

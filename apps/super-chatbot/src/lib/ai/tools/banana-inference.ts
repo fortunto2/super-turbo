@@ -1,38 +1,38 @@
-import { tool } from "ai";
-import { z } from "zod";
-import { runBananaInference, getBananaModels } from "@/lib/ai/banana-api";
+import { tool } from 'ai';
+import { z } from 'zod';
+import { runBananaInference, getBananaModels } from '@/lib/ai/banana-api';
 
 export const bananaInferenceTool = tool({
   description:
-    "Запускает inference на Banana GPU платформе для обработки данных",
-  parameters: z.object({
-    modelId: z.string().describe("ID модели Banana для inference"),
-    inputs: z.record(z.any()).describe("Входные данные для модели"),
+    'Запускает inference на Banana GPU платформе для обработки данных',
+  inputSchema: z.object({
+    modelId: z.string().describe('ID модели Banana для inference'),
+    inputs: z.record(z.any()).describe('Входные данные для модели'),
     config: z
       .object({
         maxTokens: z
           .number()
           .optional()
-          .describe("Максимальное количество токенов"),
+          .describe('Максимальное количество токенов'),
         temperature: z
           .number()
           .min(0)
           .max(2)
           .optional()
-          .describe("Температура для генерации (0-2)"),
+          .describe('Температура для генерации (0-2)'),
         topP: z
           .number()
           .min(0)
           .max(1)
           .optional()
-          .describe("Top-p параметр (0-1)"),
+          .describe('Top-p параметр (0-1)'),
       })
       .optional()
-      .describe("Конфигурация для inference"),
+      .describe('Конфигурация для inference'),
   }),
   execute: async ({ modelId, inputs, config }) => {
     try {
-      console.log("🍌 Starting Banana inference:", { modelId, inputs, config });
+      console.log('🍌 Starting Banana inference:', { modelId, inputs, config });
 
       const result = await runBananaInference({
         modelId,
@@ -50,7 +50,7 @@ export const bananaInferenceTool = tool({
         }),
       });
 
-      if (result.status === "error") {
+      if (result.status === 'error') {
         return {
           success: false,
           error: result.error,
@@ -68,30 +68,30 @@ export const bananaInferenceTool = tool({
         memoryUsed: result.metrics?.memoryUsed,
       };
     } catch (error) {
-      console.error("🍌 Banana inference error:", error);
+      console.error('🍌 Banana inference error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   },
 });
 
 export const listBananaModelsTool = tool({
-  description: "Получает список доступных моделей Banana для inference",
-  parameters: z.object({
+  description: 'Получает список доступных моделей Banana для inference',
+  inputSchema: z.object({
     framework: z
       .string()
       .optional()
-      .describe("Фильтр по фреймворку (PyTorch, TensorFlow, etc.)"),
+      .describe('Фильтр по фреймворку (PyTorch, TensorFlow, etc.)'),
     status: z
-      .enum(["active", "inactive"])
+      .enum(['active', 'inactive'])
       .optional()
-      .describe("Фильтр по статусу модели"),
+      .describe('Фильтр по статусу модели'),
   }),
   execute: async ({ framework, status }) => {
     try {
-      console.log("🍌 Fetching Banana models:", { framework, status });
+      console.log('🍌 Fetching Banana models:', { framework, status });
 
       const models = await getBananaModels();
 
@@ -99,13 +99,13 @@ export const listBananaModelsTool = tool({
 
       if (framework) {
         filteredModels = filteredModels.filter((model) =>
-          model.framework.toLowerCase().includes(framework.toLowerCase())
+          model.framework.toLowerCase().includes(framework.toLowerCase()),
         );
       }
 
       if (status) {
         filteredModels = filteredModels.filter(
-          (model) => model.status === status
+          (model) => model.status === status,
         );
       }
 
@@ -116,10 +116,10 @@ export const listBananaModelsTool = tool({
         frameworks: [...new Set(models.map((m) => m.framework))],
       };
     } catch (error) {
-      console.error("🍌 Banana models error:", error);
+      console.error('🍌 Banana models error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   },

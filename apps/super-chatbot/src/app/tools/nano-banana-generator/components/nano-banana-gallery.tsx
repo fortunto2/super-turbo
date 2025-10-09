@@ -1,12 +1,12 @@
 // AICODE-NOTE: Gallery component for displaying Nano Banana generated images
 // Shows generated images with actions and metadata
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Download,
   Copy,
@@ -18,8 +18,8 @@ import {
   Settings,
   Calendar,
   Wand2,
-} from "lucide-react";
-import type { NanoBananaImageResult } from "../api/nano-banana-api";
+} from 'lucide-react';
+import type { NanoBananaImageResult } from '../api/nano-banana-api';
 
 interface NanoBananaGalleryProps {
   images: NanoBananaImageResult[];
@@ -49,25 +49,25 @@ export function NanoBananaGallery({
 
   const getStyleBadgeColor = (style: string) => {
     const colors: Record<string, string> = {
-      photorealistic: "bg-blue-100 text-blue-800",
-      artistic: "bg-purple-100 text-purple-800",
-      minimalist: "bg-gray-100 text-gray-800",
-      vintage: "bg-amber-100 text-amber-800",
-      futuristic: "bg-cyan-100 text-cyan-800",
-      cinematic: "bg-red-100 text-red-800",
-      painterly: "bg-pink-100 text-pink-800",
-      sketch: "bg-green-100 text-green-800",
+      photorealistic: 'bg-blue-100 text-blue-800',
+      artistic: 'bg-purple-100 text-purple-800',
+      minimalist: 'bg-gray-100 text-gray-800',
+      vintage: 'bg-amber-100 text-amber-800',
+      futuristic: 'bg-cyan-100 text-cyan-800',
+      cinematic: 'bg-red-100 text-red-800',
+      painterly: 'bg-pink-100 text-pink-800',
+      sketch: 'bg-green-100 text-green-800',
     };
-    return colors[style] || "bg-gray-100 text-gray-800";
+    return colors[style] || 'bg-gray-100 text-gray-800';
   };
 
   const getQualityBadgeColor = (quality: string) => {
     const colors: Record<string, string> = {
-      standard: "bg-gray-100 text-gray-800",
-      high: "bg-green-100 text-green-800",
-      ultra: "bg-blue-100 text-blue-800",
+      standard: 'bg-gray-100 text-gray-800',
+      high: 'bg-green-100 text-green-800',
+      ultra: 'bg-blue-100 text-blue-800',
     };
-    return colors[quality] || "bg-gray-100 text-gray-800";
+    return colors[quality] || 'bg-gray-100 text-gray-800';
   };
 
   if (images.length === 0 && !currentGeneration) {
@@ -190,22 +190,22 @@ export function NanoBananaGallery({
                     <div className="flex items-center space-x-2">
                       <Badge
                         className={getStyleBadgeColor(
-                          image.settings.style || "default"
+                          image.settings.style || 'default',
                         )}
                       >
-                        {image.settings.style || "Default"}
+                        {image.settings.style || 'Default'}
                       </Badge>
                       <Badge
                         className={getQualityBadgeColor(
-                          image.settings.quality || "high"
+                          image.settings.quality || 'high',
                         )}
                       >
-                        {image.settings.quality || "High"}
+                        {image.settings.quality || 'High'}
                       </Badge>
                     </div>
 
                     <div className="flex items-center space-x-2 text-xs text-gray-500">
-                      <span>{image.settings.aspectRatio || "1:1"}</span>
+                      <span>{image.settings.aspectRatio || '1:1'}</span>
                       {image.settings.seed && (
                         <>
                           <span>•</span>
@@ -220,28 +220,19 @@ export function NanoBananaGallery({
                 {image.settings && (
                   <div className="flex items-center space-x-2">
                     {image.settings.enableContextAwareness && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         <Zap className="size-3 mr-1" />
                         Context
                       </Badge>
                     )}
                     {image.settings.enableSurgicalPrecision && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         <Settings className="size-3 mr-1" />
                         Precision
                       </Badge>
                     )}
                     {image.settings.creativeMode && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         <Sparkles className="size-3 mr-1" />
                         Creative
                       </Badge>
@@ -285,20 +276,20 @@ export function NanoBananaGallery({
                   <div className="flex items-center space-x-2">
                     <Badge
                       className={getStyleBadgeColor(
-                        selectedImage.settings.style || "default"
+                        selectedImage.settings.style || 'default',
                       )}
                     >
-                      {selectedImage.settings.style || "Default"}
+                      {selectedImage.settings.style || 'Default'}
                     </Badge>
                     <Badge
                       className={getQualityBadgeColor(
-                        selectedImage.settings.quality || "high"
+                        selectedImage.settings.quality || 'high',
                       )}
                     >
-                      {selectedImage.settings.quality || "High"}
+                      {selectedImage.settings.quality || 'High'}
                     </Badge>
                     <span className="text-xs text-gray-500">
-                      {selectedImage.settings.aspectRatio || "1:1"}
+                      {selectedImage.settings.aspectRatio || '1:1'}
                     </span>
                   </div>
                 )}

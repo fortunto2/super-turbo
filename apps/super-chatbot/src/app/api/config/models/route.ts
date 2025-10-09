@@ -1,17 +1,17 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   configureSuperduperAI,
   getAvailableImageModels,
   getAvailableVideoModels,
-} from "@/lib/config/superduperai";
-import { getStyles } from "@/lib/ai/api/get-styles";
+} from '@/lib/config/superduperai';
+import { getStyles } from '@/lib/ai/api/get-styles';
 
 export async function GET(request: NextRequest) {
   try {
     // Configure OpenAPI client for server-side usage
     configureSuperduperAI();
 
-    console.log("📊 Models API: Getting available models");
+    console.log('📊 Models API: Getting available models');
 
     // Fetch models and styles in parallel
     const [imageModels, videoModels, stylesResponse] = await Promise.all([
@@ -21,43 +21,43 @@ export async function GET(request: NextRequest) {
     ]);
 
     console.log(
-      `✅ Found ${imageModels.length} image models and ${videoModels.length} video models`
+      `✅ Found ${imageModels.length} image models and ${videoModels.length} video models`,
     );
 
     // Process styles with thumbnails
     let styles = [];
-    if ("error" in stylesResponse) {
-      console.error("Failed to load styles:", stylesResponse.error);
+    if ('error' in stylesResponse) {
+      console.error('Failed to load styles:', stylesResponse.error);
       // Fallback styles
       styles = [
         {
-          id: "flux_watercolor",
-          label: "Watercolor",
-          description: "Watercolor painting style",
+          id: 'flux_watercolor',
+          label: 'Watercolor',
+          description: 'Watercolor painting style',
           thumbnail: null,
         },
         {
-          id: "artistic",
-          label: "Artistic",
-          description: "Artistic interpretation",
+          id: 'artistic',
+          label: 'Artistic',
+          description: 'Artistic interpretation',
           thumbnail: null,
         },
         {
-          id: "cartoon",
-          label: "Cartoon",
-          description: "Cartoon/animated style",
+          id: 'cartoon',
+          label: 'Cartoon',
+          description: 'Cartoon/animated style',
           thumbnail: null,
         },
         {
-          id: "abstract",
-          label: "Abstract",
-          description: "Abstract art style",
+          id: 'abstract',
+          label: 'Abstract',
+          description: 'Abstract art style',
           thumbnail: null,
         },
         {
-          id: "vintage",
-          label: "Vintage",
-          description: "Vintage/retro style",
+          id: 'vintage',
+          label: 'Vintage',
+          description: 'Vintage/retro style',
           thumbnail: null,
         },
       ];
@@ -83,14 +83,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("💥 Models API error:", error);
+    console.error('💥 Models API error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to get models and styles",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to get models and styles',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

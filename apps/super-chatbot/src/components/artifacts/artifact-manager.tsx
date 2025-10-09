@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@turbo-super/ui";
+import { useState, useEffect } from 'react';
+import { Button } from '@turbo-super/ui';
 import {
   getAllSavedArtifacts,
   loadArtifactFromStorage,
   clearArtifactFromStorage,
   type SavedArtifactData,
-} from "@/lib/utils/artifact-persistence";
-import { useArtifactContext } from "@/contexts/artifact-context";
+} from '@/lib/utils/artifact-persistence';
+import { useArtifactContext } from '@/contexts/artifact-context';
 
 interface ArtifactManagerProps {
   chatId: string;
@@ -42,7 +42,7 @@ export function ArtifactManager({ chatId, className }: ArtifactManagerProps) {
         timestamp: data.timestamp,
       }));
 
-      console.log("🔄 Restored artifact:", {
+      console.log('🔄 Restored artifact:', {
         chatId: artifactChatId,
         documentId: data.documentId,
         status: data.status,
@@ -53,13 +53,13 @@ export function ArtifactManager({ chatId, className }: ArtifactManagerProps) {
   const handleClearArtifact = (artifactChatId: string) => {
     clearArtifactFromStorage(artifactChatId);
     setSavedArtifacts((prev) =>
-      prev.filter((a) => a.chatId !== artifactChatId)
+      prev.filter((a) => a.chatId !== artifactChatId),
     );
-    console.log("🗑️ Cleared artifact:", artifactChatId);
+    console.log('🗑️ Cleared artifact:', artifactChatId);
   };
 
   const currentChatArtifacts = savedArtifacts.filter(
-    (a) => a.chatId === chatId
+    (a) => a.chatId === chatId,
   );
   const otherChatArtifacts = savedArtifacts.filter((a) => a.chatId !== chatId);
 
@@ -82,7 +82,7 @@ export function ArtifactManager({ chatId, className }: ArtifactManagerProps) {
           onClick={() => setIsVisible(!isVisible)}
           className="h-6 px-2 text-xs"
         >
-          {isVisible ? "▼" : "▶"}
+          {isVisible ? '▼' : '▶'}
         </Button>
       </div>
 
@@ -102,7 +102,7 @@ export function ArtifactManager({ chatId, className }: ArtifactManagerProps) {
                       {data.title || `${data.kind} artifact`}
                     </div>
                     <div className="text-muted-foreground">
-                      {data.status} •{" "}
+                      {data.status} •{' '}
                       {new Date(data.timestamp).toLocaleTimeString()}
                     </div>
                   </div>

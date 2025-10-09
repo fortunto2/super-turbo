@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { configureSuperduperAI } from "@/lib/config/superduperai";
+import { type NextRequest, NextResponse } from 'next/server';
+import { configureSuperduperAI } from '@/lib/config/superduperai';
 import {
   SceneService,
   getSuperduperAIConfig,
   OpenAPI,
   type ISceneUpdate,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
     if (config?.token) OpenAPI.TOKEN = config.token;
 
     const { searchParams } = new URL(request.url);
-    const sceneId = searchParams.get("sceneId");
+    const sceneId = searchParams.get('sceneId');
     if (!sceneId) {
       return NextResponse.json(
         {
-          error: "Failed to update scene",
-          details: "No sceneId provided",
+          error: 'Failed to update scene',
+          details: 'No sceneId provided',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       requestBody: ISceneUpdate;
     };
 
-    console.log("body", body);
+    console.log('body', body);
 
     const response = await SceneService.sceneUpdate({
       id: body.sceneId,
@@ -40,17 +40,17 @@ export async function POST(request: NextRequest) {
         ...body.requestBody,
       } as ISceneUpdate,
     });
-    console.log("response scene update", response);
+    console.log('response scene update', response);
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("💥 Scene proxy error:", error);
+    console.error('💥 Scene proxy error:', error);
     return NextResponse.json(
       {
-        error: "Failed to update scene status",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to update scene status',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

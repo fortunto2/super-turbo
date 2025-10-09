@@ -1,58 +1,41 @@
 /**
- * Экспорт всех компонентов системы контекста
+ * AI-Powered Context System Exports
+ * Simplified version using only AI for analysis
  */
 
-// Основные типы и интерфейсы
+// Core types and interfaces
 export type {
   MediaType,
   ConfidenceLevel,
   MediaContext,
   ChatMedia,
-  ContextAnalyzer,
-  ReferencePattern,
-} from "./universal-context";
+} from './universal-context';
 
-// Базовый класс
-export { BaseContextAnalyzer } from "./universal-context";
+// AI-Powered Analyzer
+export { AIContextAnalyzer } from './universal-context';
 
-// Менеджер контекста
-export { UniversalContextManager, contextManager } from "./universal-context";
+// Context Manager
+export { UniversalContextManager, contextManager } from './universal-context';
 
-// Конкретные анализаторы
-export { ImageContextAnalyzer } from "./image-context-analyzer";
-export { VideoContextAnalyzer } from "./video-context-analyzer";
-export { AudioContextAnalyzer } from "./audio-context-analyzer";
+// AI-Powered analyzer function
+export { analyzeMediaWithAI } from './ai-powered-analyzer';
 
-// Улучшенные функции анализа контекста
-import { analyzeVideoContext as analyzeVideoContextDirect } from "../chat/video-context";
-
-// Инициализация анализаторов
-import { contextManager } from "./universal-context";
-import { ImageContextAnalyzer } from "./image-context-analyzer";
-import { VideoContextAnalyzer } from "./video-context-analyzer";
-import { AudioContextAnalyzer } from "./audio-context-analyzer";
-import type { ChatImage } from "../chat/image-context";
-
-// Регистрируем анализаторы
-contextManager.registerAnalyzer(new ImageContextAnalyzer());
-contextManager.registerAnalyzer(new VideoContextAnalyzer());
-contextManager.registerAnalyzer(new AudioContextAnalyzer());
-
-// Удобные функции для быстрого доступа
+// Utility functions for context analysis
 export async function analyzeImageContext(
   userMessage: string,
   chatId: string,
   currentAttachments?: any[],
-  userId?: string
+  userId?: string,
 ) {
+  const { contextManager } = await import('./universal-context');
   const chatMedia = await contextManager.getChatMedia(chatId);
   return contextManager.analyzeContext(
-    "image",
+    'image',
     userMessage,
     chatMedia,
     currentAttachments,
     chatId,
-    userId
+    userId,
   );
 }
 
@@ -60,106 +43,77 @@ export async function analyzeVideoContext(
   userMessage: string,
   chatId: string,
   currentAttachments?: any[],
-  userId?: string
+  userId?: string,
 ) {
-  console.log(
-    "🎬 analyzeVideoContext: Using enhanced video context analysis with all 4 systems"
-  );
-
+  const { contextManager } = await import('./universal-context');
   const chatMedia = await contextManager.getChatMedia(chatId);
-
-  // Фильтруем только изображения и конвертируем в ChatImage формат
-  const chatImages = chatMedia
-    .filter((media) => media.mediaType === "image")
-    .map((media) => ({
-      url: media.url,
-      id: media.id,
-      role: media.role as "user" | "assistant",
-      timestamp: media.timestamp,
-      prompt: media.prompt,
-      messageIndex: media.messageIndex,
-      mediaType: "image" as const,
-      chatId: chatId, // Используем chatId из параметра функции
-      createdAt: media.timestamp,
-      parts: [],
-      attachments: [],
-    }));
-
-  // Используем нашу улучшенную функцию анализа видео-контекста с полной интеграцией всех 4 систем
-  const videoResult = await analyzeVideoContextDirect(
+  return contextManager.analyzeContext(
+    'video',
     userMessage,
-    chatImages.filter((img) => img?.url && img?.id) as ChatImage[], // Фильтруем валидные изображения
+    chatMedia,
     currentAttachments,
     chatId,
-    userId
+    userId,
   );
-
-  // Конвертируем VideoContext в MediaContext для совместимости
-  return {
-    sourceUrl: videoResult.sourceImageUrl,
-    sourceId: videoResult.sourceImageId,
-    mediaType: "video" as const,
-    confidence: videoResult.confidence,
-    reasoning: videoResult.reasoning,
-    metadata: videoResult.metadata,
-  };
 }
 
 export async function analyzeAudioContext(
   userMessage: string,
   chatId: string,
-  currentAttachments?: any[]
+  currentAttachments?: any[],
 ) {
+  const { contextManager } = await import('./universal-context');
   const chatMedia = await contextManager.getChatMedia(chatId);
   return contextManager.analyzeContext(
-    "audio",
+    'audio',
     userMessage,
     chatMedia,
     currentAttachments,
-    chatId
+    chatId,
   );
 }
 
-// Универсальная функция для любого типа медиа
+// Universal function for any media type
 export async function analyzeMediaContext(
-  mediaType: "image" | "video" | "audio",
+  mediaType: 'image' | 'video' | 'audio',
   userMessage: string,
   chatId: string,
-  currentAttachments?: any[]
+  currentAttachments?: any[],
 ) {
+  const { contextManager } = await import('./universal-context');
   const chatMedia = await contextManager.getChatMedia(chatId);
   return contextManager.analyzeContext(
     mediaType,
     userMessage,
     chatMedia,
     currentAttachments,
-    chatId
+    chatId,
   );
 }
 
-// Экспорт системы кэширования
-export { contextCache, generateMessageHash } from "./cache";
+// Cache system
+export { contextCache, generateMessageHash } from './cache';
 
-// Экспорт семантического поиска
-export { semanticAnalyzer, SemanticContextAnalyzer } from "./semantic-search";
+// Performance monitoring (keep for metrics)
+export {
+  contextPerformanceMonitor,
+  ContextPerformanceMonitor,
+} from './performance-monitor';
+
+// Semantic search (keep as optional enhancement)
+export { semanticAnalyzer, SemanticContextAnalyzer } from './semantic-search';
 export {
   semanticIndex,
   SemanticIndex,
   type SemanticIndexEntry,
   type SearchResult,
-} from "./semantic-index";
+} from './semantic-index';
 
-// Экспорт системы обучения пользовательским предпочтениям
+// Temporal analysis
+export { temporalAnalyzer, TemporalAnalyzer } from './temporal-analysis';
+
+// User preferences
 export {
   userPreferenceLearner,
   UserPreferenceLearner,
-} from "./user-preferences";
-
-// Экспорт временного анализа
-export { temporalAnalyzer, TemporalAnalyzer } from "./temporal-analysis";
-
-// Экспорт мониторинга производительности
-export {
-  contextPerformanceMonitor,
-  ContextPerformanceMonitor,
-} from "./performance-monitor";
+} from './user-preferences';

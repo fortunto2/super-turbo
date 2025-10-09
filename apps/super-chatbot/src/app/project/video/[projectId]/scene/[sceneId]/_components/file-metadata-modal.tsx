@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   X,
   Copy,
@@ -9,9 +9,9 @@ import {
   Image as ImageIcon,
   Video,
   Music,
-} from "lucide-react";
-import type { IFileRead } from "@turbo-super/api";
-import { extractFileMetadata } from "./file-metadata-utils";
+} from 'lucide-react';
+import type { IFileRead } from '@turbo-super/api';
+import { extractFileMetadata } from './file-metadata-utils';
 
 interface FileMetadataModalProps {
   file: IFileRead | null;
@@ -36,17 +36,17 @@ export function FileMetadataModal({
       setCopiedField(fieldName);
       setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
-      console.error("Failed to copy text: ", err);
+      console.error('Failed to copy text: ', err);
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "image":
+      case 'image':
         return <ImageIcon className="w-4 h-4" />;
-      case "video":
+      case 'video':
         return <Video className="w-4 h-4" />;
-      case "audio":
+      case 'audio':
         return <Music className="w-4 h-4" />;
       default:
         return null;
@@ -93,7 +93,7 @@ export function FileMetadataModal({
         </div>
         <div
           className={`bg-muted/50 rounded-md p-2 text-sm ${
-            multiline ? "whitespace-pre-wrap" : "truncate"
+            multiline ? 'whitespace-pre-wrap' : 'truncate'
           }`}
         >
           {displayValue}
@@ -134,11 +134,7 @@ export function FileMetadataModal({
               General info
             </h3>
 
-            <MetadataField
-              label="File ID"
-              value={file.id}
-              fieldName="fileId"
-            />
+            <MetadataField label="File ID" value={file.id} fieldName="fileId" />
 
             <MetadataField
               label="File type"

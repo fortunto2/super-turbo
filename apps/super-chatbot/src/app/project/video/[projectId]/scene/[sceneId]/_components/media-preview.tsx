@@ -1,6 +1,6 @@
-import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
-import { useRef } from "react";
-import { VideoPreview } from "./video-preview";
+import { FileTypeEnum, type ISceneRead } from '@turbo-super/api';
+import { useRef } from 'react';
+import { VideoPreview } from './video-preview';
 
 interface MediaPreviewProps {
   scene: ISceneRead;

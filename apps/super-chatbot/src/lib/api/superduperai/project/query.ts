@@ -1,12 +1,12 @@
-import { createQueryKeys } from "@lukemorales/query-key-factory";
+import { createQueryKeys } from '@lukemorales/query-key-factory';
 import {
   type IProjectRead,
   type IResponsePaginated_IProjectRead_,
   ProjectService,
-} from "@turbo-super/api";
-import { useQuery } from "@tanstack/react-query";
-import type { UseQueryOptions } from "@/lib/types/query";
-import { cancelableRequest } from "@/lib/utils/cancelable-request";
+} from '@turbo-super/api';
+import { useQuery } from '@tanstack/react-query';
+import type { UseQueryOptions } from '@/lib/types/query';
+import { cancelableRequest } from '@/lib/utils/cancelable-request';
 
 export type IProjectListParams = Parameters<
   typeof ProjectService.projectGetList
@@ -15,7 +15,7 @@ export type IProjectByIdParams = Parameters<
   typeof ProjectService.projectGetById
 >[0];
 
-export const projectKeys = createQueryKeys("project", {
+export const projectKeys = createQueryKeys('project', {
   list: (params: IProjectListParams) => ({
     queryKey: [params],
     queryFn: cancelableRequest(() => ProjectService.projectGetList(params)),
@@ -28,7 +28,7 @@ export const projectKeys = createQueryKeys("project", {
 
 export const useProjectList = (
   params?: IProjectListParams,
-  options?: UseQueryOptions<IResponsePaginated_IProjectRead_>
+  options?: UseQueryOptions<IResponsePaginated_IProjectRead_>,
 ) => {
   return useQuery({
     ...projectKeys.list(params ?? {}),
@@ -38,7 +38,7 @@ export const useProjectList = (
 
 export const useProjectGetById = (
   params: IProjectByIdParams,
-  options?: UseQueryOptions<IProjectRead>
+  options?: UseQueryOptions<IProjectRead>,
 ) => {
   return useQuery({
     ...projectKeys.getById(params),

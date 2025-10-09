@@ -1,6 +1,6 @@
-import { useToolbarStore } from "@/lib/store";
-import { FileTypeEnum, type ISceneRead } from "@turbo-super/api";
-import { Skeleton } from "@turbo-super/ui";
+import { useToolbarStore } from '@/lib/store';
+import { FileTypeEnum, type ISceneRead } from '@turbo-super/api';
+import { Skeleton } from '@turbo-super/ui';
 import {
   Download,
   Image as ImageIcon,
@@ -11,17 +11,17 @@ import {
   Type,
   Play,
   Pause,
-} from "lucide-react";
+} from 'lucide-react';
 
 export type ToolType =
-  | "none"
-  | "mediaList"
-  | "voiceover"
-  | "soundEffect"
-  | "animating"
-  | "inpainting"
-  | "lipsync"
-  | "addText";
+  | 'none'
+  | 'mediaList'
+  | 'voiceover'
+  | 'soundEffect'
+  | 'animating'
+  | 'inpainting'
+  | 'lipsync'
+  | 'addText';
 
 export function Toolbar({
   scene,
@@ -42,7 +42,7 @@ export function Toolbar({
 
   const handleDownload = () => {
     if (!scene?.file?.url) return;
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = scene.file.url;
     a.download = `scene-${scene.id}.asset`;
     a.click();
@@ -50,65 +50,65 @@ export function Toolbar({
 
   const handleAddText = () => {
     if (!controller) return;
-    controller.addText("Text", {
-      fill: "white",
+    controller.addText('Text', {
+      fill: 'white',
     });
   };
 
   const tools = [
     {
       icon: <Download className="size-5" />,
-      content: "Download",
+      content: 'Download',
       onClick: handleDownload,
       hidden: !scene?.file?.url,
       type: null,
     },
     {
       icon: <ImageIcon className="size-5" />,
-      content: "Edit media",
+      content: 'Edit media',
       onClick: () =>
-        onChangeTool(activeTool === "mediaList" ? null : "mediaList"),
+        onChangeTool(activeTool === 'mediaList' ? null : 'mediaList'),
       hidden: !scene,
-      type: "mediaList" as ToolType,
+      type: 'mediaList' as ToolType,
     },
     {
       icon: <MicVocal className="size-5" />,
-      content: "Voiceover",
+      content: 'Voiceover',
       onClick: () =>
-        onChangeTool(activeTool === "voiceover" ? null : "voiceover"),
+        onChangeTool(activeTool === 'voiceover' ? null : 'voiceover'),
       hidden: !scene,
-      type: "voiceover" as ToolType,
+      type: 'voiceover' as ToolType,
     },
     {
       icon: <AudioLines className="size-5" />,
-      content: "Sound effect",
+      content: 'Sound effect',
       onClick: () =>
-        onChangeTool(activeTool === "soundEffect" ? null : "soundEffect"),
+        onChangeTool(activeTool === 'soundEffect' ? null : 'soundEffect'),
       hidden: !scene,
-      type: "soundEffect" as ToolType,
+      type: 'soundEffect' as ToolType,
     },
     {
       icon: <Sparkles className="size-5" />,
-      content: "Animating",
+      content: 'Animating',
       onClick: () =>
-        onChangeTool(activeTool === "animating" ? null : "animating"),
+        onChangeTool(activeTool === 'animating' ? null : 'animating'),
       hidden: scene?.file?.type !== FileTypeEnum.IMAGE,
-      type: "animating" as ToolType,
+      type: 'animating' as ToolType,
     },
     {
       icon: <Palette className="size-5" />,
-      content: "Inpainting",
+      content: 'Inpainting',
       onClick: () =>
-        onChangeTool(activeTool === "inpainting" ? null : "inpainting"),
+        onChangeTool(activeTool === 'inpainting' ? null : 'inpainting'),
       hidden: scene?.file?.type !== FileTypeEnum.IMAGE,
-      type: "inpainting" as ToolType,
+      type: 'inpainting' as ToolType,
     },
     {
       icon: <Type className="size-5" />,
-      content: "Add text",
+      content: 'Add text',
       onClick: handleAddText,
       hidden: !scene,
-      type: "addText" as ToolType,
+      type: 'addText' as ToolType,
     },
     {
       icon: isPlaying ? (
@@ -116,7 +116,7 @@ export function Toolbar({
       ) : (
         <Play className="size-5" />
       ),
-      content: isPlaying ? "Pause" : "Play",
+      content: isPlaying ? 'Pause' : 'Play',
       onClick: togglePlay,
       hidden: scene?.file?.type !== FileTypeEnum.VIDEO,
       type: null,
@@ -127,10 +127,7 @@ export function Toolbar({
     <aside className="w-[78px] shrink-0 bg-card border border-border rounded-xl p-2 flex flex-col items-center gap-2">
       {isLoading
         ? [...Array(6)].map((_, i) => (
-            <Skeleton
-              key={i}
-              className="size-12 rounded-lg"
-            />
+            <Skeleton key={i} className="size-12 rounded-lg" />
           ))
         : tools
             .filter((t) => !t.hidden)
@@ -141,7 +138,7 @@ export function Toolbar({
                   key={idx}
                   onClick={t.onClick}
                   className={`relative size-12 rounded-lg border hover:border-primary/60 grid place-items-center ${
-                    isActive ? "border-gray-400" : "border-border"
+                    isActive ? 'border-gray-400' : 'border-border'
                   }`}
                   title={t.content}
                 >

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Suspense } from "react";
-import { PromptEnhancerForm } from "./prompt-enhancer-form";
-import { EnhancementResult } from "./enhancement-result";
-import { usePromptEnhancer } from "../hooks/use-prompt-enhancer";
+import { Suspense } from 'react';
+import { PromptEnhancerForm } from './prompt-enhancer-form';
+import { EnhancementResult } from './enhancement-result';
+import { usePromptEnhancer } from '../hooks/use-prompt-enhancer';
 
 // AICODE-NOTE: Main page component for standalone prompt enhancer tool
 export function PromptEnhancer() {

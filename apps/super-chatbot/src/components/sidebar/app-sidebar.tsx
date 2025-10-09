@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import type { User } from "next-auth";
-import { useRouter } from "next/navigation";
+import type { User } from 'next-auth';
+import { useRouter } from 'next/navigation';
 
-import { PlusIcon } from "../common/icons";
-import { SidebarHistory } from "./sidebar-history";
-import { SidebarUserNav } from "./sidebar-user-nav";
-import { Button } from "@turbo-super/ui";
+import { PlusIcon } from '../common/icons';
+import { SidebarHistory } from './sidebar-history';
+import { SidebarUserNav } from './sidebar-user-nav';
+import { Button } from '@turbo-super/ui';
 import {
   Sidebar,
   SidebarContent,
@@ -19,13 +19,13 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   useSidebar,
-} from "../ui/sidebar";
-import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../";
-import { TOOLS_CONFIG } from "@/lib/config/tools-config";
-import { ToolIcon } from "@/lib/config/tools-icons";
-import { BananaVeo3Button } from "@/components/chat/banana-veo3-button";
-import { BananaVeo3AdvancedButton } from "@/components/chat/banana-veo3-advanced-button";
+} from '../ui/sidebar';
+import Link from 'next/link';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../';
+import { TOOLS_CONFIG } from '@/lib/config/tools-config';
+import { ToolIcon } from '@/lib/config/tools-icons';
+import { BananaVeo3Button } from '@/components/chat/banana-veo3-button';
+import { BananaVeo3AdvancedButton } from '@/components/chat/banana-veo3-advanced-button';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -55,7 +55,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   className="p-2 h-fit"
                   onClick={() => {
                     setOpenMobile(false);
-                    router.push("/");
+                    router.push('/');
                     router.refresh();
                   }}
                 >

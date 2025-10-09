@@ -1,4 +1,4 @@
-import { Skeleton } from "@turbo-super/ui";
+import { Skeleton } from '@turbo-super/ui';
 
 export function ScenePreviewSkeleton() {
   return (

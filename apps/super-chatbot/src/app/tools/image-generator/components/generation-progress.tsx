@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, Button } from "@turbo-super/ui";
-import { Loader2, Image, CheckCircle, XCircle, RefreshCw } from "lucide-react";
-import NextImage from "next/image";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, Button } from '@turbo-super/ui';
+import { Loader2, Image, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import NextImage from 'next/image';
 
 // AICODE-NOTE: Simple Progress component since it's not available in UI library
 function Progress({ value, className }: { value: number; className?: string }) {
@@ -20,25 +20,25 @@ function Progress({ value, className }: { value: number; className?: string }) {
 // AICODE-NOTE: Simple Badge component since it's not available in UI library
 function Badge({
   children,
-  variant = "default",
+  variant = 'default',
   className,
 }: {
   children: React.ReactNode;
-  variant?: "default" | "secondary" | "outline" | "destructive";
+  variant?: 'default' | 'secondary' | 'outline' | 'destructive';
   className?: string;
 }) {
   const baseClasses =
-    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
+    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium';
   const variantClasses = {
-    default: "bg-blue-600 text-white",
-    secondary: "bg-gray-100 text-gray-900",
-    outline: "border border-gray-200 bg-white text-gray-900",
-    destructive: "bg-red-600 text-white",
+    default: 'bg-blue-600 text-white',
+    secondary: 'bg-gray-100 text-gray-900',
+    outline: 'border border-gray-200 bg-white text-gray-900',
+    destructive: 'bg-red-600 text-white',
   };
 
   return (
     <span
-      className={`${baseClasses} ${variantClasses[variant]} ${className || ""}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${className || ''}`}
     >
       {children}
     </span>
@@ -46,7 +46,7 @@ function Badge({
 }
 
 export interface GenerationStatus {
-  status: "idle" | "pending" | "processing" | "completed" | "error";
+  status: 'idle' | 'pending' | 'processing' | 'completed' | 'error';
   progress?: number;
   message?: string;
   estimatedTime?: number;
@@ -87,8 +87,8 @@ export function GenerationProgress({
     let interval: NodeJS.Timeout;
 
     if (
-      generationStatus.status === "processing" ||
-      generationStatus.status === "pending"
+      generationStatus.status === 'processing' ||
+      generationStatus.status === 'pending'
     ) {
       interval = setInterval(() => {
         setElapsedTime((prev) => prev + 1);
@@ -103,7 +103,7 @@ export function GenerationProgress({
   }, [generationStatus.status]);
 
   // Don't render if idle
-  if (generationStatus.status === "idle") {
+  if (generationStatus.status === 'idle') {
     return null;
   }
 
@@ -115,13 +115,13 @@ export function GenerationProgress({
 
   const getStatusIcon = () => {
     switch (generationStatus.status) {
-      case "pending":
+      case 'pending':
         return <Loader2 className="size-5 animate-spin text-blue-500" />;
-      case "processing":
+      case 'processing':
         return <Image className="size-5 text-blue-500" />;
-      case "completed":
+      case 'completed':
         return <CheckCircle className="size-5 text-green-500" />;
-      case "error":
+      case 'error':
         return <XCircle className="size-5 text-red-500" />;
       default:
         return null;
@@ -130,20 +130,17 @@ export function GenerationProgress({
 
   const getStatusBadge = () => {
     switch (generationStatus.status) {
-      case "pending":
+      case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
-      case "processing":
+      case 'processing':
         return <Badge variant="default">Processing</Badge>;
-      case "completed":
+      case 'completed':
         return (
-          <Badge
-            variant="outline"
-            className="text-green-600 border-green-200"
-          >
+          <Badge variant="outline" className="text-green-600 border-green-200">
             Completed
           </Badge>
         );
-      case "error":
+      case 'error':
         return <Badge variant="destructive">Error</Badge>;
       default:
         return null;
@@ -156,16 +153,16 @@ export function GenerationProgress({
     }
 
     switch (generationStatus.status) {
-      case "pending":
-        return "Preparing your image generation request...";
-      case "processing":
-        return "Generating your image using AI models...";
-      case "completed":
-        return "Image generated successfully!";
-      case "error":
-        return "Failed to generate image. Please try again.";
+      case 'pending':
+        return 'Preparing your image generation request...';
+      case 'processing':
+        return 'Generating your image using AI models...';
+      case 'completed':
+        return 'Image generated successfully!';
+      case 'error':
+        return 'Failed to generate image. Please try again.';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -178,9 +175,9 @@ export function GenerationProgress({
             <div className="flex items-center space-x-2">
               {getStatusIcon()}
               <span className="font-medium">
-                {generationStatus.status === "processing"
-                  ? "Generating Image"
-                  : "Image Generation"}
+                {generationStatus.status === 'processing'
+                  ? 'Generating Image'
+                  : 'Image Generation'}
               </span>
             </div>
             {getStatusBadge()}
@@ -195,17 +192,14 @@ export function GenerationProgress({
           )}
 
           {/* Progress Bar - only show during processing */}
-          {(generationStatus.status === "processing" ||
-            generationStatus.status === "pending") && (
+          {(generationStatus.status === 'processing' ||
+            generationStatus.status === 'pending') && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Progress</span>
                 <span>{Math.round(displayProgress)}%</span>
               </div>
-              <Progress
-                value={displayProgress}
-                className="w-full h-2"
-              />
+              <Progress value={displayProgress} className="w-full h-2" />
             </div>
           )}
 
@@ -219,11 +213,11 @@ export function GenerationProgress({
                 <span>Elapsed: {formatTime(elapsedTime)}</span>
               )}
               {generationStatus.estimatedTime &&
-                generationStatus.status === "processing" && (
+                generationStatus.status === 'processing' && (
                   <span>
-                    Est. remaining:{" "}
+                    Est. remaining:{' '}
                     {formatTime(
-                      Math.max(0, generationStatus.estimatedTime - elapsedTime)
+                      Math.max(0, generationStatus.estimatedTime - elapsedTime),
                     )}
                   </span>
                 )}
@@ -240,8 +234,8 @@ export function GenerationProgress({
 
           {/* Force Check Button - only show during processing/pending */}
           {onForceCheck &&
-            (generationStatus.status === "processing" ||
-              generationStatus.status === "pending") && (
+            (generationStatus.status === 'processing' ||
+              generationStatus.status === 'pending') && (
               <div className="pt-2 border-t">
                 <Button
                   variant="outline"
@@ -273,11 +267,11 @@ export function GenerationProgress({
             )}
 
           {/* Image Display */}
-          {generationStatus.status === "completed" && generationStatus.url && (
+          {generationStatus.status === 'completed' && generationStatus.url && (
             <div className="mt-4">
               <NextImage
                 src={generationStatus.url}
-                alt={`Generated image: ${prompt || "Generated image"}`}
+                alt={`Generated image: ${prompt || 'Generated image'}`}
                 width={600}
                 height={384}
                 className="w-full h-auto rounded-lg border max-h-96 object-contain"

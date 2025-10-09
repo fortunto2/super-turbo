@@ -1,30 +1,30 @@
-import { imageDocumentHandler } from "@/artifacts/image/server";
+import { imageDocumentHandler } from '@/artifacts/image/server';
 // Utility: extract thumbnail URL from JSON content string
 function getThumbnailUrl(content: string): string | null {
   try {
     const data = JSON.parse(content);
     if (!data) return null;
     // Common fields
-    if (typeof data.thumbnailUrl === "string") return data.thumbnailUrl;
-    if (typeof data.thumbnail_url === "string") return data.thumbnail_url;
+    if (typeof data.thumbnailUrl === 'string') return data.thumbnailUrl;
+    if (typeof data.thumbnail_url === 'string') return data.thumbnail_url;
     // Fallbacks for image/video specific
-    if (typeof data.imageUrl === "string") return data.imageUrl;
-    if (typeof data.videoUrl === "string") return data.videoUrl;
+    if (typeof data.imageUrl === 'string') return data.imageUrl;
+    if (typeof data.videoUrl === 'string') return data.videoUrl;
   } catch (_) {
     // ignore parse errors
   }
   return null;
 }
 
-import { sheetDocumentHandler } from "@/artifacts/sheet/server";
-import { textDocumentHandler } from "@/artifacts/text/server";
-import { videoDocumentHandler } from "@/artifacts/video/server";
-import type { ArtifactKind } from "@/components/artifacts/artifact";
-import type { DataStreamWriter } from "ai";
-import type { Document } from "../db/schema";
-import { saveDocument } from "../db/queries";
-import type { Session } from "next-auth";
-import { scriptDocumentHandler } from "@/artifacts/script/server";
+import { sheetDocumentHandler } from '@/artifacts/sheet/server';
+import { textDocumentHandler } from '@/artifacts/text/server';
+import { videoDocumentHandler } from '@/artifacts/video/server';
+import type { ArtifactKind } from '@/components/artifacts/artifact';
+import type { DataStreamWriter } from 'ai';
+import type { Document } from '../db/schema';
+import { saveDocument } from '../db/queries';
+import type { Session } from 'next-auth';
+import { scriptDocumentHandler } from '@/artifacts/script/server';
 
 export interface SaveDocumentProps {
   id: string;
@@ -32,7 +32,7 @@ export interface SaveDocumentProps {
   kind: ArtifactKind;
   content: string;
   userId: string;
-  visibility?: "public" | "private";
+  visibility?: 'public' | 'private';
 }
 
 export interface CreateDocumentCallbackProps {
@@ -65,46 +65,47 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
     kind: config.kind,
     onCreateDocument: async (args: CreateDocumentCallbackProps) => {
       console.log(
-        "📄 createDocumentHandler.onCreateDocument called for kind:",
-        config.kind
+        '📄 createDocumentHandler.onCreateDocument called for kind:',
+        config.kind,
       );
 
       const draftContent = await config.onCreateDocument({
         id: args.id,
         title: args.title,
-        content: args.content || "", // Now properly typed
+        content: args.content || '', // Now properly typed
         dataStream: args.dataStream,
         session: args.session,
       });
 
-      console.log("📄 Draft content generated:", draftContent);
+      console.log('📄 Draft content generated:', draftContent);
 
+      // AICODE-NOTE: AI SDK 5.0 - use writer.write() with 'text' type, not writeData()
       // Send the content to the stream so it reaches the client
-      args.dataStream.writeData({
-        type: "text-delta",
-        content: draftContent,
+      args.dataStream.write({
+        type: 'text',
+        value: draftContent,
       });
 
       // AICODE-FIX: Only save to database if we have meaningful content
       // For image/video artifacts, only save when generation is completed
       const shouldSaveToDatabase =
         args.session?.user?.id &&
-        (config.kind === "text" || // Text artifacts can be saved immediately
-          config.kind === "sheet" || // Sheet artifacts can be saved immediately
-          (config.kind === "image" &&
+        (config.kind === 'text' || // Text artifacts can be saved immediately
+          config.kind === 'sheet' || // Sheet artifacts can be saved immediately
+          (config.kind === 'image' &&
             draftContent &&
-            JSON.parse(draftContent || "{}").status === "completed") ||
-          (config.kind === "video" &&
+            JSON.parse(draftContent || '{}').status === 'completed') ||
+          (config.kind === 'video' &&
             draftContent &&
-            JSON.parse(draftContent || "{}").status === "completed"));
+            JSON.parse(draftContent || '{}').status === 'completed'));
 
       if (shouldSaveToDatabase) {
         // AICODE-FIX: Extract human-readable title from JSON if needed
         let readableTitle = args.title;
         try {
           // Check if title is JSON for image/video artifacts
-          if (config.kind === "image" || config.kind === "video") {
-            if (args.title.startsWith("{") && args.title.endsWith("}")) {
+          if (config.kind === 'image' || config.kind === 'video') {
+            if (args.title.startsWith('{') && args.title.endsWith('}')) {
               const titleParams = JSON.parse(args.title);
               // Use prompt as readable title
               readableTitle =
@@ -113,13 +114,13 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
               // Handle video format: 'Video: "prompt" {...}'
               const match = args.title.match(/Video: "([^"]+)"/);
               if (match) {
-                readableTitle = match[1] || "";
+                readableTitle = match[1] || '';
               }
             }
           }
         } catch (e) {
           // If parse fails, keep original title
-          console.log("📄 Could not parse title, using as-is");
+          console.log('📄 Could not parse title, using as-is');
         }
 
         await saveDocument({
@@ -131,15 +132,15 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           thumbnailUrl: getThumbnailUrl(draftContent),
         });
 
-        console.log("📄 Document saved to database with title:", readableTitle);
+        console.log('📄 Document saved to database with title:', readableTitle);
       } else if (
         args.session?.user?.id &&
-        (config.kind === "image" || config.kind === "video")
+        (config.kind === 'image' || config.kind === 'video')
       ) {
         console.log(
-          "📄 Skipping database save for",
+          '📄 Skipping database save for',
           config.kind,
-          "artifact - waiting for completion"
+          'artifact - waiting for completion',
         );
       }
 
@@ -147,8 +148,8 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
     },
     onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
       console.log(
-        "📄 createDocumentHandler.onUpdateDocument called for kind:",
-        config.kind
+        '📄 createDocumentHandler.onUpdateDocument called for kind:',
+        config.kind,
       );
 
       const draftContent = await config.onUpdateDocument({
@@ -158,26 +159,27 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         session: args.session,
       });
 
-      console.log("📄 Updated content generated:", draftContent);
+      console.log('📄 Updated content generated:', draftContent);
 
+      // AICODE-NOTE: AI SDK 5.0 - use writer.write() with 'text' type, not writeData()
       // Send the updated content to the stream
-      args.dataStream.writeData({
-        type: "text-delta",
-        content: draftContent,
+      args.dataStream.write({
+        type: 'text',
+        value: draftContent,
       });
 
       // AICODE-FIX: Only save to database if we have meaningful content
       // For image/video artifacts, only save when generation is completed
       const shouldSaveToDatabase =
         args.session?.user?.id &&
-        (config.kind === "text" || // Text artifacts can be saved immediately
-          config.kind === "sheet" || // Sheet artifacts can be saved immediately
-          (config.kind === "image" &&
+        (config.kind === 'text' || // Text artifacts can be saved immediately
+          config.kind === 'sheet' || // Sheet artifacts can be saved immediately
+          (config.kind === 'image' &&
             draftContent &&
-            JSON.parse(draftContent || "{}").status === "completed") ||
-          (config.kind === "video" &&
+            JSON.parse(draftContent || '{}').status === 'completed') ||
+          (config.kind === 'video' &&
             draftContent &&
-            JSON.parse(draftContent || "{}").status === "completed"));
+            JSON.parse(draftContent || '{}').status === 'completed'));
 
       if (shouldSaveToDatabase) {
         // AICODE-FIX: Use document's existing title for updates
@@ -191,15 +193,15 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
           thumbnailUrl: getThumbnailUrl(draftContent),
         });
 
-        console.log("📄 Document updated in database");
+        console.log('📄 Document updated in database');
       } else if (
         args.session?.user?.id &&
-        (config.kind === "image" || config.kind === "video")
+        (config.kind === 'image' || config.kind === 'video')
       ) {
         console.log(
-          "📄 Skipping database update for",
+          '📄 Skipping database update for',
           config.kind,
-          "artifact - waiting for completion"
+          'artifact - waiting for completion',
         );
       }
 
@@ -220,9 +222,18 @@ export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
 ];
 
 export const artifactKinds = [
-  "text",
-  "image",
-  "sheet",
-  "video",
-  "script",
+  'text',
+  'image',
+  'sheet',
+  'video',
+  'script',
 ] as const;
+
+// Zod-compatible enum format for AI SDK tool() parameters
+export const artifactKindsEnum = [
+  'text',
+  'image',
+  'sheet',
+  'video',
+  'script',
+] as [string, string, ...string[]];

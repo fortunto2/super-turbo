@@ -1,5 +1,3 @@
-
-
 // Простые метрики в памяти
 const metrics = {
   requests: new Map<
@@ -15,7 +13,7 @@ const metrics = {
 export function trackApiRequest(
   endpoint: string,
   duration: number,
-  status: number
+  status: number,
 ) {
   const current = metrics.requests.get(endpoint) || {
     count: 0,
@@ -48,11 +46,11 @@ export function getMetrics() {
     lastReset: metrics.lastReset,
     totalRequests: Array.from(metrics.requests.values()).reduce(
       (sum, data) => sum + data.count,
-      0
+      0,
     ),
     totalErrors: Array.from(metrics.requests.values()).reduce(
       (sum, data) => sum + data.errors,
-      0
+      0,
     ),
   };
 }
@@ -61,7 +59,7 @@ export function getMetrics() {
  * Middleware для автоматического отслеживания API requests
  */
 export function withMonitoring<T extends any[]>(
-  handler: (...args: T) => Promise<Response>
+  handler: (...args: T) => Promise<Response>,
 ) {
   return async (...args: T): Promise<Response> => {
     const request = args[0] as Request;
@@ -96,21 +94,21 @@ export function getHealthStatus() {
   const uptime = process.uptime();
 
   return {
-    status: "healthy",
+    status: 'healthy',
     uptime,
     memory: {
       used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
       total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
-      unit: "MB",
+      unit: 'MB',
     },
     metrics: {
       totalRequests: Array.from(metrics.requests.values()).reduce(
         (sum, data) => sum + data.count,
-        0
+        0,
       ),
       totalErrors: Array.from(metrics.requests.values()).reduce(
         (sum, data) => sum + data.errors,
-        0
+        0,
       ),
       endpoints: metrics.requests.size,
     },

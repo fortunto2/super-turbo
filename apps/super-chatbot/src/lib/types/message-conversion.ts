@@ -27,16 +27,21 @@ export interface MessageDeprecated {
 /**
  * Convert database messages to UI messages compatible with AI SDK
  */
-export function convertDBMessagesToUIMessages(dbMessages: DBMessage[]): UIMessage[] {
+export function convertDBMessagesToUIMessages(
+  dbMessages: DBMessage[],
+): UIMessage[] {
   return dbMessages.map((dbMessage): UIMessage => {
     // Safely parse parts from unknown type
     const parts = Array.isArray(dbMessage.parts) ? dbMessage.parts : [];
-    
+
     // Handle different role types
     if (dbMessage.role === 'user') {
       // User messages: combine parts into content string
       const textContent = parts
-        .filter((part: any) => part && typeof part === 'object' && part.type === 'text')
+        .filter(
+          (part: any) =>
+            part && typeof part === 'object' && part.type === 'text',
+        )
         .map((part: any) => part.text || '')
         .join(' ');
 
@@ -63,9 +68,10 @@ export function convertDBMessagesToUIMessages(dbMessages: DBMessage[]): UIMessag
     return {
       id: dbMessage.id,
       role: dbMessage.role as any,
-      content: typeof dbMessage.parts === 'string' 
-        ? dbMessage.parts 
-        : JSON.stringify(dbMessage.parts),
+      content:
+        typeof dbMessage.parts === 'string'
+          ? dbMessage.parts
+          : JSON.stringify(dbMessage.parts),
       createdAt: dbMessage.createdAt,
     } as UIMessage;
   });
@@ -74,16 +80,23 @@ export function convertDBMessagesToUIMessages(dbMessages: DBMessage[]): UIMessag
 /**
  * Convert legacy deprecated messages to UI messages for migration
  */
-export function convertDeprecatedMessagesToUIMessages(messages: MessageDeprecated[]): UIMessage[] {
+export function convertDeprecatedMessagesToUIMessages(
+  messages: MessageDeprecated[],
+): UIMessage[] {
   return messages.map((message): UIMessage => {
     // Handle content as string or array
-    const content = typeof message.content === 'string' 
-      ? message.content 
-      : Array.isArray(message.content)
-        ? message.content.map(part => 
-            typeof part === 'object' && part.text ? part.text : String(part)
-          ).join(' ')
-        : String(message.content);
+    const content =
+      typeof message.content === 'string'
+        ? message.content
+        : Array.isArray(message.content)
+          ? message.content
+              .map((part) =>
+                typeof part === 'object' && part.text
+                  ? part.text
+                  : String(part),
+              )
+              .join(' ')
+          : String(message.content);
 
     return {
       id: message.id,
@@ -98,22 +111,28 @@ export function convertDeprecatedMessagesToUIMessages(messages: MessageDeprecate
  * Type guard to check if a message is a DB message
  */
 export function isDBMessage(message: any): message is DBMessage {
-  return message && 
+  return (
+    message &&
     typeof message.id === 'string' &&
     typeof message.chatId === 'string' &&
     typeof message.role === 'string' &&
     Array.isArray(message.parts) &&
-    message.createdAt instanceof Date;
+    message.createdAt instanceof Date
+  );
 }
 
 /**
  * Type guard to check if a message is a deprecated message
  */
-export function isDeprecatedMessage(message: any): message is MessageDeprecated {
-  return message && 
+export function isDeprecatedMessage(
+  message: any,
+): message is MessageDeprecated {
+  return (
+    message &&
     typeof message.id === 'string' &&
     typeof message.chatId === 'string' &&
     typeof message.role === 'string' &&
     (typeof message.content === 'string' || Array.isArray(message.content)) &&
-    message.createdAt instanceof Date;
-} 
+    message.createdAt instanceof Date
+  );
+}

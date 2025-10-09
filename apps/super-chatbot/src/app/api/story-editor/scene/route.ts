@@ -1,21 +1,21 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
-import { getSuperduperAIConfig, OpenAPI, SceneService } from "@turbo-super/api";
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
+import { getSuperduperAIConfig, OpenAPI, SceneService } from '@turbo-super/api';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const sceneId = searchParams.get("sceneId");
+    const sceneId = searchParams.get('sceneId');
 
     if (!sceneId) {
       return NextResponse.json(
-        { error: "Scene ID is required" },
-        { status: 400 }
+        { error: 'Scene ID is required' },
+        { status: 400 },
       );
     }
 
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
 
     if (!config.token || !config.url) {
       return NextResponse.json(
-        { error: "SuperDuperAI configuration not available" },
-        { status: 500 }
+        { error: 'SuperDuperAI configuration not available' },
+        { status: 500 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const response = await SceneService.sceneGetById({ id: sceneId });
 
     if (!response) {
-      return NextResponse.json({ error: "Scene not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Scene not found' }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -43,13 +43,13 @@ export async function GET(request: NextRequest) {
       scene: response,
     });
   } catch (error: any) {
-    console.error("Error fetching scene:", error);
+    console.error('Error fetching scene:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Internal server error",
+        error: error.message || 'Internal server error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

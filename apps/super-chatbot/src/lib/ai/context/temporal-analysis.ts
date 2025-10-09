@@ -3,7 +3,7 @@
  * Поддерживает сложные временные выражения и контекстные ссылки
  */
 
-import type { ChatMedia } from "./universal-context";
+import type { ChatMedia } from './universal-context';
 
 interface TemporalPattern {
   pattern: RegExp;
@@ -12,7 +12,7 @@ interface TemporalPattern {
   resolver: (
     message: string,
     media: ChatMedia[],
-    context: TemporalContext
+    context: TemporalContext,
   ) => ChatMedia | null;
 }
 
@@ -20,7 +20,7 @@ interface TemporalContext {
   currentTime: Date;
   chatStartTime?: Date;
   userTimezone?: string;
-  language: "ru" | "en";
+  language: 'ru' | 'en';
 }
 
 interface TemporalMatch {
@@ -40,7 +40,7 @@ export class TemporalAnalyzer {
   constructor(context?: Partial<TemporalContext>) {
     this.context = {
       currentTime: new Date(),
-      language: "ru",
+      language: 'ru',
       ...context,
     };
 
@@ -57,21 +57,21 @@ export class TemporalAnalyzer {
       {
         pattern: /(час\s+назад|hour\s+ago|1\s+час\s+назад)/i,
         weight: 0.9,
-        description: "Один час назад",
+        description: 'Один час назад',
         resolver: (message, media, context) =>
           this.findMediaByTimeOffset(media, 60, context),
       },
       {
         pattern: /(2\s+часа\s+назад|2\s+hours\s+ago)/i,
         weight: 0.9,
-        description: "Два часа назад",
+        description: 'Два часа назад',
         resolver: (message, media, context) =>
           this.findMediaByTimeOffset(media, 120, context),
       },
       {
         pattern: /(полчаса\s+назад|30\s+минут\s+назад|half\s+hour\s+ago)/i,
         weight: 0.9,
-        description: "Полчаса назад",
+        description: 'Полчаса назад',
         resolver: (message, media, context) =>
           this.findMediaByTimeOffset(media, 30, context),
       },
@@ -80,21 +80,21 @@ export class TemporalAnalyzer {
       {
         pattern: /(вчера|yesterday)/i,
         weight: 0.8,
-        description: "Вчера",
+        description: 'Вчера',
         resolver: (message, media, context) =>
           this.findMediaByDayOffset(media, -1, context),
       },
       {
         pattern: /(позавчера|day\s+before\s+yesterday)/i,
         weight: 0.8,
-        description: "Позавчера",
+        description: 'Позавчера',
         resolver: (message, media, context) =>
           this.findMediaByDayOffset(media, -2, context),
       },
       {
         pattern: /(на\s+прошлой\s+неделе|last\s+week)/i,
         weight: 0.7,
-        description: "На прошлой неделе",
+        description: 'На прошлой неделе',
         resolver: (message, media, context) =>
           this.findMediaByWeekOffset(media, -1, context),
       },
@@ -103,31 +103,31 @@ export class TemporalAnalyzer {
       {
         pattern: /(перв[а-я]+|first)/i,
         weight: 0.8,
-        description: "Первое изображение",
+        description: 'Первое изображение',
         resolver: (message, media, context) => this.findMediaByOrder(media, 0),
       },
       {
         pattern: /(втор[а-я]+|second)/i,
         weight: 0.8,
-        description: "Второе изображение",
+        description: 'Второе изображение',
         resolver: (message, media, context) => this.findMediaByOrder(media, 1),
       },
       {
         pattern: /(треть[а-я]+|third)/i,
         weight: 0.8,
-        description: "Третье изображение",
+        description: 'Третье изображение',
         resolver: (message, media, context) => this.findMediaByOrder(media, 2),
       },
       {
         pattern: /(последн[а-я]+|last|recent)/i,
         weight: 0.9,
-        description: "Последнее изображение",
+        description: 'Последнее изображение',
         resolver: (message, media, context) => this.findLastMedia(media),
       },
       {
         pattern: /(предыдущ[а-я]+|previous)/i,
         weight: 0.8,
-        description: "Предыдущее изображение",
+        description: 'Предыдущее изображение',
         resolver: (message, media, context) => this.findPreviousMedia(media),
       },
 
@@ -135,21 +135,21 @@ export class TemporalAnalyzer {
       {
         pattern: /(когда\s+я\s+только\s+что|just\s+now|только\s+что)/i,
         weight: 0.9,
-        description: "Только что",
+        description: 'Только что',
         resolver: (message, media, context) =>
           this.findRecentMedia(media, 5, context),
       },
       {
         pattern: /(недавн[а-я]+|recently)/i,
         weight: 0.7,
-        description: "Недавно",
+        description: 'Недавно',
         resolver: (message, media, context) =>
           this.findRecentMedia(media, 60, context),
       },
       {
         pattern: /(давн[а-я]+|long\s+ago|long\s+time\s+ago)/i,
         weight: 0.6,
-        description: "Давно",
+        description: 'Давно',
         resolver: (message, media, context) =>
           this.findOldMedia(media, 24, context),
       },
@@ -158,37 +158,37 @@ export class TemporalAnalyzer {
       {
         pattern: /(сегодня\s+утром|this\s+morning)/i,
         weight: 0.8,
-        description: "Сегодня утром",
+        description: 'Сегодня утром',
         resolver: (message, media, context) =>
-          this.findMediaByTimeOfDay(media, "morning", context),
+          this.findMediaByTimeOfDay(media, 'morning', context),
       },
       {
         pattern: /(сегодня\s+днем|this\s+afternoon)/i,
         weight: 0.8,
-        description: "Сегодня днем",
+        description: 'Сегодня днем',
         resolver: (message, media, context) =>
-          this.findMediaByTimeOfDay(media, "afternoon", context),
+          this.findMediaByTimeOfDay(media, 'afternoon', context),
       },
       {
         pattern: /(сегодня\s+вечером|this\s+evening)/i,
         weight: 0.8,
-        description: "Сегодня вечером",
+        description: 'Сегодня вечером',
         resolver: (message, media, context) =>
-          this.findMediaByTimeOfDay(media, "evening", context),
+          this.findMediaByTimeOfDay(media, 'evening', context),
       },
 
       // Контекстные ссылки на события
       {
         pattern: /(перед\s+тем\s+как|before|до\s+того\s+как)/i,
         weight: 0.7,
-        description: "Перед тем как",
+        description: 'Перед тем как',
         resolver: (message, media, context) =>
           this.findMediaBeforeEvent(media, context),
       },
       {
         pattern: /(после\s+того\s+как|after|после\s+этого)/i,
         weight: 0.7,
-        description: "После того как",
+        description: 'После того как',
         resolver: (message, media, context) =>
           this.findMediaAfterEvent(media, context),
       },
@@ -197,14 +197,14 @@ export class TemporalAnalyzer {
       {
         pattern: /(два\s+сообщения\s+назад|2\s+messages\s+ago)/i,
         weight: 0.8,
-        description: "Два сообщения назад",
+        description: 'Два сообщения назад',
         resolver: (message, media, context) =>
           this.findMediaByMessageOffset(media, -2),
       },
       {
         pattern: /(три\s+сообщения\s+назад|3\s+messages\s+ago)/i,
         weight: 0.8,
-        description: "Три сообщения назад",
+        description: 'Три сообщения назад',
         resolver: (message, media, context) =>
           this.findMediaByMessageOffset(media, -3),
       },
@@ -218,7 +218,7 @@ export class TemporalAnalyzer {
    */
   async analyzeTemporalReferences(
     message: string,
-    chatMedia: ChatMedia[]
+    chatMedia: ChatMedia[],
   ): Promise<TemporalMatch[]> {
     console.log(`🕒 TemporalAnalyzer: Analyzing message: "${message}"`);
 
@@ -228,17 +228,17 @@ export class TemporalAnalyzer {
     for (const pattern of this.temporalPatterns) {
       if (pattern.pattern.test(lowerMessage)) {
         console.log(
-          `🕒 TemporalAnalyzer: Found pattern: ${pattern.description}`
+          `🕒 TemporalAnalyzer: Found pattern: ${pattern.description}`,
         );
 
         const media = pattern.resolver(message, chatMedia, this.context);
         if (media) {
           const temporalDistance = this.calculateTemporalDistance(
-            media.timestamp
+            media.timestamp,
           );
           const confidence = this.calculateConfidence(
             pattern.weight,
-            temporalDistance
+            temporalDistance,
           );
 
           matches.push({
@@ -261,7 +261,7 @@ export class TemporalAnalyzer {
     matches.sort((a, b) => b.confidence - a.confidence);
 
     console.log(
-      `🕒 TemporalAnalyzer: Found ${matches.length} temporal matches`
+      `🕒 TemporalAnalyzer: Found ${matches.length} temporal matches`,
     );
     return matches;
   }
@@ -272,16 +272,16 @@ export class TemporalAnalyzer {
   private findMediaByTimeOffset(
     media: ChatMedia[],
     minutesOffset: number,
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     const targetTime = new Date(
-      context.currentTime.getTime() - minutesOffset * 60 * 1000
+      context.currentTime.getTime() - minutesOffset * 60 * 1000,
     );
 
     return media.reduce(
       (closest, current) => {
         const currentDistance = Math.abs(
-          current.timestamp.getTime() - targetTime.getTime()
+          current.timestamp.getTime() - targetTime.getTime(),
         );
         const closestDistance = closest
           ? Math.abs(closest.timestamp.getTime() - targetTime.getTime())
@@ -289,7 +289,7 @@ export class TemporalAnalyzer {
 
         return currentDistance < closestDistance ? current : closest;
       },
-      null as ChatMedia | null
+      null as ChatMedia | null,
     );
   }
 
@@ -299,7 +299,7 @@ export class TemporalAnalyzer {
   private findMediaByDayOffset(
     media: ChatMedia[],
     daysOffset: number,
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     const targetDate = new Date(context.currentTime);
     targetDate.setDate(targetDate.getDate() + daysOffset);
@@ -309,7 +309,7 @@ export class TemporalAnalyzer {
     nextDay.setDate(nextDay.getDate() + 1);
 
     const dayMedia = media.filter(
-      (m) => m.timestamp >= targetDate && m.timestamp < nextDay
+      (m) => m.timestamp >= targetDate && m.timestamp < nextDay,
     );
 
     return dayMedia.length > 0 ? dayMedia[dayMedia.length - 1] || null : null;
@@ -321,7 +321,7 @@ export class TemporalAnalyzer {
   private findMediaByWeekOffset(
     media: ChatMedia[],
     weeksOffset: number,
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     const targetDate = new Date(context.currentTime);
     targetDate.setDate(targetDate.getDate() + weeksOffset * 7);
@@ -348,10 +348,10 @@ export class TemporalAnalyzer {
    */
   private findMediaByOrder(
     media: ChatMedia[],
-    index: number
+    index: number,
   ): ChatMedia | null {
     const sortedMedia = [...media].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
     return sortedMedia[index] || null;
   }
@@ -376,10 +376,10 @@ export class TemporalAnalyzer {
   private findRecentMedia(
     media: ChatMedia[],
     maxMinutes: number,
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     const cutoffTime = new Date(
-      context.currentTime.getTime() - maxMinutes * 60 * 1000
+      context.currentTime.getTime() - maxMinutes * 60 * 1000,
     );
     const recentMedia = media.filter((m) => m.timestamp >= cutoffTime);
     return recentMedia.length > 0
@@ -393,10 +393,10 @@ export class TemporalAnalyzer {
   private findOldMedia(
     media: ChatMedia[],
     minHours: number,
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     const cutoffTime = new Date(
-      context.currentTime.getTime() - minHours * 60 * 60 * 1000
+      context.currentTime.getTime() - minHours * 60 * 60 * 1000,
     );
     const oldMedia = media.filter((m) => m.timestamp <= cutoffTime);
     return oldMedia.length > 0 ? oldMedia[0] || null : null;
@@ -407,8 +407,8 @@ export class TemporalAnalyzer {
    */
   private findMediaByTimeOfDay(
     media: ChatMedia[],
-    timeOfDay: "morning" | "afternoon" | "evening",
-    context: TemporalContext
+    timeOfDay: 'morning' | 'afternoon' | 'evening',
+    context: TemporalContext,
   ): ChatMedia | null {
     const today = new Date(context.currentTime);
     today.setHours(0, 0, 0, 0);
@@ -417,7 +417,7 @@ export class TemporalAnalyzer {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const todayMedia = media.filter(
-      (m) => m.timestamp >= today && m.timestamp < tomorrow
+      (m) => m.timestamp >= today && m.timestamp < tomorrow,
     );
 
     if (todayMedia.length === 0) return null;
@@ -426,11 +426,11 @@ export class TemporalAnalyzer {
     const timeFilteredMedia = todayMedia.filter((m) => {
       const hour = m.timestamp.getHours();
       switch (timeOfDay) {
-        case "morning":
+        case 'morning':
           return hour >= 6 && hour < 12;
-        case "afternoon":
+        case 'afternoon':
           return hour >= 12 && hour < 18;
-        case "evening":
+        case 'evening':
           return hour >= 18 && hour < 24;
         default:
           return true;
@@ -447,11 +447,11 @@ export class TemporalAnalyzer {
    */
   private findMediaBeforeEvent(
     media: ChatMedia[],
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     // Ищем медиа-файл в первой половине временного диапазона
     const sortedMedia = [...media].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
     const midIndex = Math.floor(sortedMedia.length / 2);
     return sortedMedia[midIndex] || null;
@@ -462,11 +462,11 @@ export class TemporalAnalyzer {
    */
   private findMediaAfterEvent(
     media: ChatMedia[],
-    context: TemporalContext
+    context: TemporalContext,
   ): ChatMedia | null {
     // Ищем медиа-файл во второй половине временного диапазона
     const sortedMedia = [...media].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
     const midIndex = Math.floor(sortedMedia.length / 2);
     return (
@@ -479,10 +479,10 @@ export class TemporalAnalyzer {
    */
   private findMediaByMessageOffset(
     media: ChatMedia[],
-    offset: number
+    offset: number,
   ): ChatMedia | null {
     const sortedMedia = [...media].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
     const index = sortedMedia.length + offset - 1;
     return sortedMedia[index] || null;
@@ -500,7 +500,7 @@ export class TemporalAnalyzer {
    */
   private calculateConfidence(
     patternWeight: number,
-    temporalDistance: number
+    temporalDistance: number,
   ): number {
     const hoursDistance = temporalDistance / (1000 * 60 * 60);
 
@@ -527,7 +527,7 @@ export class TemporalAnalyzer {
   } {
     return {
       totalPatterns: this.temporalPatterns.length,
-      supportedLanguages: ["ru", "en"],
+      supportedLanguages: ['ru', 'en'],
       contextInfo: this.context,
     };
   }

@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import type { Attachment, UIMessage } from "ai";
-import { useChat } from "@ai-sdk/react";
-import { Suspense, useEffect, useState, useCallback, useRef } from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { ChatHeader } from "./chat-header";
-import type { Vote } from "@/lib/db/schema";
-import { fetcher, generateUUID } from "@/lib/utils";
-import { UIArtifact } from "../artifacts";
-import { MultimodalInput } from "./multimodal-input";
-import { Messages } from "../messages";
-import type { VisibilityType } from "../shared/visibility-selector";
-import { useArtifactContext } from "@/contexts/artifact-context";
-import { unstable_serialize } from "swr/infinite";
-import { getChatHistoryPaginationKey } from "../sidebar/sidebar-history";
-import { toast } from "../common/toast";
-import type { Session } from "next-auth";
-import { useSearchParams } from "next/navigation";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
-import { useAutoResume } from "@/hooks/use-auto-resume";
-import { useChatImageSSE } from "@/hooks/use-chat-image-sse";
-import { useChatVideoSSE } from "@/hooks/use-chat-video-sse";
-import { setActiveChat } from "@/lib/utils/chat-websocket-cleanup";
-import { LoaderIcon } from "../common/icons";
-import { ArtifactManager } from "../artifacts/artifact-manager";
-import { ArtifactDebug } from "../artifacts/artifact-debug";
+import type { Attachment, UIMessage } from 'ai';
+import { useChat } from '@ai-sdk/react';
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { ChatHeader } from './chat-header';
+import type { Vote } from '@/lib/db/schema';
+import { fetcher, generateUUID } from '@/lib/utils';
+import { UIArtifact } from '../artifacts';
+import { MultimodalInput } from './multimodal-input';
+import { Messages } from '../messages';
+import type { VisibilityType } from '../shared/visibility-selector';
+import { useArtifactContext } from '@/contexts/artifact-context';
+import { unstable_serialize } from 'swr/infinite';
+import { getChatHistoryPaginationKey } from '../sidebar/sidebar-history';
+import { toast } from '../common/toast';
+import type { Session } from 'next-auth';
+import { useSearchParams } from 'next/navigation';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { useAutoResume } from '@/hooks/use-auto-resume';
+import { useChatImageSSE } from '@/hooks/use-chat-image-sse';
+import { useChatVideoSSE } from '@/hooks/use-chat-video-sse';
+import { setActiveChat } from '@/lib/utils/chat-websocket-cleanup';
+import { LoaderIcon } from '../common/icons';
+import { ArtifactManager } from '../artifacts/artifact-manager';
+import { ArtifactDebug } from '../artifacts/artifact-debug';
 
 // --- UNIVERSAL SAVE SCRIPT ARTIFACT TO CHAT ---
 async function saveScriptArtifactToChat({
@@ -43,18 +43,18 @@ async function saveScriptArtifactToChat({
   visibilityType: string;
 }) {
   const artifactAttachmentMessage = {
-    role: "assistant",
-    content: " ",
+    role: 'assistant',
+    content: ' ',
     parts: [],
     experimental_attachments: [
       {
         url: `${
-          typeof window !== "undefined"
+          typeof window !== 'undefined'
             ? window.location.origin
-            : "http://localhost:3000"
+            : 'http://localhost:3000'
         }/api/document?id=${docId}`,
-        name: userPrompt || "Scenario.md",
-        contentType: "text/markdown",
+        name: userPrompt || 'Scenario.md',
+        contentType: 'text/markdown',
         documentId: docId,
       },
     ],
@@ -62,9 +62,9 @@ async function saveScriptArtifactToChat({
     id: generateUUID(),
   };
   setMessages((prev) => [...prev, artifactAttachmentMessage as UIMessage]);
-  await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id: chatId,
       message: artifactAttachmentMessage,
@@ -119,23 +119,21 @@ function ChatContent({
     status,
     stop,
     reload,
-    experimental_resume,
     data,
   } = useChat({
     id,
     initialMessages,
-    api: isGeminiChat ? "/api/gemini-chat" : "/api/chat",
+    api: isGeminiChat ? '/api/gemini-chat' : '/api/chat',
     body: {
       id,
       selectedChatModel: initialChatModel,
       selectedVisibilityType: visibilityType,
     },
-    experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      console.log("🔍 useChat onFinish called - НЕ обновляем URL");
-      console.log("🔍 Chat ID in onFinish:", id);
+      console.log('🔍 useChat onFinish called - НЕ обновляем URL');
+      console.log('🔍 Chat ID in onFinish:', id);
       // Сбрасываем состояние блокировки
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -145,7 +143,7 @@ function ChatContent({
     },
     onError: (error) => {
       // При ошибке не обновляем URL, чтобы избежать 404
-      console.error("Chat error:", error);
+      console.error('Chat error:', error);
 
       // Сбрасываем состояние блокировки
       isSubmittingRef.current = false;
@@ -157,18 +155,18 @@ function ChatContent({
       }
 
       toast({
-        type: "error",
+        type: 'error',
         description: error.message,
       });
     },
   });
 
   const searchParams = useSearchParams();
-  const query = searchParams.get("query");
+  const query = searchParams.get('query');
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
-  const [scriptStatus, setScriptStatus] = useState<"idle" | "submitted">(
-    "idle"
+  const [scriptStatus, setScriptStatus] = useState<'idle' | 'submitted'>(
+    'idle',
   );
 
   const handleAppend = useCallback(
@@ -176,13 +174,13 @@ function ChatContent({
       // НЕ обновляем URL здесь - ждем команду от сервера
       append(message, options);
     },
-    [append, id]
+    [append, id],
   );
 
   useEffect(() => {
     if (query && !hasAppendedQuery) {
       handleAppend({
-        role: "user",
+        role: 'user',
         content: query,
       });
 
@@ -193,7 +191,7 @@ function ChatContent({
 
   const { data: votes } = useSWR<Array<Vote>>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
-    fetcher
+    fetcher,
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
@@ -209,15 +207,15 @@ function ChatContent({
 
     // Обрабатываем команды перенаправления от сервера
     if (data) {
-      console.log("🔍 Data received from server:", data);
+      console.log('🔍 Data received from server:', data);
       data.forEach((item: any) => {
-        console.log("🔍 Processing data item:", item);
-        if (item.type === "redirect" && item.url) {
-          console.log("🔍 Received redirect command:", item.url);
+        console.log('🔍 Processing data item:', item);
+        if (item.type === 'redirect' && item.url) {
+          console.log('🔍 Received redirect command:', item.url);
           // Перенаправляем на страницу чата только после успешного создания
-          console.log("🔍 Executing redirect to:", item.url);
-          window.history.replaceState({}, "", item.url);
-          console.log("🔍 Redirect executed successfully");
+          console.log('🔍 Executing redirect to:', item.url);
+          window.history.replaceState({}, '', item.url);
+          console.log('🔍 Redirect executed successfully');
         }
       });
     }
@@ -226,7 +224,6 @@ function ChatContent({
   useAutoResume({
     autoResume,
     initialMessages,
-    experimental_resume,
     data,
     setMessages,
   });
@@ -239,7 +236,7 @@ function ChatContent({
   // Обновляем сообщения в контексте артефактов для детекции
   useEffect(() => {
     if (updateMessages && messages) {
-      console.log("🔄 Updating messages in artifact context:", {
+      console.log('🔄 Updating messages in artifact context:', {
         chatId: id,
         messagesCount: messages.length,
       });
@@ -264,7 +261,7 @@ function ChatContent({
 
   // Register WebSocket instance for debugging and expose chat context for script artifacts
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       const globalWindow = window as any;
 
       // Expose chat instance for script artifacts to access setMessages
@@ -297,15 +294,15 @@ function ChatContent({
   const handleFormSubmit = useCallback(
     (
       event?: { preventDefault?: () => void } | undefined,
-      chatRequestOptions?: any
+      chatRequestOptions?: any,
     ) => {
       if (event?.preventDefault) {
         event.preventDefault();
       }
 
       // Проверяем и устанавливаем блокировку
-      if (isSubmittingRef.current || status !== "ready" || isSubmitting) {
-        console.log("🔍 handleFormSubmit blocked - already submitting");
+      if (isSubmittingRef.current || status !== 'ready' || isSubmitting) {
+        console.log('🔍 handleFormSubmit blocked - already submitting');
         return;
       }
 
@@ -313,16 +310,16 @@ function ChatContent({
       isSubmittingRef.current = true;
       setIsSubmitting(true);
 
-      console.log("🔍 handleFormSubmit called - НЕ обновляем URL");
-      console.log("🔍 Chat ID:", id);
-      console.log("🔍 Chat request options:", chatRequestOptions);
+      console.log('🔍 handleFormSubmit called - НЕ обновляем URL');
+      console.log('🔍 Chat ID:', id);
+      console.log('🔍 Chat request options:', chatRequestOptions);
 
       // НЕ обновляем URL сразу - ждем успешного создания чата
       // URL будет обновлен в onFinish callback API route
 
       handleSubmit(event, chatRequestOptions);
     },
-    [handleSubmit, id, status, isSubmitting]
+    [handleSubmit, id, status, isSubmitting],
   );
 
   return (
@@ -338,7 +335,7 @@ function ChatContent({
 
         <Messages
           chatId={id}
-          status={scriptStatus === "submitted" ? "submitted" : status}
+          status={scriptStatus === 'submitted' ? 'submitted' : status}
           votes={votes}
           messages={messages}
           setMessages={setMessages}
@@ -372,7 +369,7 @@ function ChatContent({
         </form>
 
         {/* Менеджер артефактов для отладки и восстановления */}
-        {process.env.NODE_ENV === "development" && (
+        {process.env.NODE_ENV === 'development' && (
           <div className="fixed bottom-4 right-4 z-50 max-w-sm">
             <ArtifactManager chatId={id} />
             <div className="mt-2">
@@ -432,10 +429,7 @@ export function Chat(props: {
         </div>
       }
     >
-      <ChatContent
-        {...props}
-        isGeminiChat={props.isGeminiChat ?? false}
-      />
+      <ChatContent {...props} isGeminiChat={props.isGeminiChat ?? false} />
     </Suspense>
   );
 }

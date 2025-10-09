@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button, Input, Badge } from "@turbo-super/ui";
+import { useState, useEffect } from 'react';
+import { Button, Input, Badge } from '@turbo-super/ui';
 // Using HTML table elements since Table components are not available in UI library
 import {
   Search,
@@ -13,16 +13,16 @@ import {
   Trash2,
   Filter,
   Download,
-} from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { EditUserDialog } from "./edit-user-dialog";
-import { DeleteUserDialog } from "./delete-user-dialog";
+} from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { EditUserDialog } from './edit-user-dialog';
+import { DeleteUserDialog } from './delete-user-dialog';
 
 interface UserData {
   id: string;
   email: string;
   balance: number;
-  type: "guest" | "regular";
+  type: 'guest' | 'regular';
 }
 
 interface UsersResponse {
@@ -43,10 +43,10 @@ export function EnhancedUsersTable() {
   const [pagination, setPagination] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState<
-    "all" | "guest" | "regular"
-  >("all");
+    'all' | 'guest' | 'regular'
+  >('all');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
@@ -57,7 +57,7 @@ export function EnhancedUsersTable() {
   const fetchUsers = async (
     pageNum: number,
     searchQuery: string,
-    typeFilter: string
+    typeFilter: string,
   ) => {
     try {
       setLoading(true);
@@ -65,35 +65,35 @@ export function EnhancedUsersTable() {
 
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        limit: "20",
+        limit: '20',
         ...(searchQuery && { search: searchQuery }),
-        ...(typeFilter !== "all" && { type: typeFilter }),
+        ...(typeFilter !== 'all' && { type: typeFilter }),
       });
 
       const response = await fetch(`/api/admin/users/enhanced?${params}`);
       const data: UsersResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error("Failed to fetch users");
+        throw new Error('Failed to fetch users');
       }
 
       setUsers(data.users);
       setPagination(data.pagination);
     } catch (err: any) {
       setError(err.message);
-      console.error("Error fetching users:", err);
+      console.error('Error fetching users:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const page = Number.parseInt(searchParams.get("page") || "1");
-    const search = searchParams.get("search") || "";
-    const type = searchParams.get("type") || "all";
+    const page = Number.parseInt(searchParams.get('page') || '1');
+    const search = searchParams.get('search') || '';
+    const type = searchParams.get('type') || 'all';
 
     setSearchTerm(search);
-    setUserTypeFilter(type as "all" | "guest" | "regular");
+    setUserTypeFilter(type as 'all' | 'guest' | 'regular');
     fetchUsers(page, search, type);
   }, [searchParams]);
 
@@ -101,34 +101,34 @@ export function EnhancedUsersTable() {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (searchTerm) {
-      params.set("search", searchTerm);
+      params.set('search', searchTerm);
     } else {
-      params.delete("search");
+      params.delete('search');
     }
-    if (userTypeFilter !== "all") {
-      params.set("type", userTypeFilter);
+    if (userTypeFilter !== 'all') {
+      params.set('type', userTypeFilter);
     } else {
-      params.delete("type");
+      params.delete('type');
     }
-    params.delete("page"); // Reset to first page
+    params.delete('page'); // Reset to first page
     router.push(`/admin/users/enhanced?${params.toString()}`);
   };
 
-  const handleTypeFilter = (type: "all" | "guest" | "regular") => {
+  const handleTypeFilter = (type: 'all' | 'guest' | 'regular') => {
     setUserTypeFilter(type);
     const params = new URLSearchParams(searchParams);
-    if (type !== "all") {
-      params.set("type", type);
+    if (type !== 'all') {
+      params.set('type', type);
     } else {
-      params.delete("type");
+      params.delete('type');
     }
-    params.delete("page"); // Reset to first page
+    params.delete('page'); // Reset to first page
     router.push(`/admin/users/enhanced?${params.toString()}`);
   };
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set("page", newPage.toString());
+    params.set('page', newPage.toString());
     router.push(`/admin/users/enhanced?${params.toString()}`);
   };
 
@@ -143,18 +143,18 @@ export function EnhancedUsersTable() {
   };
 
   const handleUserUpdate = () => {
-    const page = Number.parseInt(searchParams.get("page") || "1");
-    const search = searchParams.get("search") || "";
-    const type = searchParams.get("type") || "all";
+    const page = Number.parseInt(searchParams.get('page') || '1');
+    const search = searchParams.get('search') || '';
+    const type = searchParams.get('type') || 'all';
     fetchUsers(page, search, type);
     setEditDialogOpen(false);
     setSelectedUser(null);
   };
 
   const handleUserDelete = () => {
-    const page = Number.parseInt(searchParams.get("page") || "1");
-    const search = searchParams.get("search") || "";
-    const type = searchParams.get("type") || "all";
+    const page = Number.parseInt(searchParams.get('page') || '1');
+    const search = searchParams.get('search') || '';
+    const type = searchParams.get('type') || 'all';
     fetchUsers(page, search, type);
     setDeleteDialogOpen(false);
     setSelectedUser(null);
@@ -162,31 +162,31 @@ export function EnhancedUsersTable() {
 
   const exportUsers = async () => {
     try {
-      const response = await fetch("/api/admin/users/enhanced?action=by-type");
+      const response = await fetch('/api/admin/users/enhanced?action=by-type');
       const data = await response.json();
 
       if (data.success) {
         const csvContent = [
-          ["Email", "Type", "Balance"],
+          ['Email', 'Type', 'Balance'],
           ...data.users.map((user: UserData) => [
             user.email,
             user.type,
             user.balance,
           ]),
         ]
-          .map((row) => row.join(","))
-          .join("\n");
+          .map((row) => row.join(','))
+          .join('\n');
 
-        const blob = new Blob([csvContent], { type: "text/csv" });
+        const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = url;
-        a.download = `users-export-${new Date().toISOString().split("T")[0]}.csv`;
+        a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error("Error exporting users:", error);
+      console.error('Error exporting users:', error);
     }
   };
 
@@ -210,10 +210,7 @@ export function EnhancedUsersTable() {
     <div className="space-y-4">
       {/* Search and Filters */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <form
-          onSubmit={handleSearch}
-          className="flex gap-2 flex-1"
-        >
+        <form onSubmit={handleSearch} className="flex gap-2 flex-1">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -230,25 +227,21 @@ export function EnhancedUsersTable() {
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <div className="flex gap-1">
-              {(["all", "guest", "regular"] as const).map((type) => (
+              {(['all', 'guest', 'regular'] as const).map((type) => (
                 <Button
                   key={type}
-                  variant={userTypeFilter === type ? "default" : "outline"}
+                  variant={userTypeFilter === type ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleTypeFilter(type)}
                 >
-                  {type === "all"
-                    ? "All"
+                  {type === 'all'
+                    ? 'All'
                     : type.charAt(0).toUpperCase() + type.slice(1)}
                 </Button>
               ))}
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportUsers}
-          >
+          <Button variant="outline" size="sm" onClick={exportUsers}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -286,10 +279,7 @@ export function EnhancedUsersTable() {
               </tr>
             ) : (
               users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b"
-                >
+                <tr key={user.id} className="border-b">
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
@@ -298,7 +288,7 @@ export function EnhancedUsersTable() {
                   </td>
                   <td className="p-4">
                     <Badge
-                      variant={user.type === "guest" ? "secondary" : "default"}
+                      variant={user.type === 'guest' ? 'secondary' : 'default'}
                     >
                       {user.type}
                     </Badge>
@@ -343,8 +333,8 @@ export function EnhancedUsersTable() {
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
             {pagination.total} users
           </div>
           <div className="flex items-center gap-2">
