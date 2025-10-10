@@ -1,5 +1,4 @@
 import {
-  appendClientMessage,
   appendResponseMessages,
   createDataStream,
   smoothStream,
@@ -503,10 +502,10 @@ export async function POST(request: Request) {
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const messages = appendClientMessage({
-      messages: convertDBMessagesToUIMessages(previousMessages),
-      message: normalizeMessage(messageToProcess),
-    });
+    const messages = [
+      ...convertDBMessagesToUIMessages(previousMessages),
+      normalizeMessage(messageToProcess),
+    ];
 
     const { longitude, latitude, city, country } = geolocation(request);
 

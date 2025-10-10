@@ -1,6 +1,6 @@
 'use server';
 
-import { generateText, type UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { cookies } from 'next/headers';
 import {
   deleteMessagesByChatIdAfterTimestamp,
@@ -8,7 +8,6 @@ import {
   updateChatVisiblityById,
 } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/shared/visibility-selector';
-import { myProvider } from '@/lib/ai/providers';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -47,6 +46,13 @@ export async function generateTitleFromUserMessage({
     return 'New Chat';
   }
 
+  // TEMPORARY FIX: Return simple title based on first words until AI SDK v5 is installed
+  // TODO: Re-enable AI title generation after upgrading to AI SDK v5
+  const words = messageText.trim().split(/\s+/).slice(0, 8).join(' ');
+  const title = words.length > 50 ? `${words.substring(0, 50)}...` : words;
+  return title || 'New Chat';
+
+  /* COMMENTED OUT UNTIL AI SDK v5 IS INSTALLED:
   const { text: title } = await generateText({
     model: myProvider.languageModel('title-model'),
     system: `\n
@@ -58,6 +64,7 @@ export async function generateTitleFromUserMessage({
   });
 
   return title;
+  */
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {

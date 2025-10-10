@@ -17,7 +17,19 @@
       "Bash(pnpm dev:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(cat:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm view:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pkill:*)",
+      "Bash(mkdir:*)",
+      "Read(//d/**)",
+      "Bash(git --no-pager diff HEAD)",
+      "WebSearch",
+      "WebFetch(domain:ai-sdk.dev)"
     ]
   },
   "enableAllProjectMcpServers": true,

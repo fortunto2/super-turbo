@@ -1,16 +1,16 @@
-import { cookies } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 
-import { auth } from '@/app/(auth)/auth';
-import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import type { DBMessage } from '@/lib/db/schema';
-import type { Attachment, UIMessage } from 'ai';
+import { auth } from "@/app/(auth)/auth";
+import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import type { DBMessage } from "@/lib/db/schema";
+import type { UIMessage, Attachment } from "ai";
 // import * as Sentry from "@sentry/nextjs";
-import { ChatPageWrapper } from '@/components/chat/chat-page-wrapper';
-import { AppSidebar } from '@/components/sidebar/app-sidebar';
-import { SidebarInset } from '@/components/ui/sidebar';
-import Script from 'next/script';
+import { ChatPageWrapper } from "@/components/chat/chat-page-wrapper";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
+import Script from "next/script";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -55,7 +55,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     //   message: `No session found when accessing chat: ${id}`,
     //   level: "info",
     // });
-    redirect('/api/auth/guest');
+    redirect("/api/auth/guest");
   }
 
   // Дополнительная проверка существования пользователя
@@ -65,10 +65,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     //   tags: { error_type: "invalid_session", entity: "chat" },
     //   extra: { chatId: id, session: session },
     // });
-    redirect('/api/auth/guest');
+    redirect("/api/auth/guest");
   }
 
-  if (chat.visibility === 'private') {
+  if (chat.visibility === "private") {
     if (!session.user) {
       // Sentry.captureMessage(`Access denied to private chat: ${id}`, {
       //   level: "warning",
@@ -97,10 +97,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
     return messages.map((message) => ({
       id: message.id,
-      parts: message.parts as UIMessage['parts'],
-      role: message.role as UIMessage['role'],
+      parts: message.parts as UIMessage["parts"],
+      role: message.role as UIMessage["role"],
       // Note: content will soon be deprecated in @ai-sdk/react
-      content: '',
+      content: "",
       createdAt: message.createdAt,
       experimental_attachments:
         (message.attachments as Array<Attachment>) ?? [],
@@ -108,7 +108,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   const cookieStore = await cookies();
-  const chatModelFromCookie = cookieStore.get('chat-model');
+  const chatModelFromCookie = cookieStore.get("chat-model");
 
   const chatContent = !chatModelFromCookie ? (
     <ChatPageWrapper
