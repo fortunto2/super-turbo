@@ -1,12 +1,12 @@
 import {
+  appendClientMessage,
+  appendResponseMessages,
+  createDataStream,
   smoothStream,
   streamText,
-  convertToModelMessages,
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-} from 'ai';
-import { auth, type UserType } from '@/app/(auth)/auth';
-import type { RequestHints } from '@/lib/ai/prompts';
+} from "ai";
+import { auth, type UserType } from "@/app/(auth)/auth";
+import type { RequestHints } from "@/lib/ai/prompts";
 import {
   createStreamId,
   deleteChatById,
@@ -18,36 +18,36 @@ import {
   saveMessages,
   getOrCreateOAuthUser,
   getUser,
-} from '@/lib/db/queries';
-import { generateUUID, getTrailingMessageId } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { updateDocument } from '@/lib/ai/tools/update-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
+} from "@/lib/db/queries";
+import { generateUUID, getTrailingMessageId } from "@/lib/utils";
+import { generateTitleFromUserMessage } from "../../actions";
+import { createDocument } from "@/lib/ai/tools/create-document";
+import { updateDocument } from "@/lib/ai/tools/update-document";
+import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 
-import { myProvider } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import { postRequestBodySchema, type PostRequestBody } from '../chat/schema';
-import { geolocation } from '@vercel/functions';
+import { myProvider } from "@/lib/ai/providers";
+import { entitlementsByUserType } from "@/lib/ai/entitlements";
+import { postRequestBodySchema, type PostRequestBody } from "../chat/schema";
+import { geolocation } from "@vercel/functions";
 import {
   createResumableStreamContext,
   type ResumableStreamContext,
-} from 'resumable-stream';
-import { after } from 'next/server';
-import type { Chat } from '@/lib/db/schema';
-import { differenceInSeconds } from 'date-fns';
+} from "resumable-stream";
+import { after } from "next/server";
+import type { Chat } from "@/lib/db/schema";
+import { differenceInSeconds } from "date-fns";
 // import * as Sentry from "@sentry/nextjs";
-import { configureImageGeneration } from '@/lib/ai/tools/configure-image-generation';
-import { configureVideoGeneration } from '@/lib/ai/tools/configure-video-generation';
-import { configureAudioGeneration } from '@/lib/ai/tools/configure-audio-generation';
+import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
+import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
+import { configureAudioGeneration } from "@/lib/ai/tools/configure-audio-generation";
 import {
   listVideoModels,
   findBestVideoModel,
-} from '@/lib/ai/tools/list-video-models';
-import { enhancePromptUnified } from '@/lib/ai/tools/enhance-prompt-unified';
-import { convertDBMessagesToUIMessages } from '@/lib/types/message-conversion';
-import { configureScriptGeneration } from '@/lib/ai/tools/configure-script-generation';
-import { isProductionEnvironment } from '@/lib/constants';
+} from "@/lib/ai/tools/list-video-models";
+import { enhancePromptUnified } from "@/lib/ai/tools/enhance-prompt-unified";
+import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
+import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
+import { isProductionEnvironment } from "@/lib/constants";
 
 export const maxDuration = 60;
 
@@ -59,11 +59,11 @@ let globalStreamContext: ResumableStreamContext | null = null;
 function normalizeMessage(message: any) {
   return {
     ...message,
-    content: message.content || message.parts?.[0]?.text || '',
+    content: message.content || message.parts?.[0]?.text || "",
     parts:
       message.parts?.map((part: any) => ({
         ...part,
-        text: part.text || '',
+        text: part.text || "",
       })) || [],
   };
 }
@@ -74,7 +74,7 @@ function normalizeMessage(message: any) {
  * @param context - error context for easier debugging
  * @returns Response object with formatted error
  */
-function formatErrorResponse(error: unknown, context = 'API') {
+function formatErrorResponse(error: unknown, context = "API") {
   console.error(`Error in ${context}:`, error);
 
   // In development mode return detailed error information
@@ -82,7 +82,7 @@ function formatErrorResponse(error: unknown, context = 'API') {
     const errorMessage =
       error instanceof Error
         ? `${error.message}\n\n${error.stack}`
-        : 'Unknown error';
+        : "Unknown error";
 
     return new Response(
       JSON.stringify(
@@ -92,19 +92,19 @@ function formatErrorResponse(error: unknown, context = 'API') {
           timestamp: new Date().toISOString(),
         },
         null,
-        2,
+        2
       ),
       {
         status: 500,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      },
+      }
     );
   }
 
   // In production return generic message
-  return new Response('An error occurred while processing your request!', {
+  return new Response("An error occurred while processing your request!", {
     status: 500,
   });
 }
@@ -116,9 +116,9 @@ function getStreamContext() {
         waitUntil: after,
       });
     } catch (error: any) {
-      if (error.message.includes('REDIS_URL')) {
+      if (error.message.includes("REDIS_URL")) {
         console.log(
-          ' > Resumable streams are disabled due to missing REDIS_URL',
+          " > Resumable streams are disabled due to missing REDIS_URL"
         );
       } else {
         console.error(error);
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     const json = await request.json();
 
     // Логируем входящий запрос для отладки
-    console.log('🔍 Incoming Gemini chat request:', {
+    console.log("🔍 Incoming Gemini chat request:", {
       hasMessage: !!json.message,
       hasMessages: !!json.messages,
       messagesLength: json.messages ? json.messages.length : 0,
@@ -166,29 +166,29 @@ export async function POST(request: Request) {
 
     requestBody = postRequestBodySchema.parse(json);
   } catch (error) {
-    console.error('Invalid request body:', error);
+    console.error("Invalid request body:", error);
 
     if (!isProductionEnvironment) {
       return new Response(
         JSON.stringify(
           {
-            error: 'Invalid request data',
-            details: error instanceof Error ? error.message : 'Unknown error',
+            error: "Invalid request data",
+            details: error instanceof Error ? error.message : "Unknown error",
             timestamp: new Date().toISOString(),
           },
           null,
-          2,
+          2
         ),
         {
           status: 400,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 
-    return new Response('Invalid request body', { status: 400 });
+    return new Response("Invalid request body", { status: 400 });
   }
 
   try {
@@ -208,30 +208,30 @@ export async function POST(request: Request) {
         : null);
 
     if (!messageToProcess) {
-      console.error('No message found in request body');
+      console.error("No message found in request body");
       return new Response(
         JSON.stringify(
           {
-            error: 'Invalid request data',
-            details: 'No valid message found in request',
+            error: "Invalid request data",
+            details: "No valid message found in request",
             timestamp: new Date().toISOString(),
           },
           null,
-          2,
+          2
         ),
         {
           status: 400,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 
     const session = await auth();
 
     if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     // Логируем данные сессии для отладки
@@ -250,15 +250,15 @@ export async function POST(request: Request) {
 
     // Перед созданием чата убедимся, что пользователь существует в БД
     try {
-      const users = await getUser(session.user.email || '');
+      const users = await getUser(session.user.email || "");
       if (users.length === 0) {
         // Если поиск по email не дал результатов, принудительно создаем пользователя
         console.log(
-          `User not found by email, trying to ensure user exists: ${session.user.id}`,
+          `User not found by email, trying to ensure user exists: ${session.user.id}`
         );
         await getOrCreateOAuthUser(
           session.user.id,
-          session.user.email || `user-${session.user.id}@example.com`,
+          session.user.email || `user-${session.user.id}@example.com`
         );
 
         // Логируем успешное создание пользователя
@@ -273,7 +273,7 @@ export async function POST(request: Request) {
         const foundUser = users[0];
         if (foundUser && foundUser.id !== session.user.id) {
           console.log(
-            `User found with email but different ID, using existing ID: ${foundUser.id} instead of ${session.user.id}`,
+            `User found with email but different ID, using existing ID: ${foundUser.id} instead of ${session.user.id}`
           );
 
           // Логируем, что мы используем другой ID
@@ -293,7 +293,7 @@ export async function POST(request: Request) {
         }
       }
     } catch (userError) {
-      console.error('Failed to ensure user exists:', userError);
+      console.error("Failed to ensure user exists:", userError);
       // Sentry.captureException(userError, {
       //   tags: { operation: "user_check_before_gemini_chat" },
       //   extra: {
@@ -311,10 +311,10 @@ export async function POST(request: Request) {
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new Response(
-        'You have exceeded your maximum number of messages for the day! Please try again later.',
+        "You have exceeded your maximum number of messages for the day! Please try again later.",
         {
           status: 429,
-        },
+        }
       );
     }
 
@@ -347,14 +347,14 @@ export async function POST(request: Request) {
         //   },
         // });
       } catch (error) {
-        console.error('Failed to save Gemini chat:', error);
+        console.error("Failed to save Gemini chat:", error);
 
         // Добавляем проверку на ошибку внешнего ключа
         if (
           error instanceof Error &&
-          error.message.includes('foreign key constraint') &&
-          (error.message.includes('Chat_userId_User_id_fk') ||
-            error.message.includes('Key (userId)'))
+          error.message.includes("foreign key constraint") &&
+          (error.message.includes("Chat_userId_User_id_fk") ||
+            error.message.includes("Key (userId)"))
         ) {
           // Логируем событие в Sentry
           // Sentry.captureException(error, {
@@ -378,7 +378,7 @@ export async function POST(request: Request) {
 
             const createdUser = await getOrCreateOAuthUser(
               session.user.id,
-              email,
+              email
             );
             console.log(`User created: ${JSON.stringify(createdUser)}`);
 
@@ -400,8 +400,8 @@ export async function POST(request: Request) {
             // });
           } catch (innerError) {
             console.error(
-              'Failed to auto-create user and save Gemini chat:',
-              innerError,
+              "Failed to auto-create user and save Gemini chat:",
+              innerError
             );
 
             // Логируем ошибку в Sentry
@@ -421,17 +421,17 @@ export async function POST(request: Request) {
             return new Response(
               JSON.stringify({
                 error:
-                  'Failed to create Gemini chat due to user creation issues',
-                details: 'Please try refreshing the page or contact support',
+                  "Failed to create Gemini chat due to user creation issues",
+                details: "Please try refreshing the page or contact support",
                 chatId: id,
                 timestamp: new Date().toISOString(),
               }),
               {
                 status: 500,
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
-              },
+              }
             );
           }
         } else {
@@ -450,7 +450,7 @@ export async function POST(request: Request) {
 
           return new Response(
             JSON.stringify({
-              error: 'Failed to create Gemini chat',
+              error: "Failed to create Gemini chat",
               details: (error as Error).message,
               chatId: id,
               timestamp: new Date().toISOString(),
@@ -458,9 +458,9 @@ export async function POST(request: Request) {
             {
               status: 500,
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
-            },
+            }
           );
         }
       }
@@ -468,17 +468,17 @@ export async function POST(request: Request) {
       if (!savedChat) {
         return new Response(
           JSON.stringify({
-            error: 'Failed to create Gemini chat',
-            details: 'Gemini chat creation was unsuccessful',
+            error: "Failed to create Gemini chat",
+            details: "Gemini chat creation was unsuccessful",
             chatId: id,
             timestamp: new Date().toISOString(),
           }),
           {
             status: 500,
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-          },
+          }
         );
       }
     } else {
@@ -497,17 +497,16 @@ export async function POST(request: Request) {
         //   }
         // );
 
-        return new Response('Forbidden', { status: 403 });
+        return new Response("Forbidden", { status: 403 });
       }
     }
 
     const previousMessages = await getMessagesByChatId({ id });
 
-    const uiMessages = convertDBMessagesToUIMessages(previousMessages);
-    const messages = [
-      ...uiMessages,
-      normalizeMessage(messageToProcess),
-    ];
+    const messages = appendClientMessage({
+      messages: convertDBMessagesToUIMessages(previousMessages),
+      message: normalizeMessage(messageToProcess),
+    });
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -524,7 +523,7 @@ export async function POST(request: Request) {
           {
             chatId: id,
             id: messageToProcess.id,
-            role: 'user',
+            role: "user",
             parts: messageToProcess.parts,
             attachments: messageToProcess.experimental_attachments ?? [],
             createdAt: new Date(),
@@ -532,14 +531,14 @@ export async function POST(request: Request) {
         ],
       });
     } catch (error) {
-      console.error('Failed to save user message:', error);
+      console.error("Failed to save user message:", error);
 
       // If the error is related to missing chat, try to recreate it
       if (
         error instanceof Error &&
-        error.message.includes('foreign key constraint') &&
-        (error.message.includes('Message_v2_chatId_Chat_id_fk') ||
-          error.message.includes('Key (chatId)'))
+        error.message.includes("foreign key constraint") &&
+        (error.message.includes("Message_v2_chatId_Chat_id_fk") ||
+          error.message.includes("Key (chatId)"))
       ) {
         console.log(`Trying to recreate Gemini chat with ID: ${id}`);
 
@@ -567,7 +566,7 @@ export async function POST(request: Request) {
               {
                 chatId: id,
                 id: messageToProcess.id,
-                role: 'user',
+                role: "user",
                 parts: messageToProcess.parts,
                 attachments: messageToProcess.experimental_attachments ?? [],
                 createdAt: new Date(),
@@ -576,8 +575,8 @@ export async function POST(request: Request) {
           });
         } catch (innerError) {
           console.error(
-            'Failed to recreate Gemini chat and save message:',
-            innerError,
+            "Failed to recreate Gemini chat and save message:",
+            innerError
           );
           // Continue execution to let the user get a response
         }
@@ -589,14 +588,14 @@ export async function POST(request: Request) {
     try {
       await createStreamId({ streamId, chatId: id });
     } catch (error) {
-      console.error('Failed to create stream id in database', error);
+      console.error("Failed to create stream id in database", error);
 
       // If the error is related to missing chat, try to recreate it
       if (
         error instanceof Error &&
-        error.message.includes('foreign key constraint') &&
-        (error.message.includes('Stream_chatId_Chat_id_fk') ||
-          error.message.includes('Key (chatId)'))
+        error.message.includes("foreign key constraint") &&
+        (error.message.includes("Stream_chatId_Chat_id_fk") ||
+          error.message.includes("Key (chatId)"))
       ) {
         console.log(`Trying to recreate Gemini chat for stream with ID: ${id}`);
 
@@ -622,8 +621,8 @@ export async function POST(request: Request) {
           await createStreamId({ streamId, chatId: id });
         } catch (innerError) {
           console.error(
-            'Failed to recreate Gemini chat and create stream ID:',
-            innerError,
+            "Failed to recreate Gemini chat and create stream ID:",
+            innerError
           );
           // Continue execution as stream can be created even without DB record
         }
@@ -637,23 +636,23 @@ export async function POST(request: Request) {
           ...dataStream,
           end: () => {},
           error: (error: Error) => {
-            console.error('Stream error:', error);
+            console.error("Stream error:", error);
           },
         };
 
         // Анализируем контекст изображения
         let defaultSourceImageUrl: string | undefined;
         try {
-          const { analyzeImageContext } = await import('@/lib/ai/context');
+          const { analyzeImageContext } = await import("@/lib/ai/context");
 
           const imageContext = await analyzeImageContext(
-            messageToProcess.parts?.[0]?.text || '',
+            messageToProcess.parts?.[0]?.text || "",
             id,
             (messageToProcess as any)?.experimental_attachments,
-            session.user.id,
+            session.user.id
           );
 
-          console.log('🔍 Pre-analysis: Image context:', {
+          console.log("🔍 Pre-analysis: Image context:", {
             confidence: imageContext.confidence,
             reasoning: imageContext.reasoning,
             sourceUrl: imageContext.sourceUrl,
@@ -662,28 +661,28 @@ export async function POST(request: Request) {
           defaultSourceImageUrl = imageContext.sourceUrl;
 
           console.log(
-            '🔍 defaultSourceImageUrl set to:',
-            defaultSourceImageUrl,
+            "🔍 defaultSourceImageUrl set to:",
+            defaultSourceImageUrl
           );
         } catch (error) {
-          console.error('🔍 Pre-analysis error:', error);
+          console.error("🔍 Pre-analysis error:", error);
           // Fallback к старой логике
           try {
             const atts =
               (messageToProcess as any)?.experimental_attachments || [];
             const img = atts.find(
               (a: any) =>
-                typeof a?.url === 'string' &&
+                typeof a?.url === "string" &&
                 /^https?:\/\//.test(a.url) &&
-                String(a?.contentType || '').startsWith('image/'),
+                String(a?.contentType || "").startsWith("image/")
             );
             defaultSourceImageUrl = img?.url;
             console.log(
-              '🔍 Fallback defaultSourceImageUrl:',
-              defaultSourceImageUrl,
+              "🔍 Fallback defaultSourceImageUrl:",
+              defaultSourceImageUrl
             );
           } catch (fallbackError) {
-            console.error('Fallback error:', fallbackError);
+            console.error("Fallback error:", fallbackError);
             defaultSourceImageUrl = undefined;
           }
         }
@@ -691,16 +690,16 @@ export async function POST(request: Request) {
         // Анализ видео контекста для defaultSourceVideoUrl
         let defaultSourceVideoUrl: string | undefined;
         try {
-          const { analyzeVideoContext } = await import('@/lib/ai/context');
+          const { analyzeVideoContext } = await import("@/lib/ai/context");
 
           const videoContext = await analyzeVideoContext(
-            messageToProcess.parts?.[0]?.text || '',
+            messageToProcess.parts?.[0]?.text || "",
             id,
             (messageToProcess as any)?.experimental_attachments,
-            session.user.id,
+            session.user.id
           );
 
-          console.log('🔍 Pre-analysis: Video context:', {
+          console.log("🔍 Pre-analysis: Video context:", {
             confidence: videoContext.confidence,
             reasoning: videoContext.reasoning,
             sourceImageUrl: videoContext.sourceUrl,
@@ -709,11 +708,11 @@ export async function POST(request: Request) {
           defaultSourceVideoUrl = videoContext.sourceUrl;
 
           console.log(
-            '🔍 defaultSourceVideoUrl set to:',
-            defaultSourceVideoUrl,
+            "🔍 defaultSourceVideoUrl set to:",
+            defaultSourceVideoUrl
           );
         } catch (error) {
-          console.error('🔍 Video context analysis error:', error);
+          console.error("🔍 Video context analysis error:", error);
           defaultSourceVideoUrl = undefined;
         }
 
@@ -734,7 +733,7 @@ export async function POST(request: Request) {
 
         // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
 
-        console.log('🔍 Message structure for configureImageGeneration:', {
+        console.log("🔍 Message structure for configureImageGeneration:", {
           hasMessage: !!messageToProcess,
           messageKeys: messageToProcess ? Object.keys(messageToProcess) : [],
           experimentalAttachments: (messageToProcess as any)
@@ -743,8 +742,8 @@ export async function POST(request: Request) {
         });
 
         console.log(
-          '🔍 About to call streamText with defaultSourceImageUrl:',
-          defaultSourceImageUrl,
+          "🔍 About to call streamText with defaultSourceImageUrl:",
+          defaultSourceImageUrl
         );
 
         // Если есть изображение для редактирования или анимации, добавляем явную инструкцию
@@ -752,41 +751,41 @@ export async function POST(request: Request) {
         if (defaultSourceImageUrl && messageToProcess.parts?.[0]?.text) {
           const userText = messageToProcess.parts[0].text;
           const editKeywords = [
-            'добавь',
-            'сделай',
-            'измени',
-            'подправь',
-            'замени',
-            'исправь',
-            'улучши',
+            "добавь",
+            "сделай",
+            "измени",
+            "подправь",
+            "замени",
+            "исправь",
+            "улучши",
           ];
           const animationKeywords = [
-            'анимируй',
-            'animate',
-            'анимация',
-            'animation',
-            'видео',
-            'video',
-            'движение',
-            'motion',
+            "анимируй",
+            "animate",
+            "анимация",
+            "animation",
+            "видео",
+            "video",
+            "движение",
+            "motion",
           ];
 
           const hasEditIntent = editKeywords.some((keyword) =>
-            userText.toLowerCase().includes(keyword),
+            userText.toLowerCase().includes(keyword)
           );
           const hasAnimationIntent = animationKeywords.some((keyword) =>
-            userText.toLowerCase().includes(keyword),
+            userText.toLowerCase().includes(keyword)
           );
 
           if (hasEditIntent) {
             console.log(
-              '🔍 Edit intent detected, adding explicit instruction to call configureImageGeneration',
+              "🔍 Edit intent detected, adding explicit instruction to call configureImageGeneration"
             );
             enhancedMessages = [
               ...messages,
               {
                 id: generateUUID(),
-                role: 'system' as const,
+                role: "system" as const,
                 content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
                 createdAt: new Date(),
                 parts: [],
@@ -794,13 +793,13 @@ export async function POST(request: Request) {
             ];
           } else if (hasAnimationIntent) {
             console.log(
-              '🔍 Animation intent detected, adding explicit instruction to call configureVideoGeneration',
+              "🔍 Animation intent detected, adding explicit instruction to call configureVideoGeneration"
             );
             enhancedMessages = [
               ...messages,
               {
                 id: generateUUID(),
-                role: 'system' as const,
+                role: "system" as const,
                 content: `IMPORTANT: The user wants to animate an existing image. You MUST call the configureVideoGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
                 createdAt: new Date(),
                 parts: [],
@@ -810,21 +809,22 @@ export async function POST(request: Request) {
         }
 
         const result = streamText({
-          model: myProvider.languageModel('gemini-2.5-flash-lite'), // Всегда используем Gemini
+          model: myProvider.languageModel("gemini-2.5-flash-lite"), // Всегда используем Gemini
           system: geminiSystemPrompt, // Используем специальный промпт для Gemini
           messages: enhancedMessages,
-          activeTools: [
-            'configureImageGeneration',
-            'configureVideoGeneration',
-            'configureScriptGeneration',
-            'listVideoModels',
-            'findBestVideoModel',
-            'enhancePromptUnified',
-            'createDocument',
-            'updateDocument',
-            'requestSuggestions',
+          maxSteps: 5,
+          experimental_activeTools: [
+            "configureImageGeneration",
+            "configureVideoGeneration",
+            "configureScriptGeneration",
+            "listVideoModels",
+            "findBestVideoModel",
+            "enhancePromptUnified",
+            "createDocument",
+            "updateDocument",
+            "requestSuggestions",
           ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_transform: smoothStream({ chunking: "word" }),
           experimental_generateMessageId: generateUUID,
 
           tools: {
@@ -832,15 +832,15 @@ export async function POST(request: Request) {
             configureImageGeneration: configureImageGeneration({
               createDocument: tools.createDocument,
               session,
-              defaultSourceImageUrl: defaultSourceImageUrl || '',
+              defaultSourceImageUrl: defaultSourceImageUrl || "",
             }),
             configureVideoGeneration: configureVideoGeneration({
               createDocument: tools.createDocument,
               session,
-              defaultSourceVideoUrl: defaultSourceVideoUrl || '',
-              defaultSourceImageUrl: defaultSourceImageUrl || '',
+              defaultSourceVideoUrl: defaultSourceVideoUrl || "",
+              defaultSourceImageUrl: defaultSourceImageUrl || "",
               chatId: id,
-              userMessage: messageToProcess.parts?.[0]?.text || '',
+              userMessage: messageToProcess.parts?.[0]?.text || "",
               currentAttachments:
                 messageToProcess.experimental_attachments || [],
             }),
@@ -848,7 +848,7 @@ export async function POST(request: Request) {
               createDocument: tools.createDocument,
               session,
               chatId: id,
-              userMessage: message?.content || '',
+              userMessage: message?.content || "",
               currentAttachments: message?.experimental_attachments || [],
             }),
             configureScriptGeneration: configureScriptGeneration({
@@ -861,10 +861,10 @@ export async function POST(request: Request) {
           },
           // Note: explicit toolChoice removed due to type constraints; tool remains available
           onFinish: async ({ response }) => {
-            console.log('🔍 onFinish called with response:', {
+            console.log("🔍 onFinish called with response:", {
               messagesCount: response.messages.length,
               hasAssistantMessages: response.messages.some(
-                (m) => m.role === 'assistant',
+                (m) => m.role === "assistant"
               ),
               responseKeys: Object.keys(response),
             });
@@ -872,11 +872,11 @@ export async function POST(request: Request) {
             if (session.user?.id) {
               try {
                 const assistantMessages = response.messages.filter(
-                  (message) => message.role === 'assistant',
+                  (message) => message.role === "assistant"
                 );
 
                 if (assistantMessages.length === 0) {
-                  console.warn('No assistant messages found in response');
+                  console.warn("No assistant messages found in response");
                   return;
                 }
 
@@ -885,7 +885,7 @@ export async function POST(request: Request) {
                 });
 
                 if (!assistantId) {
-                  console.warn('No assistant message ID found');
+                  console.warn("No assistant message ID found");
                   return;
                 }
 
@@ -895,7 +895,7 @@ export async function POST(request: Request) {
                 });
 
                 if (!assistantMessage) {
-                  console.warn('Failed to append response messages');
+                  console.warn("Failed to append response messages");
                   return;
                 }
 
@@ -913,29 +913,29 @@ export async function POST(request: Request) {
                   ],
                 });
 
-                console.log('🔍 Assistant message saved successfully');
+                console.log("🔍 Assistant message saved successfully");
 
                 // Отправляем команду перенаправления на страницу чата
                 // Это происходит только после успешного создания чата
                 try {
                   dataStream.writeData({
-                    type: 'redirect',
+                    type: "redirect",
                     url: `/gemini-chat/${id}`,
                   });
                   console.log(
-                    '🔍 Redirect command sent to client:',
-                    `/gemini-chat/${id}`,
+                    "🔍 Redirect command sent to client:",
+                    `/gemini-chat/${id}`
                   );
                 } catch (redirectError) {
                   console.error(
-                    '🔍 Failed to send redirect command:',
-                    redirectError,
+                    "🔍 Failed to send redirect command:",
+                    redirectError
                   );
                 }
               } catch (error) {
-                console.error('🔍 Failed to save assistant message:', error);
+                console.error("🔍 Failed to save assistant message:", error);
                 if (error instanceof Error) {
-                  console.error('🔍 Error stack:', error.stack);
+                  console.error("🔍 Error stack:", error.stack);
                 }
                 // Не выбрасываем ошибку, чтобы не прерывать поток
               }
@@ -943,7 +943,7 @@ export async function POST(request: Request) {
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
-            functionId: 'stream-text-gemini',
+            functionId: "stream-text-gemini",
           },
         });
 
@@ -954,8 +954,8 @@ export async function POST(request: Request) {
         });
       },
       onError: (error: any) => {
-        console.error('🔍 DataStream onError called with:', error);
-        return `Oops, an error occurred! Error: ${error?.message || 'Unknown error'}`;
+        console.error("🔍 DataStream onError called with:", error);
+        return `Oops, an error occurred! Error: ${error?.message || "Unknown error"}`;
       },
     });
 
@@ -963,7 +963,7 @@ export async function POST(request: Request) {
 
     if (streamContext) {
       return new Response(
-        await streamContext.resumableStream(streamId, () => stream),
+        await streamContext.resumableStream(streamId, () => stream)
       );
     } else {
       return new Response(stream);
@@ -983,37 +983,37 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const chatId = searchParams.get('chatId');
+    const chatId = searchParams.get("chatId");
 
     if (!chatId) {
-      return new Response('id is required', { status: 400 });
+      return new Response("id is required", { status: 400 });
     }
 
     // Валидация UUID формата
     if (
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        chatId,
+        chatId
       )
     ) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid chat ID format',
-          details: 'Chat ID must be a valid UUID',
+          error: "Invalid chat ID format",
+          details: "Chat ID must be a valid UUID",
           chatId: chatId,
         }),
         {
           status: 400,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 
     const session = await auth();
 
     if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     let chat: Chat | undefined;
@@ -1021,52 +1021,52 @@ export async function GET(request: Request) {
     try {
       chat = await getChatById({ id: chatId });
     } catch (error) {
-      console.error('Error getting Gemini chat by ID:', error);
-      return formatErrorResponse(error as Error, 'GET gemini-chat/getChatById');
+      console.error("Error getting Gemini chat by ID:", error);
+      return formatErrorResponse(error as Error, "GET gemini-chat/getChatById");
     }
 
     if (!chat) {
       return new Response(
         JSON.stringify({
-          error: 'Gemini chat not found',
-          details: 'The requested Gemini chat does not exist',
+          error: "Gemini chat not found",
+          details: "The requested Gemini chat does not exist",
           chatId: chatId,
         }),
         {
           status: 404,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 
-    if (chat.visibility === 'private' && chat.userId !== session.user.id) {
+    if (chat.visibility === "private" && chat.userId !== session.user.id) {
       return new Response(
         JSON.stringify({
-          error: 'Access denied',
+          error: "Access denied",
           details: "You don't have permission to access this Gemini chat",
           chatId: chatId,
         }),
         {
           status: 403,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 
     const streamIds = await getStreamIdsByChatId({ chatId });
 
     if (!streamIds.length) {
-      return new Response('No streams found', { status: 404 });
+      return new Response("No streams found", { status: 404 });
     }
 
     const recentStreamId = streamIds.at(-1);
 
     if (!recentStreamId) {
-      return new Response('No recent stream found', { status: 404 });
+      return new Response("No recent stream found", { status: 404 });
     }
 
     const emptyDataStream = createDataStream({
@@ -1075,7 +1075,7 @@ export async function GET(request: Request) {
 
     const stream = await streamContext.resumableStream(
       recentStreamId,
-      () => emptyDataStream,
+      () => emptyDataStream
     );
 
     /*
@@ -1091,7 +1091,7 @@ export async function GET(request: Request) {
           return new Response(emptyDataStream, { status: 200 });
         }
 
-        if (mostRecentMessage.role !== 'assistant') {
+        if (mostRecentMessage.role !== "assistant") {
           return new Response(emptyDataStream, { status: 200 });
         }
 
@@ -1104,7 +1104,7 @@ export async function GET(request: Request) {
         const restoredStream = createDataStream({
           execute: (buffer) => {
             buffer.writeData({
-              type: 'append-message',
+              type: "append-message",
               message: JSON.stringify(mostRecentMessage),
             });
           },
@@ -1112,35 +1112,35 @@ export async function GET(request: Request) {
 
         return new Response(restoredStream, { status: 200 });
       } catch (error) {
-        return formatErrorResponse(error, 'GET gemini-chat/restoreStream');
+        return formatErrorResponse(error, "GET gemini-chat/restoreStream");
       }
     }
 
     return new Response(stream, { status: 200 });
   } catch (error) {
-    return formatErrorResponse(error, 'GET gemini-chat');
+    return formatErrorResponse(error, "GET gemini-chat");
   }
 }
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response("Not Found", { status: 404 });
   }
 
   const session = await auth();
 
   if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
     if (chat && chat.userId !== session.user.id) {
-      return new Response('Forbidden', { status: 403 });
+      return new Response("Forbidden", { status: 403 });
     }
 
     const deletedChat = await deleteChatById({ id });
