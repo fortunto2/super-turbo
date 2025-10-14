@@ -117,11 +117,25 @@ const PurePreviewMessage = ({
 
               if (type === "text") {
                 if (mode === "view") {
+                  // AI SDK v5: part.text can be string or array, normalize it
+                  const textContent = typeof part.text === 'string'
+                    ? part.text
+                    : Array.isArray(part.text)
+                      ? part.text.map(item => {
+                          // If array contains objects with 'type' and 'text', extract text
+                          if (typeof item === 'object' && item !== null && 'text' in item) {
+                            return item.text;
+                          }
+                          // If array contains strings, use them directly
+                          return typeof item === 'string' ? item : '';
+                        }).join('')
+                      : '';
+
                   // --- EMBED ARTIFACT (image/video/text) ---
                   let artifact: any = null;
-                  if (part.text.startsWith("```json")) {
+                  if (textContent && textContent.startsWith("```json")) {
                     try {
-                      const jsonMatch = part.text.match(
+                      const jsonMatch = textContent.match(
                         /```json\s*({[\s\S]*?})\s*```/
                       );
                       if (jsonMatch?.[1]) {
@@ -129,11 +143,12 @@ const PurePreviewMessage = ({
                       }
                     } catch {}
                   } else if (
-                    part.text.startsWith("{") &&
-                    part.text.endsWith("}")
+                    textContent &&
+                    textContent.startsWith("{") &&
+                    textContent.endsWith("}")
                   ) {
                     try {
-                      artifact = JSON.parse(part.text);
+                      artifact = JSON.parse(textContent);
                     } catch {}
                   }
                   if (
@@ -175,8 +190,8 @@ const PurePreviewMessage = ({
                   }
                   // --- END EMBED ---
                   // Check if this is a resolution selection message
-                  if (part.text.startsWith("Выбрано разрешение:")) {
-                    const resolutionMatch = part.text.match(
+                  if (textContent && textContent.startsWith("Выбрано разрешение:")) {
+                    const resolutionMatch = textContent.match(
                       /разрешение: (\d+)x(\d+), стиль: (.+?), размер кадра: (.+?), модель: (.+?)(?:, сид: (\d+))?$/
                     );
                     if (resolutionMatch) {
@@ -243,7 +258,7 @@ const PurePreviewMessage = ({
                             message.role === "user",
                         })}
                       >
-                        <Markdown>{sanitizeText(part.text)}</Markdown>
+                        <Markdown>{sanitizeText(textContent)}</Markdown>
                       </div>
                     </div>
                   );
