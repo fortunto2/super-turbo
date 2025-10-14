@@ -306,6 +306,61 @@ export const useChatImageSSE = ({
       for (const message of messages) {
         if (message.role === 'assistant' && message.parts) {
           for (const part of message.parts) {
+            // AI SDK v5: Check tool outputs for image artifacts
+            if (
+              (part.type === 'tool-configureImageGeneration' ||
+               part.type === 'tool-configureVideoGeneration') &&
+              part.state === 'output-available' &&
+              part.output
+            ) {
+              try {
+                // Extract artifact from nested structure
+                const artifactData = part.output?.parts?.[0] || part.output;
+
+                if (artifactData?.kind === 'image' || artifactData?.kind === 'video') {
+                  // Parse title which contains the configuration
+                  let config: any = null;
+                  try {
+                    config = JSON.parse(artifactData.title || '{}');
+                  } catch (e) {
+                    /* ignore parse errors */
+                  }
+
+                  // Parse content which contains the project/file ID
+                  console.log('🔍 Attempting to parse artifact content:', {
+                    hasContent: !!artifactData.content,
+                    contentPreview: artifactData.content ? artifactData.content.substring(0, 200) : 'none',
+                  });
+
+                  let content: any = null;
+                  try {
+                    content = JSON.parse(artifactData.content || '{}');
+                    console.log('✅ Parsed artifact content:', {
+                      hasProjectId: !!content?.projectId,
+                      hasFileId: !!content?.fileId,
+                      projectId: content?.projectId,
+                      fileId: content?.fileId,
+                      status: content?.status,
+                    });
+                  } catch (e) {
+                    console.error('❌ Failed to parse artifact content:', e);
+                  }
+
+                  if (content?.projectId) {
+                    ids.add(content.projectId);
+                    console.log('🔍 Found projectId in AI SDK v5 artifact:', content.projectId);
+                  }
+                  if (content?.fileId) {
+                    ids.add(`file.${content.fileId}`);
+                    console.log('🔍 Found fileId in AI SDK v5 artifact:', content.fileId);
+                  }
+                }
+              } catch (e) {
+                console.error('❌ Failed to extract project ID from tool output:', e);
+              }
+            }
+
+            // Legacy: Check text parts for v4 compatibility
             if (part.type === 'text' && 'text' in part && part.text) {
               try {
                 // Check for image artifacts before parsing

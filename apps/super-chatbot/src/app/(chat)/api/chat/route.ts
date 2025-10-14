@@ -16,6 +16,14 @@ import { generateTitleFromUserMessage } from "../../actions";
 import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 import { postRequestBodySchema } from "./schema";
 
+// Import tools
+import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
+import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
+import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
+import { createDocument } from "@/lib/ai/tools/create-document";
+import { updateDocument } from "@/lib/ai/tools/update-document";
+import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+
 // Normalize message function from the original code
 function normalizeMessage(message: any) {
   return {
@@ -50,12 +58,18 @@ export const POST = withMonitoring(async (request: Request) => {
       );
     }
 
-    const {
+    let {
       messages: rawMessages,
+      message: singleMessage,
       id: chatId,
       selectedChatModel,
       selectedVisibilityType,
     } = validationResult.data;
+
+    // Convert single message to array format if needed
+    if (singleMessage && !rawMessages) {
+      rawMessages = [singleMessage];
+    }
 
     // Ensure we have messages
     if (!rawMessages || rawMessages.length === 0) {
@@ -64,6 +78,17 @@ export const POST = withMonitoring(async (request: Request) => {
         { status: 400 }
       );
     }
+
+    // AI SDK v5: Ensure all messages have proper UUID and createdAt
+    rawMessages = rawMessages.map((msg: any) => {
+      // AI SDK v5 generates short IDs that aren't UUIDs - always generate proper UUID
+      const messageId = generateUUID();
+      return {
+        ...msg,
+        id: messageId,
+        createdAt: msg.createdAt || new Date(),
+      };
+    });
 
     // Get chat info
     let chat = await getChatById({ id: chatId });
@@ -121,23 +146,49 @@ export const POST = withMonitoring(async (request: Request) => {
       ...rawMessages.map(normalizeMessage),
     ];
 
-    // Save user messages to database
+    // Save user messages to database (already have proper UUIDs from above)
     const userMessages = rawMessages.filter((msg: any) => msg.role === "user");
     if (userMessages.length > 0) {
       await saveMessages({
         messages: userMessages.map((msg: any) => ({
           chatId,
-          id: msg.id || generateUUID(),
+          id: msg.id, // Already has proper UUID from the map above
           role: msg.role,
           parts: msg.parts || [{ type: "text", text: msg.content }],
           attachments: msg.experimental_attachments || [],
-          createdAt: new Date(),
+          createdAt: msg.createdAt || new Date(),
         })),
       });
     }
 
     // Generate response using AI SDK v5
     const chatModel = selectedChatModel || "chat-model";
+
+    // Create tools with proper parameters
+    const createDocumentTool = createDocument({ session });
+    const updateDocumentTool = updateDocument({ session });
+    const imageGenerationTool = configureImageGeneration({
+      createDocument: createDocumentTool,
+      session,
+      chatId,
+      userMessage: rawMessages[rawMessages.length - 1]?.content || "",
+      currentAttachments:
+        rawMessages[rawMessages.length - 1]?.experimental_attachments || [],
+    });
+    const videoGenerationTool = configureVideoGeneration({
+      createDocument: createDocumentTool,
+      session,
+      chatId,
+      userMessage: rawMessages[rawMessages.length - 1]?.content || "",
+      currentAttachments:
+        rawMessages[rawMessages.length - 1]?.experimental_attachments || [],
+    });
+    const scriptGenerationTool = configureScriptGeneration({
+      createDocument: createDocumentTool,
+      session,
+    });
+    const suggestionsTool = requestSuggestions({ session });
+
     const result = streamText({
       model: myProvider.languageModel(chatModel),
       system: systemPrompt({
@@ -146,6 +197,14 @@ export const POST = withMonitoring(async (request: Request) => {
       }),
       messages: allMessages,
       temperature: 0.7,
+      tools: {
+        configureImageGeneration: imageGenerationTool,
+        configureVideoGeneration: videoGenerationTool,
+        configureScriptGeneration: scriptGenerationTool,
+        createDocument: createDocumentTool,
+        updateDocument: updateDocumentTool,
+        requestSuggestions: suggestionsTool,
+      },
       onFinish: async ({ response }) => {
         try {
           // Save assistant messages to database
@@ -156,7 +215,7 @@ export const POST = withMonitoring(async (request: Request) => {
             await saveMessages({
               messages: assistantMessages.map((msg: any) => ({
                 chatId,
-                id: msg.id || generateUUID(),
+                id: generateUUID(), // AI SDK v5: Always generate proper UUID
                 role: msg.role,
                 parts: msg.parts || [{ type: "text", text: msg.content }],
                 attachments: msg.experimental_attachments || [],
@@ -173,35 +232,8 @@ export const POST = withMonitoring(async (request: Request) => {
       },
     });
 
-    // Create a simple data stream response manually
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          // Start the AI stream
-          result.consumeStream();
-
-          // Process text chunks using async iteration
-          for await (const chunk of result.textStream) {
-            // Send data in the format expected by the client
-            const data = `0:"${chunk.replace(/"/g, '\\"')}"\n`;
-            controller.enqueue(new TextEncoder().encode(data));
-          }
-
-          // Close the stream when done
-          controller.close();
-        } catch (error) {
-          controller.error(error);
-        }
-      },
-    });
-
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    });
+    // AI SDK v5: Use toUIMessageStreamResponse() - requires updating @ai-sdk/react
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("Chat API error:", error);
     return NextResponse.json(

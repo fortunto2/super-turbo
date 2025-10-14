@@ -17,6 +17,7 @@ export default function VideoGeneratorPage() {
   const { messages, setMessages } = useChat({
     id: "video-generator-tool",
     initialMessages: [],
+    streamProtocol: "ui-message", // AI SDK v5: Required for @ai-sdk/react 2.x
   });
 
   const {

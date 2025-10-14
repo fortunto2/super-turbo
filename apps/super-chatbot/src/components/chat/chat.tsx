@@ -109,42 +109,52 @@ function ChatContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
-  const { setArtifact, updateMessages, artifact, chatId } =
-    useArtifactContext();
-  const {
-    messages,
-    setMessages,
-    input,
-    setInput,
-    handleInputChange,
-    handleSubmit,
-    append,
-    status,
-    stop,
-    reload,
-    data,
-  } = useChat({
+  const { updateMessages, artifact } = useArtifactContext();
+
+  // AI SDK v5: Manual input management (useChat doesn't provide input/setInput in v5)
+  const [input, setInput] = useState("");
+
+  const chatHelpers = useChat({
     id,
-    initialMessages,
+    messages: initialMessages as any, // AI SDK v5: messages instead of initialMessages
     api: isGeminiChat ? "/api/gemini-chat" : "/api/chat",
     body: {
       id,
       selectedChatModel: initialChatModel,
       selectedVisibilityType: visibilityType,
     },
-    sendExtraMessageFields: true,
-    generateId: generateUUID,
+    // AI SDK v5: Prepare request body to ensure correct format
+    experimental_prepareRequestBody: ({ messages: msgs, requestData, requestBody }) => {
+      console.log("🔍 Preparing request body:", {
+        messagesCount: msgs.length,
+        requestData,
+        requestBody
+      });
+
+      return {
+        id,
+        messages: msgs,
+        selectedChatModel: initialChatModel,
+        selectedVisibilityType: visibilityType,
+        ...requestBody,
+      };
+    },
     onFinish: () => {
-      console.log("🔍 useChat onFinish called - НЕ обновляем URL");
+      console.log("🔍 useChat onFinish called - обновляем URL");
       console.log("🔍 Chat ID in onFinish:", id);
       // Сбрасываем состояние блокировки
       isSubmittingRef.current = false;
       setIsSubmitting(false);
-      // НЕ обновляем URL здесь - ждем команду от сервера
-      // URL будет обновлен только после успешного создания чата
+      // Обновляем URL после успешного завершения чата
+      if (id && typeof window !== "undefined") {
+        const newUrl = `/chat/${id}`;
+        if (window.location.pathname !== newUrl) {
+          window.history.pushState(null, "", newUrl);
+        }
+      }
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       // При ошибке не обновляем URL, чтобы избежать 404
       console.error("Chat error:", error);
 
@@ -164,6 +174,18 @@ function ChatContent({
     },
   });
 
+  // Extract properties from chatHelpers
+  const { messages, setMessages, status, stop } = chatHelpers;
+  const sendMessage = (chatHelpers as any).sendMessage;
+  const regenerate = (chatHelpers as any).regenerate;
+
+  // AI SDK v5: reload is now regenerate
+  const reload = useCallback(() => {
+    if (regenerate) {
+      return regenerate();
+    }
+  }, [regenerate]);
+
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
 
@@ -172,12 +194,19 @@ function ChatContent({
     "idle"
   );
 
+  // AI SDK v5: Append function using sendMessage
   const handleAppend = useCallback(
-    (message: any, options?: any) => {
+    async (message: any, options?: any): Promise<string | null | undefined> => {
       // НЕ обновляем URL здесь - ждем команду от сервера
-      append(message, options);
+      if (message.content) {
+        const result = await sendMessage({
+          text: message.content,
+        });
+        return result;
+      }
+      return null;
     },
-    [append, id]
+    [sendMessage]
   );
 
   useEffect(() => {
@@ -201,33 +230,17 @@ function ChatContent({
 
   const isArtifactVisible = artifact.isVisible;
 
-  // Notify parent about dataStream changes for artifacts
+  // AI SDK v5: No more data stream - tool invocations are in message.parts
+  // This hook is kept for compatibility but data is always undefined in v5
   useEffect(() => {
-    if (data && onDataStream) {
-      // Notifying parent about dataStream changes
-      onDataStream(data);
-    }
-
-    // Обрабатываем команды перенаправления от сервера
-    if (data) {
-      console.log("🔍 Data received from server:", data);
-      data.forEach((item: any) => {
-        console.log("🔍 Processing data item:", item);
-        if (item.type === "redirect" && item.url) {
-          console.log("🔍 Received redirect command:", item.url);
-          // Перенаправляем на страницу чата только после успешного создания
-          console.log("🔍 Executing redirect to:", item.url);
-          window.history.replaceState({}, "", item.url);
-          console.log("🔍 Redirect executed successfully");
-        }
-      });
-    }
-  }, [data, onDataStream]);
+    // onDataStream callback removed - not applicable in v5
+    // Tool results are now in message.parts, not in separate data stream
+  }, [onDataStream]);
 
   useAutoResume({
     autoResume,
     initialMessages,
-    data,
+    data: undefined, // AI SDK v5: No data stream
     setMessages,
   });
 
@@ -294,6 +307,7 @@ function ChatContent({
     }
   }, [chatImageSSE, chatVideoSSE, messages, setMessages, id]);
 
+  // AI SDK v5: Manual submit handler using sendMessage
   const handleFormSubmit = useCallback(
     (
       event?: { preventDefault?: () => void } | undefined,
@@ -304,8 +318,8 @@ function ChatContent({
       }
 
       // Проверяем и устанавливаем блокировку
-      if (isSubmittingRef.current || status !== "ready" || isSubmitting) {
-        console.log("🔍 handleFormSubmit blocked - already submitting");
+      if (isSubmittingRef.current || status !== "ready" || isSubmitting || !input.trim()) {
+        console.log("🔍 handleFormSubmit blocked - already submitting or empty input");
         return;
       }
 
@@ -315,14 +329,23 @@ function ChatContent({
 
       console.log("🔍 handleFormSubmit called - НЕ обновляем URL");
       console.log("🔍 Chat ID:", id);
+      console.log("🔍 Input:", input);
       console.log("🔍 Chat request options:", chatRequestOptions);
 
       // НЕ обновляем URL сразу - ждем успешного создания чата
-      // URL будет обновлен в onFinish callback API route
+      // URL будет обновлен в onFinish callback
 
-      handleSubmit(event, chatRequestOptions);
+      // AI SDK v5: Use sendMessage to send the message
+      sendMessage({
+        text: input,
+        // TODO: Add attachments support
+      });
+
+      // Clear input and attachments after sending
+      setInput("");
+      setAttachments([]);
     },
-    [handleSubmit, id, status, isSubmitting]
+    [input, attachments, sendMessage, id, status, isSubmitting]
   );
 
   return (
@@ -347,7 +370,7 @@ function ChatContent({
           isArtifactVisible={isArtifactVisible}
           selectedChatModel={initialChatModel}
           selectedVisibilityType={visibilityType}
-          append={append}
+          append={handleAppend}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -365,7 +388,7 @@ function ChatContent({
               setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
-              append={append}
+              append={handleAppend}
               selectedVisibilityType={visibilityType}
             />
           )}
@@ -389,12 +412,12 @@ function ChatContent({
         handleSubmit={handleFormSubmit}
         status={status}
         stop={stop}
+        reload={reload}
         attachments={attachments}
         setAttachments={setAttachments}
-        append={append}
+        append={handleAppend}
         messages={messages}
         setMessages={setMessages}
-        reload={reload}
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
@@ -425,7 +448,7 @@ export function Chat(props: {
                 <LoaderIcon size={48} />
               </div>
               <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                Загрузка чата...
+                Loading chat...
               </p>
             </div>
           </div>

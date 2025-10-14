@@ -51,7 +51,8 @@ const PurePreviewMessage = ({
   append?: UseChatHelpers["append"];
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
-  const { setArtifact } = useArtifactLegacy();
+  const { setArtifact } = useArtifactLegacy(chatId);
+  console.log(message);
 
   return (
     <AnimatePresence>
@@ -272,6 +273,14 @@ const PurePreviewMessage = ({
                 const { toolInvocation } = part;
                 const { toolName, toolCallId, state, args } = toolInvocation;
 
+                // Debug: log all tool invocations
+                console.log("🔍 Tool invocation detected:", {
+                  toolName,
+                  state,
+                  hasResult: state === "result" && !!toolInvocation.result,
+                  result: state === "result" ? toolInvocation.result : undefined,
+                });
+
                 if (state === "call") {
                   return null;
                 }
@@ -367,6 +376,78 @@ const PurePreviewMessage = ({
                           selectedVisibilityType={selectedVisibilityType}
                           {...(append && { append })}
                         />
+                      </div>
+                    );
+                  }
+
+                  // Handle createDocument tool result - opens artifact viewer
+                  if (
+                    toolName === "createDocument" &&
+                    result &&
+                    typeof result === "object" &&
+                    "id" in result &&
+                    "kind" in result &&
+                    "title" in result
+                  ) {
+                    const artifactKind = result.kind as string;
+
+                    // Parse title for image/video artifacts to get human-readable version
+                    let displayTitle = result.title as string;
+                    try {
+                      if (artifactKind === "image" || artifactKind === "video") {
+                        // Title might be JSON with parameters
+                        if (displayTitle.startsWith("{")) {
+                          const titleParams = JSON.parse(displayTitle);
+                          displayTitle = titleParams.prompt || `AI Generated ${artifactKind}`;
+                        }
+                      }
+                    } catch {
+                      // Keep original title if parsing fails
+                    }
+
+                    console.log("🎨 createDocument tool result received:", {
+                      id: result.id,
+                      kind: artifactKind,
+                      title: displayTitle,
+                    });
+
+                    // Automatically open artifact when document is created
+                    // Use setTimeout to ensure state updates after render
+                    setTimeout(() => {
+                      setArtifact({
+                        title: displayTitle,
+                        documentId: result.id as string,
+                        kind: artifactKind as any,
+                        content: "", // Content will be loaded from database
+                        isVisible: true,
+                        status: "pending", // Set to pending initially for image/video
+                        boundingBox: {
+                          top: 0,
+                          left: 0,
+                          width: 0,
+                          height: 0,
+                        },
+                      });
+                    }, 100);
+
+                    // Show a loading message for artifacts
+                    return (
+                      <div
+                        key={toolCallId}
+                        className="flex flex-row gap-2 items-start"
+                      >
+                        <div className="w-full p-3 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                            <span className="text-sm text-muted-foreground">
+                              {artifactKind === "image" && "Generating image..."}
+                              {artifactKind === "video" && "Generating video..."}
+                              {artifactKind === "text" && "Creating document..."}
+                              {artifactKind === "sheet" && "Creating spreadsheet..."}
+                              {artifactKind === "script" && "Creating script..."}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     );
                   }

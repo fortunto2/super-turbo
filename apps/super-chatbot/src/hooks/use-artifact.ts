@@ -212,9 +212,108 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
     }
   }, [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata]);
 
-  const updateMessages = useCallback((newMessages: UIMessage[]) => {
-    // Не используется в упрощенной версии
-  }, []);
+  const updateMessages = useCallback(
+    (newMessages: UIMessage[]) => {
+      console.log("🔍 updateMessages called with:", {
+        messagesCount: newMessages.length,
+        chatId,
+      });
+
+      // AI SDK v5: Отслеживаем tool invocations в message.parts
+      const lastMessage = newMessages[newMessages.length - 1];
+      if (!lastMessage || lastMessage.role !== "assistant") {
+        console.log("🔍 No assistant message to process");
+        return;
+      }
+
+      console.log("🔍 Checking last assistant message:", {
+        id: lastMessage.id,
+        partsCount: lastMessage.parts?.length || 0,
+      });
+
+      // Логируем все parts для отладки
+      console.log("🔍 Message parts:", lastMessage.parts?.map((part: any) => ({
+        type: part.type,
+        state: part.state,
+        hasOutput: !!part.output,
+      })));
+
+      // Детальное логирование каждого part
+      lastMessage.parts?.forEach((part: any, index: number) => {
+        console.log(`🔍 Part ${index}:`, {
+          type: part.type,
+          state: part.state,
+          hasText: !!part.text,
+          text: part.text ? part.text.substring(0, 100) : undefined,
+          hasOutput: !!part.output,
+          outputKeys: part.output ? Object.keys(part.output) : undefined,
+        });
+      });
+
+      // AI SDK v5: Ищем tool invocations с createDocument или tool outputs с documentId
+      // В v5 createDocument может быть вызван внутри другого tool на сервере
+
+      // Сначала ищем прямой вызов createDocument
+      let createDocumentPart = lastMessage.parts?.find(
+        (part: any) =>
+          part.type === "tool-createDocument" &&
+          part.state === "output-available"
+      );
+
+      // Если не нашли прямой вызов, ищем в outputs других tools (configureImageGeneration, configureVideoGeneration)
+      if (!createDocumentPart) {
+        const toolsWithDocuments = ["tool-configureImageGeneration", "tool-configureVideoGeneration", "tool-configureScriptGeneration"];
+
+        for (const toolType of toolsWithDocuments) {
+          const toolPart = lastMessage.parts?.find(
+            (part: any) =>
+              part.type === toolType &&
+              part.state === "output-available"
+          );
+
+          if (toolPart) {
+            console.log("🎯 Found tool with potential artifact:", { toolType, output: toolPart.output });
+
+            // AI SDK v5: Check if artifact is in output.parts[0] (nested structure)
+            const artifactData = toolPart.output?.parts?.[0] || toolPart.output;
+
+            if (artifactData && artifactData.id && artifactData.kind) {
+              console.log("✅ Found artifact data:", artifactData);
+              createDocumentPart = { ...toolPart, output: artifactData };
+              break;
+            }
+          }
+        }
+      }
+
+      if (createDocumentPart) {
+        console.log("🎯 Found document/artifact:", createDocumentPart);
+
+        // Открываем артефакт
+        const output = (createDocumentPart as any).output;
+        if (output && output.id) {
+          console.log("📄 Opening artifact:", {
+            id: output.id,
+            kind: output.kind,
+            title: output.title,
+          });
+
+          setArtifact((prev) => ({
+            ...prev,
+            documentId: output.id,
+            kind: output.kind || "text",
+            title: output.title || "",
+            content: output.content || "",
+            isVisible: true,
+            status: "streaming",
+          }));
+        }
+      } else {
+        console.log("🔍 No artifact found in last message");
+      }
+    },
+    [chatId, setArtifact]
+  );
 
   const metadata = localArtifactMetadata || null;
 

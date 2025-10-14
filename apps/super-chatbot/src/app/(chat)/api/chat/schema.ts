@@ -15,8 +15,8 @@ const textPartSchema = z.object({
 
 const messageSchema = z
   .object({
-    id: z.string().uuid(),
-    createdAt: z.coerce.date(),
+    id: z.string().optional(), // AI SDK v5: id is optional, will be generated if missing
+    createdAt: z.coerce.date().optional(), // AI SDK v5: createdAt is optional
     role: z.enum(['user', 'assistant']),
     content: z.string().optional(), // Сделаем content опциональным
     parts: z.array(textPartSchema).optional(), // Сделаем parts опциональным
@@ -76,8 +76,8 @@ export const postRequestBodySchema = z
       'o3-reasoning',
       'o3-pro-reasoning',
       'gemini-2.5-flash-lite',
-    ]),
-    selectedVisibilityType: z.enum(['public', 'private']),
+    ]).optional().default('chat-model'), // AI SDK v5: optional with default
+    selectedVisibilityType: z.enum(['public', 'private']).optional().default('private'), // AI SDK v5: optional with default
   })
   .refine(
     (data) => data.message || (data.messages && data.messages.length > 0),

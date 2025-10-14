@@ -33,6 +33,7 @@ export default function BananaVeo3AdvancedPage() {
     body: {
       selectedVisibilityType: "private",
     },
+    streamProtocol: "ui-message", // AI SDK v5: Required for @ai-sdk/react 2.x
   });
 
   const quickActions = [
@@ -84,7 +85,7 @@ export default function BananaVeo3AdvancedPage() {
               Banana + VEO3 Advanced
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Реальная интеграция с Banana GPU Inference и VEO3 Video Generation
+              Реальная интеграция с Banana и VEO3 Video Generation
             </p>
           </div>
         </div>
@@ -217,7 +218,7 @@ export default function BananaVeo3AdvancedPage() {
           <div className="flex items-center gap-2 mb-2">
             <Banana className="w-5 h-5 text-yellow-600" />
             <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
-              Banana GPU Inference
+              Banana
             </h4>
           </div>
           <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">

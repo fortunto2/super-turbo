@@ -1,32 +1,32 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/app/(auth)/auth';
-import { streamText } from 'ai';
-import { myProvider } from '@/lib/ai/providers';
+import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/app/(auth)/auth";
+import { streamText } from "ai";
+import { myProvider } from "@/lib/ai/providers";
 import {
   bananaInferenceTool,
   listBananaModelsTool,
-} from '@/lib/ai/tools/banana-inference';
+} from "@/lib/ai/tools/banana-inference";
 import {
   createVeo3VideoTool,
   checkVeo3VideoStatusTool,
   generateVeo3IdeasTool,
-} from '@/lib/ai/tools/veo3-video';
+} from "@/lib/ai/tools/veo3-video";
 import {
   getChatById,
   getMessagesByChatId,
   saveChat,
   saveMessages,
-} from '@/lib/db/queries';
-import { generateUUID } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
-import { convertDBMessagesToUIMessages } from '@/lib/types/message-conversion';
+} from "@/lib/db/queries";
+import { generateUUID } from "@/lib/utils";
+import { generateTitleFromUserMessage } from "../../actions";
+import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 
 export const maxDuration = 60;
 
 // Продвинутый промпт для Banana + VEO3 с инструментами
-const advancedBananaVeo3SystemPrompt = `Ты - эксперт по Banana GPU Inference и VEO3 Video Generation с доступом к реальным API.
+const advancedBananaVeo3SystemPrompt = `Ты - эксперт по Banana и VEO3 Video Generation с доступом к реальным API.
 
-🍌 **BANANA GPU INFERENCE:**
+🍌 **BANANA :**
 - У тебя есть доступ к реальным Banana API через инструменты
 - Можешь запускать inference на различных моделях
 - Можешь получать список доступных моделей
@@ -65,19 +65,19 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const {
       id,
       message,
-      selectedVisibilityType = 'private',
+      selectedVisibilityType = "private",
     } = await request.json();
 
     if (!id || !message) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 },
+        { error: "Missing required fields" },
+        { status: 400 }
       );
     }
 
@@ -100,26 +100,26 @@ export async function POST(request: NextRequest) {
     // Добавляем новое сообщение пользователя
     allMessages.push({
       id: message.id || generateUUID(),
-      role: 'user',
-      content: message.content || message.parts?.[0]?.text || '',
+      role: "user",
+      content: message.content || message.parts?.[0]?.text || "",
       parts: [
         {
-          text: message.content || message.parts?.[0]?.text || '',
-          type: 'text',
+          text: message.content || message.parts?.[0]?.text || "",
+          type: "text",
         },
       ],
       createdAt: new Date(),
     });
 
     console.log(
-      '🍌🎬 Advanced Banana+VEO3 API with tools:',
+      "🍌🎬 Advanced Banana+VEO3 API with tools:",
       allMessages.length,
-      'messages',
+      "messages"
     );
 
     // Используем AI SDK с инструментами
     const result = streamText({
-      model: myProvider.languageModel('gemini-2.5-flash-lite'),
+      model: myProvider.languageModel("gemini-2.5-flash-lite"),
       system: advancedBananaVeo3SystemPrompt,
       messages: allMessages,
       tools: {
@@ -129,14 +129,13 @@ export async function POST(request: NextRequest) {
         checkVeo3VideoStatus: checkVeo3VideoStatusTool,
         generateVeo3Ideas: generateVeo3IdeasTool,
       },
-      experimental_generateMessageId: generateUUID,
       onFinish: async ({ response }) => {
-        console.log('🍌🎬 Advanced Banana+VEO3 response finished');
+        console.log("🍌🎬 Advanced Banana+VEO3 response finished");
 
         if (session.user?.id) {
           try {
             const assistantMessages = response.messages.filter(
-              (msg) => msg.role === 'assistant',
+              (msg) => msg.role === "assistant"
             );
 
             for (const assistantMessage of assistantMessages) {
@@ -145,7 +144,7 @@ export async function POST(request: NextRequest) {
                   {
                     chatId: id,
                     id: assistantMessage.id,
-                    role: 'assistant',
+                    role: "assistant",
                     parts: (assistantMessage as any)?.parts,
                     attachments:
                       (assistantMessage as any)?.experimental_attachments ?? [],
@@ -156,26 +155,27 @@ export async function POST(request: NextRequest) {
             }
 
             console.log(
-              '🍌🎬 Assistant messages saved:',
-              assistantMessages.length,
+              "🍌🎬 Assistant messages saved:",
+              assistantMessages.length
             );
           } catch (error) {
-            console.error('🍌🎬 Failed to save assistant messages:', error);
+            console.error("🍌🎬 Failed to save assistant messages:", error);
           }
         }
       },
     });
 
-    return result.toDataStreamResponse();
+    // AI SDK v5: Use toUIMessageStreamResponse() - compatible with @ai-sdk/react 2.x
+    return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error('🍌🎬 Advanced Banana+VEO3 API error:', error);
+    console.error("🍌🎬 Advanced Banana+VEO3 API error:", error);
 
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -184,23 +184,23 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const chatId = searchParams.get('id');
+    const chatId = searchParams.get("id");
 
     if (!chatId) {
-      return NextResponse.json({ error: 'Chat ID required' }, { status: 400 });
+      return NextResponse.json({ error: "Chat ID required" }, { status: 400 });
     }
 
     const chat = await getChatById({ id: chatId });
     if (!chat) {
-      return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
     }
 
-    if (chat.visibility === 'private' && chat.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    if (chat.visibility === "private" && chat.userId !== session.user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const messages = await getMessagesByChatId({ id: chatId });
@@ -209,17 +209,17 @@ export async function GET(request: NextRequest) {
       success: true,
       chat,
       messages,
-      technology: 'banana-veo3-advanced',
+      technology: "banana-veo3-advanced",
     });
   } catch (error) {
-    console.error('🍌🎬 Advanced Banana+VEO3 GET error:', error);
+    console.error("🍌🎬 Advanced Banana+VEO3 GET error:", error);
 
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

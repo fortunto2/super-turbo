@@ -139,7 +139,7 @@ function PureMultimodalInput({
       // НЕ обновляем URL сразу - ждем успешного создания чата
       // URL будет обновлен через команду от сервера
 
-      handleSubmit(e, {
+      handleSubmit(undefined, {
         experimental_attachments: attachments,
       });
 
