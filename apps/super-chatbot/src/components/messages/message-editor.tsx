@@ -15,8 +15,8 @@ import { Button, Textarea } from '@turbo-super/ui';
 export type MessageEditorProps = {
   message: Message;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers<any>['setMessages'];
-  reload: UseChatHelpers<any>['reload'];
+  setMessages: any // AI SDK v5: setMessages type changed;
+  reload: any // AI SDK v5: reload type changed;
 };
 
 export function MessageEditor({

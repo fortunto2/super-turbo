@@ -74,7 +74,14 @@ export async function POST(request: NextRequest) {
     };
 
     // Выполняем сам редактор
-    const result = await nanoBananaImageEditing(toolParams).execute(validated, {
+    const tool = nanoBananaImageEditing(toolParams);
+    if (!tool || !tool.execute) {
+      return NextResponse.json(
+        { error: 'Failed to initialize editing tool' },
+        { status: 500 }
+      );
+    }
+    const result = await tool.execute(validated, {
       toolCallId: 'nano-banana-edit',
       messages: [],
     });
@@ -133,8 +140,15 @@ export async function GET(request: NextRequest) {
       session,
     };
 
-    // Вызываем инструмент “без промта”, чтобы получить доступные типы
-    const config = await nanoBananaImageEditing(toolParams).execute(
+    // Вызываем инструмент "без промта", чтобы получить доступные типы
+    const configTool = nanoBananaImageEditing(toolParams);
+    if (!configTool || !configTool.execute) {
+      return NextResponse.json(
+        { error: 'Failed to initialize editing tool' },
+        { status: 500 }
+      );
+    }
+    const config = await configTool.execute(
       {
         editType: 'background-replacement',
         editPrompt: '',

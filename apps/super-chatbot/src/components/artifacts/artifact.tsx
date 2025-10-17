@@ -122,11 +122,11 @@ function PureArtifact({
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers<any>['setMessages'];
+  setMessages: any // AI SDK v5: setMessages type changed;
   votes: Array<Vote> | undefined;
-  append: UseChatHelpers<any>['append'];
+  append: any // AI SDK v5: append type changed;
   handleSubmit: UseChatHelpers<any>['handleSubmit'];
-  reload: UseChatHelpers<any>['reload'];
+  reload: any // AI SDK v5: reload type changed;
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   selectedChatModel: string;

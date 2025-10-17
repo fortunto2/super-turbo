@@ -5,28 +5,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Testing
+
 - `pnpm test` - Run Vitest tests (unit + integration)
 - `pnpm test:unit` - Run unit tests only
 - `pnpm test:unit:coverage` - Run tests with coverage report
 - `pnpm test:e2e` - Run Playwright E2E tests
 
 ### Linting and Formatting
+
 - `pnpm lint` - Run linting checks (Next.js ESLint + Biome)
 - `pnpm lint:fix` - Fix linting issues automatically
 - `pnpm format` - Format code with Biome
 - `pnpm typecheck` - Run TypeScript type checking
 
-### Running Applications
+### Running Applications'
+
 - `pnpm dev` - Start development server (Next.js)
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
+- Never run "npm run dev"
+- Use "npm run build" to check if code compiles or not. See results and fix code if it`s needed
 
 ### Database Migrations
+
 - `pnpm db:migrate` - Run database migrations
 - `pnpm db:generate` - Generate migration files
 - `pnpm db:studio` - Open Drizzle Studio
 
 ### Important Notes
+
 - Use pnpm for dependency management in monorepo
 - Integration tests may require environment setup
 - Run tests selectively for specific functionality only
@@ -39,91 +46,104 @@ This project follows a structured agent-based development workflow to ensure qua
 ### Workflow Stages
 
 **Stage 1: Task Initiation & Planning**
+
 1. **User Request**: Task requirements captured in `_tasks/YYYY-MM-DD-task-slug/01-user-request.md`
 2. **Create Feature Branch**: Branch from `dev` or `main` for the new task
-3. **Research Phase**: 
+3. **Research Phase**:
    - Search `apps/super-chatbot/docs/` for relevant patterns, gotchas, and code pointers
    - Search `_tasks/` for similar completed tasks and solutions
    - Study similar implementations in codebase for patterns
-4. **Initial Planning** (Don): 
+4. **Initial Planning** (Don):
    - Comprehensive codebase research with execution tracing
    - Technical plan with verified claims (no assumptions)
    - Edge cases and testing strategy
    - Output: `02-plan.md`
 
-**Stage 2: Architecture Review (for complex tasks)**
-5. **Architecture Review** (Linus):
-   - High-level evaluation of proposed approach
-   - Strategic decision validation
-   - Identify potential issues early
-   - Output: `03-architecture-review.md` (if issues found)
+**Stage 2: Architecture Review (for complex tasks)** 5. **Architecture Review** (Linus):
+
+- High-level evaluation of proposed approach
+- Strategic decision validation
+- Identify potential issues early
+- Output: `03-architecture-review.md` (if issues found)
+
 6. **Plan Refinement** (Don):
    - Address architectural concerns
    - Update plan based on feedback
    - Output: `04-updated-plan.md` (if needed)
 
-**Stage 3: Test-Driven Development**
-7. **Schema Research & Test Creation** (Kent):
-   - **MANDATORY**: Search for Zod schemas and TypeScript types first
-   - Create failing tests following TDD principles
-   - Self-documenting tests without comments
-   - Output: Test files in `src/tests/` + `XX-test-report.md` in task directory
+**Stage 3: Test-Driven Development** 7. **Schema Research & Test Creation** (Kent):
+
+- **MANDATORY**: Search for Zod schemas and TypeScript types first
+- Create failing tests following TDD principles
+- Self-documenting tests without comments
+- Output: Test files in `src/tests/` + `XX-test-report.md` in task directory
+
 8. **Commit Tests**: Commit failing tests with message describing expected behavior
 
-**Stage 4: Implementation**
-9. **Implementation** (Rob):
-   - **MANDATORY**: Verify Zod schemas and TypeScript types before coding
-   - Follow Next.js patterns: types → hooks → components → API routes
-   - Write self-documenting code (no redundant comments)
-   - Make tests pass
-   - Output: Implementation code + `XX-engineer-report.md` in task directory
+**Stage 4: Implementation** 9. **Implementation** (Rob):
+
+- **MANDATORY**: Verify Zod schemas and TypeScript types before coding
+- Follow Next.js patterns: types → hooks → components → API routes
+- Write self-documenting code (no redundant comments)
+- Make tests pass
+- Output: Implementation code + `XX-engineer-report.md` in task directory
+
 10. **Commit Implementation**: Commit working implementation
 
-**Stage 5: Code Review**
-11. **Code Review** (Kevlin):
-   - Check for code duplication (top priority)
-   - Verify helper/fixture usage
-   - Ensure proper file organization
-   - Readability without comments
-   - Output: `XX-review.md` in task directory
+**Stage 5: Code Review** 11. **Code Review** (Kevlin):
+
+- Check for code duplication (top priority)
+- Verify helper/fixture usage
+- Ensure proper file organization
+- Readability without comments
+- Output: `XX-review.md` in task directory
+
 12. **Fix Issues**: Address review findings if needed
 13. **Commit Fixes**: Commit review fixes
 
-**Stage 6: Final Architecture Review**
-14. **Final Architecture Review** (Linus):
-   - High-level architectural decisions validation
-   - Implementation completeness check
-   - Strategic mistakes identification
-   - Output: `XX-architecture-review.md` in task directory
+**Stage 6: Final Architecture Review** 14. **Final Architecture Review** (Linus):
+
+- High-level architectural decisions validation
+- Implementation completeness check
+- Strategic mistakes identification
+- Output: `XX-architecture-review.md` in task directory
+
 15. **Final Adjustments**: Make any critical architectural fixes
 16. **Commit Final Changes**: Commit architectural improvements
 
-**Stage 7: Documentation & Wrap-up**
-17. **Documentation** (Raymond):
-   - Update architecture documentation if relevant
-   - Update developer docs as needed
-   - Create implementation guides if solving important issues
-   - Output: Updated files in `apps/super-chatbot/docs/`
+**Stage 7: Documentation & Wrap-up** 17. **Documentation** (Raymond):
+
+- Update architecture documentation if relevant
+- Update developer docs as needed
+- Create implementation guides if solving important issues
+- Output: Updated files in `apps/super-chatbot/docs/`
+
 18. **Knowledge Base Update** (Ward):
-   - Extract reusable patterns and learnings
-   - Document gotchas and best practices
-   - Output: `XX-librarian-report.md` in task directory
+
+- Extract reusable patterns and learnings
+- Document gotchas and best practices
+- Output: `XX-librarian-report.md` in task directory
+
 19. **Final Plan Summary** (Don):
-   - Document what was accomplished
-   - List next steps if any
-   - Record decisions and trade-offs
-   - Output: `XX-final-plan.md` in task directory
+
+- Document what was accomplished
+- List next steps if any
+- Record decisions and trade-offs
+- Output: `XX-final-plan.md` in task directory
+
 20. **Commit Documentation**: Commit all documentation updates
 21. **Quality Checks**:
-   - Run `pnpm lint` and fix issues
-   - Run relevant tests with `pnpm test`
-   - Build project with `pnpm build` if needed
 
-**Stage 8: Integration**
-22. **Create Merge Request**: 
-   - Target branch: `dev` (not `main`)
-   - Include task summary and key changes
-   - Reference task directory for full context
+- Run `pnpm lint` and fix issues
+- Run relevant tests with `pnpm test`
+- Build project with `pnpm build` if needed
+
+**Stage 8: Integration** 22. **Create Merge Request**:
+
+- Target branch: `dev` (not `main`)
+- Include task summary and key changes
+- Reference task directory for full context
+
 23. **Review & Merge**: Team review and merge to `dev`
 
 ### Agent Roles Summary
@@ -161,12 +181,14 @@ This project follows a structured agent-based development workflow to ensure qua
 **IMPORTANT**: The full workflow above is for **significant development tasks** initiated with the `@do` command or when explicitly requested.
 
 For small tasks, quick fixes, or routine work:
+
 - **No need for full workflow**: Skip planning, reviews, and formal task directories
 - **Direct implementation**: Make changes directly without agent invocations
 - **Simple commits**: Just commit the changes with clear messages
 - **When in doubt**: If it takes less than 30 minutes and touches only 1-2 files, it's probably a small task
 
 **Examples of small tasks**:
+
 - Fixing typos in documentation
 - Updating configuration values
 - Small bug fixes with obvious solutions
@@ -174,6 +196,7 @@ For small tasks, quick fixes, or routine work:
 - Minor refactoring of existing code
 
 **Use full workflow when**:
+
 - User explicitly requests it with `@do` command
 - Task involves multiple components or files
 - Task requires architectural decisions
@@ -185,6 +208,7 @@ For small tasks, quick fixes, or routine work:
 Each task creates a directory `_tasks/YYYY-MM-DD-task-slug/` **in the MONOREPO ROOT** with sequentially numbered files:
 
 **CRITICAL RULES:**
+
 - ✅ **ALWAYS use MONOREPO ROOT**: `_tasks/YYYY-MM-DD-task-slug/` (relative from project root)
 - ❌ **NEVER use app-level**: `apps/super-chatbot/_tasks/` or `apps/super-landing/_tasks/`
 - 📝 **ALWAYS save reports**: Each agent MUST create their numbered report file
@@ -194,6 +218,7 @@ Each task creates a directory `_tasks/YYYY-MM-DD-task-slug/` **in the MONOREPO R
 - ⚠️ **Always use root paths**: Even though symlinks exist, always reference `_ai/` and `_tasks/` from monorepo root
 
 **Standard file sequence:**
+
 - `01-user-request.md` - Original user request
 - `02-plan.md` - @don's initial plan
 - `03-architecture-review.md` - @linus review (if needed)
@@ -210,6 +235,7 @@ Each task creates a directory `_tasks/YYYY-MM-DD-task-slug/` **in the MONOREPO R
 ## Project Architecture
 
 ### High-Level Structure
+
 ```
 apps/super-chatbot/
 ├── src/
@@ -247,11 +273,13 @@ Monorepo Root:
 ### Important Patterns
 
 **AI-First Development Methodology**
+
 - **Phase 1 Planning**: Write implementation plan, validate against architecture, get approval
 - **Phase 2 Implementation**: Code to plan, write tests, update docs, reference plan in PR
 - Follow structured workflow with agent roles (see Workflow Stages above)
 
 **AICODE Comment System**
+
 - **AICODE-NOTE**: Persist critical knowledge (complex logic, integrations, performance, security)
 - **AICODE-TODO**: Actionable follow-ups scoped to code location
 - **AICODE-ASK**: Questions needing human decisions; convert to NOTE once resolved
@@ -260,11 +288,13 @@ Monorepo Root:
 - Keep notes concise, colocated with the code
 
 **Async/Await Usage**
+
 - Use async/await for API calls, database operations, file I/O
 - React hooks handle async state with proper cleanup
 - Server Actions and API routes are async by default
 
 **Error Handling**
+
 - Implement comprehensive error handling with try/catch
 - Use structured logging with Sentry integration
 - Return user-friendly error messages from API routes
@@ -272,12 +302,14 @@ Monorepo Root:
 - Validate inputs and normalize external error shapes
 
 **Configuration**
+
 - Use Zod schemas for environment variable validation
 - Environment variables in `.env.local` (server-only)
 - Different configurations for dev/prod environments
 - Never expose secrets to client components
 
 **Security Posture**
+
 - Never expose secrets client-side; all tokens live server-side
 - Enforce auth and rate limiting on internal APIs
 - Validate inputs and normalize external error shapes
@@ -286,6 +318,7 @@ Monorepo Root:
 ### Development Guidelines
 
 **Before Starting a Task**
+
 - Search `_ai/` directory for relevant patterns, gotchas, and code pointers (symlinked in each app for convenience)
 - Search `_tasks/` for similar completed tasks and their solutions (symlinked in each app for convenience)
 - Search public docs for architecture and API documentation:
@@ -298,6 +331,7 @@ Monorepo Root:
 - **Note**: While `_ai/` and `_tasks/` are symlinked in app directories, always use root-level paths for consistency
 
 **Code Style**
+
 - All comments, code and documentation should be written in English
 - Biome for linting and formatting
 - TypeScript strict mode enabled
@@ -306,6 +340,7 @@ Monorepo Root:
 - Type all function parameters and returns
 
 **Testing Strategy**
+
 - Follow TDD (Test-Driven Development) principles
 - Zod schemas first, then tests, then implementation
 - Run tests selectively for the specific functionality you're working on
@@ -316,6 +351,7 @@ Monorepo Root:
 - Full test suite runs in CI/CD pipeline
 
 **Documentation**
+
 - Use English for code comments and technical documentation
 - `_ai/` - Agent knowledge base (patterns, gotchas, code pointers) - managed by @ward
 - `_tasks/` - Agent work directories with numbered reports (audit trail)
@@ -329,6 +365,7 @@ Monorepo Root:
 ## Repository Rules and Workflow
 
 ### Git Workflow
+
 - Main branch: `main` for production deployments
 - Development branch: `dev` for integration
 - Create separate branches for features when working from dev/main
@@ -337,11 +374,13 @@ Monorepo Root:
 - Use `--no-verify` flag when committing to skip pre-commit hooks if needed
 
 ### Git Tagging for Deployments
+
 - When bumping deployment versions, create git tags to track releases
 - Define your tag format (e.g., `v{version}` or `deploy-{component}-v{version}`)
 - This allows easy rollback and tracking of what code ran in production
 
 ### MCP Servers Available
+
 Define any MCP servers available in your project here.
 
 ### Documentation Structure
@@ -358,13 +397,13 @@ Define any MCP servers available in your project here.
 2. **`_tasks/` - Agent Work Directories** (internal audit trail)
    - Format: `_tasks/YYYY-MM-DD-task-slug/`
    - Contains numbered agent reports:
-     * `01-user-request.md` - Original request
-     * `02-plan.md` - @don's plan
-     * `03-architecture-review.md` - @linus review
-     * `XX-test-report.md` - @kent tests
-     * `XX-engineer-report.md` - @rob implementation
-     * `XX-review.md` - @kevlin code review
-     * `XX-final-plan.md` - @don summary
+     - `01-user-request.md` - Original request
+     - `02-plan.md` - @don's plan
+     - `03-architecture-review.md` - @linus review
+     - `XX-test-report.md` - @kent tests
+     - `XX-engineer-report.md` - @rob implementation
+     - `XX-review.md` - @kevlin code review
+     - `XX-final-plan.md` - @don summary
    - Complete audit trail of task execution
    - **Never overwrite** - each agent invocation creates NEW numbered file
    - Useful for finding similar past solutions
@@ -379,6 +418,7 @@ Define any MCP servers available in your project here.
 ## Technology Stack
 
 **Core Technologies**
+
 - **Framework**: Next.js 15 (App Router) with React 19
 - **Language**: TypeScript (strict mode)
 - **Package Manager**: pnpm (monorepo)
@@ -388,17 +428,20 @@ Define any MCP servers available in your project here.
 - **Real-time**: Server-Sent Events (SSE) + WebSocket
 
 **Testing**
+
 - **Unit/Integration**: Vitest + React Testing Library
 - **E2E**: Playwright
 - **Coverage**: v8 provider
 
 **Development Tools**
+
 - **Linting**: ESLint (Next.js config) + Biome
 - **Formatting**: Biome
 - **Type Checking**: TypeScript compiler
 - **Git Hooks**: Can be configured if needed
 
 **Infrastructure**
+
 - **Deployment**: Vercel (recommended for Next.js)
 - **Monitoring**: Sentry (client + server)
 - **CI/CD**: GitHub Actions

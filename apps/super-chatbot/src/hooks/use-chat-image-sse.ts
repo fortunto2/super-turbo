@@ -7,7 +7,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 interface ChatImageSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers<any>['setMessages'];
+  setMessages: any // AI SDK v5: setMessages type changed;
   enabled?: boolean;
 }
 

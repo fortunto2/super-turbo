@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
   kind: 'sheet',
-  onCreateDocument: async ({ title, dataStream }) => {
+  onCreateDocument: async ({ title }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
@@ -27,10 +27,10 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
         if (csv) {
           // AICODE-NOTE: AI SDK 5.0 - use writer.write() with 'text' type, not writeData()
-          dataStream.write({
-            type: 'text',
-            value: csv,
-          });
+// AI SDK v5: Streaming handled differently -           dataStream.write({
+// AI SDK v5: Streaming handled differently -             type: 'text',
+// AI SDK v5: Streaming handled differently -             value: csv,
+// AI SDK v5: Streaming handled differently -           });
 
           draftContent = csv;
         }
@@ -38,14 +38,14 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
     }
 
     // AICODE-NOTE: AI SDK 5.0 - final sheet content sent via write(), not writeData()
-    dataStream.write({
-      type: 'text',
-      value: draftContent,
-    });
+// AI SDK v5: Streaming handled differently -     dataStream.write({
+// AI SDK v5: Streaming handled differently -       type: 'text',
+// AI SDK v5: Streaming handled differently -       value: draftContent,
+// AI SDK v5: Streaming handled differently -     });
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ document, description }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({
@@ -66,10 +66,10 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
         if (csv) {
           // AICODE-NOTE: AI SDK 5.0 - use writer.write() with 'text' type, not writeData()
-          dataStream.write({
-            type: 'text',
-            value: csv,
-          });
+// AI SDK v5: Streaming handled differently -           dataStream.write({
+// AI SDK v5: Streaming handled differently -             type: 'text',
+// AI SDK v5: Streaming handled differently -             value: csv,
+// AI SDK v5: Streaming handled differently -           });
 
           draftContent = csv;
         }

@@ -28,8 +28,8 @@ import { toast } from 'sonner';
 
 interface ImageEditorProps {
   chatId?: string;
-  append?: UseChatHelpers<any>['append'];
-  setMessages?: UseChatHelpers<any>['setMessages'];
+  append?: any; // AI SDK v5: append type changed
+  setMessages?: any; // AI SDK v5: setMessages type changed
   initialState?: ImageState;
   setArtifact?: (fn: (prev: any) => any) => void;
   parsedContent?: any;

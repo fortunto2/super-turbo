@@ -43,6 +43,10 @@ export async function POST(request: NextRequest) {
     console.log('🍌 Validated style guide request data:', validatedData);
 
     // Вызываем инструмент руководства по стилям
+    if (!nanoBananaStyleGuide?.execute) {
+      throw new Error('nanoBananaStyleGuide tool is not properly initialized');
+    }
+
     const result = await nanoBananaStyleGuide.execute(validatedData, {
       toolCallId: 'nano-banana-style-guide',
       messages: [],
@@ -51,11 +55,11 @@ export async function POST(request: NextRequest) {
     console.log('🍌 Style guide result:', result);
 
     // Проверяем на ошибки
-    if (result.error) {
+    if ('error' in result && result.error) {
       return NextResponse.json(
         {
           error: result.error,
-          fallback: result.fallback,
+          fallback: (result as any).fallback,
         },
         { status: 400 },
       );
@@ -96,6 +100,10 @@ export async function GET(request: NextRequest) {
     console.log('🍌 Nano Banana style guide info API called');
 
     // Получаем полное руководство по стилям
+    if (!nanoBananaStyleGuide?.execute) {
+      throw new Error('nanoBananaStyleGuide tool is not properly initialized');
+    }
+
     const result = await nanoBananaStyleGuide.execute(
       {
         includeTips: true,

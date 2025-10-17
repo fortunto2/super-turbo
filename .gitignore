@@ -60,3 +60,5 @@ dist/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 docs/adilet.md
+
+ClAUDE.md

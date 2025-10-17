@@ -29,7 +29,7 @@ interface UnifiedImageResult {
   prompt: string;
   timestamp: number;
   type: "generated" | "edited";
-  settings: {
+  settings?: {
     style?: string;
     quality?: string;
     aspectRatio?: string;
@@ -94,6 +94,7 @@ export function NanoBananaUnifiedGallery({
     })),
     ...editedImages.map((img) => ({
       ...img,
+      prompt: img.editPrompt || "",
       type: "edited" as const,
     })),
   ].sort((a, b) => b.timestamp - a.timestamp);
@@ -113,6 +114,7 @@ export function NanoBananaUnifiedGallery({
       ? [
           {
             ...currentEdit,
+            prompt: currentEdit.editPrompt || "",
             type: "edited" as const,
           },
         ]
@@ -306,7 +308,7 @@ export function NanoBananaUnifiedGallery({
                         {new Date(image.timestamp).toLocaleDateString()}
                       </span>
                     </div>
-                    {image.settings.seed && (
+                    {image.settings?.seed && (
                       <Badge
                         variant="outline"
                         className="text-xs bg-muted/50 px-1 py-0"
@@ -320,7 +322,7 @@ export function NanoBananaUnifiedGallery({
                   <div className="flex flex-wrap gap-1">
                     {image.type === "generated" && (
                       <>
-                        {image.settings.style && (
+                        {image.settings?.style && (
                           <Badge
                             variant="secondary"
                             className="text-xs px-1 py-0 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
@@ -328,7 +330,7 @@ export function NanoBananaUnifiedGallery({
                             {image.settings.style}
                           </Badge>
                         )}
-                        {image.settings.quality && (
+                        {image.settings?.quality && (
                           <Badge
                             variant="secondary"
                             className="text-xs px-1 py-0 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
@@ -340,7 +342,7 @@ export function NanoBananaUnifiedGallery({
                     )}
                     {image.type === "edited" && (
                       <>
-                        {image.settings.editType && (
+                        {image.settings?.editType && (
                           <Badge
                             variant="secondary"
                             className="text-xs px-1 py-0 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
@@ -348,7 +350,7 @@ export function NanoBananaUnifiedGallery({
                             {image.settings.editType.replace(/_/g, " ")}
                           </Badge>
                         )}
-                        {image.settings.precisionLevel && (
+                        {image.settings?.precisionLevel && (
                           <Badge
                             variant="secondary"
                             className="text-xs px-1 py-0 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
@@ -407,7 +409,7 @@ export function NanoBananaUnifiedGallery({
                   <div className="flex flex-wrap gap-2">
                     {selectedImage.type === "generated" && (
                       <>
-                        {selectedImage.settings.style && (
+                        {selectedImage.settings?.style && (
                           <Badge
                             variant="secondary"
                             className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
@@ -415,7 +417,7 @@ export function NanoBananaUnifiedGallery({
                             Style: {selectedImage.settings.style}
                           </Badge>
                         )}
-                        {selectedImage.settings.quality && (
+                        {selectedImage.settings?.quality && (
                           <Badge
                             variant="secondary"
                             className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
@@ -427,7 +429,7 @@ export function NanoBananaUnifiedGallery({
                     )}
                     {selectedImage.type === "edited" && (
                       <>
-                        {selectedImage.settings.editType && (
+                        {selectedImage.settings?.editType && (
                           <Badge
                             variant="secondary"
                             className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
@@ -435,7 +437,7 @@ export function NanoBananaUnifiedGallery({
                             {selectedImage.settings.editType.replace(/_/g, " ")}
                           </Badge>
                         )}
-                        {selectedImage.settings.precisionLevel && (
+                        {selectedImage.settings?.precisionLevel && (
                           <Badge
                             variant="secondary"
                             className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"

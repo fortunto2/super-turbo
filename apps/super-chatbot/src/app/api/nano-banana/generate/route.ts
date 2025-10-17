@@ -59,7 +59,12 @@ export async function POST(request: NextRequest) {
     };
 
     // Вызываем инструмент генерации
-    const result = await nanoBananaImageGeneration(toolParams).execute(
+    const tool = nanoBananaImageGeneration(toolParams);
+    if (!tool?.execute) {
+      throw new Error('nanoBananaImageGeneration tool is not properly initialized');
+    }
+
+    const result = await tool.execute(
       validatedData,
       {
         toolCallId: 'nano-banana-generate',
@@ -70,14 +75,14 @@ export async function POST(request: NextRequest) {
     console.log('🍌 Generation result:', result);
 
     // Проверяем на ошибки
-    if (result.error) {
+    if ('error' in result && result.error) {
       return NextResponse.json(
         {
           error: result.error,
-          balanceError: result.balanceError,
-          requiredCredits: result.requiredCredits,
+          balanceError: (result as any).balanceError,
+          requiredCredits: (result as any).requiredCredits,
         },
-        { status: result.balanceError ? 402 : 400 },
+        { status: (result as any).balanceError ? 402 : 400 },
       );
     }
 
@@ -122,7 +127,12 @@ export async function GET() {
     };
 
     // Получаем конфигурацию без промпта
-    const config = await nanoBananaImageGeneration(toolParams).execute(
+    const tool = nanoBananaImageGeneration(toolParams);
+    if (!tool?.execute) {
+      throw new Error('nanoBananaImageGeneration tool is not properly initialized');
+    }
+
+    const config = await tool.execute(
       {
         prompt: 'info',
         style: 'realistic',
@@ -140,11 +150,11 @@ export async function GET() {
     );
 
     // Извлекаем нужные данные из конфигурации
-    const styles = config.nanoBananaStyles?.map((s: any) => s.id) || [];
+    const styles = 'nanoBananaStyles' in config ? (config as any).nanoBananaStyles?.map((s: any) => s.id) || [] : [];
     const qualityLevels =
-      config.nanoBananaQualityLevels?.map((q: any) => q.id) || [];
+      'nanoBananaQualityLevels' in config ? (config as any).nanoBananaQualityLevels?.map((q: any) => q.id) || [] : [];
     const aspectRatios =
-      config.nanoBananaAspectRatios?.map((a: any) => a.id) || [];
+      'nanoBananaAspectRatios' in config ? (config as any).nanoBananaAspectRatios?.map((a: any) => a.id) || [] : [];
 
     return NextResponse.json({
       success: true,

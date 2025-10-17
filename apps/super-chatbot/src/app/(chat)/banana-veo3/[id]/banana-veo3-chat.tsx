@@ -67,9 +67,9 @@ export function BananaVeo3Chat({
       messages: initialMessages.map((m) => ({
         id: m.id,
         role: m.role,
-        content: m.content?.substring(0, 50),
+        content: (m as any).content?.substring(0, 50),
         partsLength: m.parts?.length,
-        hasContent: !!m.content,
+        hasContent: !!(m as any).content,
         hasParts: !!m.parts,
       })),
     });
@@ -96,10 +96,9 @@ export function BananaVeo3Chat({
     const userMessage: UIMessage = {
       id: generateUUID(),
       role: "user",
-      content: input,
       parts: [{ type: "text", text: input }],
       createdAt: new Date(),
-    };
+    } as any;
 
     // Добавляем сообщение пользователя
     setMessages((prev) => [...prev, userMessage]);
@@ -125,10 +124,9 @@ export function BananaVeo3Chat({
         const assistantMessage: UIMessage = {
           id: data.messageId || generateUUID(),
           role: "assistant",
-          content: data.response,
           parts: [{ type: "text", text: data.response }],
           createdAt: new Date(),
-        };
+        } as any;
 
         setMessages((prev) => [...prev, assistantMessage]);
       } else {
@@ -140,7 +138,6 @@ export function BananaVeo3Chat({
       const errorMessage: UIMessage = {
         id: generateUUID(),
         role: "assistant",
-        content: `Ошибка: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`,
         parts: [
           {
             type: "text",
@@ -148,7 +145,7 @@ export function BananaVeo3Chat({
           },
         ],
         createdAt: new Date(),
-      };
+      } as any;
 
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -373,9 +370,9 @@ export function BananaVeo3Chat({
                   console.log("🍌 Rendering message:", {
                     id: message.id,
                     role: message.role,
-                    content: message.content,
+                    content: (message as any).content,
                     parts: message.parts,
-                    hasContent: !!message.content,
+                    hasContent: !!(message as any).content,
                     hasParts: !!message.parts,
                   });
                 }
@@ -401,7 +398,7 @@ export function BananaVeo3Chat({
                       }`}
                     >
                       <div className="whitespace-pre-wrap break-words leading-relaxed text-sm">
-                        {message.content ||
+                        {(message as any).content ||
                           message.parts?.map((part: any, i: number) => {
                             // Поддержка разных форматов parts
                             if (part.type === "text" || part.text) {

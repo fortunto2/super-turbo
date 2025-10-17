@@ -125,9 +125,9 @@ export default function TestChatPage() {
                 {message.role === "user" ? "You" : "AI"}
               </div>
               <div className="whitespace-pre-wrap">
-                {message.parts
+                {(message as any).parts
                   ? // v5 API - parts array
-                    message.parts.map((part, index) => {
+                    (message as any).parts.map((part: any, index: number) => {
                       if (part.type === "text") {
                         return <span key={index}>{part.text}</span>;
                       }

@@ -131,7 +131,7 @@ const SHOT_SIZES: MediaOption[] = [
 
 export const imageDocumentHandler = createDocumentHandler<'image'>({
   kind: 'image',
-  onCreateDocument: async ({ id: chatId, title, dataStream, session }) => {
+  onCreateDocument: async ({ id: chatId, title, session }) => {
     let draftContent = '';
     try {
       // Parse the title to extract image generation parameters
@@ -468,7 +468,7 @@ export const imageDocumentHandler = createDocumentHandler<'image'>({
     }
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ document, description }) => {
     let draftContent = document.content;
     try {
       // Check if document already has completed content - don't recreate if so

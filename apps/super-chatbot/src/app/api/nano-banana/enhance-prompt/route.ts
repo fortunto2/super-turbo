@@ -67,6 +67,10 @@ export async function POST(request: NextRequest) {
     console.log('🍌 Validated enhance prompt request data:', validatedData);
 
     // Вызываем инструмент улучшения промпта
+    if (!nanoBananaPromptEnhancer?.execute) {
+      throw new Error('nanoBananaPromptEnhancer tool is not properly initialized');
+    }
+
     const result = await nanoBananaPromptEnhancer.execute(validatedData, {
       toolCallId: 'nano-banana-enhance',
       messages: [],
@@ -75,11 +79,11 @@ export async function POST(request: NextRequest) {
     console.log('🍌 Enhance prompt result:', result);
 
     // Проверяем на ошибки
-    if (result.error) {
+    if ('error' in result && result.error) {
       return NextResponse.json(
         {
           error: result.error,
-          fallback: result.fallback,
+          fallback: (result as any).fallback,
         },
         { status: 400 },
       );
@@ -120,6 +124,10 @@ export async function GET() {
     console.log('🍌 Nano Banana enhance prompt info API called');
 
     // Получаем информацию о техниках и стилях
+    if (!nanoBananaPromptEnhancer?.execute) {
+      throw new Error('nanoBananaPromptEnhancer tool is not properly initialized');
+    }
+
     const techniquesInfo = await nanoBananaPromptEnhancer.execute(
       {
         originalPrompt: 'info',
@@ -137,7 +145,9 @@ export async function GET() {
 
     // Извлекаем нужные данные из конфигурации
     const techniques =
-      techniquesInfo.appliedTechniques?.map((t: any) => t.id) || [];
+      'appliedTechniques' in techniquesInfo
+        ? (techniquesInfo as any).appliedTechniques?.map((t: any) => t.id) || []
+        : [];
 
     return NextResponse.json({
       success: true,

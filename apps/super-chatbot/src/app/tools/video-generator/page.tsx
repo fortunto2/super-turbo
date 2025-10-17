@@ -16,8 +16,6 @@ export default function VideoGeneratorPage() {
   // AICODE-NOTE: Initialize chat for video persistence
   const { messages, setMessages } = useChat({
     id: "video-generator-tool",
-    initialMessages: [],
-    streamProtocol: "ui-message", // AI SDK v5: Required for @ai-sdk/react 2.x
   });
 
   const {

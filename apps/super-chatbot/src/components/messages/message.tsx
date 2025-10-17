@@ -146,7 +146,7 @@ const PurePreviewMessage = ({
                       : '';
 
                   // Skip rendering if this is a raw JSON tool-call message
-                  if (textContent && textContent.trim().startsWith('{"type":"tool-')) {
+                  if (textContent?.trim().startsWith('{"type":"tool-')) {
                     console.log("📝 Skipping raw JSON tool-call message:", textContent.substring(0, 100));
                     return null;
                   }

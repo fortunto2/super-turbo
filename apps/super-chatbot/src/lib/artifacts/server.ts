@@ -85,6 +85,7 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         args.session?.user?.id &&
         (config.kind === "text" || // Text artifacts can be saved immediately
           config.kind === "sheet" || // Sheet artifacts can be saved immediately
+          config.kind === "script" || // Script artifacts can be saved immediately (content is pre-generated)
           (config.kind === "image" && !!draftContent) ||
           (config.kind === "video" &&
             draftContent &&

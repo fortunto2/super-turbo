@@ -197,10 +197,22 @@ export default function NanoBananaGeneratorPage() {
                     onDeleteEditedImage={editor.deleteEditedImage}
                     onClearAllGenerated={generator.clearAllImages}
                     onClearAllEdited={editor.clearAllEditedImages}
-                    onDownloadGeneratedImage={generator.downloadImage}
-                    onDownloadEditedImage={editor.downloadEditedImage}
-                    onCopyGeneratedImageUrl={generator.copyImageUrl}
-                    onCopyEditedImageUrl={editor.copyEditedImageUrl}
+                    onDownloadGeneratedImage={(url, filename) => {
+                      const image = generator.generatedImages.find(img => img.url === url) || generator.currentGeneration;
+                      if (image) generator.downloadImage(image);
+                    }}
+                    onDownloadEditedImage={(url, filename) => {
+                      const image = editor.editedImages.find(img => img.url === url) || editor.currentEdit;
+                      if (image) editor.downloadEditedImage(image);
+                    }}
+                    onCopyGeneratedImageUrl={(url) => {
+                      const image = generator.generatedImages.find(img => img.url === url) || generator.currentGeneration;
+                      if (image) generator.copyImageUrl(image);
+                    }}
+                    onCopyEditedImageUrl={(url) => {
+                      const image = editor.editedImages.find(img => img.url === url) || editor.currentEdit;
+                      if (image) editor.copyEditedImageUrl(image);
+                    }}
                     isGenerating={generator.isGenerating}
                     isEditing={editor.isEditing}
                   />

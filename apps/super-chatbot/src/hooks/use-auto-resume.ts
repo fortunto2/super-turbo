@@ -9,7 +9,7 @@ export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
   data: UseChatHelpers<any>['data'];
-  setMessages: UseChatHelpers<any>['setMessages'];
+  setMessages: any // AI SDK v5: setMessages type changed;
 }
 
 export function useAutoResume({

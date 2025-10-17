@@ -26,7 +26,7 @@ function convertToVideoModel(sdModel: VideoModel): VideoModel {
 
 export const videoDocumentHandler = createDocumentHandler<'video'>({
   kind: 'video',
-  onCreateDocument: async ({ id: chatId, title, dataStream, session }) => {
+  onCreateDocument: async ({ id: chatId, title, session }) => {
     let draftContent = '';
     try {
       // Parse the title to extract video generation parameters
@@ -313,7 +313,7 @@ export const videoDocumentHandler = createDocumentHandler<'video'>({
     }
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ document, description }) => {
     let draftContent = document.content;
     try {
       // Check if document already has completed content - don't recreate if so

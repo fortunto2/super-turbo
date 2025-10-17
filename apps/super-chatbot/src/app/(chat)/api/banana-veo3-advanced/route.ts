@@ -139,15 +139,15 @@ export async function POST(request: NextRequest) {
             );
 
             for (const assistantMessage of assistantMessages) {
+              const msgAny = assistantMessage as any;
               await saveMessages({
                 messages: [
                   {
                     chatId: id,
-                    id: assistantMessage.id,
+                    id: msgAny.id || generateUUID(),
                     role: "assistant",
-                    parts: (assistantMessage as any)?.parts,
-                    attachments:
-                      (assistantMessage as any)?.experimental_attachments ?? [],
+                    parts: msgAny?.parts,
+                    attachments: msgAny?.experimental_attachments ?? [],
                     createdAt: new Date(),
                   },
                 ],

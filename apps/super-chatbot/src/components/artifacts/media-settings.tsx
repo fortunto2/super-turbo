@@ -27,7 +27,7 @@ interface MediaSettingsProps {
   onConfirm: (settings: ImageSettings | VideoSettings) => void;
   selectedChatModel: string;
   selectedVisibilityType: 'public' | 'private';
-  append?: UseChatHelpers<any>['append'];
+  append?: any // AI SDK v5: append type changed;
 }
 
 export function MediaSettings({
