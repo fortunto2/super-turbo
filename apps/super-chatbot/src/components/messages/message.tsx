@@ -24,6 +24,7 @@ import type {
 import { useArtifactLegacy } from "@/hooks/use-artifact";
 import { ScriptArtifactViewer } from "@/artifacts/text/client";
 import { Button, cn } from "@turbo-super/ui";
+import { saveScriptToChat } from "@/lib/ai/chat/media";
 
 const PurePreviewMessage = ({
   chatId,
@@ -42,17 +43,30 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: UseChatHelpers<any>["setMessages"];
+  reload: UseChatHelpers<any>["reload"];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   selectedChatModel: string;
   selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers["append"];
+  append?: UseChatHelpers<any>["append"];
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const { setArtifact } = useArtifactLegacy(chatId);
-  console.log(message);
+
+  // Debug: log message structure
+  if (message.role === "assistant" && message.parts) {
+    console.log("📨 Assistant message in message.tsx:", {
+      id: message.id,
+      role: message.role,
+      partsCount: message.parts.length,
+      parts: message.parts.map((p: any) => ({
+        type: p.type,
+        state: p.state,
+        toolName: p.toolName || p.toolCallId,
+      })),
+    });
+  }
 
   return (
     <AnimatePresence>
@@ -131,9 +145,15 @@ const PurePreviewMessage = ({
                         }).join('')
                       : '';
 
+                  // Skip rendering if this is a raw JSON tool-call message
+                  if (textContent && textContent.trim().startsWith('{"type":"tool-')) {
+                    console.log("📝 Skipping raw JSON tool-call message:", textContent.substring(0, 100));
+                    return null;
+                  }
+
                   // --- EMBED ARTIFACT (image/video/text) ---
                   let artifact: any = null;
-                  if (textContent && textContent.startsWith("```json")) {
+                  if (textContent?.startsWith("```json")) {
                     try {
                       const jsonMatch = textContent.match(
                         /```json\s*({[\s\S]*?})\s*```/
@@ -143,8 +163,7 @@ const PurePreviewMessage = ({
                       }
                     } catch {}
                   } else if (
-                    textContent &&
-                    textContent.startsWith("{") &&
+                    textContent?.startsWith("{") &&
                     textContent.endsWith("}")
                   ) {
                     try {
@@ -190,7 +209,7 @@ const PurePreviewMessage = ({
                   }
                   // --- END EMBED ---
                   // Check if this is a resolution selection message
-                  if (textContent && textContent.startsWith("Выбрано разрешение:")) {
+                  if (textContent?.startsWith("Выбрано разрешение:")) {
                     const resolutionMatch = textContent.match(
                       /разрешение: (\d+)x(\d+), стиль: (.+?), размер кадра: (.+?), модель: (.+?)(?:, сид: (\d+))?$/
                     );
@@ -289,7 +308,7 @@ const PurePreviewMessage = ({
                 const { toolName, toolCallId, state, args } = toolInvocation;
 
                 // Debug: log all tool invocations
-                console.log("🔍 Tool invocation detected:", {
+                console.log("🔍 Tool invocation detected in message.tsx:", {
                   toolName,
                   state,
                   hasResult: state === "result" && !!toolInvocation.result,
@@ -302,46 +321,6 @@ const PurePreviewMessage = ({
 
                 if (state === "result") {
                   const { result } = toolInvocation;
-
-                  if (
-                    toolName === "configureScriptGeneration" &&
-                    result &&
-                    typeof result === "object" &&
-                    "id" in result &&
-                    "title" in result
-                  ) {
-                    return (
-                      <div
-                        key={toolCallId}
-                        className="flex flex-row gap-2 items-start"
-                      >
-                        <div
-                          className="cursor-pointer w-full"
-                          onClick={() => {
-                            setArtifact({
-                              title: result.title as string,
-                              documentId: result.id as string,
-                              kind: "script",
-                              content: "", // Content will be fetched in the artifact viewer
-                              isVisible: true,
-                              status: "idle",
-                              boundingBox: {
-                                top: 0,
-                                left: 0,
-                                width: 0,
-                                height: 0,
-                              },
-                            });
-                          }}
-                        >
-                          <ScriptArtifactViewer
-                            title={result.title as string}
-                            content={""}
-                          />
-                        </div>
-                      </div>
-                    );
-                  }
 
                   // Handle image generation configuration
                   if (
@@ -395,6 +374,39 @@ const PurePreviewMessage = ({
                     );
                   }
 
+                  // Handle configureScriptGeneration tool result - opens artifact viewer and saves to chat
+                  if (
+                    toolName === "configureScriptGeneration" &&
+                    result &&
+                    typeof result === "object" &&
+                    "id" in result &&
+                    "kind" in result &&
+                    "title" in result
+                  ) {
+                    const scriptTitle = result.title as string;
+                    const scriptId = result.id as string;
+
+                    console.log("📄 configureScriptGeneration tool result received:", {
+                      id: scriptId,
+                      kind: result.kind,
+                      title: scriptTitle,
+                    });
+
+                    // Save script to chat immediately
+                    if (setMessages) {
+                      console.log("📄 Saving script to chat history...");
+                      saveScriptToChat(
+                        chatId,
+                        scriptId,
+                        scriptTitle,
+                        setMessages
+                      );
+                    }
+
+                    // Don't return any UI element - script artifact is already opened by use-artifact hook
+                    return null;
+                  }
+
                   // Handle createDocument tool result - opens artifact viewer
                   if (
                     toolName === "createDocument" &&
@@ -443,6 +455,7 @@ const PurePreviewMessage = ({
                           height: 0,
                         },
                       });
+
                     }, 100);
 
                     // Show a loading message for artifacts

@@ -8,8 +8,8 @@ import type { DataPart } from '@/lib/types';
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
-  data: UseChatHelpers['data'];
-  setMessages: UseChatHelpers['setMessages'];
+  data: UseChatHelpers<any>['data'];
+  setMessages: UseChatHelpers<any>['setMessages'];
 }
 
 export function useAutoResume({

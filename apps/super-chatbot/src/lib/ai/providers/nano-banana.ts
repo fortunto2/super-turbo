@@ -170,7 +170,7 @@ export class NanoBananaProvider {
             },
           ],
           apiKey,
-          { temperature: 0.6, maxTokens: 256 },
+          { temperature: 0.6, maxOutputTokens: 256 },
         );
         result.geminiResponse = geminiText || enhancedPrompt;
       } else {

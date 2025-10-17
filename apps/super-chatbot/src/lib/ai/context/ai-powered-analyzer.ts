@@ -144,7 +144,7 @@ IMPORTANT:
   const { text } = await generateText({
     model: myProvider.languageModel('chat-model'),
     prompt,
-    maxTokens: 200,
+    maxOutputTokens: 200,
   });
 
   // Parse LLM response

@@ -8,7 +8,7 @@ import type { VisibilityType } from '../shared/visibility-selector';
 import { Button } from '@turbo-super/ui';
 interface SuggestedActionsProps {
   chatId: string;
-  append: UseChatHelpers['append'];
+  append: UseChatHelpers<any>['append'];
   selectedVisibilityType: VisibilityType;
   onAppend?: (message: any) => void; // Добавляем callback для обновления URL
 }

@@ -17,7 +17,7 @@ export const configureScriptGeneration = (
 ) =>
   tool({
     description:
-      'Generate a script (scenario) and create a document artifact. When prompt is provided, this will create a script artifact and show it in chat.',
+      'Generate a script (scenario) and create a document artifact. When prompt is provided, creates a script artifact that displays in the right panel. The tool returns a message field that describes the created script - use this to generate a conversational response to the user.',
     inputSchema: z.object({
       prompt: z
         .string()
@@ -73,7 +73,7 @@ You are a professional scriptwriter AI. Generate a detailed scenario in Markdown
           system: systemPrompt,
           prompt: userPrompt,
           temperature: 0.7,
-          maxTokens: 1200,
+          maxOutputTokens: 1200,
         });
 
         const script = generationResult.text;
@@ -88,11 +88,13 @@ You are a professional scriptwriter AI. Generate a detailed scenario in Markdown
           content: script,
         });
 
-        // 3. Return the result which will be sent to the client
+        console.log('🔧 ✅ CREATE DOCUMENT RESULT:', documentResult);
+
+        // 3. Return simple result like video generation
+        // The LLM will generate a text response, and the script artifact is already created
         return {
-          id: documentResult.id,
-          title: '📝 Script created!',
-          kind: 'script',
+          ...documentResult,
+          message: `I've created a script: "${prompt}". The script is ready and you can view it in the artifact panel.`,
         };
       } catch (error) {
         console.error('Error during script generation tool execution:', error);

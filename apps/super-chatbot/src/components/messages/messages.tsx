@@ -10,16 +10,16 @@ import { Greeting } from '../chat';
 
 interface MessagesProps {
   chatId: string;
-  status: UseChatHelpers['status'];
+  status: UseChatHelpers<any>['status'];
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
+  setMessages: UseChatHelpers<any>['setMessages'];
+  reload: UseChatHelpers<any>['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedChatModel: string;
   selectedVisibilityType: 'public' | 'private';
-  append?: UseChatHelpers['append'];
+  append?: UseChatHelpers<any>['append'];
 }
 
 function PureMessages({

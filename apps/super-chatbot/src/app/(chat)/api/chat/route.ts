@@ -1,4 +1,4 @@
-import { streamText } from "ai";
+import { streamText, stepCountIs } from "ai";
 import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { myProvider } from "@/lib/ai/providers";
@@ -8,13 +8,21 @@ import {
   getChatById,
   getMessagesByChatId,
   saveMessages,
-  saveChat,
-  getOrCreateOAuthUser,
 } from "@/lib/db/queries";
-import { generateUUID } from "@/lib/utils";
-import { generateTitleFromUserMessage } from "../../actions";
-import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 import { postRequestBodySchema } from "./schema";
+
+// Import utilities
+import {
+  normalizeUIMessage,
+  ensureMessageHasUUID,
+  convertDBMessagesToUIMessages,
+  normalizeMessageParts,
+} from "@/lib/ai/chat/message-utils";
+import {
+  ensureChatExists,
+  saveUserMessage,
+} from "@/lib/ai/chat/chat-management";
+import { formatErrorResponse } from "@/lib/ai/chat/error-handler";
 
 // Import tools
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
@@ -23,15 +31,6 @@ import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-gener
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-
-// Normalize message function from the original code
-function normalizeMessage(message: any) {
-  return {
-    ...message,
-    content: message.content || message.parts?.[0]?.text || "",
-    parts: message.parts || [{ type: "text", text: message.content || "" }],
-  };
-}
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
@@ -80,61 +79,28 @@ export const POST = withMonitoring(async (request: Request) => {
     }
 
     // AI SDK v5: Ensure all messages have proper UUID and createdAt
-    rawMessages = rawMessages.map((msg: any) => {
-      // AI SDK v5 generates short IDs that aren't UUIDs - always generate proper UUID
-      const messageId = generateUUID();
-      return {
-        ...msg,
-        id: messageId,
-        createdAt: msg.createdAt || new Date(),
-      };
+    // Also normalize message parts to convert tool-specific types to generic types
+    const normalizedMessages = rawMessages.map((msg: any) => {
+      const normalized = normalizeUIMessage(msg);
+      const withUUID = ensureMessageHasUUID(normalized);
+      return normalizeMessageParts(withUUID);
     });
 
-    // Get chat info
-    let chat = await getChatById({ id: chatId });
+    // Ensure chat exists (with automatic FK recovery)
+    await ensureChatExists({
+      chatId,
+      userId: session.user.id,
+      userEmail: session.user.email || `user-${session.user.id}@example.com`,
+      firstMessage: normalizedMessages[normalizedMessages.length - 1],
+      visibility: selectedVisibilityType || "private",
+    });
 
-    // If chat doesn't exist, create it
+    const chat = await getChatById({ id: chatId });
     if (!chat) {
-      try {
-        // Ensure user exists
-        if (session.user.email) {
-          await getOrCreateOAuthUser(session.user.id, session.user.email);
-        }
-
-        // Generate title from first user message
-        const firstUserMessage = rawMessages.find(
-          (msg: any) => msg.role === "user"
-        );
-        const title = firstUserMessage
-          ? await generateTitleFromUserMessage({
-              message: normalizeMessage(firstUserMessage),
-            })
-          : "New Chat";
-
-        // Create the chat
-        await saveChat({
-          id: chatId,
-          userId: session.user.id,
-          title,
-          visibility: selectedVisibilityType || "private",
-        });
-
-        // Get the created chat
-        chat = await getChatById({ id: chatId });
-
-        if (!chat) {
-          return NextResponse.json(
-            { error: "Failed to create chat" },
-            { status: 500 }
-          );
-        }
-      } catch (error) {
-        console.error("Error creating chat:", error);
-        return NextResponse.json(
-          { error: "Failed to create chat" },
-          { status: 500 }
-        );
-      }
+      return formatErrorResponse(
+        new Error("Failed to create chat"),
+        "Chat API"
+      );
     }
 
     // Get previous messages from database
@@ -143,21 +109,17 @@ export const POST = withMonitoring(async (request: Request) => {
     // Convert to UI format and add new messages
     const allMessages = [
       ...convertDBMessagesToUIMessages(previousMessages),
-      ...rawMessages.map(normalizeMessage),
+      ...normalizedMessages.filter((msg) => msg.role !== "system"),
     ];
 
-    // Save user messages to database (already have proper UUIDs from above)
-    const userMessages = rawMessages.filter((msg: any) => msg.role === "user");
-    if (userMessages.length > 0) {
-      await saveMessages({
-        messages: userMessages.map((msg: any) => ({
-          chatId,
-          id: msg.id, // Already has proper UUID from the map above
-          role: msg.role,
-          parts: msg.parts || [{ type: "text", text: msg.content }],
-          attachments: msg.experimental_attachments || [],
-          createdAt: msg.createdAt || new Date(),
-        })),
+    // Save user messages to database (with automatic FK recovery)
+    const userMessages = normalizedMessages.filter(
+      (msg) => msg.role === "user"
+    );
+    for (const userMsg of userMessages) {
+      await saveUserMessage({
+        chatId,
+        message: userMsg,
       });
     }
 
@@ -167,21 +129,20 @@ export const POST = withMonitoring(async (request: Request) => {
     // Create tools with proper parameters
     const createDocumentTool = createDocument({ session });
     const updateDocumentTool = updateDocument({ session });
+    const lastMessage = normalizedMessages[normalizedMessages.length - 1];
     const imageGenerationTool = configureImageGeneration({
       createDocument: createDocumentTool,
       session,
       chatId,
-      userMessage: rawMessages[rawMessages.length - 1]?.content || "",
-      currentAttachments:
-        rawMessages[rawMessages.length - 1]?.experimental_attachments || [],
+      userMessage: lastMessage?.content || "",
+      currentAttachments: lastMessage?.experimental_attachments || [],
     });
     const videoGenerationTool = configureVideoGeneration({
       createDocument: createDocumentTool,
       session,
       chatId,
-      userMessage: rawMessages[rawMessages.length - 1]?.content || "",
-      currentAttachments:
-        rawMessages[rawMessages.length - 1]?.experimental_attachments || [],
+      userMessage: lastMessage?.content || "",
+      currentAttachments: lastMessage?.experimental_attachments || [],
     });
     const scriptGenerationTool = configureScriptGeneration({
       createDocument: createDocumentTool,
@@ -205,26 +166,123 @@ export const POST = withMonitoring(async (request: Request) => {
         updateDocument: updateDocumentTool,
         requestSuggestions: suggestionsTool,
       },
+      toolChoice: 'auto', // Let model decide when to use tools vs generate text
+      stopWhen: stepCountIs(10), // AI SDK v5: Enable multi-step execution - model can call tools AND generate text in same response
       onFinish: async ({ response }) => {
         try {
-          // Save assistant messages to database
-          const assistantMessages = response.messages.filter(
-            (msg: any) => msg.role === "assistant"
+          console.log(
+            "📝 onFinish called with response.messages:",
+            response.messages.length
           );
-          if (assistantMessages.length > 0) {
-            await saveMessages({
-              messages: assistantMessages.map((msg: any) => ({
+
+          // Extract document IDs from tool results
+          const toolDocuments: Array<{ id: string; title: string; kind: string }> = [];
+          for (const msg of response.messages) {
+            if (msg.role === "tool") {
+              const toolResult = (msg as any).content;
+              console.log("📝 🔍 Tool result:", JSON.stringify(toolResult).substring(0, 200));
+
+              // AI SDK v5: Tool result is wrapped in array with type/output structure
+              if (Array.isArray(toolResult)) {
+                for (const item of toolResult) {
+                  // Check for tool-result with output.value structure
+                  if (item.type === "tool-result" && item.output?.type === "json" && item.output?.value) {
+                    const doc = item.output.value;
+                    if (doc.id && doc.kind) {
+                      toolDocuments.push({
+                        id: doc.id,
+                        title: doc.title || "Document",
+                        kind: doc.kind,
+                      });
+                      console.log("📝 ✅ Found document from tool:", doc.kind, doc.id);
+                    }
+                  }
+                  // Fallback: direct structure
+                  else if (item.id && item.kind) {
+                    toolDocuments.push({
+                      id: item.id,
+                      title: item.title || "Document",
+                      kind: item.kind,
+                    });
+                    console.log("📝 ✅ Found document from tool (direct):", item.kind, item.id);
+                  }
+                }
+              }
+              // Fallback: single object
+              else if (toolResult && typeof toolResult === "object") {
+                // Check for tool-result structure
+                if (toolResult.type === "tool-result" && toolResult.output?.type === "json" && toolResult.output?.value) {
+                  const doc = toolResult.output.value;
+                  if (doc.id && doc.kind) {
+                    toolDocuments.push({
+                      id: doc.id,
+                      title: doc.title || "Document",
+                      kind: doc.kind,
+                    });
+                    console.log("📝 ✅ Found document from tool:", doc.kind, doc.id);
+                  }
+                }
+                // Direct structure
+                else if (toolResult.id && toolResult.kind) {
+                  toolDocuments.push({
+                    id: toolResult.id,
+                    title: toolResult.title || "Document",
+                    kind: toolResult.kind,
+                  });
+                  console.log("📝 ✅ Found document from tool (direct):", toolResult.kind, toolResult.id);
+                }
+              }
+            }
+          }
+
+          const assistantMessages = response.messages
+            .filter((msg) => msg.role === "assistant")
+            .map((msg) => {
+              const normalized = normalizeUIMessage(msg);
+              const withUUID = ensureMessageHasUUID(normalized);
+
+              const attachments = normalized.experimental_attachments || [];
+
+              // Add attachments for documents created by tools
+              for (const doc of toolDocuments) {
+                if (doc.kind === "script") {
+                  attachments.push({
+                    name: doc.title.length > 200 ? `${doc.title.substring(0, 200)}...` : doc.title,
+                    url: `${
+                      typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL
+                        ? process.env.NEXT_PUBLIC_APP_URL
+                        : "http://localhost:3001"
+                    }/api/document?id=${doc.id}`,
+                    contentType: "text/markdown" as const,
+                    documentId: doc.id,
+                  });
+                  console.log("📝 ✅ Added script attachment to message:", doc.id);
+                }
+              }
+
+              return {
+                id: withUUID.id,
                 chatId,
-                id: generateUUID(), // AI SDK v5: Always generate proper UUID
-                role: msg.role,
-                parts: msg.parts || [{ type: "text", text: msg.content }],
-                attachments: msg.experimental_attachments || [],
+                role: "assistant" as const,
+                parts: normalized.parts,
+                attachments: attachments,
                 createdAt: new Date(),
-              })),
+              };
             });
+
+          if (assistantMessages.length > 0) {
+            console.log(
+              "📝 Saving",
+              assistantMessages.length,
+              "assistant messages to database"
+            );
+            await saveMessages({ messages: assistantMessages });
+            console.log("📝 ✅ Assistant messages saved successfully");
+          } else {
+            console.log("📝 ⚠️ No assistant messages to save");
           }
         } catch (error) {
-          console.error("Error saving assistant messages:", error);
+          console.error("Failed to save assistant messages:", error);
         }
       },
       onError: (error) => {
@@ -235,13 +293,6 @@ export const POST = withMonitoring(async (request: Request) => {
     // AI SDK v5: Use toUIMessageStreamResponse() - requires updating @ai-sdk/react
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error("Chat API error:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return formatErrorResponse(error, "Chat API");
   }
 });

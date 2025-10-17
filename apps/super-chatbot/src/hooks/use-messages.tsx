@@ -9,7 +9,7 @@ export function useMessages({
   status,
 }: {
   chatId: string;
-  status: UseChatHelpers['status'];
+  status: UseChatHelpers<any>['status'];
 }) {
   const {
     containerRef,

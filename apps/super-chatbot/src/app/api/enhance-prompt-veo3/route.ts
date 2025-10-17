@@ -24,7 +24,7 @@ const MODEL_CONFIG = {
     name: 'GPT-4.1',
     deploymentName: 'gpt-4.1', // Real deployment name in Azure
     maxChars: { short: 500, medium: 1000, long: 2000 },
-    maxTokens: { short: 150, medium: 300, long: 600 },
+    maxOutputTokens: { short: 150, medium: 300, long: 600 },
     supportsSystem: true,
     isReasoning: false,
     type: 'chat', // standard chat model
@@ -493,7 +493,7 @@ Your output will be automatically formatted for VEO3 usage.`,
 
     const result = await generateObject({
       model: modelInstance,
-      maxTokens: maxTokens,
+      maxOutputTokens: maxTokens,
       temperature: 0.7, // Add some creativity but keep it controlled
       messages,
       schema: veo3Schema,

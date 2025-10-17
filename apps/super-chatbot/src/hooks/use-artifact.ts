@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import useSWR from "swr";
-import type { UIArtifact } from "@/components/artifacts/artifact";
-import { useCallback, useMemo, useEffect } from "react";
-import type { UIMessage } from "ai";
+import useSWR from 'swr';
+import type { UIArtifact } from '@/components/artifacts/artifact';
+import { useCallback, useMemo, useEffect } from 'react';
+import type { UIMessage } from 'ai';
 import {
   saveArtifactToStorage,
   loadArtifactFromStorage,
   clearArtifactFromStorage,
   restoreArtifactFromData,
-} from "@/lib/utils/artifact-persistence";
+} from '@/lib/utils/artifact-persistence';
 
 export const initialArtifactData: UIArtifact = {
-  documentId: "init",
-  content: "",
-  kind: "text",
-  title: "",
-  status: "idle",
+  documentId: 'init',
+  content: '',
+  kind: 'text',
+  title: '',
+  status: 'idle',
   isVisible: false,
   boundingBox: {
     top: 0,
@@ -29,7 +29,7 @@ export const initialArtifactData: UIArtifact = {
 type Selector<T> = (state: UIArtifact) => T;
 
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
-  const { data: localArtifact } = useSWR<UIArtifact>("artifact", null, {
+  const { data: localArtifact } = useSWR<UIArtifact>('artifact', null, {
     fallbackData: initialArtifactData,
   });
 
@@ -43,17 +43,17 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
 
 // Простой хук для управления артефактами
 export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
-  console.log("🔍 useArtifact hook called with:", {
+  console.log('🔍 useArtifact hook called with:', {
     chatId,
     initialMessagesLength: initialMessages?.length,
   });
 
   const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
-    "artifact",
+    'artifact',
     null,
     {
       fallbackData: initialArtifactData,
-    }
+    },
   );
 
   const artifact = useMemo(() => {
@@ -62,21 +62,21 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
 
   const setArtifact = useCallback(
     (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
-      console.log("🔍 setArtifact called with chatId:", chatId);
+      console.log('🔍 setArtifact called with chatId:', chatId);
 
       setLocalArtifact((currentArtifact) => {
         const artifactToUpdate = currentArtifact || initialArtifactData;
 
         let newArtifact: UIArtifact;
-        if (typeof updaterFn === "function") {
+        if (typeof updaterFn === 'function') {
           newArtifact = updaterFn(artifactToUpdate);
         } else {
           newArtifact = updaterFn;
         }
 
         // Улучшенное сохранение в localStorage
-        if (chatId && typeof window !== "undefined") {
-          console.log("💾 Artifact state changed:", {
+        if (chatId && typeof window !== 'undefined') {
+          console.log('💾 Artifact state changed:', {
             chatId,
             documentId: newArtifact.documentId,
             status: newArtifact.status,
@@ -86,15 +86,15 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
 
           // Сохраняем артефакт если он имеет реальный контент или статус
           const shouldSave =
-            newArtifact.documentId !== "init" ||
-            (newArtifact.status !== "idle" && newArtifact.status !== "error") ||
+            newArtifact.documentId !== 'init' ||
+            (newArtifact.status !== 'idle' && newArtifact.status !== 'error') ||
             newArtifact.content ||
             newArtifact.title ||
             newArtifact.isVisible;
 
           if (shouldSave) {
             // Используем утилиту для сохранения
-            console.log("💾 Saving artifact to storage:", {
+            console.log('💾 Saving artifact to storage:', {
               chatId,
               artifact: newArtifact,
             });
@@ -102,15 +102,15 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
           } else {
             // Очищаем только если это действительно инициализация
             console.log(
-              "🗑️ Clearing artifact from storage (init state):",
-              chatId
+              '🗑️ Clearing artifact from storage (init state):',
+              chatId,
             );
             clearArtifactFromStorage(chatId);
           }
         } else {
-          console.log("⚠️ Skipping save - no chatId or window:", {
+          console.log('⚠️ Skipping save - no chatId or window:', {
             chatId,
-            hasWindow: typeof window !== "undefined",
+            hasWindow: typeof window !== 'undefined',
             chatIdType: typeof chatId,
           });
         }
@@ -118,7 +118,7 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
         return newArtifact;
       });
     },
-    [setLocalArtifact, chatId]
+    [setLocalArtifact, chatId],
   );
 
   const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
@@ -128,50 +128,50 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
       null,
       {
         fallbackData: null,
-      }
+      },
     );
 
   // Улучшенное восстановление при загрузке чата
   useEffect(() => {
-    console.log("🔍 useArtifact useEffect triggered:", {
+    console.log('🔍 useArtifact useEffect triggered:', {
       chatId,
       window: typeof window,
       chatIdType: typeof chatId,
     });
 
-    if (chatId && typeof window !== "undefined") {
-      console.log("🔍 Loading artifact from storage for chatId:", chatId);
+    if (chatId && typeof window !== 'undefined') {
+      console.log('🔍 Loading artifact from storage for chatId:', chatId);
       const savedData = loadArtifactFromStorage(chatId);
-      console.log("🔍 Loaded data from storage:", savedData);
+      console.log('🔍 Loaded data from storage:', savedData);
 
       if (savedData) {
         // Определяем, нужно ли восстанавливать артефакт
         const shouldRestore =
-          (savedData.documentId && savedData.documentId !== "init") ||
+          (savedData.documentId && savedData.documentId !== 'init') ||
           savedData.isVisible ||
-          savedData.status === "streaming" ||
-          savedData.status === "pending" ||
-          savedData.status === "completed" ||
+          savedData.status === 'streaming' ||
+          savedData.status === 'pending' ||
+          savedData.status === 'completed' ||
           savedData.content ||
           savedData.title;
 
-        console.log("🔍 Should restore artifact:", shouldRestore, {
+        console.log('🔍 Should restore artifact:', shouldRestore, {
           documentId: savedData.documentId,
           isVisible: savedData.isVisible,
           status: savedData.status,
         });
 
         if (shouldRestore) {
-          console.log("🔄 Restoring artifact:", {
+          console.log('🔄 Restoring artifact:', {
             ...savedData,
             content: savedData.content
               ? `${savedData.content.substring(0, 100)}...`
-              : "empty",
+              : 'empty',
           });
 
           const restoredArtifact = restoreArtifactFromData(savedData);
           setLocalArtifact((draft) => {
-            console.log("🔍 Setting restored artifact:", restoredArtifact);
+            console.log('🔍 Setting restored artifact:', restoredArtifact);
             return {
               ...draft,
               ...restoredArtifact,
@@ -185,16 +185,16 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
           });
         } else {
           // Очищаем неактивные артефакты
-          console.log("🗑️ Clearing inactive artifact for chatId:", chatId);
+          console.log('🗑️ Clearing inactive artifact for chatId:', chatId);
           clearArtifactFromStorage(chatId);
         }
       } else {
-        console.log("🔍 No saved data found for chatId:", chatId);
+        console.log('🔍 No saved data found for chatId:', chatId);
       }
     } else {
-      console.log("🔍 Skipping restoration - no chatId or window:", {
+      console.log('🔍 Skipping restoration - no chatId or window:', {
         chatId,
-        hasWindow: typeof window !== "undefined",
+        hasWindow: typeof window !== 'undefined',
         chatIdType: typeof chatId,
       });
     }
@@ -202,7 +202,7 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
 
   // Expose artifact globally for debugging
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       (window as any).artifactInstance = {
         artifact,
         setArtifact,
@@ -214,85 +214,114 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
 
   const updateMessages = useCallback(
     (newMessages: UIMessage[]) => {
-      console.log("🔍 updateMessages called with:", {
+      console.log('🔍 updateMessages called with:', {
         messagesCount: newMessages.length,
         chatId,
       });
 
       // AI SDK v5: Отслеживаем tool invocations в message.parts
       const lastMessage = newMessages[newMessages.length - 1];
-      if (!lastMessage || lastMessage.role !== "assistant") {
-        console.log("🔍 No assistant message to process");
+      if (!lastMessage || lastMessage.role !== 'assistant') {
+        console.log('🔍 No assistant message to process');
         return;
       }
 
-      console.log("🔍 Checking last assistant message:", {
+      console.log('🔍 Checking last assistant message:', {
         id: lastMessage.id,
         partsCount: lastMessage.parts?.length || 0,
       });
 
       // Логируем все parts для отладки
-      console.log("🔍 Message parts:", lastMessage.parts?.map((part: any) => ({
-        type: part.type,
-        state: part.state,
-        hasOutput: !!part.output,
-      })));
-
-      // Детальное логирование каждого part
-      lastMessage.parts?.forEach((part: any, index: number) => {
-        console.log(`🔍 Part ${index}:`, {
+      console.log(
+        '🔍 Message parts:',
+        lastMessage.parts?.map((part: any) => ({
           type: part.type,
           state: part.state,
-          hasText: !!part.text,
-          text: part.text ? part.text.substring(0, 100) : undefined,
           hasOutput: !!part.output,
-          outputKeys: part.output ? Object.keys(part.output) : undefined,
-        });
-      });
+        })),
+      );
 
       // AI SDK v5: Ищем tool invocations с createDocument или tool outputs с documentId
       // В v5 createDocument может быть вызван внутри другого tool на сервере
 
       // Сначала ищем прямой вызов createDocument
-      let createDocumentPart = lastMessage.parts?.find(
-        (part: any) =>
-          part.type === "tool-createDocument" &&
-          part.state === "output-available"
-      );
+      // AI SDK v5: После нормализации может быть как "tool-createDocument" так и "tool-call"
+      let createDocumentPart = lastMessage.parts?.find((part: any) => {
+        if (part.state !== 'output-available') return false;
+
+        // Проверяем tool-specific тип
+        if (part.type === 'tool-createDocument') return true;
+
+        // Проверяем generic tool-call с toolName
+        if (part.type === 'tool-call') {
+          const toolName = part.toolName || part.toolCallId;
+          return toolName?.includes('createDocument');
+        }
+
+        return false;
+      });
 
       // Если не нашли прямой вызов, ищем в outputs других tools (configureImageGeneration, configureVideoGeneration)
       if (!createDocumentPart) {
-        const toolsWithDocuments = ["tool-configureImageGeneration", "tool-configureVideoGeneration", "tool-configureScriptGeneration"];
+        // AI SDK v5: После нормализации tool-specific типы становятся "tool-call"
+        // Проверяем tool-call с toolName или ищем по tool-specific типу
+        const toolPart = lastMessage.parts?.find((part: any) => {
+          if (part.state !== 'output-available') return false;
 
-        for (const toolType of toolsWithDocuments) {
-          const toolPart = lastMessage.parts?.find(
-            (part: any) =>
-              part.type === toolType &&
-              part.state === "output-available"
+          // Проверяем generic tool-call с toolName
+          if (part.type === 'tool-call') {
+            const toolName = part.toolName || part.toolCallId;
+            return (
+              toolName?.includes('ImageGeneration') ||
+              toolName?.includes('VideoGeneration') ||
+              toolName?.includes('ScriptGeneration') ||
+              toolName?.includes('createDocument')
+            );
+          }
+
+          // Или tool-specific тип (для обратной совместимости)
+          return (
+            part.type === 'tool-configureImageGeneration' ||
+            part.type === 'tool-configureVideoGeneration' ||
+            part.type === 'tool-configureScriptGeneration' ||
+            part.type === 'tool-createDocument'
           );
+        });
 
-          if (toolPart) {
-            console.log("🎯 Found tool with potential artifact:", { toolType, output: toolPart.output });
+        if (toolPart) {
+          console.log('🎯 Found tool with potential artifact:', {
+            toolType: toolPart.type,
+            toolName: toolPart.toolName || toolPart.toolCallId,
+            output: toolPart.output,
+          });
 
-            // AI SDK v5: Check if artifact is in output.parts[0] (nested structure)
-            const artifactData = toolPart.output?.parts?.[0] || toolPart.output;
+          // AI SDK v5: Check if artifact is in output.parts[0] (nested structure)
+          const artifactData = toolPart.output?.parts?.[0] || toolPart.output;
 
-            if (artifactData && artifactData.id && artifactData.kind) {
-              console.log("✅ Found artifact data:", artifactData);
-              createDocumentPart = { ...toolPart, output: artifactData };
-              break;
-            }
+          // Check for both id and artifactId (different tools use different field names)
+          const documentId = artifactData?.id || artifactData?.artifactId;
+
+          if (documentId && artifactData.kind) {
+            console.log('✅ Found artifact data:', {
+              ...artifactData,
+              documentId,
+            });
+            // Normalize to always use 'id' field
+            createDocumentPart = {
+              ...toolPart,
+              output: { ...artifactData, id: documentId },
+            };
           }
         }
       }
 
       if (createDocumentPart) {
-        console.log("🎯 Found document/artifact:", createDocumentPart);
+        console.log('🎯 Found document/artifact:', createDocumentPart);
 
         // Открываем артефакт
         const output = (createDocumentPart as any).output;
-        if (output && output.id) {
-          console.log("📄 Opening artifact:", {
+        if (output?.id) {
+          console.log('📄 Opening artifact:', {
             id: output.id,
             kind: output.kind,
             title: output.title,
@@ -301,18 +330,18 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
           setArtifact((prev) => ({
             ...prev,
             documentId: output.id,
-            kind: output.kind || "text",
-            title: output.title || "",
-            content: output.content || "",
+            kind: output.kind || 'text',
+            title: output.title || '',
+            content: output.content || '',
             isVisible: true,
-            status: "streaming",
+            status: 'streaming',
           }));
         }
       } else {
-        console.log("🔍 No artifact found in last message");
+        console.log('🔍 No artifact found in last message');
       }
     },
-    [chatId, setArtifact]
+    [chatId, setArtifact],
   );
 
   const metadata = localArtifactMetadata || null;
@@ -320,14 +349,14 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
   const setMetadata = useCallback(
     (updaterFn: any | ((currentMetadata: any) => any)) => {
       setLocalArtifactMetadata((currentMetadata: any) => {
-        if (typeof updaterFn === "function") {
+        if (typeof updaterFn === 'function') {
           return updaterFn(currentMetadata);
         } else {
           return updaterFn;
         }
       });
     },
-    [setLocalArtifactMetadata]
+    [setLocalArtifactMetadata],
   );
 
   return useMemo(
@@ -338,16 +367,16 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
       setMetadata,
       updateMessages,
     }),
-    [artifact, setArtifact, metadata, setMetadata, updateMessages]
+    [artifact, setArtifact, metadata, setMetadata, updateMessages],
   );
 };
 
 // Хук для обратной совместимости (без chatId) - просто возвращает useArtifact
 export const useArtifactLegacy = (
   chatId?: string,
-  initialMessages?: UIMessage[]
+  initialMessages?: UIMessage[],
 ) => {
-  console.log("🔍 useArtifactLegacy called - using fallback without chatId");
+  console.log('🔍 useArtifactLegacy called - using fallback without chatId');
   return useArtifact(chatId, initialMessages);
 };
 

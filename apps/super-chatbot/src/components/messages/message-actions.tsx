@@ -1,4 +1,4 @@
-import type { Message } from 'ai';
+import type { UIMessage as Message } from 'ai';
 import { useCopyToClipboard } from 'usehooks-ts';
 
 import type { Vote } from '@/lib/db/schema';

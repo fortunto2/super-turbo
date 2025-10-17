@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     });
 
     console.log('✅ LLM response received:', result.text);

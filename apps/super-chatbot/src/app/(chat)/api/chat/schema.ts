@@ -1,17 +1,9 @@
 import { z } from 'zod';
 
 const textPartSchema = z.object({
-  text: z.string().optional(), // Сделаем text опциональным
-  type: z.enum([
-    'text',
-    'step-start',
-    'step-finish',
-    'reasoning',
-    'tool-call',
-    'tool-result',
-    'tool-invocation', // Добавляем поддержку tool-invocation
-  ]), // Поддерживаем все типы частей
-});
+  text: z.union([z.string(), z.array(z.any())]).optional(), // AI SDK v5: text can be string or array
+  type: z.string(), // AI SDK v5: Accept any string type (will be normalized internally)
+}).passthrough(); // Allow additional fields for tool-specific data
 
 const messageSchema = z
   .object({
@@ -51,7 +43,13 @@ const messageSchema = z
       const hasPartsWithText =
         data.parts &&
         data.parts.length > 0 &&
-        data.parts.some((part) => part.text && part.text.length > 0);
+        data.parts.some((part) => {
+          if (!part.text) return false;
+          // AI SDK v5: text can be string or array
+          if (typeof part.text === 'string') return part.text.length > 0;
+          if (Array.isArray(part.text)) return part.text.length > 0;
+          return false;
+        });
       const hasAttachments =
         data.experimental_attachments &&
         data.experimental_attachments.length > 0;

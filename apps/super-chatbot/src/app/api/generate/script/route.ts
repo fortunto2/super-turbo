@@ -62,7 +62,7 @@ You are a professional scriptwriter AI. Generate a detailed scenario in Markdown
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.7,
-      maxTokens: 1200,
+      maxOutputTokens: 1200,
     });
     console.log('RESULT: SCRIPT GENERATION SUCCESS');
 

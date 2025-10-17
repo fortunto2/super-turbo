@@ -29,7 +29,18 @@
       "Read(//d/**)",
       "Bash(git --no-pager diff HEAD)",
       "WebSearch",
-      "WebFetch(domain:ai-sdk.dev)"
+      "WebFetch(domain:ai-sdk.dev)",
+      "Bash(dir:*)",
+      "Bash(pnpm exec vitest:*)",
+      "Bash(node:*)",
+      "Bash(wc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell:*)",
+      "Bash(grep:*)",
+      "Bash(git --no-pager log --oneline -10)",
+      "Bash(git --no-pager diff HEAD~3)",
+      "Bash(pnpm lint:fix)",
+      "Bash(pnpm exec biome check:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

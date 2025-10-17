@@ -235,7 +235,7 @@ export const nanoBananaPromptEnhancer = tool({
         system: systemPrompt,
         prompt: userPrompt,
         temperature: creativeMode ? 0.8 : 0.7,
-        maxTokens: 1200,
+        maxOutputTokens: 1200,
       });
 
       console.log('✅ LLM response received:', result.text);

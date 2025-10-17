@@ -9,7 +9,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 interface ChatImageWebSocketOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: UseChatHelpers<any>['setMessages'];
   enabled?: boolean;
 }
 

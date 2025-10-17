@@ -327,20 +327,10 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
 
           console.log("🔧 ✅ CREATE DOCUMENT RESULT:", result);
 
-          // Возвращаем assistant message c artifact draft для AI SDK v5
+          // Return tool result with confirmation message
           return {
-            role: "assistant",
-            content: "",
-            parts: [
-              {
-                type: "artifact-draft",
-                kind: "image",
-                artifactId: result.id,
-                title: result.title,
-                status: "pending",
-                ...result,
-              },
-            ],
+            ...result,
+            message: `I'll create ${operationType.replace('-', ' ')} with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution and ${selectedShotSize.label} shot size. The artifact has been created and generation is starting.`,
           };
         } catch (error) {
           console.error("🔧 ❌ CREATE DOCUMENT ERROR:", error);

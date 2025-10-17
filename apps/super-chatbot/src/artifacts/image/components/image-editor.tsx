@@ -28,8 +28,8 @@ import { toast } from 'sonner';
 
 interface ImageEditorProps {
   chatId?: string;
-  append?: UseChatHelpers['append'];
-  setMessages?: UseChatHelpers['setMessages'];
+  append?: UseChatHelpers<any>['append'];
+  setMessages?: UseChatHelpers<any>['setMessages'];
   initialState?: ImageState;
   setArtifact?: (fn: (prev: any) => any) => void;
   parsedContent?: any;

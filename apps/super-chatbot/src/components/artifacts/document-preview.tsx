@@ -276,7 +276,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
       {document.kind === 'text' ? (
         <Editor {...commonProps} onSaveContent={() => {}} />
       ) : document.kind === 'script' ? (
-        <div className="prose dark:prose-invert p-4">
+        <div className="prose dark:prose-invert">
           <Markdown>{document.content ?? ''}</Markdown>
         </div>
       ) : document.kind === 'sheet' ? (

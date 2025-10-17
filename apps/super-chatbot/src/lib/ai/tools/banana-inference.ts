@@ -10,7 +10,7 @@ export const bananaInferenceTool = tool({
     inputs: z.record(z.any()).describe('Входные данные для модели'),
     config: z
       .object({
-        maxTokens: z
+        maxOutputTokens: z
           .number()
           .optional()
           .describe('Максимальное количество токенов'),
@@ -40,7 +40,7 @@ export const bananaInferenceTool = tool({
         ...(config && {
           config: {
             ...(config.maxTokens !== undefined && {
-              maxTokens: config.maxTokens,
+              maxOutputTokens: config.maxTokens,
             }),
             ...(config.temperature !== undefined && {
               temperature: config.temperature,

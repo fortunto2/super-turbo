@@ -4,7 +4,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 export interface UseVideoEffectsProps {
   videoUrl?: string;
   status: string;
-  append?: UseChatHelpers['append'];
+  append?: UseChatHelpers<any>['append'];
   prompt: string;
   hasInitialized: boolean;
   setArtifact?: (fn: (prev: any) => any) => void;
@@ -12,7 +12,7 @@ export interface UseVideoEffectsProps {
   resetState: () => void;
   setPrompt: (prompt: string) => void;
   initialPrompt?: string;
-  setMessages?: UseChatHelpers['setMessages'];
+  setMessages?: UseChatHelpers<any>['setMessages'];
 }
 
 // AICODE-NOTE: Function to generate a valid UUID v4

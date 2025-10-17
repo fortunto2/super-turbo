@@ -117,18 +117,24 @@ function ChatContent({
   const chatHelpers = useChat({
     id,
     messages: initialMessages as any, // AI SDK v5: messages instead of initialMessages
-    api: isGeminiChat ? "/api/gemini-chat" : "/api/chat",
+    // AI SDK v5: api parameter might be different
+    ...(isGeminiChat ? { api: "/api/gemini-chat" } : {}),
+    // AI SDK v5: body parameter might be different
     body: {
       id,
       selectedChatModel: initialChatModel,
       selectedVisibilityType: visibilityType,
     },
     // AI SDK v5: Prepare request body to ensure correct format
-    experimental_prepareRequestBody: ({ messages: msgs, requestData, requestBody }) => {
+    experimental_prepareRequestBody: ({
+      messages: msgs,
+      requestData,
+      requestBody,
+    }: any) => {
       console.log("🔍 Preparing request body:", {
         messagesCount: msgs.length,
         requestData,
-        requestBody
+        requestBody,
       });
 
       return {
@@ -139,12 +145,164 @@ function ChatContent({
         ...requestBody,
       };
     },
-    onFinish: () => {
+    onFinish: (result: any) => {
       console.log("🔍 useChat onFinish called - обновляем URL");
       console.log("🔍 Chat ID in onFinish:", id);
+      console.log("🔍 onFinish result:", result);
+
+      // Access messages from the result or chatHelpers
+      const currentMessages = result?.messages || [];
+      console.log("🔍 Messages in onFinish:", currentMessages.length);
+      console.log(
+        "🔍 Last message in onFinish:",
+        currentMessages[currentMessages.length - 1]
+          ? {
+              id: currentMessages[currentMessages.length - 1]?.id,
+              role: currentMessages[currentMessages.length - 1]?.role,
+              partsCount:
+                currentMessages[currentMessages.length - 1]?.parts?.length || 0,
+              hasContent: !!(currentMessages[currentMessages.length - 1] as any)
+                ?.content,
+            }
+          : null
+      );
+
+      // Extract document IDs from tool results (same logic as server-side)
+      const toolDocuments: Array<{ id: string; title: string; kind: string }> = [];
+      for (const msg of currentMessages) {
+        if (msg.role === "assistant" && msg.parts) {
+          for (const part of msg.parts) {
+            // Check for tool-invocation parts with results
+            if (part.type === "tool-invocation" && part.toolInvocation) {
+              const { toolName, state, result: toolResult } = part.toolInvocation;
+
+              if (state === "result" && toolResult) {
+                console.log("📝 🔍 Client onFinish - Found tool result:", {
+                  toolName,
+                  hasId: !!(toolResult as any).id,
+                  hasKind: !!(toolResult as any).kind,
+                  result: toolResult,
+                });
+
+                // Extract document info from tool result
+                if (
+                  (toolResult as any).id &&
+                  (toolResult as any).kind &&
+                  (toolResult as any).title
+                ) {
+                  toolDocuments.push({
+                    id: (toolResult as any).id,
+                    title: (toolResult as any).title,
+                    kind: (toolResult as any).kind,
+                  });
+                  console.log("📝 ✅ Client onFinish - Found document from tool:",
+                    (toolResult as any).kind,
+                    (toolResult as any).id
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Add attachments for script documents to assistant messages
+      if (toolDocuments.length > 0) {
+        console.log("📝 Client onFinish - Adding attachments for", toolDocuments.length, "documents");
+
+        setMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages];
+
+          // Find the last assistant message and add attachments
+          for (let i = updatedMessages.length - 1; i >= 0; i--) {
+            if (updatedMessages[i].role === "assistant") {
+              const message = updatedMessages[i] as any;
+              const existingAttachments = message.experimental_attachments || [];
+
+              // Extract text response from tool results
+              let textResponse = "";
+              for (const msg of currentMessages) {
+                if (msg.role === "assistant" && msg.parts) {
+                  for (const part of msg.parts) {
+                    if (part.type === "tool-invocation" && part.toolInvocation) {
+                      const { state, result: toolResult } = part.toolInvocation;
+                      if (state === "result" && toolResult && (toolResult as any).message) {
+                        textResponse = (toolResult as any).message;
+                        break;
+                      }
+                    }
+                  }
+                  if (textResponse) break;
+                }
+              }
+
+              // Add script attachments
+              for (const doc of toolDocuments) {
+                if (doc.kind === "script") {
+                  // Check if this attachment doesn't already exist
+                  const alreadyExists = existingAttachments.some(
+                    (att: any) => att.documentId === doc.id
+                  );
+
+                  if (!alreadyExists) {
+                    existingAttachments.push({
+                      name: doc.title.length > 200
+                        ? `${doc.title.substring(0, 200)}...`
+                        : doc.title,
+                      url: `${
+                        typeof window !== "undefined"
+                          ? window.location.origin
+                          : "http://localhost:3001"
+                      }/api/document?id=${doc.id}`,
+                      contentType: "text/markdown" as const,
+                      documentId: doc.id,
+                    });
+                    console.log("📝 ✅ Client onFinish - Added script attachment to message:", doc.id);
+                  }
+                }
+              }
+
+              // Update the message with attachments and text content
+              message.experimental_attachments = existingAttachments;
+
+              // Add text content if we have a response from tool
+              if (textResponse && (!message.content || message.content.length === 0)) {
+                message.content = textResponse;
+                // Also update parts
+                if (!message.parts || message.parts.length === 0 ||
+                    (message.parts.length === 1 && message.parts[0].type === "text" && !message.parts[0].text)) {
+                  message.parts = [{ type: "text", text: textResponse }];
+                } else {
+                  // Find text part and update it
+                  const textPart = message.parts.find((p: any) => p.type === "text");
+                  if (textPart) {
+                    textPart.text = textResponse;
+                  }
+                }
+                console.log("📝 ✅ Client onFinish - Added text response to message:", textResponse.substring(0, 100));
+              }
+
+              // Break after updating the last assistant message
+              break;
+            }
+          }
+
+          return updatedMessages;
+        });
+      }
+
       // Сбрасываем состояние блокировки
       isSubmittingRef.current = false;
       setIsSubmitting(false);
+
+      // Trigger artifact detection after a short delay to ensure messages are processed
+      setTimeout(() => {
+        console.log("🔄 Triggering artifact detection from onFinish");
+        if (updateMessages && currentMessages.length > 0) {
+          updateMessages(currentMessages);
+        }
+      }, 200);
+
       // Обновляем URL после успешного завершения чата
       if (id && typeof window !== "undefined") {
         const newUrl = `/chat/${id}`;
@@ -172,7 +330,7 @@ function ChatContent({
         description: error.message,
       });
     },
-  });
+  } as any);
 
   // Extract properties from chatHelpers
   const { messages, setMessages, status, stop } = chatHelpers;
@@ -251,13 +409,30 @@ function ChatContent({
 
   // Обновляем сообщения в контексте артефактов для детекции
   useEffect(() => {
-    if (updateMessages && messages) {
-      console.log("🔄 Updating messages in artifact context:", {
-        chatId: id,
-        messagesCount: messages.length,
-      });
-      updateMessages(messages);
+    if (!updateMessages || !messages) {
+      return;
     }
+
+    console.log("🔄 Updating messages in artifact context:", {
+      chatId: id,
+      messagesCount: messages.length,
+      lastMessage: messages[messages.length - 1]
+        ? {
+            id: messages[messages.length - 1]?.id,
+            role: messages[messages.length - 1]?.role,
+            partsCount: messages[messages.length - 1]?.parts?.length || 0,
+            hasContent: !!(messages[messages.length - 1] as any)?.content,
+          }
+        : null,
+    });
+
+    // Add a small delay to ensure the messages are fully processed
+    const timeoutId = setTimeout(() => {
+      console.log("🔄 Calling updateMessages after timeout");
+      updateMessages(messages);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [messages, updateMessages, id]);
 
   // Global SSE connections for media generation
@@ -318,8 +493,15 @@ function ChatContent({
       }
 
       // Проверяем и устанавливаем блокировку
-      if (isSubmittingRef.current || status !== "ready" || isSubmitting || !input.trim()) {
-        console.log("🔍 handleFormSubmit blocked - already submitting or empty input");
+      if (
+        isSubmittingRef.current ||
+        status !== "ready" ||
+        isSubmitting ||
+        !input.trim()
+      ) {
+        console.log(
+          "🔍 handleFormSubmit blocked - already submitting or empty input"
+        );
         return;
       }
 

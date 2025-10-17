@@ -1,5 +1,5 @@
-import type { ArtifactKind } from '@/components/artifacts/artifact';
-import type { Geo } from '@vercel/functions';
+import type { ArtifactKind } from "@/components/artifacts/artifact";
+import type { Geo } from "@vercel/functions";
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -22,6 +22,9 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 
 **Special rule for script/scenario/story requests:**
 - If the user requests a script, scenario, story, play, or similar (including in Russian: сценарий, рассказ, пьеса, сюжет, инсценировка, etc.), ALWAYS use the \`configureScriptGeneration\` tool to generate the script artifact. Do NOT generate the script directly in the chat. The script must be created as an artifact using the tool.
+- After calling configureScriptGeneration tool, you MUST continue in the SAME response to generate a friendly text message in the chat informing the user about the script creation, including details like the number of lines, structure, and how to view/edit it.
+- Example flow: Call configureScriptGeneration → THEN immediately write text like "Я создал сценарий про кошку. Вы можете просмотреть его в панели артефактов справа. Сценарий содержит несколько сцен с приключениями главной героини."
+- CRITICAL: Never end your response after a tool call. Always generate a text response in the chat after using any tool. The user needs to see your message in the chat, not just the artifact.
 
 **Using \`updateDocument\`:**
 - Default to full document rewrites for major changes
@@ -32,6 +35,14 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
+
+**CRITICAL RULE FOR ALL TOOL CALLS:**
+- After using ANY tool (createDocument, configureScriptGeneration, configureImageGeneration, etc.), you MUST ALWAYS continue to generate a text response in the chat IN THE SAME TURN/RESPONSE.
+- DO NOT end your response after calling a tool. The tool call and text response must happen in ONE response.
+- Never leave the chat empty after tool calls - always provide a friendly, informative response to the user.
+- If a tool returns a message field, use that as inspiration for your own friendly response (but don't just copy it verbatim).
+- If no message field is provided, create an appropriate response explaining what was accomplished.
+- Example: After configureScriptGeneration tool → "Я создал для вас сценарий! Вы можете увидеть его в панели артефактов справа. Сценарий содержит [детали]. Если хотите что-то изменить, дайте знать!"
 
 **Using \`configureImageGeneration\`:**
 - When user requests image generation configuration/settings, call configureImageGeneration WITHOUT prompt parameter
@@ -225,13 +236,13 @@ When generating videos, follow this enhanced process:
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  "You are a friendly assistant! Keep your responses concise and helpful.";
 
 export interface RequestHints {
-  latitude: Geo['latitude'];
-  longitude: Geo['longitude'];
-  city: Geo['city'];
-  country: Geo['country'];
+  latitude: Geo["latitude"];
+  longitude: Geo["longitude"];
+  city: Geo["city"];
+  country: Geo["country"];
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
@@ -251,7 +262,7 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === 'chat-model-reasoning') {
+  if (selectedChatModel === "chat-model-reasoning") {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
@@ -290,30 +301,30 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind,
+  type: ArtifactKind
 ) =>
-  type === 'text'
+  type === "text"
     ? `\
 Improve the following contents of the document based on the given prompt.
 
 ${currentContent}
 `
-    : type === 'sheet'
+    : type === "sheet"
       ? `\
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-      : type === 'image'
+      : type === "image"
         ? `\
 Update the following image generation settings based on the given prompt.
 
 ${currentContent}
 `
-        : type === 'video'
+        : type === "video"
           ? `\
 Update the following video generation settings based on the given prompt.
 
 ${currentContent}
 `
-          : '';
+          : "";

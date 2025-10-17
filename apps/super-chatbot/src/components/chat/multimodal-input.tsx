@@ -1,6 +1,7 @@
 "use client";
 
-import type { Attachment, UIMessage } from "ai";
+import type { UIMessage } from "ai";
+import type { Attachment } from "@/lib/types/attachment";
 import cx from "classnames";
 import {
   useRef,
@@ -46,18 +47,18 @@ function PureMultimodalInput({
   isSubmittingRef,
 }: {
   chatId: string;
-  input: UseChatHelpers["input"];
-  setInput: UseChatHelpers["setInput"];
-  status: UseChatHelpers["status"];
+  input: UseChatHelpers<any>["input"];
+  setInput: UseChatHelpers<any>["setInput"];
+  status: UseChatHelpers<any>["status"];
   stop: () => void;
   isSubmitting?: boolean;
   isSubmittingRef?: React.MutableRefObject<boolean>;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
-  append: UseChatHelpers["append"];
-  handleSubmit: UseChatHelpers["handleSubmit"];
+  setMessages: UseChatHelpers<any>["setMessages"];
+  append: UseChatHelpers<any>["append"];
+  handleSubmit: UseChatHelpers<any>["handleSubmit"];
   className?: string;
   selectedVisibilityType: VisibilityType;
 }) {
@@ -410,7 +411,7 @@ function PureAttachmentsButton({
   status,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  status: UseChatHelpers["status"];
+  status: UseChatHelpers<any>["status"];
 }) {
   return (
     <Button
@@ -435,7 +436,7 @@ function PureStopButton({
   setMessages,
 }: {
   stop: () => void;
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: UseChatHelpers<any>["setMessages"];
 }) {
   return (
     <Button
@@ -465,7 +466,7 @@ function PureSendButton({
   submitForm: (event: any) => void;
   input: string;
   uploadQueue: Array<string>;
-  status: UseChatHelpers["status"];
+  status: UseChatHelpers<any>["status"];
   isSubmitting?: boolean;
   isSubmittingRef?: React.MutableRefObject<boolean>;
 }) {
@@ -513,7 +514,7 @@ function PureImageHistoryButton({
 }: {
   showImageHistory: boolean;
   setShowImageHistory: (show: boolean) => void;
-  status: UseChatHelpers["status"];
+  status: UseChatHelpers<any>["status"];
 }) {
   return (
     <Button

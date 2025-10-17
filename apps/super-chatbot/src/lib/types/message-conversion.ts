@@ -54,12 +54,28 @@ export function convertDBMessagesToUIMessages(
     }
 
     if (dbMessage.role === 'assistant') {
-      // Assistant messages: preserve parts structure
+      // Assistant messages: normalize parts structure for schema validation
+      // Tool-specific types like "tool-configureImageGeneration" need to be converted to "tool-call"
+      const normalizedParts = parts.map((part: any) => {
+        if (part && typeof part === 'object' && part.type) {
+          // If the type starts with "tool-" but isn't one of the allowed generic types
+          if (
+            part.type.startsWith('tool-') &&
+            part.type !== 'tool-call' &&
+            part.type !== 'tool-result' &&
+            part.type !== 'tool-invocation'
+          ) {
+            return { ...part, type: 'tool-call' };
+          }
+        }
+        return part;
+      });
+
       return {
         id: dbMessage.id,
         role: 'assistant',
         content: '', // AI SDK expects content for assistants
-        parts: parts as any, // Explicit cast to fix TypeScript error
+        parts: normalizedParts as any, // Explicit cast to fix TypeScript error
         createdAt: dbMessage.createdAt,
       } as UIMessage;
     }

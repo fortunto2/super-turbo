@@ -210,3 +210,93 @@ const titles = {
   video: 'AI Generated Video',
   image: 'AI Generated Image',
 };
+
+// Function to save script artifact to chat history
+export const saveScriptToChat = async (
+  chatId: string,
+  documentId: string,
+  prompt: string,
+  setMessages: any,
+) => {
+  try {
+    // Check for duplicates by documentId
+    let scriptExists = false;
+    setMessages((prevMessages: any[]) => {
+      scriptExists = prevMessages.some((message) =>
+        message.experimental_attachments?.some(
+          (attachment: any) => attachment.documentId === documentId,
+        ),
+      );
+      return prevMessages;
+    });
+
+    if (scriptExists) {
+      console.log('📄 Script already exists in chat, skipping duplicate save');
+      return;
+    }
+
+    const scriptAttachment = {
+      name: prompt.length > 200 ? `${prompt.substring(0, 200)}...` : prompt,
+      url: `${
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : 'http://localhost:3000'
+      }/api/document?id=${documentId}`,
+      contentType: 'text/markdown' as const,
+      documentId: documentId,
+    };
+
+    console.log('💾 saveScriptToChat: Saving script attachment:', {
+      documentId,
+      chatId,
+      prompt: `${prompt.substring(0, 50)}...`,
+    });
+
+    const scriptMessage = {
+      id: generateUUID(),
+      role: 'assistant' as const,
+      content: '',
+      parts: [
+        {
+          type: 'text' as const,
+          text: '',
+        },
+      ],
+      experimental_attachments: [scriptAttachment],
+      createdAt: new Date(),
+    };
+
+    setMessages((prevMessages: any[]) => [...prevMessages, scriptMessage]);
+    console.log('📄 ✅ Script added to chat history!');
+
+    // Save to database
+    try {
+      const response = await fetch('/api/save-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatId,
+          message: {
+            id: scriptMessage.id,
+            role: scriptMessage.role,
+            parts: scriptMessage.parts,
+            attachments: scriptMessage.experimental_attachments,
+            createdAt: scriptMessage.createdAt,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        console.log('📄 ✅ Script saved to database!');
+      } else {
+        console.warn(
+          '📄 ⚠️ Failed to save to database, but script is in chat locally',
+        );
+      }
+    } catch (dbError) {
+      console.warn('📄 ⚠️ Database save failed:', dbError);
+    }
+  } catch (error) {
+    console.error('📄 ❌ Failed to save script to chat:', error);
+  }
+};

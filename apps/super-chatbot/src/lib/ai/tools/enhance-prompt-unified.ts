@@ -23,7 +23,7 @@ const VEO3_MODEL_CONFIG = {
     name: 'GPT-4.1',
     deploymentName: 'gpt-4.1',
     maxChars: { short: 500, medium: 1000, long: 2000 },
-    maxTokens: { short: 150, medium: 300, long: 600 },
+    maxOutputTokens: { short: 150, medium: 300, long: 600 },
     supportsSystem: true,
     isReasoning: false,
     type: 'chat',
@@ -385,7 +385,7 @@ async function enhanceGeneralPrompt(params: {
     system: systemPrompt,
     prompt: userPrompt,
     temperature: 0.7,
-    maxTokens: 1000,
+    maxOutputTokens: 1000,
   });
 
   console.log('✅ LLM response received:', result.text);
@@ -649,7 +649,7 @@ Your output will be automatically formatted for VEO3 usage.`,
 
   const result = await generateObject({
     model: modelInstance,
-    maxTokens: maxTokens,
+    maxOutputTokens: maxTokens,
     temperature: 0.7,
     messages,
     schema: veo3Schema,

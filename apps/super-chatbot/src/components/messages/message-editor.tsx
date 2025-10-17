@@ -1,6 +1,6 @@
 'use client';
 
-import type { Message } from 'ai';
+import type { UIMessage as Message } from 'ai';
 import {
   type Dispatch,
   type SetStateAction,
@@ -15,8 +15,8 @@ import { Button, Textarea } from '@turbo-super/ui';
 export type MessageEditorProps = {
   message: Message;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers['setMessages'];
-  reload: UseChatHelpers['reload'];
+  setMessages: UseChatHelpers<any>['setMessages'];
+  reload: UseChatHelpers<any>['reload'];
 };
 
 export function MessageEditor({
