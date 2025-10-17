@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from '../shared/visibility-selector';
 
 import { Button } from '@turbo-super/ui';

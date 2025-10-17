@@ -20,7 +20,6 @@ import type {
   AdaptedModel,
 } from '@/lib/types/media-settings';
 import { generateUUID } from '@/lib/utils';
-import type { UseChatHelpers } from '@ai-sdk/react';
 
 interface MediaSettingsProps {
   config: ImageGenerationConfig | VideoGenerationConfig;

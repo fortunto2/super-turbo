@@ -9,7 +9,6 @@ import {
   useState,
 } from 'react';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import type { UseChatHelpers } from '@ai-sdk/react';
 
 import { Button, Textarea } from '@turbo-super/ui';
 export type MessageEditorProps = {

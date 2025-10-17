@@ -21,7 +21,6 @@ import {
   getDisplayPrompt,
   type ImageState,
 } from '../utils/image-utils';
-import type { UseChatHelpers } from '@ai-sdk/react';
 import { DebugParameters } from '@/components/debug/debug-parameters';
 import { FileService, FileTypeEnum } from '@turbo-super/api';
 import { toast } from 'sonner';

@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import type { UIArtifact } from '@/components/artifacts/artifact';
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 import type { UIMessage } from 'ai';
 import {
   saveArtifactToStorage,
@@ -132,12 +132,23 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
     );
 
   // Улучшенное восстановление при загрузке чата
+  // ВАЖНО: Используем ref для отслеживания первого рендера
+  const isFirstRenderRef = useRef(true);
+
   useEffect(() => {
     console.log('🔍 useArtifact useEffect triggered:', {
       chatId,
+      isFirstRender: isFirstRenderRef.current,
       window: typeof window,
       chatIdType: typeof chatId,
     });
+
+    // Только восстанавливаем при первом рендере для данного chatId
+    // Это предотвращает перезапись состояния при последующих обновлениях
+    if (!isFirstRenderRef.current) {
+      console.log('🔍 Skipping restoration - not first render');
+      return;
+    }
 
     if (chatId && typeof window !== 'undefined') {
       console.log('🔍 Loading artifact from storage for chatId:', chatId);
@@ -162,6 +173,14 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
         });
 
         if (shouldRestore) {
+          // ВАЖНО: Если артефакт был скрыт (isVisible: false), НЕ восстанавливаем его
+          // Пользователь специально закрыл его
+          if (!savedData.isVisible && savedData.status !== 'streaming') {
+            console.log('🔍 Skipping restore - artifact was closed by user');
+            clearArtifactFromStorage(chatId);
+            return;
+          }
+
           console.log('🔄 Restoring artifact:', {
             ...savedData,
             content: savedData.content
@@ -191,6 +210,9 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
       } else {
         console.log('🔍 No saved data found for chatId:', chatId);
       }
+
+      // Помечаем, что первый рендер завершен
+      isFirstRenderRef.current = false;
     } else {
       console.log('🔍 Skipping restoration - no chatId or window:', {
         chatId,
@@ -199,6 +221,11 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
       });
     }
   }, [chatId, setLocalArtifact]);
+
+  // Сбрасываем флаг при смене chatId
+  useEffect(() => {
+    isFirstRenderRef.current = true;
+  }, [chatId]);
 
   // Expose artifact globally for debugging
   useEffect(() => {

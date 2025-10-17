@@ -5,7 +5,6 @@ import {
   videoSSEStore,
   type VideoEventHandler as VideoSSEEventHandler,
 } from '@/artifacts/video';
-import type { UseChatHelpers } from '@ai-sdk/react';
 
 interface ChatVideoSSEOptions {
   chatId: string;

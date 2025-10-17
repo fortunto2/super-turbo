@@ -182,21 +182,31 @@ const PurePreviewMessage = ({
                       >
                         <div
                           className="cursor-pointer w-full"
-                          onClick={() => {
-                            setArtifact({
+                          onClick={async () => {
+                            const newArtifact = {
                               title: artifact.title || "",
                               documentId: artifact.documentId,
-                              kind: "text",
+                              kind: "text" as const,
                               content: artifact.content,
                               isVisible: true,
-                              status: "idle",
+                              status: "idle" as const,
                               boundingBox: {
                                 top: 0,
                                 left: 0,
                                 width: 0,
                                 height: 0,
                               },
-                            });
+                            };
+
+                            // ВАЖНО: Сначала сохраняем в localStorage с isVisible: true
+                            // чтобы предотвратить закрытие при восстановлении из useEffect
+                            if (typeof window !== 'undefined' && chatId) {
+                              const { saveArtifactToStorage } = await import('@/lib/utils/artifact-persistence');
+                              saveArtifactToStorage(chatId, newArtifact);
+                            }
+
+                            // Затем открываем артефакт
+                            setArtifact(newArtifact);
                           }}
                         >
                           <ScriptArtifactViewer

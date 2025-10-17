@@ -6,7 +6,6 @@ import { CopyIcon } from '@/components/common/icons';
 import { DebugParameters } from '@/components/debug/debug-parameters';
 import { VideoErrorDisplay } from '@/components/chat/error-display';
 import { toast } from 'sonner';
-import type { UseChatHelpers } from '@ai-sdk/react';
 
 // Temporary type definitions until we create the proper utils
 interface VideoState {

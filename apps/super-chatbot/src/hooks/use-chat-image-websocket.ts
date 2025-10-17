@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { generateUUID } from '@/lib/utils';
 import { imageWebsocketStore } from '@/artifacts/image/stores/image-websocket-store';
 import { getSuperduperAIConfig, createWSURL } from '@/lib/config/superduperai';
-import type { UseChatHelpers } from '@ai-sdk/react';
 
 interface ChatImageWebSocketOptions {
   chatId: string;
