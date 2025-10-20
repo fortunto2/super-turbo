@@ -24,7 +24,6 @@ import type {
 import { useArtifactLegacy } from "@/hooks/use-artifact";
 import { ScriptArtifactViewer } from "@/artifacts/text/client";
 import { Button, cn } from "@turbo-super/ui";
-import { saveScriptToChat } from "@/lib/ai/chat/media";
 
 const PurePreviewMessage = ({
   chatId,
@@ -53,7 +52,7 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const { setArtifact } = useArtifactLegacy(chatId);
-  const scriptsToSaveRef = useRef<Set<string>>(new Set());
+  const processedScriptsRef = useRef<Set<string>>(new Set());
 
   // Debug: log message structure
   if (message.role === "assistant" && message.parts) {
@@ -69,22 +68,63 @@ const PurePreviewMessage = ({
     });
   }
 
-  // Handle saving scripts to chat after render completes
+  // Add script attachments to the current message when createDocument tool result is detected
   useEffect(() => {
-    if (scriptsToSaveRef.current.size > 0 && setMessages) {
-      const scriptIds = Array.from(scriptsToSaveRef.current);
-      scriptsToSaveRef.current.clear();
+    if (message.role !== "assistant" || !message.parts || !setMessages) return;
 
-      // Process each script that needs to be saved
-      for (const scriptData of scriptIds) {
-        const [scriptId, scriptTitle = ''] = scriptData.split('|||');
-        if (scriptId) {
-          console.log("📄 Saving script to chat history (via useEffect)...");
-          saveScriptToChat(chatId, scriptId, scriptTitle, setMessages);
-        }
+    // Find createDocument tool results for scripts
+    const scriptResults = message.parts.filter((part: any) => {
+      if (part.type?.startsWith('tool-') && part.state === 'output-available') {
+        const output = part.output;
+        return output?.kind === 'script' && output?.id;
       }
+      return false;
+    });
+
+    if (scriptResults.length === 0) return;
+
+    // Process each script result
+    for (const part of scriptResults) {
+      const output = (part as any).output;
+      const scriptId = output.id;
+
+      // Skip if already processed
+      if (processedScriptsRef.current.has(scriptId)) continue;
+
+      console.log('📄 Found script in createDocument result, adding as attachment:', scriptId);
+      processedScriptsRef.current.add(scriptId);
+
+      // Add attachment to this message
+      setMessages((prev: any[]) => {
+        return prev.map(msg => {
+          if (msg.id !== message.id) return msg;
+
+          // Check if attachment already exists
+          const hasAttachment = msg.experimental_attachments?.some(
+            (att: any) => att.documentId === scriptId
+          );
+          if (hasAttachment) return msg;
+
+          const scriptAttachment = {
+            name: output.title?.length > 200
+              ? `${output.title.substring(0, 200)}...`
+              : output.title,
+            url: `${window.location.origin}/api/document?id=${scriptId}`,
+            contentType: 'text/markdown' as const,
+            documentId: scriptId,
+          };
+
+          return {
+            ...msg,
+            experimental_attachments: [
+              ...(msg.experimental_attachments || []),
+              scriptAttachment
+            ]
+          };
+        });
+      });
     }
-  }, [message.id, chatId, setMessages]);
+  }, [message.id, message.parts, message.role, setMessages]);
 
   return (
     <AnimatePresence>
@@ -408,31 +448,9 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Handle configureScriptGeneration tool result - opens artifact viewer and saves to chat
-                  if (
-                    toolName === "configureScriptGeneration" &&
-                    result &&
-                    typeof result === "object" &&
-                    "id" in result &&
-                    "kind" in result &&
-                    "title" in result
-                  ) {
-                    const scriptTitle = result.title as string;
-                    const scriptId = result.id as string;
-
-                    console.log("📄 configureScriptGeneration tool result received:", {
-                      id: scriptId,
-                      kind: result.kind,
-                      title: scriptTitle,
-                    });
-
-                    // Queue script to be saved after render completes (via useEffect)
-                    console.log("📄 Queueing script to be saved to chat history...");
-                    scriptsToSaveRef.current.add(`${scriptId}|||${scriptTitle}`);
-
-                    // Don't return any UI element - script artifact is already opened by use-artifact hook
-                    return null;
-                  }
+                  // REMOVED: configureScriptGeneration handling
+                  // Scripts are now automatically displayed through createDocument tool result
+                  // No need for special handling here
 
                   // Handle createDocument tool result - opens artifact viewer
                   if (
