@@ -14,7 +14,7 @@ export const chatModel = new MockLanguageModelV2({
       initialDelayInMs: 1000,
       chunks: getResponseChunksByPrompt(prompt),
     }),
-  }),
+  } as any),
 });
 
 export const reasoningModel = new MockLanguageModelV2({
@@ -106,5 +106,5 @@ export const artifactModel = new MockLanguageModelV2({
       initialDelayInMs: 100,
       chunks: getResponseChunksByPrompt(prompt),
     }),
-  }),
+  } as any),
 });

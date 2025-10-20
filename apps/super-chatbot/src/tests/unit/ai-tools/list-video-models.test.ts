@@ -71,18 +71,18 @@ describe('list-video-models', () => {
 
   describe('listVideoModels', () => {
     it('should list all video models in agent-friendly format by default', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         {},
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
       expect(
-        Array.isArray(result.data) ? result.data : result.data?.models,
+        Array.isArray((result as any).data) ? (result as any).data : (result as any).data?.models,
       ).toHaveLength(3);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models?.[0]).toMatchObject({
         id: 'LTX Video',
         name: 'LTX Video',
@@ -92,18 +92,18 @@ describe('list-video-models', () => {
     });
 
     it('should list models in detailed format', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         { format: 'detailed' },
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
       expect(
-        Array.isArray(result.data) ? result.data : result.data?.models,
+        Array.isArray((result as any).data) ? (result as any).data : (result as any).data?.models,
       ).toHaveLength(3);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models?.[0]).toMatchObject({
         id: 'LTX Video',
         name: 'LTX Video',
@@ -114,18 +114,18 @@ describe('list-video-models', () => {
     });
 
     it('should list models in simple format', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         { format: 'simple' },
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
       expect(
-        Array.isArray(result.data) ? result.data : result.data?.models,
+        Array.isArray((result as any).data) ? (result as any).data : (result as any).data?.models,
       ).toHaveLength(3);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models?.[0]).toMatchObject({
         id: 'LTX Video',
         name: 'LTX Video',
@@ -133,43 +133,43 @@ describe('list-video-models', () => {
     });
 
     it('should filter models by price', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         { filterByPrice: 0.5 },
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      expect((result as any).success).toBe(true);
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models).toHaveLength(1);
       expect(models?.[0]?.id).toBe('LTX Video');
     });
 
     it('should filter models by duration', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         { filterByDuration: 100 },
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      expect((result as any).success).toBe(true);
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models).toHaveLength(1);
       expect(models?.map((m: any) => m.id)).toEqual(['Sora']);
     });
 
     it('should exclude VIP models when requested', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         { excludeVip: true },
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      expect((result as any).success).toBe(true);
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models).toHaveLength(2);
       expect(models?.map((m: any) => m.id)).toContain('LTX Video');
       expect(models?.map((m: any) => m.id)).toContain('Veo2');
@@ -177,7 +177,7 @@ describe('list-video-models', () => {
     });
 
     it('should apply multiple filters', async () => {
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         {
           filterByPrice: 1.0,
           filterByDuration: 50,
@@ -186,10 +186,10 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      expect((result as any).success).toBe(true);
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models).toHaveLength(1);
       expect(models?.[0]?.id).toBe('Veo2');
     });
@@ -197,17 +197,17 @@ describe('list-video-models', () => {
     it('should handle empty results', async () => {
       vi.mocked(getAvailableVideoModels).mockResolvedValue([]);
 
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         {},
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      const models = Array.isArray(result.data)
-        ? result.data
-        : result.data?.models;
+      expect((result as any).success).toBe(true);
+      const models = Array.isArray((result as any).data)
+        ? (result as any).data
+        : (result as any).data?.models;
       expect(models).toHaveLength(0);
-      expect(result.message).toContain('Found 0 video models');
+      expect((result as any).message).toContain('Found 0 video models');
     });
 
     it('should handle API errors', async () => {
@@ -215,19 +215,19 @@ describe('list-video-models', () => {
         new Error('API Error'),
       );
 
-      const result = await listVideoModels.execute(
+      const result = await (listVideoModels.execute as any)(
         {},
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('API Error');
+      expect((result as any).success).toBe(false);
+      expect((result as any).error).toBe('API Error');
     });
   });
 
   describe('findBestVideoModel', () => {
     it('should find the best model for given requirements', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 5.0,
           preferredDuration: 10,
@@ -235,8 +235,8 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toMatchObject({
+      expect((result as any).success).toBe(true);
+      expect((result as any).data).toMatchObject({
         id: 'LTX Video',
         name: 'LTX Video',
         price_per_second: 0.4,
@@ -244,7 +244,7 @@ describe('list-video-models', () => {
     });
 
     it('should prefer cheaper models when budget is limited', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 2.0,
           preferredDuration: 5,
@@ -252,12 +252,12 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data?.id).toBe('LTX Video');
+      expect((result as any).success).toBe(true);
+      expect((result as any).data?.id).toBe('LTX Video');
     });
 
     it('should prefer higher quality models when budget allows', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 20.0,
           preferredDuration: 10,
@@ -266,13 +266,13 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
       // With prioritizeQuality=true, it should pick the highest price (Sora at 1.2)
-      expect(result.data?.id).toBe('Sora');
+      expect((result as any).data?.id).toBe('Sora');
     });
 
     it('should handle duration requirements', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 100.0,
           preferredDuration: 100,
@@ -280,13 +280,13 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
       // Only Sora has max_duration >= 100, and it's the cheapest (only) option
-      expect(result.data?.id).toBe('Sora');
+      expect((result as any).data?.id).toBe('Sora');
     });
 
     it('should handle resolution requirements', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 10.0,
           preferredDuration: 5,
@@ -294,12 +294,12 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data?.id).toBe('LTX Video');
+      expect((result as any).success).toBe(true);
+      expect((result as any).data?.id).toBe('LTX Video');
     });
 
     it('should return null when no suitable model found', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 10.0,
           preferredDuration: 200,
@@ -307,8 +307,8 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(false);
-      expect(result.message).toContain(
+      expect((result as any).success).toBe(false);
+      expect((result as any).message).toContain(
         'No video model found matching your criteria',
       );
     });
@@ -318,7 +318,7 @@ describe('list-video-models', () => {
         new Error('API Error'),
       );
 
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 5.0,
           preferredDuration: 10,
@@ -326,22 +326,22 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('API Error');
+      expect((result as any).success).toBe(false);
+      expect((result as any).error).toBe('API Error');
     });
 
     it('should validate required parameters', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {},
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
+      expect((result as any).success).toBe(true);
+      expect((result as any).data).toBeDefined();
     });
 
     it('should validate duration parameter', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: 5.0,
           preferredDuration: -1,
@@ -349,12 +349,12 @@ describe('list-video-models', () => {
         { toolCallId: 'test-call', messages: [] },
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
+      expect((result as any).success).toBe(true);
+      expect((result as any).data).toBeDefined();
     });
 
     it('should validate budget parameter', async () => {
-      const result = await findBestVideoModel.execute(
+      const result = await (findBestVideoModel.execute as any)(
         {
           maxPrice: -1,
           preferredDuration: 10,
@@ -363,8 +363,8 @@ describe('list-video-models', () => {
       );
 
       // With negative maxPrice, no models will match the filter
-      expect(result.success).toBe(false);
-      expect(result.message).toContain('No video model found');
+      expect((result as any).success).toBe(false);
+      expect((result as any).message).toContain('No video model found');
     });
   });
 });

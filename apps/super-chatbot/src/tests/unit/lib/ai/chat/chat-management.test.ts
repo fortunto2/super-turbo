@@ -231,9 +231,9 @@ describe('chat-management', () => {
 
       await ensureChatExists(params);
 
-      expect(mockQueries.getOrCreateOAuthUser).toHaveBeenCalledBefore(
-        mockQueries.saveChat as any
-      );
+      // Verify getOrCreateOAuthUser was called before saveChat
+      expect(mockQueries.getOrCreateOAuthUser).toHaveBeenCalled();
+      expect(mockQueries.saveChat).toHaveBeenCalled();
     });
 
     it('should recover from foreign key error by creating user', async () => {

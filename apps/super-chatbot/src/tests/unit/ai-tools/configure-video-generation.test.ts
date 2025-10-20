@@ -78,7 +78,7 @@ describe('configureVideoGeneration', () => {
 
     expect(tool).toBeDefined();
     expect(tool.description).toContain('Configure video generation settings');
-    expect(tool.parameters).toBeDefined();
+    expect(tool.inputSchema).toBeDefined();
   });
 
   it('should handle text-to-video generation', async () => {
@@ -89,7 +89,7 @@ describe('configureVideoGeneration', () => {
       userMessage: 'A beautiful sunset over mountains with gentle wind',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains with gentle wind',
         style: 'cinematic',
@@ -115,7 +115,7 @@ describe('configureVideoGeneration', () => {
       userMessage: 'Animate this image with gentle movement',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'Animate this image with gentle movement',
         sourceVideoUrl: 'https://example.com/image.jpg',
@@ -142,7 +142,7 @@ describe('configureVideoGeneration', () => {
       userMessage: 'Transform this video into a different style',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'Transform this video into a different style',
         sourceVideoUrl: 'https://example.com/video.mp4',
@@ -168,7 +168,7 @@ describe('configureVideoGeneration', () => {
     });
 
     // Test with missing prompt - should return config instead of throwing
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {},
       { toolCallId: 'test-call', messages: [] },
     );
@@ -192,7 +192,7 @@ describe('configureVideoGeneration', () => {
       userMessage: 'A beautiful sunset over mountains with gentle wind',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains with gentle wind',
       },
@@ -217,7 +217,7 @@ describe('configureVideoGeneration', () => {
       userMessage: 'A beautiful sunset over mountains with gentle wind',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains with gentle wind',
       },
@@ -243,7 +243,7 @@ describe('configureVideoGeneration', () => {
       ],
     });
 
-    await tool.execute(
+    await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains with gentle wind',
       },
@@ -280,7 +280,7 @@ describe('configureVideoGeneration', () => {
     ];
 
     for (const resolution of resolutions) {
-      await tool.execute(
+      await (tool.execute as any)(
         {
           prompt: 'A beautiful sunset over mountains with gentle wind',
           resolution,
@@ -308,7 +308,7 @@ describe('configureVideoGeneration', () => {
     const durations = ['5', '8', '10', '15', '30'];
 
     for (const duration of durations) {
-      await tool.execute(
+      await (tool.execute as any)(
         {
           prompt: 'A beautiful sunset over mountains with gentle wind',
           duration,
@@ -348,7 +348,7 @@ describe('configureVideoGeneration', () => {
     ];
 
     for (const style of styles) {
-      await tool.execute(
+      await (tool.execute as any)(
         {
           prompt: 'A beautiful sunset over mountains with gentle wind',
           style,

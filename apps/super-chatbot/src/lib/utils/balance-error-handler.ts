@@ -1,5 +1,3 @@
-import type { DataStreamWriter } from 'ai';
-
 export interface BalanceError {
   type: 'insufficient_balance' | 'payment_required' | 'quota_exceeded';
   message: string;
@@ -10,11 +8,10 @@ export interface BalanceError {
 
 /**
  * Централизованная обработка ошибок баланса
- * Записывает ошибку в dataStream и возвращает JSON с ошибкой
+ * Возвращает JSON с ошибкой для сохранения в документе
  */
 export function handleBalanceError(
   error: BalanceError,
-  dataStream: DataStreamWriter,
   operationType = 'operation',
 ): string {
   const errorMessage = formatBalanceErrorMessage(error, operationType);

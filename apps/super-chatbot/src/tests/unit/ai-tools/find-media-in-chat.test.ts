@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { findMediaInChat } from '@/lib/ai/tools/find-media-in-chat';
 import type { ChatMedia } from '@/lib/ai/context';
 import { contextManager } from '@/lib/ai/context';
-import type { ToolExecutionOptions } from 'ai';
 
 // Mock contextManager
 vi.mock('@/lib/ai/context', async () => {
@@ -16,7 +15,7 @@ vi.mock('@/lib/ai/context', async () => {
 });
 
 describe('findMediaInChat', () => {
-  const mockOptions: ToolExecutionOptions = {
+  const mockOptions = {
     abortSignal: new AbortController().signal,
     messages: [],
     toolCallId: 'test-call-id',
@@ -59,7 +58,7 @@ describe('findMediaInChat', () => {
   it('should find last uploaded image', async () => {
     vi.mocked(contextManager.getChatMedia).mockResolvedValue(mockChatMedia);
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'image',
@@ -78,7 +77,7 @@ describe('findMediaInChat', () => {
   it('should find image by content (moon)', async () => {
     vi.mocked(contextManager.getChatMedia).mockResolvedValue(mockChatMedia);
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'image',
@@ -91,14 +90,14 @@ describe('findMediaInChat', () => {
     expect(result.success).toBe(true);
     expect(result.found).toBeGreaterThan(0);
     // Should find img-2 because prompt contains "moon"
-    const hasMoonImage = result.media.some((m) => m.prompt?.includes('moon'));
+    const hasMoonImage = result.media.some((m: any) => m.prompt?.includes('moon'));
     expect(hasMoonImage).toBe(true);
   });
 
   it('should filter by media type', async () => {
     vi.mocked(contextManager.getChatMedia).mockResolvedValue(mockChatMedia);
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'video',
@@ -116,7 +115,7 @@ describe('findMediaInChat', () => {
   it('should return helpful message when no media found', async () => {
     vi.mocked(contextManager.getChatMedia).mockResolvedValue([]);
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'image',
@@ -135,7 +134,7 @@ describe('findMediaInChat', () => {
   it('should filter by role (user)', async () => {
     vi.mocked(contextManager.getChatMedia).mockResolvedValue(mockChatMedia);
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'image',
@@ -146,13 +145,13 @@ describe('findMediaInChat', () => {
     );
 
     expect(result.success).toBe(true);
-    expect(result.media.every((m) => m.role === 'user')).toBe(true);
+    expect(result.media.every((m: any) => m.role === 'user')).toBe(true);
   });
 
   it('should limit results', async () => {
     vi.mocked(contextManager.getChatMedia).mockResolvedValue(mockChatMedia);
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'any',
@@ -170,7 +169,7 @@ describe('findMediaInChat', () => {
       new Error('Database error'),
     );
 
-    const result = await findMediaInChat.execute(
+    const result = await (findMediaInChat.execute as any)(
       {
         chatId: 'chat-123',
         mediaType: 'image',

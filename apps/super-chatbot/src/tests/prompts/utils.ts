@@ -1,5 +1,13 @@
-import type { CoreMessage, LanguageModelV1StreamPart } from 'ai';
+import type { CoreMessage } from 'ai';
 import { TEST_PROMPTS } from './basic';
+
+// AI SDK v5: LanguageModelV1StreamPart is no longer exported
+// Define stream part types locally for test purposes matching LanguageModelV2StreamPart
+type StreamPart =
+  | { type: 'text-delta'; id: string; delta: string }
+  | { type: 'reasoning'; id: string; delta: string }
+  | { type: 'tool-call'; toolCallId: string; toolName: string; toolCallType: string; args: string }
+  | { type: 'finish'; finishReason: string; usage: { completionTokens: number; promptTokens: number } };
 
 export function compareMessages(
   firstMessage: CoreMessage,
@@ -46,18 +54,26 @@ export function compareMessages(
   return true;
 }
 
-const textToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+const textToDeltas = (text: string): StreamPart[] => {
   const deltas = text
     .split(' ')
-    .map((char) => ({ type: 'text-delta' as const, textDelta: `${char} ` }));
+    .map((char, i) => ({
+      type: 'text-delta' as const,
+      id: `text-${i}`,
+      delta: `${char} `
+    }));
 
   return deltas;
 };
 
-const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
+const reasoningToDeltas = (text: string): StreamPart[] => {
   const deltas = text
     .split(' ')
-    .map((char) => ({ type: 'reasoning' as const, textDelta: `${char} ` }));
+    .map((char, i) => ({
+      type: 'reasoning' as const,
+      id: `reasoning-${i}`,
+      delta: `${char} `
+    }));
 
   return deltas;
 };
@@ -65,7 +81,7 @@ const reasoningToDeltas = (text: string): LanguageModelV1StreamPart[] => {
 export const getResponseChunksByPrompt = (
   prompt: CoreMessage[],
   isReasoningEnabled = false,
-): Array<LanguageModelV1StreamPart> => {
+): Array<StreamPart> => {
   const recentMessage = prompt.at(-1);
 
   if (!recentMessage) {
@@ -222,14 +238,15 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
     return [
       {
         type: 'text-delta',
-        textDelta: 'A document was created and is now visible to the user.',
+        id: 'document-created',
+        delta: 'A document was created and is now visible to the user.',
       },
       {
         type: 'finish',
         finishReason: 'tool-calls',
         usage: { completionTokens: 10, promptTokens: 3 },
       },
-    ];
+    ] as StreamPart[];
   } else if (
     compareMessages(message, TEST_PROMPTS.GET_WEATHER_CALL as CoreMessage)
   ) {
@@ -260,5 +277,5 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
     ];
   }
 
-  return [{ type: 'text-delta', textDelta: 'Unknown test prompt!' }];
+  return [{ type: 'text-delta', id: 'unknown', delta: 'Unknown test prompt!' }];
 };

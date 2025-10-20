@@ -263,8 +263,8 @@ describe('message-utils', () => {
 
       const uiMessages = convertDBMessagesToUIMessages([dbMessage]);
 
-      expect(uiMessages[0]?.content).toBeDefined();
-      expect(typeof uiMessages[0]?.content).toBe('string');
+      expect(uiMessages[0]?.parts).toBeDefined();
+      expect(Array.isArray(uiMessages[0]?.parts)).toBe(true);
     });
 
     it('should handle DB messages with complex parts', () => {
@@ -316,7 +316,7 @@ describe('message-utils', () => {
       const uiMessages = convertDBMessagesToUIMessages([dbMessage]);
 
       expect(uiMessages).toHaveLength(1);
-      expect(uiMessages[0]?.content).toBeDefined();
+      expect(uiMessages[0]?.parts).toBeDefined();
     });
 
     it('should handle DB message with undefined parts', () => {
@@ -325,7 +325,7 @@ describe('message-utils', () => {
       const uiMessages = convertDBMessagesToUIMessages([dbMessage]);
 
       expect(uiMessages).toHaveLength(1);
-      expect(uiMessages[0]?.content).toBeDefined();
+      expect(uiMessages[0]?.parts).toBeDefined();
     });
   });
 

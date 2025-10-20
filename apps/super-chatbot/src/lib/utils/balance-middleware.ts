@@ -1,4 +1,3 @@
-import type { DataStreamWriter } from 'ai';
 import type { NextResponse } from 'next/server';
 import {
   validateOperationBalance,
@@ -11,14 +10,13 @@ import {
 } from './balance-error-handler';
 
 /**
- * Middleware для проверки баланса в артефактах с dataStream
+ * Middleware для проверки баланса в артефактах
  */
 export async function checkBalanceForArtifact(
   userId: string,
   operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
   multipliers: string[],
-  dataStream: DataStreamWriter,
 ): Promise<{ valid: boolean; errorContent?: string }> {
   const balanceValidation = await validateOperationBalance(
     userId,
@@ -31,7 +29,6 @@ export async function checkBalanceForArtifact(
     const balanceError = createBalanceError(balanceValidation);
     const errorContent = handleBalanceError(
       balanceError,
-      dataStream,
       operationType,
     );
 
@@ -112,7 +109,6 @@ export async function withBalanceCheck<T>(
   operation: 'image-generation' | 'video-generation' | 'script-generation',
   operationType: string,
   multipliers: string[],
-  dataStream: DataStreamWriter,
   callback: () => Promise<T>,
   operationDetails?: Record<string, any>,
 ): Promise<T | string> {
@@ -122,7 +118,6 @@ export async function withBalanceCheck<T>(
     operation,
     operationType,
     multipliers,
-    dataStream,
   );
 
   if (!valid) {

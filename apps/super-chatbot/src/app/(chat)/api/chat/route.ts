@@ -121,9 +121,8 @@ export const POST = withMonitoring(async (request: Request) => {
 		const previousMessageMap = new Map();
 		for (const msg of previousUIMessages) {
 			// Create a content hash based on role + text content
-			const textContent = typeof msg.content === 'string'
-				? msg.content
-				: msg.parts?.find((p: any) => p.type === 'text')?.text || '';
+			const textPart = msg.parts?.find((p: any) => p.type === 'text') as any;
+			const textContent = textPart?.text || '';
 			const contentHash = `${msg.role}:${textContent}`;
 			previousMessageMap.set(contentHash, msg);
 		}

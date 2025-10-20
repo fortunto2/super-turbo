@@ -76,7 +76,7 @@ describe('configureImageGeneration', () => {
 
     expect(tool).toBeDefined();
     expect(tool.description).toContain('Configure image generation settings');
-    expect(tool.parameters).toBeDefined();
+    expect(tool.inputSchema).toBeDefined();
   });
 
   it('should handle text-to-image generation', async () => {
@@ -87,7 +87,7 @@ describe('configureImageGeneration', () => {
       userMessage: 'Create a beautiful sunset over mountains',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains',
         style: 'realistic',
@@ -112,7 +112,7 @@ describe('configureImageGeneration', () => {
       userMessage: 'Transform this image into a watercolor painting',
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'Transform this image into a watercolor painting',
         sourceImageUrl: 'https://example.com/image.jpg',
@@ -137,7 +137,7 @@ describe('configureImageGeneration', () => {
     });
 
     // Test with missing prompt - should return config instead of throwing
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {},
       { toolCallId: 'test-call', messages: [] },
     );
@@ -159,7 +159,7 @@ describe('configureImageGeneration', () => {
       session: mockSession,
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains',
       },
@@ -182,7 +182,7 @@ describe('configureImageGeneration', () => {
       session: mockSession,
     });
 
-    const result = await tool.execute(
+    const result = await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains',
       },
@@ -208,7 +208,7 @@ describe('configureImageGeneration', () => {
       ],
     });
 
-    await tool.execute(
+    await (tool.execute as any)(
       {
         prompt: 'A beautiful sunset over mountains',
       },
@@ -244,7 +244,7 @@ describe('configureImageGeneration', () => {
     ];
 
     for (const resolution of resolutions) {
-      await tool.execute(
+      await (tool.execute as any)(
         {
           prompt: 'A beautiful sunset over mountains',
           resolution,
@@ -287,7 +287,7 @@ describe('configureImageGeneration', () => {
     ];
 
     for (const style of styles) {
-      await tool.execute(
+      await (tool.execute as any)(
         {
           prompt: 'A beautiful sunset over mountains',
           style,

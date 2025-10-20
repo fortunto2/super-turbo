@@ -98,18 +98,18 @@ export async function POST(request: NextRequest) {
     const allMessages = convertDBMessagesToUIMessages(previousMessages);
 
     // Добавляем новое сообщение пользователя
-    allMessages.push({
+    const userMessage = {
       id: message.id || generateUUID(),
-      role: "user",
-      content: message.content || message.parts?.[0]?.text || "",
+      role: "user" as const,
       parts: [
         {
           text: message.content || message.parts?.[0]?.text || "",
-          type: "text",
+          type: "text" as const,
         },
       ],
       createdAt: new Date(),
-    });
+    };
+    allMessages.push(userMessage);
 
     console.log(
       "🍌🎬 Advanced Banana+VEO3 API with tools:",
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     const result = streamText({
       model: myProvider.languageModel("gemini-2.5-flash-lite"),
       system: advancedBananaVeo3SystemPrompt,
-      messages: allMessages,
+      messages: allMessages as any,
       tools: {
         bananaInference: bananaInferenceTool,
         listBananaModels: listBananaModelsTool,
