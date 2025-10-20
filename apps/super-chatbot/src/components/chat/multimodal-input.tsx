@@ -47,8 +47,8 @@ function PureMultimodalInput({
   isSubmittingRef,
 }: {
   chatId: string;
-  input: UseChatHelpers<any>["input"];
-  setInput: UseChatHelpers<any>["setInput"];
+  input: string; // AI SDK v5: manually managed
+  setInput: (value: string) => void; // AI SDK v5: manually managed
   status: UseChatHelpers<any>["status"];
   stop: () => void;
   isSubmitting?: boolean;
@@ -57,8 +57,8 @@ function PureMultimodalInput({
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers<any>["setMessages"];
-  append: UseChatHelpers<any>["append"];
-  handleSubmit: UseChatHelpers<any>["handleSubmit"];
+  append: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
+  handleSubmit: (event?: any, options?: any) => void; // AI SDK v5: handleSubmit type
   className?: string;
   selectedVisibilityType: VisibilityType;
 }) {

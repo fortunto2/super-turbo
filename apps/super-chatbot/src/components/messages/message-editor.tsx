@@ -26,7 +26,13 @@ export function MessageEditor({
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const [draftContent, setDraftContent] = useState<string>(message.content);
+  // AI SDK v5: Extract text from parts instead of content
+  const initialContent = message.parts
+    ?.filter((p: any) => p.type === 'text')
+    ?.map((p: any) => p.text)
+    ?.join('') || (message as any).content || '';
+
+  const [draftContent, setDraftContent] = useState<string>(initialContent);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -79,9 +85,8 @@ export function MessageEditor({
               id: message.id,
             });
 
-            // @ts-expect-error todo: support UIMessage in setMessages
-            setMessages((messages) => {
-              const index = messages.findIndex((m) => m.id === message.id);
+            setMessages((messages: any) => {
+              const index = messages.findIndex((m: any) => m.id === message.id);
 
               if (index !== -1) {
                 const updatedMessage = {

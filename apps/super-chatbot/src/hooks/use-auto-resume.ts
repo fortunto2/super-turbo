@@ -2,13 +2,12 @@
 
 import { useEffect } from 'react';
 import type { UIMessage } from 'ai';
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { DataPart } from '@/lib/types';
 
 export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
-  data: UseChatHelpers<any>['data'];
+  data?: any; // AI SDK v5: data property no longer exists in UseChatHelpers, kept for backward compatibility
   setMessages: any // AI SDK v5: setMessages type changed;
 }
 
@@ -30,6 +29,8 @@ export function useAutoResume({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // AI SDK v5: data stream is no longer available, this effect is deprecated
+  // Keeping for backward compatibility but it will never run
   useEffect(() => {
     if (!data) return;
     if (data.length === 0) return;

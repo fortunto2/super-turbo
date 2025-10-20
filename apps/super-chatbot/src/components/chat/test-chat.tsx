@@ -126,7 +126,7 @@ function ChatContent({
       selectedVisibilityType: visibilityType,
     },
     // Add onResponse to log what we receive from server
-    onResponse: (response) => {
+    onResponse: (response: any) => {
       console.log("🌐 Client onResponse - Received response from server:", {
         status: response.status,
         statusText: response.statusText,

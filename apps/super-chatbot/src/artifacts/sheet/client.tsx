@@ -124,7 +124,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
       description: 'Format and clean data',
       icon: <SparklesIcon />,
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        appendMessage?.({
           role: 'user',
           content: 'Can you please format and clean the data?',
         });
@@ -134,7 +134,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
       description: 'Analyze and visualize data',
       icon: <LineChartIcon />,
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        appendMessage?.({
           role: 'user',
           content:
             'Can you please analyze and visualize the data by creating a new code artifact in python?',

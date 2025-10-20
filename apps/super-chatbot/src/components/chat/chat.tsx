@@ -125,25 +125,36 @@ function ChatContent({
 			selectedChatModel: initialChatModel,
 			selectedVisibilityType: visibilityType,
 		},
-		// AI SDK v5: Prepare request body to ensure correct format
-		experimental_prepareRequestBody: ({
-			messages: msgs,
-			requestData,
-			requestBody,
-		}: any) => {
-			console.log("🔍 Preparing request body:", {
-				messagesCount: msgs.length,
-				requestData,
-				requestBody,
-			});
+		// AI SDK v5: Use fetch function to intercept and modify the request
+		fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+			console.log("🔍 Custom fetch called");
+			console.log("🔍 Request URL:", input);
 
-			return {
-				id,
-				messages: msgs,
-				selectedChatModel: initialChatModel,
-				selectedVisibilityType: visibilityType,
-				...requestBody,
-			};
+			// Parse the request body to get messages
+			if (init?.body) {
+				try {
+					const body = JSON.parse(init.body as string);
+					console.log("🔍 Original messages count:", body.messages?.length || 0);
+
+					// CRITICAL FIX: Only send the last (new) message
+					// After page reload, useChat has all messages from DB
+					// We only need to send the new user message
+					if (body.messages && body.messages.length > 0) {
+						const lastMessage = body.messages[body.messages.length - 1];
+						console.log("🔍 Sending only last message:", {
+							id: lastMessage.id,
+							role: lastMessage.role,
+						});
+
+						body.messages = [lastMessage];
+						init.body = JSON.stringify(body);
+					}
+				} catch (e) {
+					console.error("Failed to parse request body:", e);
+				}
+			}
+
+			return fetch(input, init);
 		},
 		onFinish: (result: any) => {
 			console.log("🔍 Client onFinish - Chat ID:", id);

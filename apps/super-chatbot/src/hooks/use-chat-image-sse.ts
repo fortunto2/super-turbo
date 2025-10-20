@@ -134,7 +134,7 @@ export const useChatImageSSE = ({
 
           // Update messages with completed image
           setTimeout(() => {
-            setMessages((prevMessages) => {
+            setMessages((prevMessages: any) => {
               const updatedMessages = [...prevMessages];
               let foundArtifact = false;
 
@@ -145,7 +145,7 @@ export const useChatImageSSE = ({
                 if (message?.role === 'assistant') {
                   // Check if this message has image artifact content
                   const hasImageArtifact = message.parts?.some(
-                    (part) =>
+                    (part: any) =>
                       part.type === 'text' &&
                       'text' in part &&
                       part.text &&

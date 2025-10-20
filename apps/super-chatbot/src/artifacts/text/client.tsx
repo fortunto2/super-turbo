@@ -179,7 +179,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       icon: <PenIcon />,
       description: 'Add final polish',
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        appendMessage?.({
           role: 'user',
           content:
             'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
@@ -190,7 +190,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       icon: <MessageIcon />,
       description: 'Request suggestions',
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        appendMessage?.({
           role: 'user',
           content:
             'Please add suggestions you have that could improve the writing.',

@@ -114,12 +114,12 @@ export const PreviewAttachment = ({
         const idMatch = url.match(/[?&]id=([a-f0-9-]{36})/i);
         if (idMatch) {
           documentId = idMatch[1];
-        } else {
+        } else if (url) {
           // Fallback: берем последнюю часть после /
           const urlParts = url.split('/');
           const lastPart = urlParts[urlParts.length - 1];
           // Проверяем, что это UUID
-          if (/^[a-f0-9-]{36}$/i.test(lastPart)) {
+          if (lastPart && /^[a-f0-9-]{36}$/i.test(lastPart)) {
             documentId = lastPart;
           }
         }

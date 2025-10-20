@@ -39,8 +39,8 @@ export const bananaInferenceTool = tool({
         inputs,
         ...(config && {
           config: {
-            ...(config.maxTokens !== undefined && {
-              maxOutputTokens: config.maxTokens,
+            ...(config.maxOutputTokens !== undefined && {
+              maxOutputTokens: config.maxOutputTokens,
             }),
             ...(config.temperature !== undefined && {
               temperature: config.temperature,

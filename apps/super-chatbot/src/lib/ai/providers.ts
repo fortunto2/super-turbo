@@ -42,7 +42,7 @@ const geminiModel = {
   apiKey: process.env.GOOGLE_AI_API_KEY || '',
 };
 
-export const myProvider = isTestEnvironment
+export const myProvider: any = isTestEnvironment
   ? customProvider({
       languageModels: {
         'chat-model': chatModel as any,

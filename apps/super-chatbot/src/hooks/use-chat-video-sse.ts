@@ -166,7 +166,7 @@ export const useChatVideoSSE = ({
 
             // Update messages with completed video
             setTimeout(() => {
-              setMessages((prevMessages) => {
+              setMessages((prevMessages: any) => {
                 const updatedMessages = [...prevMessages];
                 let foundArtifact = false;
 
@@ -177,7 +177,7 @@ export const useChatVideoSSE = ({
                   if (message?.role === 'assistant') {
                     // Check if this message has video artifact content
                     const hasVideoArtifact = message.parts?.some(
-                      (part) =>
+                      (part: any) =>
                         part.type === 'text' &&
                         'text' in part &&
                         part.text &&

@@ -24,7 +24,7 @@ type ArtifactAction<M = any> = {
 };
 
 export type ArtifactToolbarContext = {
-  appendMessage: UseChatHelpers<any>["append"];
+  appendMessage?: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
 };
 
 export type ArtifactToolbarItem = {
@@ -47,7 +47,7 @@ interface ArtifactContent<M = any> {
   isLoading: boolean;
   metadata: M;
   setMetadata: Dispatch<SetStateAction<M>>;
-  append?: UseChatHelpers<any>["append"];
+  append?: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
   setMessages?: UseChatHelpers<any>["setMessages"];
   setArtifact?: Dispatch<SetStateAction<UIArtifact>>;
   chatId?: string;

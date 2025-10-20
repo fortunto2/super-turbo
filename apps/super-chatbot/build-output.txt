@@ -1,0 +1,98 @@
+
+> ai-chatbot@3.0.22 prebuild D:\projects\frontend\work\turbo-super\apps\super-chatbot
+> pnpm --filter @turbo-super/payment... run build && pnpm --filter @turbo-super/tailwind... run build
+
+Scope: 3 of 11 workspace projects
+../../packages/ui build$ tsup && node restore-types.js
+../../packages/ui build: [34mCLI[39m Building entry: src/index.ts
+../../packages/ui build: [34mCLI[39m Using tsconfig: tsconfig.json
+../../packages/ui build: [34mCLI[39m tsup v8.5.0
+../../packages/ui build: [34mCLI[39m Using tsup config: D:\projects\frontend\work\turbo-super\packages\ui\tsup.config.ts
+../../packages/ui build: [34mCLI[39m Target: es2018
+../../packages/ui build: [34mCLI[39m Cleaning output folder
+../../packages/ui build: [34mCJS[39m Build start
+../../packages/ui build: [34mESM[39m Build start
+../../packages/ui build: [32mCJS[39m [1mdist\index.cjs     [22m[32m17.40 KB[39m
+../../packages/ui build: [32mCJS[39m [1mdist\index.cjs.map [22m[32m24.14 KB[39m
+../../packages/ui build: [32mCJS[39m ⚡️ Build success in 51ms
+../../packages/ui build: [32mESM[39m [1mdist\index.js     [22m[32m13.60 KB[39m
+../../packages/ui build: [32mESM[39m [1mdist\index.js.map [22m[32m23.46 KB[39m
+../../packages/ui build: [32mESM[39m ⚡️ Build success in 50ms
+../../packages/ui build: Restoring type files...
+../../packages/ui build: Type files restored successfully!
+../../packages/ui build: Done
+../../packages/payment build$ tsup
+../../packages/payment build: [34mCLI[39m Building entry: src/index.ts
+../../packages/payment build: [34mCLI[39m Using tsconfig: tsconfig.json
+../../packages/payment build: [34mCLI[39m tsup v8.5.0
+../../packages/payment build: [34mCLI[39m Using tsup config: D:\projects\frontend\work\turbo-super\packages\payment\tsup.config.ts
+../../packages/payment build: [34mCLI[39m Target: es2020
+../../packages/payment build: [34mCLI[39m Cleaning output folder
+../../packages/payment build: [34mCJS[39m Build start
+../../packages/payment build: [34mESM[39m Build start
+../../packages/payment build: [34mDTS[39m Build start
+../../packages/payment build: [32mESM[39m [1mdist\index.js     [22m[32m16.45 KB[39m
+../../packages/payment build: [32mESM[39m [1mdist\index.js.map [22m[32m36.91 KB[39m
+../../packages/payment build: [32mESM[39m ⚡️ Build success in 1847ms
+../../packages/payment build: [32mCJS[39m [1mdist\index.cjs     [22m[32m16.88 KB[39m
+../../packages/payment build: [32mCJS[39m [1mdist\index.cjs.map [22m[32m37.11 KB[39m
+../../packages/payment build: [32mCJS[39m ⚡️ Build success in 1852ms
+../../packages/payment build: [32mDTS[39m ⚡️ Build success in 6021ms
+../../packages/payment build: [32mDTS[39m [1mdist\index.d.cts [22m[32m1.15 KB[39m
+../../packages/payment build: [32mDTS[39m [1mdist\index.d.ts  [22m[32m1.15 KB[39m
+../../packages/payment build: Done
+
+> @turbo-super/tailwind@1.0.0 build D:\projects\frontend\work\turbo-super\packages\tailwind
+> tsup
+
+[34mCLI[39m Building entry: {"index":"src/config.ts","config":"src/config.ts"}
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.0
+[34mCLI[39m Using tsup config: D:\projects\frontend\work\turbo-super\packages\tailwind\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mCJS[39m Build start
+[34mESM[39m Build start
+Entry module "dist/index.js" is using named and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+Entry module "dist/config.js" is using named and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+[32mESM[39m [1mdist\config.mjs     [22m[32m2.51 KB[39m
+[32mESM[39m [1mdist\index.mjs      [22m[32m2.50 KB[39m
+[32mESM[39m [1mdist\config.mjs.map [22m[32m3.93 KB[39m
+[32mESM[39m [1mdist\index.mjs.map  [22m[32m3.93 KB[39m
+[32mESM[39m ⚡️ Build success in 234ms
+[32mCJS[39m [1mdist\index.js      [22m[32m2.60 KB[39m
+[32mCJS[39m [1mdist\config.js     [22m[32m2.60 KB[39m
+[32mCJS[39m [1mdist\index.js.map  [22m[32m3.93 KB[39m
+[32mCJS[39m [1mdist\config.js.map [22m[32m3.93 KB[39m
+[32mCJS[39m ⚡️ Build success in 249ms
+[34mDTS[39m Build start
+[32mDTS[39m ⚡️ Build success in 2979ms
+[32mDTS[39m [1mdist\index.d.ts   [22m[32m120.00 B[39m
+[32mDTS[39m [1mdist\config.d.ts  [22m[32m83.00 B[39m
+[32mDTS[39m [1mdist\index.d.mts  [22m[32m120.00 B[39m
+[32mDTS[39m [1mdist\config.d.mts [22m[32m84.00 B[39m
+
+> ai-chatbot@3.0.22 build D:\projects\frontend\work\turbo-super\apps\super-chatbot
+> next build
+
+ ⚠ The config property `experimental.turbo` is deprecated. Move this setting to `config.turbopack` as Turbopack is now stable.
+   ▲ Next.js 15.3.1
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 31.0s
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/lib/ai/chat/chat-management.ts:7:8
+Type error: Module '"@/lib/db/queries"' declares 'Chat' locally, but it is not exported.
+
+[0m [90m  5 |[39m   getOrCreateOAuthUser[33m,[39m[0m
+[0m [90m  6 |[39m   type [33mUser[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 |[39m   type [33mChat[39m[33m,[39m[0m
+[0m [90m    |[39m        [31m[1m^[22m[39m[0m
+[0m [90m  8 |[39m } [36mfrom[39m [32m'@/lib/db/queries'[39m[33m;[39m[0m
+[0m [90m  9 |[39m [36mimport[39m { generateTitleFromUserMessage } [36mfrom[39m [32m'@/app/(chat)/actions'[39m[33m;[39m[0m
+[0m [90m 10 |[39m [36mimport[39m type { [33mVisibilityType[39m } [36mfrom[39m [32m'@/components/shared/visibility-selector'[39m[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

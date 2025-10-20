@@ -156,15 +156,20 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
       console.log('🔍 Loaded data from storage:', savedData);
 
       if (savedData) {
+        // ВАЖНО: Если артефакт был скрыт (isVisible: false), НЕ восстанавливаем его
+        // Пользователь специально закрыл его
+        // Исключение: если статус 'streaming' или 'pending', восстанавливаем
+        if (!savedData.isVisible && savedData.status !== 'streaming' && savedData.status !== 'pending') {
+          console.log('🔍 Skipping restore - artifact was closed by user');
+          clearArtifactFromStorage(chatId);
+          return;
+        }
+
         // Определяем, нужно ли восстанавливать артефакт
         const shouldRestore =
-          (savedData.documentId && savedData.documentId !== 'init') ||
           savedData.isVisible ||
           savedData.status === 'streaming' ||
-          savedData.status === 'pending' ||
-          savedData.status === 'completed' ||
-          savedData.content ||
-          savedData.title;
+          savedData.status === 'pending';
 
         console.log('🔍 Should restore artifact:', shouldRestore, {
           documentId: savedData.documentId,
@@ -173,13 +178,6 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
         });
 
         if (shouldRestore) {
-          // ВАЖНО: Если артефакт был скрыт (isVisible: false), НЕ восстанавливаем его
-          // Пользователь специально закрыл его
-          if (!savedData.isVisible && savedData.status !== 'streaming') {
-            console.log('🔍 Skipping restore - artifact was closed by user');
-            clearArtifactFromStorage(chatId);
-            return;
-          }
 
           console.log('🔄 Restoring artifact:', {
             ...savedData,
@@ -318,12 +316,12 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
         if (toolPart) {
           console.log('🎯 Found tool with potential artifact:', {
             toolType: toolPart.type,
-            toolName: toolPart.toolName || toolPart.toolCallId,
-            output: toolPart.output,
+            toolName: (toolPart as any).toolName || (toolPart as any).toolCallId,
+            output: (toolPart as any).output,
           });
 
           // AI SDK v5: Check if artifact is in output.parts[0] (nested structure)
-          const artifactData = toolPart.output?.parts?.[0] || toolPart.output;
+          const artifactData = (toolPart as any).output?.parts?.[0] || (toolPart as any).output;
 
           // Check for both id and artifactId (different tools use different field names)
           const documentId = artifactData?.id || artifactData?.artifactId;
@@ -337,7 +335,7 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
             createDocumentPart = {
               ...toolPart,
               output: { ...artifactData, id: documentId },
-            };
+            } as any;
           }
         }
       }
@@ -345,24 +343,35 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
       if (createDocumentPart) {
         console.log('🎯 Found document/artifact:', createDocumentPart);
 
-        // Открываем артефакт
+        // Открываем артефакт ТОЛЬКО если он еще не был закрыт пользователем
         const output = (createDocumentPart as any).output;
         if (output?.id) {
-          console.log('📄 Opening artifact:', {
+          console.log('📄 Found artifact in messages:', {
             id: output.id,
             kind: output.kind,
             title: output.title,
           });
 
-          setArtifact((prev) => ({
-            ...prev,
-            documentId: output.id,
-            kind: output.kind || 'text',
-            title: output.title || '',
-            content: output.content || '',
-            isVisible: true,
-            status: 'streaming',
-          }));
+          setArtifact((prev) => {
+            // Если артефакт с тем же ID уже существует и был закрыт (isVisible: false),
+            // НЕ открываем его снова
+            if (prev.documentId === output.id && !prev.isVisible) {
+              console.log('🔍 Artifact was closed by user, not reopening');
+              return prev;
+            }
+
+            // Иначе открываем/обновляем артефакт
+            console.log('📄 Opening/updating artifact');
+            return {
+              ...prev,
+              documentId: output.id,
+              kind: output.kind || 'text',
+              title: output.title || '',
+              content: output.content || '',
+              isVisible: true,
+              status: 'streaming',
+            };
+          });
         }
       } else {
         console.log('🔍 No artifact found in last message');

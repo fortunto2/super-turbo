@@ -36,6 +36,9 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/shared/visibility-selector';
 
+// Re-export types for external use
+export type { User, Chat };
+
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
@@ -495,19 +498,43 @@ export async function saveDocument({
     const defaultVisibility =
       visibility || (kind === 'script' ? 'public' : 'private');
 
-    return await db()
-      .insert(document)
-      .values({
-        id,
-        title,
-        kind,
-        content,
-        userId,
-        thumbnailUrl: thumbnailUrl ?? null,
-        visibility: defaultVisibility,
-        createdAt: new Date(),
-      })
-      .returning();
+    // Check if document with this ID already exists
+    const existingDocs = await db()
+      .select()
+      .from(document)
+      .where(eq(document.id, id))
+      .limit(1);
+
+    if (existingDocs.length > 0) {
+      // Update existing document
+      console.log('📄 Document already exists, updating:', id);
+      return await db()
+        .update(document)
+        .set({
+          title,
+          content,
+          thumbnailUrl: thumbnailUrl ?? null,
+          visibility: defaultVisibility,
+        })
+        .where(eq(document.id, id))
+        .returning();
+    } else {
+      // Insert new document
+      console.log('📄 Creating new document:', id);
+      return await db()
+        .insert(document)
+        .values({
+          id,
+          title,
+          kind,
+          content,
+          userId,
+          thumbnailUrl: thumbnailUrl ?? null,
+          visibility: defaultVisibility,
+          createdAt: new Date(),
+        })
+        .returning();
+    }
   } catch (error) {
     console.error('Failed to save document in database');
     throw error;

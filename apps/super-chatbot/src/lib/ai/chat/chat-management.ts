@@ -83,7 +83,7 @@ export async function ensureChatExists(
       : undefined;
 
     const title = normalizedMessage
-      ? await generateTitleFromUserMessage({ message: normalizedMessage })
+      ? await generateTitleFromUserMessage({ message: normalizedMessage as any })
       : 'New Chat';
 
     await saveChat({
@@ -113,7 +113,7 @@ export async function ensureChatExists(
         : undefined;
 
       const title = normalizedMessage
-        ? await generateTitleFromUserMessage({ message: normalizedMessage })
+        ? await generateTitleFromUserMessage({ message: normalizedMessage as any })
         : 'New Chat';
 
       await saveChat({

@@ -45,6 +45,13 @@ export const POST = withMonitoring(async (request: Request) => {
 
 		const body = await request.json();
 
+		// Debug: Log raw request to understand what AI SDK v5 sends
+		console.log("🔍 REQUEST BODY - messages count:", body.messages?.length || 0);
+		if (body.messages) {
+			console.log("🔍 REQUEST BODY - message roles:", body.messages.map((m: any) => m.role));
+			console.log("🔍 REQUEST BODY - message IDs:", body.messages.map((m: any) => m.id));
+		}
+
 		// Validate request body using schema
 		const validationResult = postRequestBodySchema.safeParse(body);
 		if (!validationResult.success) {
@@ -106,17 +113,68 @@ export const POST = withMonitoring(async (request: Request) => {
 		// Get previous messages from database
 		const previousMessages = await getMessagesByChatId({ id: chatId });
 
-		// Convert to UI format and add new messages
+		// Convert to UI format
+		const previousUIMessages = convertDBMessagesToUIMessages(previousMessages);
+		// CRITICAL FIX: AI SDK v5 sendMessage creates new IDs each time
+		// So we can't rely on ID matching alone - need content-based deduplication
+		// Create a map of previous messages by content hash for deduplication
+		const previousMessageMap = new Map();
+		for (const msg of previousUIMessages) {
+			// Create a content hash based on role + text content
+			const textContent = typeof msg.content === 'string'
+				? msg.content
+				: msg.parts?.find((p: any) => p.type === 'text')?.text || '';
+			const contentHash = `${msg.role}:${textContent}`;
+			previousMessageMap.set(contentHash, msg);
+		}
+
+		// Filter out messages that already exist by content (not just ID)
+		const newMessages = normalizedMessages.filter((msg) => {
+			if (msg.role === "system") return false;
+
+			const textContent = typeof msg.content === 'string'
+				? msg.content
+				: msg.parts?.find((p: any) => p.type === 'text')?.text || '';
+			const contentHash = `${msg.role}:${textContent}`;
+
+			const isDuplicate = previousMessageMap.has(contentHash);
+			if (isDuplicate) {
+				console.log(`🔍 Skipping duplicate message: ${contentHash.substring(0, 50)}...`);
+			}
+			return !isDuplicate;
+		});
+
+		console.log(`🔍 Filtered messages: ${newMessages.length} new out of ${normalizedMessages.length} total`);
+
+		// Combine previous messages with only NEW messages
 		const allMessages = [
-			...convertDBMessagesToUIMessages(previousMessages),
-			...normalizedMessages.filter((msg) => msg.role !== "system"),
+			...previousUIMessages,
+			...newMessages,
 		];
 
 		// Save user messages to database (with automatic FK recovery)
 		const userMessages = normalizedMessages.filter(
 			(msg) => msg.role === "user",
 		);
-		for (const userMsg of userMessages) {
+
+		// AICODE-FIX: Only save NEW user messages that aren't already in the database
+		// Use content-based deduplication (same as above)
+		const newUserMessages = userMessages.filter((msg) => {
+			const textContent = typeof msg.content === 'string'
+				? msg.content
+				: msg.parts?.find((p: any) => p.type === 'text')?.text || '';
+			const contentHash = `${msg.role}:${textContent}`;
+			return !previousMessageMap.has(contentHash);
+		});
+
+		console.log(`💾 Saving user messages: ${newUserMessages.length} new out of ${userMessages.length} total`);
+		console.log(`💾 Previous messages count:`, previousMessageMap.size);
+		console.log(`💾 User message contents:`, userMessages.map(m => {
+			const text = typeof m.content === 'string' ? m.content : m.parts?.find((p: any) => p.type === 'text')?.text || '';
+			return text.substring(0, 30);
+		}));
+
+		for (const userMsg of newUserMessages) {
 			await saveUserMessage({
 				chatId,
 				message: userMsg,

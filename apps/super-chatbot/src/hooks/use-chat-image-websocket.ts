@@ -138,7 +138,7 @@ export const useChatImageWebSocket = ({
           // Add small delay to ensure artifact is added to messages first
           setTimeout(() => {
             // Update messages using the current setMessages function
-            setMessages((prevMessages) => {
+            setMessages((prevMessages: any) => {
               const updatedMessages = [...prevMessages];
               let foundArtifact = false;
 
@@ -153,7 +153,7 @@ export const useChatImageWebSocket = ({
                 if (message?.role === 'assistant') {
                   // Check if this message has image artifact content
                   const hasImageArtifact = message?.parts?.some(
-                    (part) =>
+                    (part: any) =>
                       part.type === 'text' &&
                       'text' in part &&
                       part.text &&
@@ -295,7 +295,7 @@ export const useChatImageWebSocket = ({
 
                 // Check if any parts were actually updated
                 const wasUpdated = updatedParts?.some(
-                  (part, index) => part !== candidateMessage.parts?.[index],
+                  (part: any, index: any) => part !== candidateMessage.parts?.[index],
                 );
 
                 if (wasUpdated) {

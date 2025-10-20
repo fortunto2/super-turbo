@@ -44,12 +44,12 @@ const PurePreviewMessage = ({
   vote: Vote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers<any>["setMessages"];
-  reload: UseChatHelpers<any>["reload"];
+  reload?: () => void; // AI SDK v5: reload type
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   selectedChatModel: string;
   selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers<any>["append"];
+  append?: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const { setArtifact } = useArtifactLegacy(chatId);
@@ -99,13 +99,13 @@ const PurePreviewMessage = ({
               "min-h-96": message.role === "assistant" && requiresScrollPadding,
             })}
           >
-            {message.experimental_attachments &&
-              message.experimental_attachments.length > 0 && (
+            {(message as any).experimental_attachments &&
+              (message as any).experimental_attachments.length > 0 && (
                 <div
                   data-testid={`message-attachments`}
                   className="flex flex-row justify-end gap-2"
                 >
-                  {message.experimental_attachments.map((attachment) => (
+                  {(message as any).experimental_attachments.map((attachment: any) => (
                     <PreviewAttachment
                       key={attachment.url}
                       attachment={attachment}
@@ -124,7 +124,7 @@ const PurePreviewMessage = ({
                   <MessageReasoning
                     key={key}
                     isLoading={isLoading}
-                    reasoning={part.reasoning}
+                    reasoning={(part as any).reasoning || part.text || ''}
                   />
                 );
               }
@@ -135,7 +135,7 @@ const PurePreviewMessage = ({
                   const textContent = typeof part.text === 'string'
                     ? part.text
                     : Array.isArray(part.text)
-                      ? part.text.map(item => {
+                      ? (part.text as any[]).map((item: any) => {
                           // If array contains objects with 'type' and 'text', extract text
                           if (typeof item === 'object' && item !== null && 'text' in item) {
                             return item.text;
@@ -313,24 +313,30 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === "tool-invocation") {
-                const { toolInvocation } = part;
-                const { toolName, toolCallId, state, args } = toolInvocation;
+              // AI SDK v5: "tool-invocation" type no longer exists
+              // Tool parts now use types like "tool-configureImageGeneration", "tool-createDocument", etc.
+              // Check for tool types using startsWith('tool-')
+              if (type?.startsWith('tool-')) {
+                const toolName = type.replace('tool-', '');
+                const toolCallId = (part as any).toolCallId || '';
+                const state = (part as any).state || 'unknown';
+                const args = (part as any).input;
+                const output = (part as any).output;
 
                 // Debug: log all tool invocations
-                console.log("🔍 Tool invocation detected in message.tsx:", {
+                console.log("🔍 Tool detected in message.tsx:", {
                   toolName,
                   state,
-                  hasResult: state === "result" && !!toolInvocation.result,
-                  result: state === "result" ? toolInvocation.result : undefined,
+                  hasOutput: state === "output-available" && !!output,
+                  output: state === "output-available" ? output : undefined,
                 });
 
-                if (state === "call") {
+                if (state === "call" || state === "input-streaming") {
                   return null;
                 }
 
-                if (state === "result") {
-                  const { result } = toolInvocation;
+                if (state === "output-available" || state === "result") {
+                  const result = output;
 
                   // Handle image generation configuration
                   if (

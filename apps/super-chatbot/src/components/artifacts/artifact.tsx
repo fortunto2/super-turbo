@@ -6,7 +6,6 @@ import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
-  memo,
   type SetStateAction,
   useCallback,
   useEffect,
@@ -116,17 +115,17 @@ function PureArtifact({
 }: {
   chatId: string;
   input: string;
-  setInput: UseChatHelpers<any>['setInput'];
+  setInput: (value: string) => void; // AI SDK v5: manually managed
   status: UseChatHelpers<any>['status'];
   stop: UseChatHelpers<any>['stop'];
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
-  setMessages: any // AI SDK v5: setMessages type changed;
+  setMessages: (messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[])) => void; // AI SDK v5: setMessages accepts value or updater function
   votes: Array<Vote> | undefined;
-  append: any // AI SDK v5: append type changed;
-  handleSubmit: UseChatHelpers<any>['handleSubmit'];
-  reload: any // AI SDK v5: reload type changed;
+  append: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
+  handleSubmit: (event?: any, options?: any) => void; // AI SDK v5: handleSubmit type
+  reload: () => void; // AI SDK v5: reload type
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   selectedChatModel: string;
@@ -599,26 +598,7 @@ function PureArtifact({
   );
 }
 
-export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
-  // Only re-render if critical props change
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.input !== nextProps.input) return false;
-  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-    return false;
-  if (prevProps.chatId !== nextProps.chatId) return false;
-
-  // Check votes length instead of deep equality for performance
-  const prevVotesLength = prevProps.votes?.length || 0;
-  const nextVotesLength = nextProps.votes?.length || 0;
-  if (prevVotesLength !== nextVotesLength) return false;
-
-  // Check messages length instead of deep equality for performance
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-
-  // Check if the last message ID changed (more efficient than deep comparison)
-  const prevLastMessage = prevProps.messages.at(-1);
-  const nextLastMessage = nextProps.messages.at(-1);
-  if (prevLastMessage?.id !== nextLastMessage?.id) return false;
-
-  return true;
-});
+// IMPORTANT: Don't use memo with custom comparison for components that use context
+// The component relies on ArtifactContext which is not part of props
+// Memo with custom comparison will block re-renders when context changes
+export const Artifact = PureArtifact;
