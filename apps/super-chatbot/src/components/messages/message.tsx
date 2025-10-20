@@ -3,7 +3,7 @@
 import type { UIMessage } from "ai";
 import cx from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
-import { memo, useState } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import type { Vote } from "@/lib/db/schema";
 import { PencilEditIcon, SparklesIcon } from "../common/icons";
 import { MessageActions } from "./message-actions";
@@ -53,6 +53,7 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const { setArtifact } = useArtifactLegacy(chatId);
+  const scriptsToSaveRef = useRef<Set<string>>(new Set());
 
   // Debug: log message structure
   if (message.role === "assistant" && message.parts) {
@@ -67,6 +68,23 @@ const PurePreviewMessage = ({
       })),
     });
   }
+
+  // Handle saving scripts to chat after render completes
+  useEffect(() => {
+    if (scriptsToSaveRef.current.size > 0 && setMessages) {
+      const scriptIds = Array.from(scriptsToSaveRef.current);
+      scriptsToSaveRef.current.clear();
+
+      // Process each script that needs to be saved
+      for (const scriptData of scriptIds) {
+        const [scriptId, scriptTitle = ''] = scriptData.split('|||');
+        if (scriptId) {
+          console.log("📄 Saving script to chat history (via useEffect)...");
+          saveScriptToChat(chatId, scriptId, scriptTitle, setMessages);
+        }
+      }
+    }
+  }, [message.id, chatId, setMessages]);
 
   return (
     <AnimatePresence>
@@ -408,16 +426,9 @@ const PurePreviewMessage = ({
                       title: scriptTitle,
                     });
 
-                    // Save script to chat immediately
-                    if (setMessages) {
-                      console.log("📄 Saving script to chat history...");
-                      saveScriptToChat(
-                        chatId,
-                        scriptId,
-                        scriptTitle,
-                        setMessages
-                      );
-                    }
+                    // Queue script to be saved after render completes (via useEffect)
+                    console.log("📄 Queueing script to be saved to chat history...");
+                    scriptsToSaveRef.current.add(`${scriptId}|||${scriptTitle}`);
 
                     // Don't return any UI element - script artifact is already opened by use-artifact hook
                     return null;
