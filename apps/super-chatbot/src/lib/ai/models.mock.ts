@@ -1,5 +1,17 @@
 import { MockLanguageModelV2, simulateReadableStream } from 'ai/test';
-import { getResponseChunksByPrompt } from '@/tests/prompts/utils';
+
+// Default mock response chunks
+const getDefaultResponseChunks = () => [
+  { type: 'text-start', id: 'text-1' },
+  { type: 'text-delta', id: 'text-1', delta: 'Hello, ' },
+  { type: 'text-delta', id: 'text-1', delta: 'world!' },
+  { type: 'text-end', id: 'text-1' },
+  {
+    type: 'finish',
+    finishReason: 'stop',
+    usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
+  },
+];
 
 export const chatModel = new MockLanguageModelV2({
   doGenerate: async () => ({
@@ -8,11 +20,11 @@ export const chatModel = new MockLanguageModelV2({
     content: [{ type: 'text', text: `Hello, world!` }],
     warnings: [],
   }),
-  doStream: async ({ prompt }) => ({
+  doStream: async () => ({
     stream: simulateReadableStream({
       chunkDelayInMs: 500,
       initialDelayInMs: 1000,
-      chunks: getResponseChunksByPrompt(prompt),
+      chunks: getDefaultResponseChunks(),
     }),
   } as any),
 });
@@ -100,11 +112,11 @@ export const artifactModel = new MockLanguageModelV2({
     content: [{ type: 'text', text: `Hello, world!` }],
     warnings: [],
   }),
-  doStream: async ({ prompt }) => ({
+  doStream: async () => ({
     stream: simulateReadableStream({
       chunkDelayInMs: 50,
       initialDelayInMs: 100,
-      chunks: getResponseChunksByPrompt(prompt),
+      chunks: getDefaultResponseChunks(),
     }),
   } as any),
 });

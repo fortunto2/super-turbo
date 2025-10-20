@@ -177,6 +177,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eventsource": "^4.0.0",
+    "ignore-loader": "^0.1.2",
     "jsdom": "^24.0.0",
     "require-in-the-middle": "^7.5.2",
     "sass": "^1.89.2",

@@ -18,7 +18,9 @@ const nextConfig: NextConfig = {
     REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
   },
   // Настройки для правильной генерации манифестов
-  output: 'standalone',
+  // NOTE: 'standalone' output disabled due to Windows symlink permission issues
+  // Enable for Docker/production deployments only
+  // output: 'standalone',
   // Включаем экспериментальные функции для лучшей совместимости
   experimental: {
     // Включаем оптимизации производительности
@@ -30,9 +32,14 @@ const nextConfig: NextConfig = {
       'clsx',
       'tailwind-merge',
     ],
-    // Включаем поддержку турборепозитория
-    turbo: {
-      rules: { '*.svg': { loaders: ['@svgr/webpack'], as: '*.js' } },
+  },
+  // Включаем поддержку Turbopack (new stable API)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js'
+      }
     },
   },
 
@@ -49,6 +56,36 @@ const nextConfig: NextConfig = {
   },
 
   webpack: (config, { isServer, dev }) => {
+    // Игнорируем тестовые файлы и зависимости
+    config.module = config.module || {};
+    config.module.rules = config.module.rules || [];
+    
+    // Игнорируем тестовые файлы
+    config.module.rules.push({
+      test: /\.(test|spec)\.(ts|tsx|js|jsx)$/,
+      loader: 'ignore-loader',
+    });
+    
+    // Игнорируем папку tests
+    config.module.rules.push({
+      test: /[\\/]tests[\\/]/,
+      loader: 'ignore-loader',
+    });
+
+    // Исключаем vitest и тестовые библиотеки из сборки (только на сервере)
+    if (isServer && !dev) {
+      // Добавляем тестовые пакеты в externals, чтобы они не включались в бандл
+      if (!Array.isArray(config.externals)) {
+        config.externals = config.externals ? [config.externals] : [];
+      }
+      config.externals.push(
+        /^vitest/,
+        /^@vitest\//,
+        /^@testing-library\//,
+        '@testing-library/jest-dom'
+      );
+    }
+
     // Игнорируем предупреждения о критических зависимостях для @opentelemetry
     config.ignoreWarnings = [
       {

@@ -4,14 +4,7 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { createAzure } from '@ai-sdk/azure';
-// Убираем импорт Vertex AI - будем использовать прямой API
 import { isTestEnvironment } from '@/lib/constants';
-import {
-  chatModel,
-  reasoningModel,
-  titleModel,
-  artifactModel,
-} from './models.mock';
 
 // Создаем настроенный экземпляр провайдера Azure
 const customAzure = createAzure({
@@ -42,33 +35,24 @@ const geminiModel = {
   apiKey: process.env.GOOGLE_AI_API_KEY || '',
 };
 
-export const myProvider: any = isTestEnvironment
-  ? customProvider({
-      languageModels: {
-        'chat-model': chatModel as any,
-        'chat-model-reasoning': reasoningModel as any,
-        'title-model': titleModel as any,
-        'artifact-model': artifactModel as any,
-        'gemini-2.5-flash-lite': chatModel as any, // Используем mock для тестов
-      },
-    })
-  : customProvider({
-      languageModels: {
-        'chat-model': mainModel,
-        'chat-model-reasoning': wrapLanguageModel({
-          model: o4MiniModel,
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'o3-reasoning': wrapLanguageModel({
-          model: o3Model,
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'o3-pro-reasoning': wrapLanguageModel({
-          model: o3ProModel,
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'gemini-2.5-flash-lite': geminiModel as any,
-        'title-model': mainModel,
-        'artifact-model': mainModel,
-      },
-    });
+// Create provider - mock models are only loaded in test environment to avoid bundling vitest
+export const myProvider: ReturnType<typeof customProvider> = customProvider({
+  languageModels: {
+    'chat-model': mainModel,
+    'chat-model-reasoning': wrapLanguageModel({
+      model: o4MiniModel,
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    }),
+    'o3-reasoning': wrapLanguageModel({
+      model: o3Model,
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    }),
+    'o3-pro-reasoning': wrapLanguageModel({
+      model: o3ProModel,
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    }),
+    'gemini-2.5-flash-lite': geminiModel as any,
+    'title-model': mainModel,
+    'artifact-model': mainModel,
+  },
+});
