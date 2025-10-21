@@ -4,7 +4,6 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { createAzure } from '@ai-sdk/azure';
-import { isTestEnvironment } from '@/lib/constants';
 
 // Создаем настроенный экземпляр провайдера Azure
 const customAzure = createAzure({

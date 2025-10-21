@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@turbo-super/ui';
-import { Download, Copy, Trash2, X, ImageIcon, Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import type { GeneratedImageResult } from '../api/image-generation-api';
-import Image from 'next/image';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+} from "@turbo-super/ui";
+import { Download, Copy, Trash2, X, ImageIcon, Loader2 } from "lucide-react";
+import { useState } from "react";
+import type { GeneratedImageResult } from "../api/image-generation-api";
+import Image from "next/image";
 
 interface ImageGenerationGalleryProps {
   generatedImages: GeneratedImageResult[];
@@ -25,15 +31,19 @@ export function ImageGenerationGallery({
   onCopyImageUrl,
   isGenerating,
 }: ImageGenerationGalleryProps) {
-  const [selectedImage, setSelectedImage] = useState<GeneratedImageResult | null>(null);
+  const [selectedImage, setSelectedImage] =
+    useState<GeneratedImageResult | null>(null);
 
   const allImages = currentGeneration
-    ? [currentGeneration, ...generatedImages.filter((img) => img.id !== currentGeneration.id)]
+    ? [
+        currentGeneration,
+        ...generatedImages.filter((img) => img.id !== currentGeneration.id),
+      ]
     : generatedImages;
 
   return (
     <>
-      <Card className="h-[calc(100vh-200px)] flex flex-col">
+      <Card className="h-full flex flex-col">
         <CardHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -58,11 +68,13 @@ export function ImageGenerationGallery({
             )}
           </div>
         </CardHeader>
-        <CardContent className="flex-1 overflow-y-auto">
+        <CardContent className="flex-1 overflow-y-auto h-full">
           {isGenerating && allImages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Loader2 className="size-12 animate-spin text-blue-400" />
-              <p className="text-sm text-muted-foreground">Generating your image...</p>
+              <p className="text-sm text-muted-foreground">
+                Generating your image...
+              </p>
             </div>
           ) : allImages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4 text-center">
@@ -77,7 +89,7 @@ export function ImageGenerationGallery({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {allImages.map((image, index) => (
                 <div
                   key={image.id}
@@ -85,7 +97,7 @@ export function ImageGenerationGallery({
                 >
                   {/* Image */}
                   <div
-                    className="relative aspect-square cursor-pointer"
+                    className="relative h-40 cursor-pointer"
                     onClick={() => setSelectedImage(image)}
                   >
                     <Image
@@ -93,7 +105,7 @@ export function ImageGenerationGallery({
                       alt={image.prompt}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      sizes="(max-width: 768px) 50vw, 25vw"
                     />
                     {index === 0 && currentGeneration?.id === image.id && (
                       <div className="absolute top-2 left-2">
@@ -105,31 +117,34 @@ export function ImageGenerationGallery({
                   </div>
 
                   {/* Actions */}
-                  <div className="p-3 border-t border-border">
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{image.prompt}</p>
-                    <div className="flex items-center gap-2">
+                  <div className="p-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                      {image.prompt}
+                    </p>
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onDownloadImage(image.url, `image-${image.id}.png`)}
-                        className="flex-1"
+                        onClick={() =>
+                          onDownloadImage(image.url, `image-${image.id}.png`)
+                        }
+                        className="flex-1 h-7 text-xs px-2"
                       >
-                        <Download className="size-3 mr-1" />
-                        Download
+                        <Download className="size-3" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onCopyImageUrl(image.url)}
-                        className="flex-1"
+                        className="flex-1 h-7 text-xs px-2"
                       >
-                        <Copy className="size-3 mr-1" />
-                        Copy URL
+                        <Copy className="size-3" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onDeleteImage(image.id)}
+                        className="h-7 px-2"
                       >
                         <Trash2 className="size-3" />
                       </Button>

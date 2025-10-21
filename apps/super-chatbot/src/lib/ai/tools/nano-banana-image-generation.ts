@@ -473,105 +473,55 @@ export const nanoBananaImageGeneration = (params?: CreateImageDocumentParams) =>
           imageParams,
         );
 
-        try {
-          // Используем Nano Banana Provider (Gemini + SuperDuperAI)
-          console.log(
-            '🍌 🚀 NANO BANANA: Using hybrid Gemini + SuperDuperAI approach',
-          );
+        // Используем Nano Banana Provider (Gemini API)
+        console.log('🍌 🚀 NANO BANANA: Using Gemini API');
 
-          const { nanoBananaProvider } = await import(
-            '../providers/nano-banana'
-          );
+        const { nanoBananaProvider } = await import(
+          '../providers/nano-banana'
+        );
 
-          const nanoBananaParams = {
-            prompt: nanoBananaPrompt,
-            ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
-            style: selectedStyle.id,
-            quality: selectedQuality.id,
-            aspectRatio: selectedAspectRatio.id,
-            ...(seed && { seed }),
-            nanoBananaFeatures: {
-              enableContextAwareness,
-              enableSurgicalPrecision,
-              creativeMode,
-            },
-          };
+        const nanoBananaParams = {
+          prompt: nanoBananaPrompt,
+          ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
+          style: selectedStyle.id,
+          quality: selectedQuality.id,
+          aspectRatio: selectedAspectRatio.id,
+          ...(seed && { seed }),
+          nanoBananaFeatures: {
+            enableContextAwareness,
+            enableSurgicalPrecision,
+            creativeMode,
+          },
+        };
 
-          const result =
-            await nanoBananaProvider.generateImage(nanoBananaParams);
+        const result =
+          await nanoBananaProvider.generateImage(nanoBananaParams);
 
-          console.log('🍌 ✅ NANO BANANA API RESULT:', result);
+        console.log('🍌 ✅ NANO BANANA API RESULT:', result);
 
-          return {
-            ...result,
-            message: `Создаю ${operationType === 'image-to-image' ? 'редактирование изображения' : 'новое изображение'} с помощью Nano Banana (Gemini + SuperDuperAI): "${prompt}". Стиль: ${selectedStyle.label}, Качество: ${selectedQuality.label}, Формат: ${selectedAspectRatio.label}. Генерация завершена.`,
-            nanoBananaInfo: {
-              model: 'gemini-2.5-flash-image',
-              capabilities: [
-                'Контекстно-осознанное редактирование',
-                'Хирургическая точность',
-                'Понимание физической логики',
-                'Интеллектуальное освещение',
-              ],
-              style: selectedStyle,
-              quality: selectedQuality,
-              aspectRatio: selectedAspectRatio,
-            },
-          };
-        } catch (error) {
-          console.error('🍌 ❌ NANO BANANA API ERROR:', error);
-
-          // Fallback на createDocument если Gemini API недоступен
-          console.log('🍌 🔄 FALLBACK: Using createDocument as fallback');
-
-          const fallbackResult = await params.createDocument({
-            session: params.session,
-            dataStream: {
-              title: JSON.stringify({
-                ...imageParams,
-                nanoBananaFeatures: {
-                  enableContextAwareness,
-                  enableSurgicalPrecision,
-                  creativeMode,
-                },
-                enhancedPrompt: nanoBananaPrompt,
-                model: 'gemini-2.5-flash-image',
-                apiProvider: 'google-gemini',
-                fallback: true,
-                error: error instanceof Error ? error.message : 'Unknown error',
-              }),
-              kind: 'image',
-            },
-          });
-
-          return {
-            ...fallbackResult,
-            message: `Создаю ${operationType === 'image-to-image' ? 'редактирование изображения' : 'новое изображение'} с помощью Nano Banana (fallback mode): "${prompt}". Стиль: ${selectedStyle.label}, Качество: ${selectedQuality.label}, Формат: ${selectedAspectRatio.label}. Артефакт создан.`,
-            nanoBananaInfo: {
-              model: 'gemini-2.5-flash-image',
-              capabilities: [
-                'Контекстно-осознанное редактирование',
-                'Хирургическая точность',
-                'Понимание физической логики',
-                'Интеллектуальное освещение',
-              ],
-              style: selectedStyle,
-              quality: selectedQuality,
-              aspectRatio: selectedAspectRatio,
-            },
-            fallbackMode: true,
-            note: 'Используется fallback режим из-за ошибки Gemini API',
-          };
-        }
+        return {
+          ...result,
+          message: `Image generated successfully using Nano Banana (Gemini 2.5 Flash Image): "${prompt}". Style: ${selectedStyle.label}, Quality: ${selectedQuality.label}, Format: ${selectedAspectRatio.label}.`,
+          nanoBananaInfo: {
+            model: 'gemini-2.5-flash-image',
+            capabilities: [
+              'Context-aware editing',
+              'Surgical precision',
+              'Physical logic understanding',
+              'Intelligent lighting',
+            ],
+            style: selectedStyle,
+            quality: selectedQuality,
+            aspectRatio: selectedAspectRatio,
+          },
+        };
       } catch (error: any) {
         console.error(
-          '🍌 ❌ ERROR CREATING NANO BANANA IMAGE DOCUMENT:',
+          '🍌 ❌ ERROR IN NANO BANANA IMAGE GENERATION:',
           error,
         );
-        return {
-          error: `Ошибка создания документа Nano Banana: ${error.message}`,
-          fallbackConfig: config,
-        };
+        // Пробрасываем ошибку наружу без fallback
+        throw error;
       }
     },
   });
