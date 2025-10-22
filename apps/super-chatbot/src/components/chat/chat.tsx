@@ -134,20 +134,24 @@ function ChatContent({
 			if (init?.body) {
 				try {
 					const body = JSON.parse(init.body as string);
-					console.log("🔍 Original messages count:", body.messages?.length || 0);
+					console.log("🔍 CLIENT - Original messages count:", body.messages?.length || 0);
+					console.log("🔍 CLIENT - Original message roles:", body.messages?.map((m: any) => m.role) || []);
 
 					// CRITICAL FIX: Only send the last (new) message
 					// After page reload, useChat has all messages from DB
 					// We only need to send the new user message
 					if (body.messages && body.messages.length > 0) {
 						const lastMessage = body.messages[body.messages.length - 1];
-						console.log("🔍 Sending only last message:", {
+						console.log("🔍 CLIENT - Sending only last message:", {
 							id: lastMessage.id,
 							role: lastMessage.role,
+							content: lastMessage.content?.substring(0, 30),
 						});
 
 						body.messages = [lastMessage];
 						init.body = JSON.stringify(body);
+
+						console.log("🔍 CLIENT - Modified messages count:", body.messages.length);
 					}
 				} catch (e) {
 					console.error("Failed to parse request body:", e);

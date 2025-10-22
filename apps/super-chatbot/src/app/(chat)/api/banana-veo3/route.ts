@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    const apiKey = process.env.VERTEX_AI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         {

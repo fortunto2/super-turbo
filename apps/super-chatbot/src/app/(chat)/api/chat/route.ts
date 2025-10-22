@@ -24,13 +24,17 @@ import {
 	normalizeUIMessage,
 } from "@/lib/ai/chat/message-utils";
 
-// Import tools
+// Import tools (old SuperDuperAI tools - kept for backward compatibility)
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
 import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
 import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+
+// Import new tools (Nano Banana + FAL AI)
+import { nanoBananaImageGenerationForChat } from "@/lib/ai/tools/nano-banana-chat-image-generation";
+import { falVideoGenerationForChat } from "@/lib/ai/tools/fal-chat-video-generation";
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
@@ -112,17 +116,31 @@ export const POST = withMonitoring(async (request: Request) => {
 
 		// Get previous messages from database
 		const previousMessages = await getMessagesByChatId({ id: chatId });
+		console.log(`🔍 Loaded ${previousMessages.length} messages from DB`);
 
 		// Convert to UI format
 		const previousUIMessages = convertDBMessagesToUIMessages(previousMessages);
+		console.log(`🔍 Converted to ${previousUIMessages.length} UI messages`);
+		console.log(`🔍 Previous UI messages content:`, previousUIMessages.map(m => ({
+			role: m.role,
+			content: typeof m.content === 'string' ? m.content.substring(0, 30) : `[${typeof m.content}]`,
+			partsCount: m.parts?.length || 0
+		})));
+
 		// CRITICAL FIX: AI SDK v5 sendMessage creates new IDs each time
 		// So we can't rely on ID matching alone - need content-based deduplication
 		// Create a map of previous messages by content hash for deduplication
 		const previousMessageMap = new Map();
 		for (const msg of previousUIMessages) {
 			// Create a content hash based on role + text content
-			const textPart = msg.parts?.find((p: any) => p.type === 'text') as any;
-			const textContent = textPart?.text || '';
+			// IMPORTANT: Check both content field AND parts array
+			let textContent = '';
+			if (typeof msg.content === 'string' && msg.content.trim()) {
+				textContent = msg.content;
+			} else {
+				const textPart = msg.parts?.find((p: any) => p.type === 'text') as any;
+				textContent = textPart?.text || '';
+			}
 			const contentHash = `${msg.role}:${textContent}`;
 			previousMessageMap.set(contentHash, msg);
 		}
@@ -151,6 +169,71 @@ export const POST = withMonitoring(async (request: Request) => {
 			...newMessages,
 		];
 
+		// CRITICAL FIX: Ensure all messages have proper parts array for Gemini API
+		// Convert content string to parts if needed AND remove parts without text
+		const messagesForAPI = allMessages
+			.map((msg) => {
+				// If message has no parts but has content string, convert it to parts
+				if ((!msg.parts || msg.parts.length === 0) && msg.content && typeof msg.content === 'string') {
+					return {
+						...msg,
+						parts: [
+							{
+								type: 'text',
+								text: msg.content,
+							},
+						],
+					};
+				}
+
+				// For messages with parts, filter out non-text parts (like step-start)
+				// before sending to Gemini API
+				if (msg.parts && msg.parts.length > 0) {
+					const textParts = msg.parts.filter((p: any) =>
+						p.type === 'text' && p.text && typeof p.text === 'string' && p.text.trim().length > 0
+					);
+
+					// If we have valid text parts, return message with only those parts
+					if (textParts.length > 0) {
+						return {
+							...msg,
+							parts: textParts,
+						};
+					}
+				}
+
+				return msg;
+			})
+			.filter((msg) => {
+				// For all messages, ensure they have at least one valid text part
+				// This is required by Gemini API
+				const hasTextPart = msg.parts?.some((p: any) =>
+					p.type === 'text' && p.text && typeof p.text === 'string' && p.text.trim().length > 0
+				);
+
+				if (!hasTextPart) {
+					console.log(`🔍 Filtering out ${msg.role} message without valid text:`, {
+						id: msg.id,
+						role: msg.role,
+						partsCount: msg.parts?.length,
+					});
+				}
+
+				return hasTextPart;
+			});
+
+		console.log(`🔍 Messages for API: ${messagesForAPI.length} out of ${allMessages.length} total`);
+
+		// Debug: Log all messages structure before sending to API
+		messagesForAPI.forEach((msg, index) => {
+			console.log(`🔍 Message ${index}:`, {
+				role: msg.role,
+				partsCount: msg.parts?.length,
+				partsTypes: msg.parts?.map((p: any) => p.type).join(', '),
+				contentLength: typeof msg.content === 'string' ? msg.content.length : 0,
+			});
+		});
+
 		// Save user messages to database (with automatic FK recovery)
 		const userMessages = normalizedMessages.filter(
 			(msg) => msg.role === "user",
@@ -168,9 +251,12 @@ export const POST = withMonitoring(async (request: Request) => {
 
 		console.log(`💾 Saving user messages: ${newUserMessages.length} new out of ${userMessages.length} total`);
 		console.log(`💾 Previous messages count:`, previousMessageMap.size);
+		console.log(`💾 Previous message hashes:`, Array.from(previousMessageMap.keys()).map(hash => hash.substring(0, 50)));
 		console.log(`💾 User message contents:`, userMessages.map(m => {
 			const text = typeof m.content === 'string' ? m.content : m.parts?.find((p: any) => p.type === 'text')?.text || '';
-			return text.substring(0, 30);
+			const hash = `${m.role}:${text}`;
+			const isDuplicate = previousMessageMap.has(hash);
+			return { text: text.substring(0, 30), hash: hash.substring(0, 50), isDuplicate };
 		}));
 
 		for (const userMsg of newUserMessages) {
@@ -187,6 +273,8 @@ export const POST = withMonitoring(async (request: Request) => {
 		const createDocumentTool = createDocument({ session });
 		const updateDocumentTool = updateDocument({ session });
 		const lastMessage = normalizedMessages[normalizedMessages.length - 1];
+
+		// Old SuperDuperAI tools (kept for backward compatibility)
 		const imageGenerationTool = configureImageGeneration({
 			createDocument: createDocumentTool,
 			session,
@@ -201,6 +289,23 @@ export const POST = withMonitoring(async (request: Request) => {
 			userMessage: lastMessage?.content || "",
 			currentAttachments: lastMessage?.experimental_attachments || [],
 		});
+
+		// New tools (Nano Banana + FAL AI)
+		const nanoBananaImageTool = nanoBananaImageGenerationForChat({
+			createDocument: createDocumentTool,
+			session,
+			chatId,
+			userMessage: lastMessage?.content || "",
+			currentAttachments: lastMessage?.experimental_attachments || [],
+		});
+		const falVideoTool = falVideoGenerationForChat({
+			createDocument: createDocumentTool,
+			session,
+			chatId,
+			userMessage: lastMessage?.content || "",
+			currentAttachments: lastMessage?.experimental_attachments || [],
+		});
+
 		const scriptGenerationTool = configureScriptGeneration({
 			createDocument: createDocumentTool,
 			session,
@@ -213,11 +318,16 @@ export const POST = withMonitoring(async (request: Request) => {
 				selectedChatModel: chatModel,
 				requestHints: { latitude: "0", longitude: "0", city: "", country: "" },
 			}),
-			messages: allMessages,
+			messages: messagesForAPI, // Use filtered messages without empty assistant messages
 			temperature: 0.7,
 			tools: {
+				// Old SuperDuperAI tools (kept for backward compatibility)
 				configureImageGeneration: imageGenerationTool,
 				configureVideoGeneration: videoGenerationTool,
+				// New tools (Nano Banana + FAL AI - primary image/video generation)
+				nanoBananaImageGeneration: nanoBananaImageTool,
+				falVideoGeneration: falVideoTool,
+				// Other tools
 				configureScriptGeneration: scriptGenerationTool,
 				createDocument: createDocumentTool,
 				updateDocument: updateDocumentTool,
@@ -234,11 +344,10 @@ export const POST = withMonitoring(async (request: Request) => {
 		// This prevents the race condition where messages aren't saved before page reload
 		result.consumeStream();
 
-		// AI SDK v5: Use toUIMessageStreamResponse() with originalMessages and onFinish
-		// originalMessages ensures client gets updated messages with script attachments immediately
-		// Moving onFinish here ensures messages are saved BEFORE response completes
+		// AI SDK v5: Use toUIMessageStreamResponse() WITHOUT originalMessages
+		// The client manages its own message state and will receive the response via streaming
+		// We don't need to send back messages - client already has them
 		return result.toUIMessageStreamResponse({
-			originalMessages: allMessages,
 			onFinish: async ({ messages: finishedMessages, responseMessage }) => {
 				try {
 					console.log(

@@ -8,7 +8,6 @@ import {
 } from "@/lib/ai/tools/banana-inference";
 import {
   createVeo3VideoTool,
-  checkVeo3VideoStatusTool,
   generateVeo3IdeasTool,
 } from "@/lib/ai/tools/veo3-video";
 import {
@@ -41,9 +40,8 @@ const advancedBananaVeo3SystemPrompt = `Ты - эксперт по Banana и VEO
 🚀 **ДОСТУПНЫЕ ИНСТРУМЕНТЫ:**
 1. **bananaInference** - запуск inference на Banana
 2. **listBananaModels** - получение списка моделей Banana
-3. **createVeo3Video** - создание видео с VEO3
-4. **checkVeo3VideoStatus** - проверка статуса видео
-5. **generateVeo3Ideas** - генерация идей для видео
+3. **createVeo3Video** - создание видео с VEO3 (returns video URL immediately via Fal.ai)
+4. **generateVeo3Ideas** - генерация идей для видео
 
 📋 **ПРАКТИЧЕСКИЕ ЗАДАЧИ:**
 - "Запусти inference на Banana для анализа текста"
@@ -126,7 +124,6 @@ export async function POST(request: NextRequest) {
         bananaInference: bananaInferenceTool,
         listBananaModels: listBananaModelsTool,
         createVeo3Video: createVeo3VideoTool,
-        checkVeo3VideoStatus: checkVeo3VideoStatusTool,
         generateVeo3Ideas: generateVeo3IdeasTool,
       },
       onFinish: async ({ response }) => {

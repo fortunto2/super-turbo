@@ -9,8 +9,8 @@ export interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model',
-    name: 'GPT-4.1',
-    description: 'Advanced Azure OpenAI model with improved capabilities',
+    name: 'Nano Banana',
+    description: 'Gemini 1.5 Flash - Fast and intelligent chat model with true streaming',
   },
   {
     id: 'chat-model-reasoning',
@@ -31,5 +31,10 @@ export const chatModels: Array<ChatModel> = [
     id: 'gemini-2.5-flash-lite',
     name: 'Gemini 2.5 Flash Lite',
     description: 'Fast and efficient Google Gemini model for quick responses',
+  },
+  {
+    id: 'nano-banana',
+    name: 'Nano Banana Chat',
+    description: 'Gemini 1.5 Flash optimized for chat conversations with true streaming',
   },
 ];

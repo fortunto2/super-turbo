@@ -72,10 +72,20 @@ export function convertDBMessagesToUIMessages(
         return part;
       });
 
+      // Extract text content from parts for Gemini API compatibility
+      // Gemini requires content field to be populated
+      const textContent = normalizedParts
+        .filter(
+          (part: any) =>
+            part && typeof part === "object" && part.type === "text"
+        )
+        .map((part: any) => part.text || "")
+        .join(" ");
+
       return {
         id: dbMessage.id,
         role: "assistant",
-        content: "", // AI SDK expects content for assistants
+        content: textContent || "", // Populate content from parts for Gemini API
         parts: normalizedParts as any, // Explicit cast to fix TypeScript error
         createdAt: dbMessage.createdAt,
       } as UIMessage;
