@@ -9,11 +9,48 @@ const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_AI_API_KEY || '',
 });
 
-// Используем модели доступные через Google AI API (не Vertex AI)
-const mainModel = google('gemini-2.0-flash-exp'); // Gemini 2.0 Flash Experimental
-const proModel = google('gemini-1.5-pro-latest'); // Gemini 1.5 Pro
-const flashModel = google('gemini-2.0-flash-exp'); // Gemini 2.0 Flash
-const nanoBananaModel = google('gemini-2.0-flash-exp'); // Nano Banana
+/**
+ * Централизованная конфигурация моделей Gemini
+ *
+ * Быстрое переключение моделей через .env.local:
+ * - GEMINI_MAIN_MODEL=gemini-2.5-flash (по умолчанию)
+ * - GEMINI_PRO_MODEL=gemini-2.5-pro (по умолчанию)
+ * - GEMINI_FLASH_MODEL=gemini-2.5-flash (по умолчанию)
+ *
+ * Доступные стабильные модели (список получен через list-gemini-models.mjs):
+ * - gemini-2.5-flash - Стабильная, быстрая, июнь 2025
+ * - gemini-2.5-flash-lite - Облегченная версия
+ * - gemini-2.5-pro - Pro версия
+ * - gemini-2.0-flash - Flash 2.0
+ * - gemini-2.0-flash-001 - Стабильная 2.0
+ * - gemini-flash-latest - Всегда последняя Flash
+ * - gemini-pro-latest - Всегда последняя Pro
+ *
+ * При исчерпании квоты:
+ * 1. Откройте .env.local
+ * 2. Добавьте: GEMINI_MAIN_MODEL=gemini-2.0-flash
+ * 3. Перезапустите сервер
+ */
+const GEMINI_CONFIG = {
+  main: process.env.GEMINI_MAIN_MODEL || 'gemini-2.5-flash',
+  pro: process.env.GEMINI_PRO_MODEL || 'gemini-2.5-pro',
+  flash: process.env.GEMINI_FLASH_MODEL || 'gemini-2.5-flash',
+  // Можно добавить fallback модели при исчерпании квоты
+  fallback: process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.0-flash-001',
+};
+
+// Логирование используемых моделей при старте
+console.log('🤖 Gemini Models Configuration:');
+console.log(`   Main: ${GEMINI_CONFIG.main}`);
+console.log(`   Pro: ${GEMINI_CONFIG.pro}`);
+console.log(`   Flash: ${GEMINI_CONFIG.flash}`);
+console.log(`   Fallback: ${GEMINI_CONFIG.fallback}`);
+
+// Создаем модели на основе конфигурации
+const mainModel = google(GEMINI_CONFIG.main);
+const proModel = google(GEMINI_CONFIG.pro);
+const flashModel = google(GEMINI_CONFIG.flash);
+const nanoBananaModel = google(GEMINI_CONFIG.main); // Nano Banana использует main модель
 
 // Azure OpenAI (не работает - ключ истёк или неправильный endpoint)
 // import { createAzure } from '@ai-sdk/azure';
