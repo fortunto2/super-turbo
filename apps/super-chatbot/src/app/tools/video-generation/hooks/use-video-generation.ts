@@ -59,18 +59,51 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
   >('disconnected');
   const [isConnected, setIsConnected] = useState(false);
 
-  // Load stored videos on mount
+  // Load stored videos on mount (from DB + localStorage cache)
   useEffect(() => {
-    const storedVideos = localStorage.getItem('video-generation-videos');
-    if (storedVideos) {
+    const loadVideos = async () => {
       try {
-        const parsed = JSON.parse(storedVideos);
-        setGeneratedVideos(parsed);
-        console.log('📂 Loaded', parsed.length, 'stored videos');
+        // Try to load from DB first
+        const response = await fetch('/api/media/list?type=video&limit=50');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            const videos = result.data.map((item: any) => ({
+              id: item.id,
+              url: item.url,
+              prompt: item.prompt,
+              timestamp: new Date(item.createdAt).getTime(),
+              settings: item.settings,
+              fileId: item.fileId,
+              requestId: item.requestId,
+              thumbnailUrl: item.thumbnailUrl,
+              projectId: item.projectId,
+            }));
+            setGeneratedVideos(videos);
+            // Update localStorage cache
+            localStorage.setItem('video-generation-videos', JSON.stringify(videos.slice(0, 10)));
+            console.log('📂 Loaded', videos.length, 'videos from database');
+            return;
+          }
+        }
       } catch (error) {
-        console.error('Failed to load stored videos:', error);
+        console.warn('Failed to load videos from database, falling back to localStorage:', error);
       }
-    }
+
+      // Fallback to localStorage
+      const storedVideos = localStorage.getItem('video-generation-videos');
+      if (storedVideos) {
+        try {
+          const parsed = JSON.parse(storedVideos);
+          setGeneratedVideos(parsed);
+          console.log('📂 Loaded', parsed.length, 'stored videos from localStorage');
+        } catch (error) {
+          console.error('Failed to load stored videos:', error);
+        }
+      }
+    };
+
+    loadVideos();
   }, []);
 
   // Save videos to localStorage
@@ -137,6 +170,41 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
           url: result.url || result.data.url, // Ensure URL is set
         };
 
+        // Save to database
+        try {
+          const saveResponse = await fetch('/api/media/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'video',
+              url: generatedData.url,
+              prompt: request.prompt,
+              model: request.model || 'fal-veo3',
+              settings: {
+                model: request.model || 'fal-veo3',
+                style: 'cinematic',
+                resolution: request.resolution || '720p',
+                shotSize: request.aspectRatio || '16:9',
+                duration: request.duration || 8,
+                frameRate: 30,
+                seed: request.seed,
+              },
+              fileId: result.fileId,
+            }),
+          });
+
+          if (saveResponse.ok) {
+            const saveResult = await saveResponse.json();
+            console.log('✅ Video saved to database:', saveResult.data.id);
+          } else {
+            const errorData = await saveResponse.json();
+            console.error('❌ Failed to save video to database:', errorData);
+          }
+        } catch (saveError) {
+          console.error('Failed to save to database:', saveError);
+          // Continue anyway, we still have the video
+        }
+
         // Update with result immediately
         setCurrentGeneration(generatedData);
 
@@ -192,7 +260,25 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
   }, []);
 
   const deleteVideo = useCallback(
-    (videoId: string) => {
+    async (videoId: string) => {
+      try {
+        // Delete from database
+        const response = await fetch('/api/media/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: videoId }),
+        });
+
+        if (response.ok) {
+          console.log('✅ Video deleted from database:', videoId);
+        } else {
+          console.warn('Failed to delete from database, removing from local cache anyway');
+        }
+      } catch (error) {
+        console.error('Error deleting from database:', error);
+      }
+
+      // Always remove from local state
       const updatedVideos = generatedVideos.filter((vid) => vid.id !== videoId);
       setGeneratedVideos(updatedVideos);
       saveVideos(updatedVideos);

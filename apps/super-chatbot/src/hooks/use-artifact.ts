@@ -299,6 +299,7 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
             return (
               toolName?.includes('ImageGeneration') ||
               toolName?.includes('VideoGeneration') ||
+              toolName === 'falVideoGeneration' || // Explicit check for Fal.ai video generation
               toolName?.includes('ScriptGeneration') ||
               toolName?.includes('createDocument')
             );
@@ -323,6 +324,15 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
           // AI SDK v5: Check if artifact is in output.parts[0] (nested structure)
           const artifactData = (toolPart as any).output?.parts?.[0] || (toolPart as any).output;
 
+          console.log('🔍 Checking artifact data:', {
+            hasId: !!artifactData?.id,
+            hasArtifactId: !!artifactData?.artifactId,
+            hasKind: !!artifactData?.kind,
+            kind: artifactData?.kind,
+            id: artifactData?.id,
+            artifactId: artifactData?.artifactId,
+          });
+
           // Check for both id and artifactId (different tools use different field names)
           const documentId = artifactData?.id || artifactData?.artifactId;
 
@@ -336,6 +346,12 @@ export const useArtifact = (chatId?: string, initialMessages?: UIMessage[]) => {
               ...toolPart,
               output: { ...artifactData, id: documentId },
             } as any;
+          } else {
+            console.warn('⚠️ Tool part found but missing required fields:', {
+              hasDocumentId: !!documentId,
+              hasKind: !!artifactData?.kind,
+              artifactData,
+            });
           }
         }
       }

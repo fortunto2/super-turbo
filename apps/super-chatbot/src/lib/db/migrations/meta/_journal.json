@@ -78,6 +78,13 @@
       "when": 1755196745803,
       "tag": "0010_pale_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1761230564896,
+      "tag": "0011_gifted_zaran",
+      "breakpoints": true
     }
   ]
 }

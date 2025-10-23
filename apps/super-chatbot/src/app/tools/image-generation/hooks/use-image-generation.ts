@@ -60,18 +60,50 @@ export function useImageGeneration(): UseImageGenerationReturn {
   >('disconnected');
   const [isConnected, setIsConnected] = useState(false);
 
-  // Load stored images on mount
+  // Load stored images on mount (from DB + localStorage cache)
   useEffect(() => {
-    const storedImages = localStorage.getItem('image-generation-images');
-    if (storedImages) {
+    const loadImages = async () => {
       try {
-        const parsed = JSON.parse(storedImages);
-        setGeneratedImages(parsed);
-        console.log('📂 Loaded', parsed.length, 'stored images');
+        // Try to load from DB first
+        const response = await fetch('/api/media/list?type=image&limit=50');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            const images = result.data.map((item: any) => ({
+              id: item.id,
+              url: item.url,
+              prompt: item.prompt,
+              timestamp: new Date(item.createdAt).getTime(),
+              settings: item.settings,
+              projectId: item.projectId,
+              requestId: item.requestId,
+              fileId: item.fileId,
+            }));
+            setGeneratedImages(images);
+            // Update localStorage cache
+            localStorage.setItem('image-generation-images', JSON.stringify(images.slice(0, 10)));
+            console.log('📂 Loaded', images.length, 'images from database');
+            return;
+          }
+        }
       } catch (error) {
-        console.error('Failed to load stored images:', error);
+        console.warn('Failed to load images from database, falling back to localStorage:', error);
       }
-    }
+
+      // Fallback to localStorage
+      const storedImages = localStorage.getItem('image-generation-images');
+      if (storedImages) {
+        try {
+          const parsed = JSON.parse(storedImages);
+          setGeneratedImages(parsed);
+          console.log('📂 Loaded', parsed.length, 'stored images from localStorage');
+        } catch (error) {
+          console.error('Failed to load stored images:', error);
+        }
+      }
+    };
+
+    loadImages();
   }, []);
 
   // Save images to localStorage
@@ -113,6 +145,42 @@ export function useImageGeneration(): UseImageGenerationReturn {
         }
 
         const generatedData = result.data;
+
+        // Save to database
+        try {
+          const saveResponse = await fetch('/api/media/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'image',
+              url: generatedData.url,
+              prompt: request.prompt,
+              model: 'nano-banana',
+              settings: {
+                model: 'nano-banana',
+                style: request.style || 'realistic',
+                resolution: request.aspectRatio || '1:1',
+                shotSize: request.quality || 'standard',
+                seed: request.seed,
+                batchSize: request.batchSize,
+              },
+              projectId: result.projectId,
+              requestId: result.requestId,
+              fileId: result.fileId,
+            }),
+          });
+
+          if (saveResponse.ok) {
+            const saveResult = await saveResponse.json();
+            console.log('✅ Image saved to database:', saveResult.data.id);
+          } else {
+            const errorData = await saveResponse.json();
+            console.error('❌ Failed to save image to database:', errorData);
+          }
+        } catch (saveError) {
+          console.error('Failed to save to database:', saveError);
+          // Continue anyway, we still have the image
+        }
 
         // Update with result immediately
         setCurrentGeneration(generatedData);
@@ -171,7 +239,25 @@ export function useImageGeneration(): UseImageGenerationReturn {
   }, []);
 
   const deleteImage = useCallback(
-    (imageId: string) => {
+    async (imageId: string) => {
+      try {
+        // Delete from database
+        const response = await fetch('/api/media/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: imageId }),
+        });
+
+        if (response.ok) {
+          console.log('✅ Image deleted from database:', imageId);
+        } else {
+          console.warn('Failed to delete from database, removing from local cache anyway');
+        }
+      } catch (error) {
+        console.error('Error deleting from database:', error);
+      }
+
+      // Always remove from local state
       const updatedImages = generatedImages.filter((img) => img.id !== imageId);
       setGeneratedImages(updatedImages);
       saveImages(updatedImages);

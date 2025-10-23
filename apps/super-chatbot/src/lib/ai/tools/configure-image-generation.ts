@@ -147,17 +147,19 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
 
       try {
         // Map old resolution format to Nano Banana aspect ratio
-        const selectedAspectRatio = resolution
-          ? NANO_BANANA_ASPECT_RATIOS.find((r) => r.label.includes(resolution) || resolution.includes(r.id)) || NANO_BANANA_ASPECT_RATIOS[0]
-          : NANO_BANANA_ASPECT_RATIOS[0];
+        const foundAspectRatio = resolution
+          ? NANO_BANANA_ASPECT_RATIOS.find((r) => r.label.includes(resolution) || resolution.includes(r.id))
+          : null;
+        const selectedAspectRatio = (foundAspectRatio || NANO_BANANA_ASPECT_RATIOS[0])!; // Always has value from array
 
         // Map old style to Nano Banana style
-        const selectedStyle = style
-          ? NANO_BANANA_STYLES.find((s) => s.label.toLowerCase().includes(style.toLowerCase()) || style.toLowerCase().includes(s.label.toLowerCase())) || NANO_BANANA_STYLES[0]
-          : NANO_BANANA_STYLES[0];
+        const foundStyle = style
+          ? NANO_BANANA_STYLES.find((s) => s.label.toLowerCase().includes(style.toLowerCase()) || style.toLowerCase().includes(s.label.toLowerCase()))
+          : null;
+        const selectedStyle = (foundStyle || NANO_BANANA_STYLES[0])!; // Always has value from array
 
         // Use high quality by default
-        const selectedQuality = NANO_BANANA_QUALITY_LEVELS[1]; // "high"
+        const selectedQuality = NANO_BANANA_QUALITY_LEVELS[1]!; // "high" - Always has value from array
 
         // Используем новую систему анализа контекста
         let normalizedSourceUrl = sourceImageUrl;
@@ -279,7 +281,7 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
-          params.session || null,
+          params?.session || null,
           "image-generation",
           operationType,
           multipliers,

@@ -198,3 +198,21 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const generatedMedia = pgTable('GeneratedMedia', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId').references(() => user.id),
+  sessionId: varchar('sessionId', { length: 64 }),
+  type: varchar('type', { enum: ['image', 'video'] }).notNull(),
+  url: text('url').notNull(),
+  prompt: text('prompt').notNull(),
+  model: varchar('model', { length: 128 }).notNull(),
+  settings: json('settings').notNull(),
+  projectId: text('projectId'),
+  requestId: text('requestId'),
+  fileId: text('fileId'),
+  thumbnailUrl: text('thumbnailUrl'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+});
+
+export type GeneratedMedia = InferSelectModel<typeof generatedMedia>;

@@ -121,10 +121,10 @@ export const POST = withMonitoring(async (request: Request) => {
 		// Convert to UI format
 		const previousUIMessages = convertDBMessagesToUIMessages(previousMessages);
 		console.log(`🔍 Converted to ${previousUIMessages.length} UI messages`);
-		console.log(`🔍 Previous UI messages content:`, previousUIMessages.map(m => ({
+		console.log(`🔍 Previous UI messages:`, previousUIMessages.map(m => ({
 			role: m.role,
-			content: typeof m.content === 'string' ? m.content.substring(0, 30) : `[${typeof m.content}]`,
-			partsCount: m.parts?.length || 0
+			partsCount: m.parts?.length || 0,
+			hasAttachments: !!(m as any).experimental_attachments?.length
 		})));
 
 		// CRITICAL FIX: AI SDK v5 sendMessage creates new IDs each time
@@ -135,8 +135,9 @@ export const POST = withMonitoring(async (request: Request) => {
 			// Create a content hash based on role + text content
 			// IMPORTANT: Check both content field AND parts array
 			let textContent = '';
-			if (typeof msg.content === 'string' && msg.content.trim()) {
-				textContent = msg.content;
+			const msgAny = msg as any;
+			if (typeof msgAny.content === 'string' && msgAny.content.trim()) {
+				textContent = msgAny.content;
 			} else {
 				const textPart = msg.parts?.find((p: any) => p.type === 'text') as any;
 				textContent = textPart?.text || '';
@@ -149,8 +150,9 @@ export const POST = withMonitoring(async (request: Request) => {
 		const newMessages = normalizedMessages.filter((msg) => {
 			if (msg.role === "system") return false;
 
-			const textContent = typeof msg.content === 'string'
-				? msg.content
+			const msgAny = msg as any;
+			const textContent = typeof msgAny.content === 'string'
+				? msgAny.content
 				: msg.parts?.find((p: any) => p.type === 'text')?.text || '';
 			const contentHash = `${msg.role}:${textContent}`;
 
@@ -173,14 +175,15 @@ export const POST = withMonitoring(async (request: Request) => {
 		// Convert content string to parts if needed AND remove parts without text
 		const messagesForAPI = allMessages
 			.map((msg) => {
+				const msgAny = msg as any;
 				// If message has no parts but has content string, convert it to parts
-				if ((!msg.parts || msg.parts.length === 0) && msg.content && typeof msg.content === 'string') {
+				if ((!msg.parts || msg.parts.length === 0) && msgAny.content && typeof msgAny.content === 'string') {
 					return {
 						...msg,
 						parts: [
 							{
 								type: 'text',
-								text: msg.content,
+								text: msgAny.content,
 							},
 						],
 					};
@@ -226,11 +229,12 @@ export const POST = withMonitoring(async (request: Request) => {
 
 		// Debug: Log all messages structure before sending to API
 		messagesForAPI.forEach((msg, index) => {
+			const msgAny = msg as any;
 			console.log(`🔍 Message ${index}:`, {
 				role: msg.role,
 				partsCount: msg.parts?.length,
 				partsTypes: msg.parts?.map((p: any) => p.type).join(', '),
-				contentLength: typeof msg.content === 'string' ? msg.content.length : 0,
+				contentLength: typeof msgAny.content === 'string' ? msgAny.content.length : 0,
 			});
 		});
 
@@ -242,8 +246,9 @@ export const POST = withMonitoring(async (request: Request) => {
 		// AICODE-FIX: Only save NEW user messages that aren't already in the database
 		// Use content-based deduplication (same as above)
 		const newUserMessages = userMessages.filter((msg) => {
-			const textContent = typeof msg.content === 'string'
-				? msg.content
+			const msgAny = msg as any;
+			const textContent = typeof msgAny.content === 'string'
+				? msgAny.content
 				: msg.parts?.find((p: any) => p.type === 'text')?.text || '';
 			const contentHash = `${msg.role}:${textContent}`;
 			return !previousMessageMap.has(contentHash);
