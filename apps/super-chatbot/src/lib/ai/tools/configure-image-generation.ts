@@ -90,32 +90,56 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         batchSize,
       });
 
-      // AICODE-NOTE: Use new factory to get configuration with OpenAPI models
-      console.log("🖼️ Loading image configuration from OpenAPI factory...");
-      const config = await getImageGenerationConfig();
+      // AICODE-NOTE: Define Nano Banana constants at the top of execute function
+      const NANO_BANANA_STYLES = [
+        { id: "realistic", label: "Realistic", description: "Photorealistic images" },
+        { id: "cinematic", label: "Cinematic", description: "Cinematic style with dramatic lighting" },
+        { id: "anime", label: "Anime", description: "Japanese animation style" },
+        { id: "cartoon", label: "Cartoon", description: "Cartoon style" },
+        { id: "chibi", label: "Chibi", description: "Miniature cute style" },
+        { id: "3d-render", label: "3D Render", description: "Three-dimensional computer graphics" },
+        { id: "oil-painting", label: "Oil Painting", description: "Classic oil painting" },
+        { id: "watercolor", label: "Watercolor", description: "Gentle watercolor technique" },
+        { id: "sketch", label: "Sketch", description: "Pencil sketch" },
+        { id: "digital-art", label: "Digital Art", description: "Modern digital creativity" },
+      ];
 
-      console.log("🖼️ ✅ Loaded image config:", {
-        modelsCount: config.availableModels.length,
-        resolutionsCount: config.availableResolutions.length,
-        stylesCount: config.availableStyles.length,
-      });
+      const NANO_BANANA_QUALITY_LEVELS = [
+        { id: "standard", label: "Standard", multiplier: 1.0, description: "Base quality" },
+        { id: "high", label: "High", multiplier: 1.5, description: "Enhanced quality" },
+        { id: "ultra", label: "Ultra", multiplier: 2.0, description: "Maximum quality" },
+      ];
 
-      // If no prompt provided, return configuration panel
+      const NANO_BANANA_ASPECT_RATIOS = [
+        { id: "1:1", label: "Square (1:1)", width: 1024, height: 1024 },
+        { id: "16:9", label: "Widescreen (16:9)", width: 1920, height: 1080 },
+        { id: "9:16", label: "Vertical (9:16)", width: 768, height: 1366 },
+        { id: "4:3", label: "Classic (4:3)", width: 1024, height: 768 },
+      ];
+
+      // If no prompt provided, return Nano Banana configuration panel
       if (!prompt) {
         console.log(
-          "🔧 No prompt provided, returning image configuration panel"
+          "🍌 No prompt provided, returning Nano Banana configuration panel"
         );
-        return config;
+        return {
+          model: "gemini-2.5-flash-image",
+          provider: "nano-banana",
+          availableStyles: NANO_BANANA_STYLES,
+          availableQualityLevels: NANO_BANANA_QUALITY_LEVELS,
+          availableAspectRatios: NANO_BANANA_ASPECT_RATIOS,
+          capabilities: [
+            "Context-aware editing",
+            "Surgical precision",
+            "Understanding physical logic",
+            "Intelligent lighting",
+            "Multimodal inputs",
+            "Creative partnership",
+          ],
+        };
       }
 
-      console.log("🔧 ✅ PROMPT PROVIDED, CREATING IMAGE DOCUMENT:", prompt);
-
-      if (!params?.createDocument) {
-        console.log(
-          "🔧 ❌ createDocument not available, returning basic config"
-        );
-        return config;
-      }
+      console.log("🍌 ✅ PROMPT PROVIDED, GENERATING WITH NANO BANANA:", prompt);
 
       // Check style for quality multipliers
       const multipliers: string[] = [];
@@ -123,44 +147,18 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
       if (style?.includes("ultra-quality")) multipliers.push("ultra-quality");
 
       try {
-        // Find the selected options or use defaults from factory
-        const selectedResolution = resolution
-          ? config.availableResolutions.find((r) => r.label === resolution) ||
-            config.defaultSettings.resolution
-          : config.defaultSettings.resolution;
+        // Map old resolution format to Nano Banana aspect ratio
+        const selectedAspectRatio = resolution
+          ? NANO_BANANA_ASPECT_RATIOS.find((r) => r.label.includes(resolution) || resolution.includes(r.id)) || NANO_BANANA_ASPECT_RATIOS[0]
+          : NANO_BANANA_ASPECT_RATIOS[0];
 
-        let selectedStyle: MediaOption = config.defaultSettings.style;
-        if (style) {
-          const foundStyle = findStyle(style, config.availableStyles);
-          if (foundStyle) {
-            selectedStyle = foundStyle;
-            console.log(
-              "🔧 ✅ STYLE MATCHED:",
-              style,
-              "->",
-              selectedStyle.label
-            );
-          } else {
-            console.log(
-              "🔧 ⚠️ STYLE NOT FOUND:",
-              style,
-              "using default:",
-              selectedStyle.label
-            );
-          }
-        }
+        // Map old style to Nano Banana style
+        const selectedStyle = style
+          ? NANO_BANANA_STYLES.find((s) => s.label.toLowerCase().includes(style.toLowerCase()) || style.toLowerCase().includes(s.label.toLowerCase())) || NANO_BANANA_STYLES[0]
+          : NANO_BANANA_STYLES[0];
 
-        const selectedShotSize = shotSize
-          ? config.availableShotSizes.find(
-              (s) => s.label === shotSize || s.id === shotSize
-            ) || config.defaultSettings.shotSize
-          : config.defaultSettings.shotSize;
-
-        const selectedModel = model
-          ? config.availableModels.find(
-              (m) => m.name === model || (m as any).id === model
-            ) || config.defaultSettings.model
-          : config.defaultSettings.model;
+        // Use high quality by default
+        const selectedQuality = NANO_BANANA_QUALITY_LEVELS[1]; // "high"
 
         // Используем новую систему анализа контекста
         let normalizedSourceUrl = sourceImageUrl;
@@ -294,53 +292,80 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
           return {
             error:
               balanceCheck.userMessage ||
-              "Недостаточно средств для генерации изображения",
+              "Insufficient funds for image generation",
             balanceError: true,
             requiredCredits: balanceCheck.cost,
           };
         }
 
-        // Create the image document with all parameters
-        const imageParams = {
-          prompt,
-          style: selectedStyle,
-          resolution: selectedResolution,
-          shotSize: selectedShotSize,
-          model: selectedModel,
-          seed: seed || undefined,
-          batchSize: batchSize || 1,
-          ...(normalizedSourceUrl
-            ? { sourceImageUrl: normalizedSourceUrl }
-            : {}),
-        };
+        // AICODE-NOTE: Use Nano Banana provider directly instead of old SuperDuperAI artifact system
+        console.log("🍌 ✅ USING NANO BANANA PROVIDER FOR IMAGE GENERATION");
 
-        console.log("🔧 ✅ CREATING IMAGE DOCUMENT WITH PARAMS:", imageParams);
-        console.log("🔍 Final sourceImageUrl used:", normalizedSourceUrl);
+        // Create prompt for Nano Banana
+        let nanoBananaPrompt = prompt;
+
+        // Add style instructions
+        if (selectedStyle.id !== "realistic") {
+          nanoBananaPrompt += `, ${selectedStyle.description.toLowerCase()}`;
+        }
+
+        // Add quality instructions
+        if (selectedQuality.id !== "standard") {
+          nanoBananaPrompt += `, ${selectedQuality.description.toLowerCase()}`;
+        }
+
+        // Add aspect ratio instructions
+        nanoBananaPrompt += `, ${selectedAspectRatio.label.toLowerCase()}`;
+
+        console.log("🍌 Final Nano Banana prompt:", nanoBananaPrompt);
 
         try {
-          // AICODE-NOTE: For now we pass params as JSON in title for backward compatibility
-          // TODO: Refactor to use proper parameter passing mechanism
-          const result = await params.createDocument.execute({
-            title: JSON.stringify(imageParams),
-            kind: "image",
-          });
+          // Use Nano Banana Provider (Gemini API)
+          const { nanoBananaProvider } = await import("../providers/nano-banana");
 
-          console.log("🔧 ✅ CREATE DOCUMENT RESULT:", result);
+          const nanoBananaParams = {
+            prompt: nanoBananaPrompt,
+            ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
+            style: selectedStyle.id,
+            quality: selectedQuality.id,
+            aspectRatio: selectedAspectRatio.id,
+            ...(seed && { seed }),
+            nanoBananaFeatures: {
+              enableContextAwareness: true,
+              enableSurgicalPrecision: true,
+              creativeMode: false,
+            },
+          };
 
-          // Return tool result with confirmation message
+          const result = await nanoBananaProvider.generateImage(nanoBananaParams);
+
+          console.log("🍌 ✅ NANO BANANA API RESULT:", result);
+
           return {
             ...result,
-            message: `I'll create ${operationType.replace('-', ' ')} with description: "${prompt}". Using model "${selectedModel.name}" with ${selectedResolution.label} resolution and ${selectedShotSize.label} shot size. The artifact has been created and generation is starting.`,
+            message: `Image generated successfully using Nano Banana (Gemini 2.5 Flash Image): "${prompt}". Style: ${selectedStyle.label}, Quality: ${selectedQuality.label}, Format: ${selectedAspectRatio.label}.`,
+            nanoBananaInfo: {
+              model: "gemini-2.5-flash-image",
+              capabilities: [
+                "Context-aware editing",
+                "Surgical precision",
+                "Physical logic understanding",
+                "Intelligent lighting",
+              ],
+              style: selectedStyle,
+              quality: selectedQuality,
+              aspectRatio: selectedAspectRatio,
+            },
           };
         } catch (error) {
-          console.error("🔧 ❌ CREATE DOCUMENT ERROR:", error);
+          console.error("🍌 ❌ NANO BANANA ERROR:", error);
           throw error;
         }
       } catch (error: any) {
-        console.error("🔧 ❌ ERROR CREATING IMAGE DOCUMENT:", error);
+        console.error("🔧 ❌ ERROR IN IMAGE GENERATION:", error);
         return {
-          error: `Failed to create image document: ${error.message}`,
-          fallbackConfig: config,
+          error: `Failed to generate image: ${error.message}`,
+          message: `Unfortunately, image generation failed: "${prompt}". Error: ${error.message}`,
         };
       }
     },

@@ -302,13 +302,6 @@ export const nanoBananaImageGenerationForChat = (
         prompt,
       );
 
-      if (!params?.createDocument) {
-        console.log(
-          '🍌 ❌ createDocument not available, returning basic config',
-        );
-        return config;
-      }
-
       try {
         // Find selected options
         const selectedStyle = style
@@ -365,7 +358,7 @@ export const nanoBananaImageGenerationForChat = (
         if (batchSize && batchSize > 1) multipliers.push(`batch-${batchSize}`);
 
         const balanceCheck = await checkBalanceBeforeArtifact(
-          params.session || null,
+          params?.session || null,
           'image-generation',
           operationType,
           multipliers,
@@ -464,6 +457,7 @@ export const nanoBananaImageGenerationForChat = (
 
         console.log('🍌 ✅ NANO BANANA API RESULT:', result);
 
+        // Return result directly (AI SDK v5 handles artifacts via tool return values)
         return {
           ...result,
           message: `Image generated successfully using Nano Banana (Gemini 2.5 Flash Image): "${prompt}". Style: ${selectedStyle.label}, Quality: ${selectedQuality.label}, Format: ${selectedAspectRatio.label}.`,

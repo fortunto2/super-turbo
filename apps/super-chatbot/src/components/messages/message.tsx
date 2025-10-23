@@ -448,6 +448,83 @@ const PurePreviewMessage = ({
                     );
                   }
 
+                  // Handle Nano Banana image generation result
+                  if (
+                    toolName === "nanoBananaImageGeneration" &&
+                    result &&
+                    typeof result === "object" &&
+                    "url" in result &&
+                    "id" in result
+                  ) {
+                    console.log("🍌 Nano Banana image generation result received:", {
+                      id: result.id,
+                      hasUrl: !!result.url,
+                      prompt: (result as any).prompt,
+                    });
+
+                    const imageUrl = result.url as string;
+                    const imagePrompt = (result as any).prompt || 'Generated image';
+                    const imageId = result.id as string;
+
+                    // Create artifact data for image viewer
+                    const imageArtifact = {
+                      status: 'completed',
+                      imageUrl: imageUrl,
+                      url: imageUrl,
+                      prompt: imagePrompt,
+                      timestamp: (result as any).timestamp || Date.now(),
+                      settings: (result as any).settings || {},
+                      id: imageId,
+                      nanoBananaInfo: (result as any).nanoBananaInfo,
+                    };
+
+                    // Handler to open artifact viewer
+                    const handleImageClick = () => {
+                      setArtifact({
+                        title: `Generated Image: ${imagePrompt.substring(0, 50)}`,
+                        documentId: '', // No document ID needed for Nano Banana images (they're in-memory)
+                        kind: 'image',
+                        content: JSON.stringify(imageArtifact),
+                        isVisible: true,
+                        status: 'completed',
+                        boundingBox: {
+                          top: 0,
+                          left: 0,
+                          width: 0,
+                          height: 0,
+                        },
+                      });
+                    };
+
+                    // Display the generated image as a clickable preview
+                    return (
+                      <div
+                        key={toolCallId}
+                        className="flex flex-col gap-3 max-w-md"
+                      >
+                        <div className="relative group">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={imageUrl}
+                            alt={imagePrompt}
+                            className="rounded-lg w-full h-auto object-cover cursor-pointer transition-transform hover:scale-[1.02]"
+                            onClick={handleImageClick}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                            onClick={handleImageClick}
+                          >
+                            <span className="opacity-0 group-hover:opacity-100 text-white text-sm bg-black/50 px-3 py-1 rounded-full transition-opacity">
+                              Click to enlarge
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {imagePrompt}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   // REMOVED: configureScriptGeneration handling
                   // Scripts are now automatically displayed through createDocument tool result
                   // No need for special handling here
