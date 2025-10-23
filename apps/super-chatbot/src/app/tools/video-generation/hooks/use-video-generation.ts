@@ -41,8 +41,11 @@ export interface UseVideoGenerationReturn {
 
 export function useVideoGeneration(): UseVideoGenerationReturn {
   // State management
-  const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoResult[]>([]);
-  const [currentGeneration, setCurrentGeneration] = useState<GeneratedVideoResult | null>(null);
+  const [generatedVideos, setGeneratedVideos] = useState<
+    GeneratedVideoResult[]
+  >([]);
+  const [currentGeneration, setCurrentGeneration] =
+    useState<GeneratedVideoResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>({
     status: 'idle',
@@ -90,13 +93,35 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
         setGenerationStatus({
           status: 'pending',
           progress: 10,
-          message: 'Generating video with VEO3...',
+          message: 'Starting video generation...',
           estimatedTime: (request.duration || 8) * 10,
           fileId: '',
         });
 
-        // Call API
+        // Call API with progress updates
+        const isVertexModel = request.model?.startsWith('vertex-');
+
+        if (isVertexModel) {
+          setGenerationStatus({
+            status: 'processing',
+            progress: 30,
+            message: 'Video submitted to Vertex AI, waiting for completion...',
+            estimatedTime: 60,
+            fileId: '',
+          });
+        }
+
         const result = await generateVideo(request);
+
+        if (isVertexModel && result.success) {
+          setGenerationStatus({
+            status: 'processing',
+            progress: 90,
+            message: 'Processing complete, loading video...',
+            estimatedTime: 5,
+            fileId: result.fileId || '',
+          });
+        }
 
         if (!result.success) {
           throw new Error(result.error || 'Generation failed');
@@ -116,7 +141,10 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
         setCurrentGeneration(generatedData);
 
         const MAX_VIDEOS = 10;
-        const newVideos = [generatedData, ...generatedVideos].slice(0, MAX_VIDEOS);
+        const newVideos = [generatedData, ...generatedVideos].slice(
+          0,
+          MAX_VIDEOS,
+        );
         setGeneratedVideos(newVideos);
         saveVideos(newVideos);
 
@@ -130,7 +158,8 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
 
         toast.success('Video generated successfully!');
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Video generation failed';
+        const message =
+          error instanceof Error ? error.message : 'Video generation failed';
         console.error('Video generation error:', error);
 
         setGenerationStatus({

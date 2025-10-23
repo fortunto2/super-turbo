@@ -9,9 +9,9 @@
  *   node switch-gemini-model.mjs --list             # Показать доступные модели
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -68,7 +68,7 @@ function updateMainModel(envContent, newModel) {
 
     if (apiKeyIndex === -1) {
       // Добавляем в конец файла
-      return envContent + `\n\n# Gemini Model Configuration\nGEMINI_MAIN_MODEL=${newModel}\n`;
+      return `${envContent}\n\n# Gemini Model Configuration\nGEMINI_MAIN_MODEL=${newModel}\n`;
     }
 
     // Вставляем после GOOGLE_AI_API_KEY

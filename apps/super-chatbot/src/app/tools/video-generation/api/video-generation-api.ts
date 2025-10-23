@@ -59,14 +59,26 @@ export async function generateVideo(
 
     console.log('📡 Using endpoint:', endpoint, 'for model:', model);
 
+    // Prepare duration format based on provider
+    // Fal.ai expects '4s', '6s', '8s' with suffix
+    // Vertex AI expects '4', '6', '8' without suffix
+    const durationValue = request.duration || 8;
+    const duration = model.startsWith('vertex-')
+      ? String(durationValue) // Vertex: '4', '6', '8'
+      : `${durationValue}s`; // Fal.ai: '4s', '6s', '8s'
+
     // Prepare request body
     const requestBody = {
       prompt: request.prompt,
-      duration: `${request.duration || 8}s`, // API expects '4s', '6s', '8s'
+      duration,
       aspectRatio: request.aspectRatio || '16:9',
       resolution: request.resolution || '720p',
-      ...(request.generateAudio !== undefined && { generateAudio: request.generateAudio }),
-      ...(request.enhancePrompt !== undefined && { enhancePrompt: request.enhancePrompt }),
+      ...(request.generateAudio !== undefined && {
+        generateAudio: request.generateAudio,
+      }),
+      ...(request.enhancePrompt !== undefined && {
+        enhancePrompt: request.enhancePrompt,
+      }),
       ...(request.negativePrompt && { negativePrompt: request.negativePrompt }),
       ...(request.seed !== undefined && { seed: request.seed }),
     };
@@ -87,7 +99,10 @@ export async function generateVideo(
     console.log('📦 Response data:', data);
 
     if (!response.ok) {
-      const errorMessage = data?.error || data?.details || `HTTP ${response.status}: Failed to generate video`;
+      const errorMessage =
+        data?.error ||
+        data?.details ||
+        `HTTP ${response.status}: Failed to generate video`;
       console.error('❌ API Error:', errorMessage);
       return {
         success: false,
@@ -96,7 +111,8 @@ export async function generateVideo(
     }
 
     if (!data?.success) {
-      const errorMessage = data?.error || data?.details || 'Video generation failed';
+      const errorMessage =
+        data?.error || data?.details || 'Video generation failed';
       console.error('❌ Generation failed:', errorMessage);
       return {
         success: false,
@@ -104,11 +120,85 @@ export async function generateVideo(
       };
     }
 
-    // Extract video URL (works for both Fal.ai and Vertex)
+    // Handle Vertex AI async processing
+    if (
+      model.startsWith('vertex-') &&
+      data.status === 'processing' &&
+      data.operationName
+    ) {
+      console.log(
+        '⏳ Vertex AI video is processing, polling for completion...',
+      );
+
+      // Poll for video completion (max 60 seconds)
+      const maxAttempts = 12; // 12 * 5s = 60s
+      const pollInterval = 5000; // 5 seconds
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`🔄 Polling attempt ${attempt}/${maxAttempts}...`);
+
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+
+        const checkResponse = await fetch('/api/video/check-vertex', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operationName: data.operationName }),
+        });
+
+        const checkData = await checkResponse.json();
+        console.log(`📊 Check result:`, checkData);
+
+        if (checkData.status === 'completed' && checkData.videoUrl) {
+          console.log('✅ Video ready!', checkData.videoUrl);
+
+          // Use proxy URL for Vertex AI videos to handle authentication
+          const proxyUrl = `/api/video/proxy-vertex?url=${encodeURIComponent(checkData.videoUrl)}`;
+          console.log('🔄 Using proxy URL:', proxyUrl);
+
+          const videoData: GeneratedVideoResult = {
+            id: data.fileId || `video-${Date.now()}`,
+            url: proxyUrl,
+            prompt: request.prompt,
+            timestamp: Date.now(),
+            provider: data.provider || 'vertex-ai',
+            model: data.model || model,
+            settings: {
+              duration: request.duration || 8,
+              aspectRatio: request.aspectRatio || '16:9',
+              resolution: request.resolution || '720p',
+              ...(request.seed !== undefined && { seed: request.seed }),
+            },
+          };
+
+          return {
+            success: true,
+            data: videoData,
+            fileId: data.fileId,
+            url: proxyUrl,
+            videoUrl: proxyUrl,
+            provider: data.provider,
+            model: data.model,
+          };
+        }
+      }
+
+      // Timeout after max attempts
+      console.warn('⏱️ Video generation timeout - still processing');
+      return {
+        success: false,
+        error: 'Video generation timeout. Please try again later.',
+      };
+    }
+
+    // Extract video URL (works for Fal.ai and completed Vertex)
     const videoUrl = data.videoUrl || data.data?.url || '';
 
     if (!videoUrl) {
-      console.warn('⚠️ No video URL in response, might be processing');
+      console.warn('⚠️ No video URL in response');
+      return {
+        success: false,
+        error: 'No video URL returned from API',
+      };
     }
 
     const videoData: GeneratedVideoResult = {
@@ -141,7 +231,8 @@ export async function generateVideo(
     console.error('💥 Video generation error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown generation error',
+      error:
+        error instanceof Error ? error.message : 'Unknown generation error',
     };
   }
 }
@@ -151,16 +242,29 @@ export async function getVideoGenerationConfig(): Promise<{
   durations: Array<{ id: number; label: string; description: string }>;
   aspectRatios: Array<{ id: string; label: string; description: string }>;
   resolutions: Array<{ id: string; label: string; description: string }>;
-  models: Array<{ id: VideoModel; label: string; description: string; badge?: string }>;
+  models: Array<{
+    id: VideoModel;
+    label: string;
+    description: string;
+    badge?: string;
+  }>;
 }> {
   return {
     durations: [
       { id: 4, label: '4 seconds', description: 'Quick clip' },
       { id: 6, label: '6 seconds', description: 'Medium clip' },
-      { id: 8, label: '8 seconds', description: 'Standard duration (recommended)' },
+      {
+        id: 8,
+        label: '8 seconds',
+        description: 'Standard duration (recommended)',
+      },
     ],
     aspectRatios: [
-      { id: '16:9', label: 'Landscape (16:9)', description: 'Widescreen, YouTube' },
+      {
+        id: '16:9',
+        label: 'Landscape (16:9)',
+        description: 'Widescreen, YouTube',
+      },
       { id: '9:16', label: 'Portrait (9:16)', description: 'Stories, Reels' },
       { id: '1:1', label: 'Square (1:1)', description: 'Instagram' },
     ],

@@ -1,7 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
 import type { MediaOption } from "@/lib/types/media-settings";
-import { getImageGenerationConfig } from "@/lib/config/media-settings-factory";
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
