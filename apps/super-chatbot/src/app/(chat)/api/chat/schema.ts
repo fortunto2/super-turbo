@@ -40,7 +40,7 @@ const messageSchema = z
   })
   .refine(
     (data) => {
-      // Проверяем, что есть либо content, либо parts с текстом, либо attachments
+      // Проверяем, что есть либо content, либо parts с текстом, либо attachments, либо tool parts
       const hasContent = data.content && data.content.length > 0;
       const hasPartsWithText =
         data.parts &&
@@ -56,7 +56,15 @@ const messageSchema = z
         data.experimental_attachments &&
         data.experimental_attachments.length > 0;
 
-      return hasContent || hasPartsWithText || hasAttachments;
+      // AI SDK v5: Messages with tool parts (tool-call, tool-result) are valid
+      const hasToolParts =
+        data.parts &&
+        data.parts.length > 0 &&
+        data.parts.some((part) => {
+          return part.type && typeof part.type === 'string' && part.type.startsWith('tool-');
+        });
+
+      return hasContent || hasPartsWithText || hasAttachments || hasToolParts;
     },
     {
       message: 'Message must have content, parts with text, or attachments',

@@ -270,10 +270,62 @@ export const POST = withMonitoring(async (request: Request) => {
         return isValid;
       });
 
-    // CRITICAL FIX: Remove experimental_attachments from all messages to prevent token overflow
+    // CRITICAL FIX: Remove experimental_attachments AND base64 images from all messages to prevent token overflow
     // Images and videos in attachments can cause massive token consumption
     const messagesWithoutAttachments = messagesForAPI.map((msg) => {
       const { experimental_attachments, ...rest } = msg as any;
+
+      // Also remove base64 images from content field
+      // These are typically generated images that have been saved as base64 strings
+      if (rest.content && typeof rest.content === 'string') {
+        try {
+          // Try to parse content as JSON (for tool results with embedded base64)
+          const parsed = JSON.parse(rest.content);
+          if (parsed.imageUrl && parsed.imageUrl.startsWith('data:image/')) {
+            // Remove base64 image URL, keep other metadata
+            const { imageUrl, ...contentWithoutImage } = parsed;
+            rest.content = JSON.stringify(contentWithoutImage);
+            console.log('🔍 Removed base64 image from message content');
+          }
+        } catch {
+          // Not JSON, check if it's a base64 data URL
+          if (rest.content.startsWith('data:image/') || rest.content.startsWith('data:video/')) {
+            // Replace with placeholder to prevent token overflow
+            rest.content = '[Media content removed to prevent token overflow]';
+            console.log('🔍 Replaced base64 data URL with placeholder');
+          }
+        }
+      }
+
+      // Also check parts array for base64 content
+      if (rest.parts && Array.isArray(rest.parts)) {
+        rest.parts = rest.parts.map((part: any) => {
+          if (part.type === 'text' && part.text && typeof part.text === 'string') {
+            // Check if text contains base64 data URL
+            if (part.text.startsWith('data:image/') || part.text.startsWith('data:video/')) {
+              return {
+                ...part,
+                text: '[Media content removed to prevent token overflow]',
+              };
+            }
+            // Check if text is JSON with base64 imageUrl
+            try {
+              const parsed = JSON.parse(part.text);
+              if (parsed.imageUrl && parsed.imageUrl.startsWith('data:image/')) {
+                const { imageUrl, ...contentWithoutImage } = parsed;
+                return {
+                  ...part,
+                  text: JSON.stringify(contentWithoutImage),
+                };
+              }
+            } catch {
+              // Not JSON, continue
+            }
+          }
+          return part;
+        });
+      }
+
       return rest;
     });
 
@@ -426,7 +478,7 @@ export const POST = withMonitoring(async (request: Request) => {
       systemPromptText.substring(0, 500),
     );
 
-    // CRITICAL: Detect image generation requests and force tool usage
+    // CRITICAL: Detect image and video generation requests
     const lastUserMessage = messagesWithoutAttachments[messagesWithoutAttachments.length - 1];
     const isImageGenerationRequest = lastUserMessage?.content && typeof lastUserMessage.content === 'string' &&
       /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|draw|show|need|want|can you).*?(?:фото|картинк|изображени|рисунок|иллюстраци|image|picture|photo|drawing|illustration)/i.test(lastUserMessage.content.toLowerCase());
@@ -523,26 +575,37 @@ export const POST = withMonitoring(async (request: Request) => {
           if (hasToolPart && !hasTextPart) {
             console.log('📝 🔧 Tool-only message detected, adding text part from tool result');
 
-            // Find tool result with message
+            // Find tool part with output
             const toolPart = parts.find((p: any) =>
-              p.type?.startsWith('tool-') &&
-              p.output?.message
+              p.type?.startsWith('tool-') && p.output
             );
 
-            if (toolPart?.output?.message) {
+            if (toolPart?.output) {
+              console.log('📝 🔍 Tool output structure:', JSON.stringify(toolPart.output, null, 2));
+
+              // Try to extract message from various possible locations
+              // Priority: error message > explicit message > success message > fallback
+              const message =
+                toolPart.output.error ||  // Error message (highest priority)
+                toolPart.output.message ||  // Direct message field
+                toolPart.output.data?.message ||  // Nested in data
+                (toolPart.output.success === false
+                  ? 'Tool execution failed'  // Failed without error message
+                  : 'Content generated successfully using AI tools.');  // Success without message
+
               // Add text part with message from tool result
               parts.push({
                 type: 'text',
-                text: toolPart.output.message,
+                text: message,
               });
-              console.log('📝 ✅ Added text part:', toolPart.output.message);
+              console.log('📝 ✅ Added text part:', message);
             } else {
               // Fallback: add generic message
               parts.push({
                 type: 'text',
                 text: 'Generated content using AI tools.',
               });
-              console.log('📝 ✅ Added default text part');
+              console.log('📝 ✅ Added default text part (no tool output found)');
             }
           }
 
