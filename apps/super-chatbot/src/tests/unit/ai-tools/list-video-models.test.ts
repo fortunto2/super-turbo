@@ -78,7 +78,9 @@ describe('list-video-models', () => {
 
       expect((result as any).success).toBe(true);
       expect(
-        Array.isArray((result as any).data) ? (result as any).data : (result as any).data?.models,
+        Array.isArray((result as any).data)
+          ? (result as any).data
+          : (result as any).data?.models,
       ).toHaveLength(3);
       const models = Array.isArray((result as any).data)
         ? (result as any).data
@@ -99,7 +101,9 @@ describe('list-video-models', () => {
 
       expect((result as any).success).toBe(true);
       expect(
-        Array.isArray((result as any).data) ? (result as any).data : (result as any).data?.models,
+        Array.isArray((result as any).data)
+          ? (result as any).data
+          : (result as any).data?.models,
       ).toHaveLength(3);
       const models = Array.isArray((result as any).data)
         ? (result as any).data
@@ -121,7 +125,9 @@ describe('list-video-models', () => {
 
       expect((result as any).success).toBe(true);
       expect(
-        Array.isArray((result as any).data) ? (result as any).data : (result as any).data?.models,
+        Array.isArray((result as any).data)
+          ? (result as any).data
+          : (result as any).data?.models,
       ).toHaveLength(3);
       const models = Array.isArray((result as any).data)
         ? (result as any).data

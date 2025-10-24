@@ -1,29 +1,29 @@
 // AICODE-NOTE: Unified form component for Nano Banana image generation and editing
 // Combines functionality from both generator and editor forms into a single interface
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Input } from '@turbo-super/ui';
+import { Label } from '@turbo-super/ui';
+import { Textarea } from '@turbo-super/ui';
+import { Separator } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../components/ui";
-import { Switch } from "../../../../components/ui";
-import { Wand2, Edit3, Sparkles, Settings, Zap, } from "lucide-react";
+} from '../../../../components/ui';
+import { Switch } from '../../../../components/ui';
+import { Wand2, Edit3, Sparkles, Settings, Zap } from 'lucide-react';
 import type {
   NanoBananaImageGenerationRequest,
   NanoBananaImageEditingRequest,
-} from "../api/nano-banana-api";
+} from '../api/nano-banana-api';
 
 interface NanoBananaUnifiedFormProps {
   onGenerate: (request: NanoBananaImageGenerationRequest) => Promise<void>;
@@ -47,45 +47,45 @@ export function NanoBananaUnifiedForm({
   isEditing,
   config = {
     styles: [
-      "photorealistic",
-      "artistic",
-      "minimalist",
-      "vintage",
-      "futuristic",
+      'photorealistic',
+      'artistic',
+      'minimalist',
+      'vintage',
+      'futuristic',
     ],
-    qualityLevels: ["standard", "high", "ultra"],
-    aspectRatios: ["1:1", "16:9", "9:16", "4:3", "3:4"],
+    qualityLevels: ['standard', 'high', 'ultra'],
+    aspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
     editTypes: [
-      "remove_object",
-      "add_object",
-      "replace_background",
-      "style_transfer",
-      "color_adjustment",
-      "lighting_adjustment",
-      "texture_enhancement",
-      "composition_change",
-      "artistic_effect",
-      "object_replacement",
+      'remove_object',
+      'add_object',
+      'replace_background',
+      'style_transfer',
+      'color_adjustment',
+      'lighting_adjustment',
+      'texture_enhancement',
+      'composition_change',
+      'artistic_effect',
+      'object_replacement',
     ],
-    precisionLevels: ["low", "medium", "high", "ultra"],
+    precisionLevels: ['low', 'medium', 'high', 'ultra'],
     blendModes: [
-      "normal",
-      "overlay",
-      "soft_light",
-      "hard_light",
-      "multiply",
-      "screen",
+      'normal',
+      'overlay',
+      'soft_light',
+      'hard_light',
+      'multiply',
+      'screen',
     ],
   },
 }: NanoBananaUnifiedFormProps) {
   // Form data for generation
   const [generateData, setGenerateData] =
     useState<NanoBananaImageGenerationRequest>({
-      prompt: "",
-      sourceImageUrl: "",
-      style: "photorealistic",
-      quality: "high",
-      aspectRatio: "1:1",
+      prompt: '',
+      sourceImageUrl: '',
+      style: 'photorealistic',
+      quality: 'high',
+      aspectRatio: '1:1',
       batchSize: 1,
       enableContextAwareness: true,
       enableSurgicalPrecision: true,
@@ -94,11 +94,11 @@ export function NanoBananaUnifiedForm({
 
   // Form data for editing
   const [editData, setEditData] = useState<NanoBananaImageEditingRequest>({
-    editType: "object-removal",
-    editPrompt: "",
-    sourceImageUrl: "",
-    precisionLevel: "automatic",
-    blendMode: "natural",
+    editType: 'object-removal',
+    editPrompt: '',
+    sourceImageUrl: '',
+    precisionLevel: 'automatic',
+    blendMode: 'natural',
     preserveOriginalStyle: true,
     enhanceLighting: true,
     preserveShadows: true,
@@ -109,7 +109,7 @@ export function NanoBananaUnifiedForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const mode = imageFile ? "edit" : "generate";
+  const mode = imageFile ? 'edit' : 'generate';
 
   // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,15 +131,15 @@ export function NanoBananaUnifiedForm({
   const clearImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    setGenerateData((prev) => ({ ...prev, sourceImageUrl: "" }));
-    setEditData((prev) => ({ ...prev, sourceImageUrl: "" }));
+    setGenerateData((prev) => ({ ...prev, sourceImageUrl: '' }));
+    setEditData((prev) => ({ ...prev, sourceImageUrl: '' }));
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (mode === "generate") {
+    if (mode === 'generate') {
       if (!generateData.prompt.trim()) return;
       await onGenerate(generateData);
     } else {
@@ -152,14 +152,14 @@ export function NanoBananaUnifiedForm({
   // Update form data
   const updateGenerateData = (
     field: keyof NanoBananaImageGenerationRequest,
-    value: any
+    value: any,
   ) => {
     setGenerateData((prev) => ({ ...prev, [field]: value }));
   };
 
   const updateEditData = (
     field: keyof NanoBananaImageEditingRequest,
-    value: any
+    value: any,
   ) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
@@ -167,95 +167,80 @@ export function NanoBananaUnifiedForm({
   // Get edit type specific fields
   const getEditTypeSpecificFields = () => {
     switch (editData.editType) {
-      case "remove_object":
+      case 'remove_object':
         return (
           <div className="space-y-2">
-            <Label
-              htmlFor="objectToRemove"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="objectToRemove" className="text-sm font-medium">
               Object to Remove
             </Label>
             <Input
               id="objectToRemove"
               placeholder="e.g., 'person in the background'"
-              value={editData.objectToRemove || ""}
-              onChange={(e) => updateEditData("objectToRemove", e.target.value)}
+              value={editData.objectToRemove || ''}
+              onChange={(e) => updateEditData('objectToRemove', e.target.value)}
               disabled={isEditing}
             />
           </div>
         );
-      case "add_object":
+      case 'add_object':
         return (
           <div className="space-y-2">
-            <Label
-              htmlFor="targetObject"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="targetObject" className="text-sm font-medium">
               Object to Add
             </Label>
             <Input
               id="targetObject"
               placeholder="e.g., 'a golden retriever'"
-              value={editData.targetObject || ""}
-              onChange={(e) => updateEditData("targetObject", e.target.value)}
+              value={editData.targetObject || ''}
+              onChange={(e) => updateEditData('targetObject', e.target.value)}
               disabled={isEditing}
             />
           </div>
         );
-      case "replace_background":
+      case 'replace_background':
         return (
           <div className="space-y-2">
-            <Label
-              htmlFor="newBackground"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="newBackground" className="text-sm font-medium">
               New Background
             </Label>
             <Input
               id="newBackground"
               placeholder="e.g., 'beach sunset'"
-              value={editData.newBackground || ""}
-              onChange={(e) => updateEditData("newBackground", e.target.value)}
+              value={editData.newBackground || ''}
+              onChange={(e) => updateEditData('newBackground', e.target.value)}
               disabled={isEditing}
             />
           </div>
         );
-      case "style_transfer":
+      case 'style_transfer':
         return (
           <div className="space-y-2">
-            <Label
-              htmlFor="styleToTransfer"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="styleToTransfer" className="text-sm font-medium">
               Style to Transfer
             </Label>
             <Input
               id="styleToTransfer"
               placeholder="e.g., 'Van Gogh style'"
-              value={editData.styleToTransfer || ""}
+              value={editData.styleToTransfer || ''}
               onChange={(e) =>
-                updateEditData("styleToTransfer", e.target.value)
+                updateEditData('styleToTransfer', e.target.value)
               }
               disabled={isEditing}
             />
           </div>
         );
-      case "object_replacement":
+      case 'object_replacement':
         return (
           <div className="space-y-2">
-            <Label
-              htmlFor="replacementObject"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="replacementObject" className="text-sm font-medium">
               Replacement Object
             </Label>
             <Input
               id="replacementObject"
               placeholder="e.g., 'replace the car with a bicycle'"
-              value={editData.replacementObject || ""}
+              value={editData.replacementObject || ''}
               onChange={(e) =>
-                updateEditData("replacementObject", e.target.value)
+                updateEditData('replacementObject', e.target.value)
               }
               disabled={isEditing}
             />
@@ -268,7 +253,7 @@ export function NanoBananaUnifiedForm({
 
   const isProcessing = isGenerating || isEditing;
   const canSubmit =
-    mode === "generate"
+    mode === 'generate'
       ? generateData.prompt.trim()
       : editData.editPrompt.trim() && editData.sourceImageUrl.trim();
 
@@ -278,29 +263,20 @@ export function NanoBananaUnifiedForm({
         <CardTitle className="flex items-center space-x-2">
           <Wand2 className="size-5 text-blue-600" />
           <span>Nano Banana Generator</span>
-          <Badge
-            variant="secondary"
-            className="ml-auto"
-          >
+          <Badge variant="secondary" className="ml-auto">
             AI-Powered
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Source Image Upload */}
           <div className="space-y-2">
-            <Label
-              htmlFor="sourceImage"
-              className="text-sm font-medium"
-            >
-              Source Image{" "}
-              {mode === "edit"
-                ? "(Required for editing)"
-                : "(Optional - upload to edit mode)"}
+            <Label htmlFor="sourceImage" className="text-sm font-medium">
+              Source Image{' '}
+              {mode === 'edit'
+                ? '(Required for editing)'
+                : '(Optional - upload to edit mode)'}
             </Label>
             <div className="flex items-center space-x-4">
               <Input
@@ -331,59 +307,56 @@ export function NanoBananaUnifiedForm({
               </div>
             )}
             <p className="text-xs text-gray-500">
-              {mode === "generate"
-                ? "Upload an image for image-to-image generation or style reference."
-                : "Upload the image you want to edit."}
+              {mode === 'generate'
+                ? 'Upload an image for image-to-image generation or style reference.'
+                : 'Upload the image you want to edit.'}
             </p>
           </div>
 
           {/* Main Prompt/Instructions */}
           <div className="space-y-2">
             <Label
-              htmlFor={mode === "generate" ? "prompt" : "editPrompt"}
+              htmlFor={mode === 'generate' ? 'prompt' : 'editPrompt'}
               className="text-sm font-medium"
             >
-              {mode === "generate" ? "Prompt" : "Edit Instructions"} *
+              {mode === 'generate' ? 'Prompt' : 'Edit Instructions'} *
             </Label>
             <Textarea
-              id={mode === "generate" ? "prompt" : "editPrompt"}
+              id={mode === 'generate' ? 'prompt' : 'editPrompt'}
               placeholder={
-                mode === "generate"
+                mode === 'generate'
                   ? "Describe the image you want to generate... (e.g., 'A majestic lion in a golden savanna at sunset, photorealistic style')"
                   : "Describe what you want to edit... (e.g., 'Remove the person in the background and replace with a sunset')"
               }
               value={
-                mode === "generate" ? generateData.prompt : editData.editPrompt
+                mode === 'generate' ? generateData.prompt : editData.editPrompt
               }
               onChange={(e) => {
-                if (mode === "generate") {
-                  updateGenerateData("prompt", e.target.value);
+                if (mode === 'generate') {
+                  updateGenerateData('prompt', e.target.value);
                 } else {
-                  updateEditData("editPrompt", e.target.value);
+                  updateEditData('editPrompt', e.target.value);
                 }
               }}
               className="min-h-[100px]"
               disabled={isProcessing}
             />
             <p className="text-xs text-gray-500">
-              {mode === "generate"
-                ? "Be specific and detailed for best results. Include style, lighting, composition details."
-                : "Be specific about what changes you want to make to the image."}
+              {mode === 'generate'
+                ? 'Be specific and detailed for best results. Include style, lighting, composition details.'
+                : 'Be specific about what changes you want to make to the image.'}
             </p>
           </div>
 
           {/* Edit Type Selection (only for edit mode) */}
-          {mode === "edit" && (
+          {mode === 'edit' && (
             <div className="space-y-2">
-              <Label
-                htmlFor="editType"
-                className="text-sm font-medium"
-              >
+              <Label htmlFor="editType" className="text-sm font-medium">
                 Edit Type *
               </Label>
               <Select
-                value={editData.editType || ""}
-                onValueChange={(value) => updateEditData("editType", value)}
+                value={editData.editType || ''}
+                onValueChange={(value) => updateEditData('editType', value)}
                 disabled={isProcessing}
               >
                 <SelectTrigger>
@@ -391,12 +364,9 @@ export function NanoBananaUnifiedForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.editTypes.map((type) => (
-                    <SelectItem
-                      key={type}
-                      value={type}
-                    >
+                    <SelectItem key={type} value={type}>
                       {type
-                        .replace(/_/g, " ")
+                        .replace(/_/g, ' ')
                         .replace(/\b\w/g, (l) => l.toUpperCase())}
                     </SelectItem>
                   ))}
@@ -406,23 +376,20 @@ export function NanoBananaUnifiedForm({
           )}
 
           {/* Edit Type Specific Fields */}
-          {mode === "edit" && getEditTypeSpecificFields()}
+          {mode === 'edit' && getEditTypeSpecificFields()}
 
           <Separator />
 
           {/* Style and Quality Settings (for generate mode) */}
-          {mode === "generate" && (
+          {mode === 'generate' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label
-                  htmlFor="style"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="style" className="text-sm font-medium">
                   Style
                 </Label>
                 <Select
-                  value={generateData.style || ""}
-                  onValueChange={(value) => updateGenerateData("style", value)}
+                  value={generateData.style || ''}
+                  onValueChange={(value) => updateGenerateData('style', value)}
                   disabled={isProcessing}
                 >
                   <SelectTrigger>
@@ -430,10 +397,7 @@ export function NanoBananaUnifiedForm({
                   </SelectTrigger>
                   <SelectContent>
                     {config.styles.map((style) => (
-                      <SelectItem
-                        key={style}
-                        value={style}
-                      >
+                      <SelectItem key={style} value={style}>
                         {style.charAt(0).toUpperCase() + style.slice(1)}
                       </SelectItem>
                     ))}
@@ -442,16 +406,13 @@ export function NanoBananaUnifiedForm({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="quality"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="quality" className="text-sm font-medium">
                   Quality
                 </Label>
                 <Select
-                  value={generateData.quality || ""}
+                  value={generateData.quality || ''}
                   onValueChange={(value) =>
-                    updateGenerateData("quality", value)
+                    updateGenerateData('quality', value)
                   }
                   disabled={isProcessing}
                 >
@@ -460,10 +421,7 @@ export function NanoBananaUnifiedForm({
                   </SelectTrigger>
                   <SelectContent>
                     {config.qualityLevels.map((quality) => (
-                      <SelectItem
-                        key={quality}
-                        value={quality}
-                      >
+                      <SelectItem key={quality} value={quality}>
                         {quality.charAt(0).toUpperCase() + quality.slice(1)}
                       </SelectItem>
                     ))}
@@ -472,16 +430,13 @@ export function NanoBananaUnifiedForm({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="aspectRatio"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="aspectRatio" className="text-sm font-medium">
                   Aspect Ratio
                 </Label>
                 <Select
-                  value={generateData.aspectRatio || ""}
+                  value={generateData.aspectRatio || ''}
                   onValueChange={(value) =>
-                    updateGenerateData("aspectRatio", value)
+                    updateGenerateData('aspectRatio', value)
                   }
                   disabled={isProcessing}
                 >
@@ -490,10 +445,7 @@ export function NanoBananaUnifiedForm({
                   </SelectTrigger>
                   <SelectContent>
                     {config.aspectRatios.map((ratio) => (
-                      <SelectItem
-                        key={ratio}
-                        value={ratio}
-                      >
+                      <SelectItem key={ratio} value={ratio}>
                         {ratio}
                       </SelectItem>
                     ))}
@@ -504,19 +456,16 @@ export function NanoBananaUnifiedForm({
           )}
 
           {/* Precision and Blend Settings (for edit mode) */}
-          {mode === "edit" && (
+          {mode === 'edit' && (
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label
-                  htmlFor="precisionLevel"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="precisionLevel" className="text-sm font-medium">
                   Precision Level
                 </Label>
                 <Select
-                  value={editData.precisionLevel || ""}
+                  value={editData.precisionLevel || ''}
                   onValueChange={(value) =>
-                    updateEditData("precisionLevel", value)
+                    updateEditData('precisionLevel', value)
                   }
                   disabled={isProcessing}
                 >
@@ -525,10 +474,7 @@ export function NanoBananaUnifiedForm({
                   </SelectTrigger>
                   <SelectContent>
                     {config.precisionLevels.map((level) => (
-                      <SelectItem
-                        key={level}
-                        value={level}
-                      >
+                      <SelectItem key={level} value={level}>
                         {level.charAt(0).toUpperCase() + level.slice(1)}
                       </SelectItem>
                     ))}
@@ -537,15 +483,12 @@ export function NanoBananaUnifiedForm({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="blendMode"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="blendMode" className="text-sm font-medium">
                   Blend Mode
                 </Label>
                 <Select
-                  value={editData.blendMode || ""}
-                  onValueChange={(value) => updateEditData("blendMode", value)}
+                  value={editData.blendMode || ''}
+                  onValueChange={(value) => updateEditData('blendMode', value)}
                   disabled={isProcessing}
                 >
                   <SelectTrigger>
@@ -553,11 +496,8 @@ export function NanoBananaUnifiedForm({
                   </SelectTrigger>
                   <SelectContent>
                     {config.blendModes.map((mode) => (
-                      <SelectItem
-                        key={mode}
-                        value={mode}
-                      >
-                        {mode.replace(/_/g, " ")}
+                      <SelectItem key={mode} value={mode}>
+                        {mode.replace(/_/g, ' ')}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -575,10 +515,7 @@ export function NanoBananaUnifiedForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label
-                  htmlFor="seed"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="seed" className="text-sm font-medium">
                   Seed (Optional)
                 </Label>
                 <Input
@@ -586,18 +523,18 @@ export function NanoBananaUnifiedForm({
                   type="number"
                   placeholder="Random seed for reproducible results"
                   value={
-                    mode === "generate"
-                      ? generateData.seed || ""
-                      : editData.seed || ""
+                    mode === 'generate'
+                      ? generateData.seed || ''
+                      : editData.seed || ''
                   }
                   onChange={(e) => {
                     const value = e.target.value
                       ? Number.parseInt(e.target.value)
                       : undefined;
-                    if (mode === "generate") {
-                      updateGenerateData("seed", value);
+                    if (mode === 'generate') {
+                      updateGenerateData('seed', value);
                     } else {
-                      updateEditData("seed", value);
+                      updateEditData('seed', value);
                     }
                   }}
                   disabled={isProcessing}
@@ -605,24 +542,21 @@ export function NanoBananaUnifiedForm({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="batchSize"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="batchSize" className="text-sm font-medium">
                   Batch Size
                 </Label>
                 <Select
                   value={
-                    mode === "generate"
-                      ? generateData.batchSize?.toString() || "1"
-                      : editData.batchSize?.toString() || "1"
+                    mode === 'generate'
+                      ? generateData.batchSize?.toString() || '1'
+                      : editData.batchSize?.toString() || '1'
                   }
                   onValueChange={(value) => {
                     const batchSize = Number.parseInt(value);
-                    if (mode === "generate") {
-                      updateGenerateData("batchSize", batchSize);
+                    if (mode === 'generate') {
+                      updateGenerateData('batchSize', batchSize);
                     } else {
-                      updateEditData("batchSize", batchSize);
+                      updateEditData('batchSize', batchSize);
                     }
                   }}
                   disabled={isProcessing}
@@ -650,7 +584,7 @@ export function NanoBananaUnifiedForm({
             </div>
 
             <div className="space-y-3">
-              {mode === "generate" ? (
+              {mode === 'generate' ? (
                 // Generate mode features
                 <>
                   <div className="flex items-center justify-between">
@@ -666,7 +600,7 @@ export function NanoBananaUnifiedForm({
                     <Switch
                       checked={generateData.enableContextAwareness || false}
                       onCheckedChange={(checked) =>
-                        updateGenerateData("enableContextAwareness", checked)
+                        updateGenerateData('enableContextAwareness', checked)
                       }
                       disabled={isProcessing}
                     />
@@ -684,7 +618,7 @@ export function NanoBananaUnifiedForm({
                     <Switch
                       checked={generateData.enableSurgicalPrecision || false}
                       onCheckedChange={(checked) =>
-                        updateGenerateData("enableSurgicalPrecision", checked)
+                        updateGenerateData('enableSurgicalPrecision', checked)
                       }
                       disabled={isProcessing}
                     />
@@ -702,7 +636,7 @@ export function NanoBananaUnifiedForm({
                     <Switch
                       checked={generateData.creativeMode || false}
                       onCheckedChange={(checked) =>
-                        updateGenerateData("creativeMode", checked)
+                        updateGenerateData('creativeMode', checked)
                       }
                       disabled={isProcessing}
                     />
@@ -718,7 +652,7 @@ export function NanoBananaUnifiedForm({
                     <Switch
                       checked={editData.preserveOriginalStyle || false}
                       onCheckedChange={(checked) =>
-                        updateEditData("preserveOriginalStyle", checked)
+                        updateEditData('preserveOriginalStyle', checked)
                       }
                       disabled={isProcessing}
                     />
@@ -730,7 +664,7 @@ export function NanoBananaUnifiedForm({
                     <Switch
                       checked={editData.enhanceLighting || false}
                       onCheckedChange={(checked) =>
-                        updateEditData("enhanceLighting", checked)
+                        updateEditData('enhanceLighting', checked)
                       }
                       disabled={isProcessing}
                     />
@@ -742,7 +676,7 @@ export function NanoBananaUnifiedForm({
                     <Switch
                       checked={editData.preserveShadows || false}
                       onCheckedChange={(checked) =>
-                        updateEditData("preserveShadows", checked)
+                        updateEditData('preserveShadows', checked)
                       }
                       disabled={isProcessing}
                     />
@@ -761,16 +695,16 @@ export function NanoBananaUnifiedForm({
             {isProcessing ? (
               <>
                 <Sparkles className="size-4 mr-2 animate-spin" />
-                {mode === "generate" ? "Generating..." : "Editing..."}
+                {mode === 'generate' ? 'Generating...' : 'Editing...'}
               </>
             ) : (
               <>
-                {mode === "generate" ? (
+                {mode === 'generate' ? (
                   <Wand2 className="size-4 mr-2" />
                 ) : (
                   <Edit3 className="size-4 mr-2" />
                 )}
-                {mode === "generate" ? "Generate Image" : "Edit Image"}
+                {mode === 'generate' ? 'Generate Image' : 'Edit Image'}
               </>
             )}
           </Button>

@@ -10,7 +10,8 @@ export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model',
     name: 'Nano Banana',
-    description: 'Gemini 1.5 Flash - Fast and intelligent chat model with true streaming',
+    description:
+      'Gemini 1.5 Flash - Fast and intelligent chat model with true streaming',
   },
   {
     id: 'chat-model-reasoning',
@@ -35,6 +36,7 @@ export const chatModels: Array<ChatModel> = [
   {
     id: 'nano-banana',
     name: 'Nano Banana Chat',
-    description: 'Gemini 1.5 Flash optimized for chat conversations with true streaming',
+    description:
+      'Gemini 1.5 Flash optimized for chat conversations with true streaming',
   },
 ];

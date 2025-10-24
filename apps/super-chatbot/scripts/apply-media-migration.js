@@ -16,7 +16,10 @@ async function applyMigration() {
 
   try {
     // Read migration file
-    const migrationPath = path.join(__dirname, '../src/lib/db/migrations/0012_add_generated_media.sql');
+    const migrationPath = path.join(
+      __dirname,
+      '../src/lib/db/migrations/0012_add_generated_media.sql',
+    );
     const migration = fs.readFileSync(migrationPath, 'utf-8');
 
     console.log('📄 Applying migration: 0012_add_generated_media.sql');
@@ -26,7 +29,6 @@ async function applyMigration() {
 
     console.log('✅ Migration applied successfully!');
     console.log('📊 Table "GeneratedMedia" created with indexes');
-
   } catch (error) {
     if (error.message.includes('already exists')) {
       console.log('ℹ️  Table already exists, skipping...');

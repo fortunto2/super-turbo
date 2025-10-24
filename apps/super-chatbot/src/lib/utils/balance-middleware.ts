@@ -27,10 +27,7 @@ export async function checkBalanceForArtifact(
 
   if (!balanceValidation.valid) {
     const balanceError = createBalanceError(balanceValidation);
-    const errorContent = handleBalanceError(
-      balanceError,
-      operationType,
-    );
+    const errorContent = handleBalanceError(balanceError, operationType);
 
     return { valid: false, errorContent };
   }

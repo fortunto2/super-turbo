@@ -13,8 +13,8 @@ interface ArtifactMessagesProps {
   status: UseChatHelpers<any>['status'];
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: any // AI SDK v5: setMessages type changed;
-  reload: any // AI SDK v5: reload type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
+  reload: any; // AI SDK v5: reload type changed;
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
 }

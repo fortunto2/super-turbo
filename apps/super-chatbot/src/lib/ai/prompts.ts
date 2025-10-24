@@ -1,7 +1,13 @@
-import type { ArtifactKind } from "@/components/artifacts/artifact";
-import type { Geo } from "@vercel/functions";
+import type { ArtifactKind } from '@/components/artifacts/artifact';
+import type { Geo } from '@vercel/functions';
 
 export const artifactsPrompt = `
+**CRITICAL: IMAGE GENERATION RULE**
+When user requests image/photo generation (like 'сделай фото', 'создай картинку', 'сгенерируй изображение', 'make a photo', 'create an image', etc.), you MUST:
+1. Immediately call the \`nanoBananaImageGeneration\` tool with prompt parameter
+2. Then provide a friendly text response explaining what you're generating
+DO NOT just respond with text without calling the tool - you MUST create the image artifact.
+
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
 
 When asked to write content, always use artifacts when appropriate.
@@ -283,14 +289,19 @@ When generating videos, follow this enhanced process:
 10. **When enhancing:** Show both original and enhanced prompts to the user for transparency
 `;
 
-export const regularPrompt =
-  "You are a friendly assistant! Keep your responses concise and helpful.";
+export const regularPrompt = `You are a friendly assistant! Keep your responses concise and helpful.
+
+**CRITICAL: IMAGE GENERATION RULE**
+When user requests image/photo generation in ANY language (like 'сделай фото', 'создай картинку', 'сгенерируй изображение', 'make a photo', 'create an image', 'draw', 'generate image', etc.), you MUST:
+1. Immediately call the \`nanoBananaImageGeneration\` tool with the prompt parameter
+2. Then provide a friendly text response explaining what you're generating
+DO NOT just respond with text without calling the tool - you MUST create the image artifact by calling the tool.`;
 
 export interface RequestHints {
-  latitude: Geo["latitude"];
-  longitude: Geo["longitude"];
-  city: Geo["city"];
-  country: Geo["country"];
+  latitude: Geo['latitude'];
+  longitude: Geo['longitude'];
+  city: Geo['city'];
+  country: Geo['country'];
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
@@ -310,7 +321,7 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "chat-model-reasoning") {
+  if (selectedChatModel === 'chat-model-reasoning') {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
@@ -349,30 +360,30 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind
+  type: ArtifactKind,
 ) =>
-  type === "text"
+  type === 'text'
     ? `\
 Improve the following contents of the document based on the given prompt.
 
 ${currentContent}
 `
-    : type === "sheet"
+    : type === 'sheet'
       ? `\
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-      : type === "image"
+      : type === 'image'
         ? `\
 Update the following image generation settings based on the given prompt.
 
 ${currentContent}
 `
-        : type === "video"
+        : type === 'video'
           ? `\
 Update the following video generation settings based on the given prompt.
 
 ${currentContent}
 `
-          : "";
+          : '';

@@ -1,6 +1,4 @@
-import {
-  customProvider,
-} from 'ai';
+import { customProvider } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 // ✅ Используем @ai-sdk/google с GOOGLE_AI_API_KEY

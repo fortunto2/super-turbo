@@ -1,9 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import {
-  createVeo3Video,
-  generateVeo3Ideas,
-} from '@/lib/ai/veo3-api';
+import { createVeo3Video, generateVeo3Ideas } from '@/lib/ai/veo3-api';
 
 export const createVeo3VideoTool = tool({
   description: 'Creates video using VEO3 (Google Video Generation) via Fal.ai',
@@ -25,18 +22,12 @@ export const createVeo3VideoTool = tool({
       .boolean()
       .optional()
       .describe('Generate audio for the video'),
-    enhancePrompt: z
-      .boolean()
-      .optional()
-      .describe('AI-enhance the prompt'),
+    enhancePrompt: z.boolean().optional().describe('AI-enhance the prompt'),
     negativePrompt: z
       .string()
       .optional()
       .describe('What to avoid in the video'),
-    seed: z
-      .number()
-      .optional()
-      .describe('Seed for reproducible results'),
+    seed: z.number().optional().describe('Seed for reproducible results'),
   }),
   execute: async ({
     prompt,

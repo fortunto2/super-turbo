@@ -460,6 +460,9 @@ export const POST = withMonitoring(async (request: Request) => {
       },
       // CRITICAL: Force tool usage for image/video generation to ensure models call the right tool
       toolChoice: (isImageGenerationRequest || isVideoGenerationRequest) ? 'required' : 'auto',
+      // CRITICAL: Allow model to generate text after tool call
+      // With maxSteps: 2, model can: step 1 = call tool, step 2 = generate text response
+      maxSteps: 2,
       // REMOVED stopWhen - let AI SDK handle tool execution naturally without interference
       onError: ({ error }) => {
         console.error('❌ Stream error:', error);

@@ -22,7 +22,7 @@ console.log('🔍 Fetching available Gemini models...\n');
 
 try {
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
   );
 
   const data = await response.json();
@@ -34,11 +34,11 @@ try {
 
   console.log('✅ Available models that support generateContent:\n');
 
-  const generateContentModels = data.models.filter(model =>
-    model.supportedGenerationMethods?.includes('generateContent')
+  const generateContentModels = data.models.filter((model) =>
+    model.supportedGenerationMethods?.includes('generateContent'),
   );
 
-  generateContentModels.forEach(model => {
+  generateContentModels.forEach((model) => {
     console.log(`📦 ${model.name.replace('models/', '')}`);
     console.log(`   Description: ${model.description}`);
     console.log(`   Display Name: ${model.displayName}`);
@@ -46,8 +46,9 @@ try {
     console.log('');
   });
 
-  console.log(`\n✅ Total: ${generateContentModels.length} models support generateContent`);
-
+  console.log(
+    `\n✅ Total: ${generateContentModels.length} models support generateContent`,
+  );
 } catch (error) {
   console.error('❌ Failed to fetch models:', error.message);
   process.exit(1);

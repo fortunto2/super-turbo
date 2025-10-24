@@ -1,13 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Label, Input } from '@turbo-super/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Label,
+  Input,
+} from '@turbo-super/ui';
 import { Textarea } from '@turbo-super/ui';
 import { Badge } from '@turbo-super/ui';
 import { Loader2, VideoIcon, Wand2, Sparkles } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import type { VideoGenerationRequest, VideoModel } from '../api/video-generation-api';
+import type {
+  VideoGenerationRequest,
+  VideoModel,
+} from '../api/video-generation-api';
 
 interface VideoGenerationFormProps {
   onGenerate: (request: VideoGenerationRequest) => Promise<void>;
@@ -16,7 +33,12 @@ interface VideoGenerationFormProps {
     durations: Array<{ id: number; label: string; description: string }>;
     aspectRatios: Array<{ id: string; label: string; description: string }>;
     resolutions?: Array<{ id: string; label: string; description: string }>;
-    models?: Array<{ id: VideoModel; label: string; description: string; badge?: string }>;
+    models?: Array<{
+      id: VideoModel;
+      label: string;
+      description: string;
+      badge?: string;
+    }>;
   };
 }
 
@@ -39,9 +61,23 @@ export function VideoGenerationForm({
       { id: '1080p', label: '1080p', description: 'Full HD' },
     ],
     models: [
-      { id: 'fal-veo3', label: 'Fal.ai Veo 3', description: 'Recommended', badge: 'Best' },
-      { id: 'vertex-veo3', label: 'Vertex AI Veo 3', description: 'Direct Google', badge: 'Direct' },
-      { id: 'vertex-veo2', label: 'Vertex AI Veo 2', description: 'Older version' },
+      {
+        id: 'fal-veo3',
+        label: 'Fal.ai Veo 3',
+        description: 'Recommended',
+        badge: 'Best',
+      },
+      {
+        id: 'vertex-veo3',
+        label: 'Vertex AI Veo 3',
+        description: 'Direct Google',
+        badge: 'Direct',
+      },
+      {
+        id: 'vertex-veo2',
+        label: 'Vertex AI Veo 2',
+        description: 'Older version',
+      },
     ],
   },
 }: VideoGenerationFormProps) {
@@ -67,12 +103,12 @@ export function VideoGenerationForm({
 
   const updateField = <K extends keyof VideoGenerationRequest>(
     field: K,
-    value: VideoGenerationRequest[K]
+    value: VideoGenerationRequest[K],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const selectedModel = config.models?.find(m => m.id === formData.model);
+  const selectedModel = config.models?.find((m) => m.id === formData.model);
 
   return (
     <Card>
@@ -92,7 +128,9 @@ export function VideoGenerationForm({
             <Label htmlFor="model">AI Model *</Label>
             <Select
               value={formData.model || 'fal-veo3'}
-              onValueChange={(value: string) => updateField('model', value as VideoModel)}
+              onValueChange={(value: string) =>
+                updateField('model', value as VideoModel)
+              }
               disabled={isGenerating}
             >
               <SelectTrigger>
@@ -133,7 +171,8 @@ export function VideoGenerationForm({
               className="resize-none"
             />
             <p className="text-xs text-muted-foreground">
-              Example: &ldquo;A cinematic shot of ocean waves at sunset, slow motion, 4K quality&rdquo;
+              Example: &ldquo;A cinematic shot of ocean waves at sunset, slow
+              motion, 4K quality&rdquo;
             </p>
           </div>
 
@@ -144,7 +183,9 @@ export function VideoGenerationForm({
               <Label htmlFor="duration">Duration</Label>
               <Select
                 value={formData.duration?.toString() ?? '8'}
-                onValueChange={(value) => updateField('duration', Number.parseInt(value))}
+                onValueChange={(value) =>
+                  updateField('duration', Number.parseInt(value))
+                }
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -152,7 +193,10 @@ export function VideoGenerationForm({
                 </SelectTrigger>
                 <SelectContent>
                   {config.durations.map((duration) => (
-                    <SelectItem key={duration.id} value={duration.id.toString()}>
+                    <SelectItem
+                      key={duration.id}
+                      value={duration.id.toString()}
+                    >
                       {duration.label}
                     </SelectItem>
                   ))}
@@ -165,7 +209,9 @@ export function VideoGenerationForm({
               <Label htmlFor="aspectRatio">Aspect Ratio</Label>
               <Select
                 value={formData.aspectRatio || '16:9'}
-                onValueChange={(value: string) => updateField('aspectRatio', value as '16:9' | '9:16' | '1:1')}
+                onValueChange={(value: string) =>
+                  updateField('aspectRatio', value as '16:9' | '9:16' | '1:1')
+                }
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -187,7 +233,9 @@ export function VideoGenerationForm({
             <Label htmlFor="resolution">Resolution</Label>
             <Select
               value={formData.resolution || '720p'}
-              onValueChange={(value: string) => updateField('resolution', value as '720p' | '1080p')}
+              onValueChange={(value: string) =>
+                updateField('resolution', value as '720p' | '1080p')
+              }
               disabled={isGenerating}
             >
               <SelectTrigger>
@@ -213,7 +261,10 @@ export function VideoGenerationForm({
             <div className="space-y-3 p-3 bg-blue-950/20 rounded-lg border border-blue-900/30">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="generateAudio" className="text-sm font-medium">
+                  <Label
+                    htmlFor="generateAudio"
+                    className="text-sm font-medium"
+                  >
                     Generate Audio
                   </Label>
                   <p className="text-xs text-muted-foreground">
@@ -223,14 +274,19 @@ export function VideoGenerationForm({
                 <Switch
                   id="generateAudio"
                   checked={formData.generateAudio ?? true}
-                  onCheckedChange={(checked) => updateField('generateAudio', checked)}
+                  onCheckedChange={(checked) =>
+                    updateField('generateAudio', checked)
+                  }
                   disabled={isGenerating}
                 />
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="enhancePrompt" className="text-sm font-medium flex items-center gap-1">
+                  <Label
+                    htmlFor="enhancePrompt"
+                    className="text-sm font-medium flex items-center gap-1"
+                  >
                     <Sparkles className="size-3" />
                     AI Prompt Enhancement
                   </Label>
@@ -241,7 +297,9 @@ export function VideoGenerationForm({
                 <Switch
                   id="enhancePrompt"
                   checked={formData.enhancePrompt ?? true}
-                  onCheckedChange={(checked) => updateField('enhancePrompt', checked)}
+                  onCheckedChange={(checked) =>
+                    updateField('enhancePrompt', checked)
+                  }
                   disabled={isGenerating}
                 />
               </div>
@@ -264,12 +322,16 @@ export function VideoGenerationForm({
             <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
               {/* Negative Prompt */}
               <div className="space-y-2">
-                <Label htmlFor="negativePrompt">Negative Prompt (Optional)</Label>
+                <Label htmlFor="negativePrompt">
+                  Negative Prompt (Optional)
+                </Label>
                 <Textarea
                   id="negativePrompt"
                   placeholder="What to avoid in the video..."
                   value={formData.negativePrompt || ''}
-                  onChange={(e) => updateField('negativePrompt', e.target.value || undefined)}
+                  onChange={(e) =>
+                    updateField('negativePrompt', e.target.value || undefined)
+                  }
                   disabled={isGenerating}
                   rows={2}
                   className="resize-none"
@@ -284,7 +346,14 @@ export function VideoGenerationForm({
                   type="number"
                   placeholder="Random seed for reproducibility"
                   value={formData.seed ?? ''}
-                  onChange={(e) => updateField('seed', e.target.value ? Number.parseInt(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    updateField(
+                      'seed',
+                      e.target.value
+                        ? Number.parseInt(e.target.value)
+                        : undefined,
+                    )
+                  }
                   disabled={isGenerating}
                 />
               </div>

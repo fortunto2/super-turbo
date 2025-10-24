@@ -9,20 +9,20 @@ export const getGeminiConfig = () => {
 
   if (!apiKey) {
     throw new Error(
-      "VERTEX_AI_API_KEY environment variable is required for Nano Banana (Gemini-2.5-Flash-Image)"
+      'VERTEX_AI_API_KEY environment variable is required for Nano Banana (Gemini-2.5-Flash-Image)',
     );
   }
 
   return {
     apiKey,
-    model: "gemini-2.5-flash-lite", // Используем модель, которая работает с API ключами
-    baseUrl: "https://aiplatform.googleapis.com/v1/publishers/google/models",
+    model: 'gemini-2.5-flash-lite', // Используем модель, которая работает с API ключами
+    baseUrl: 'https://aiplatform.googleapis.com/v1/publishers/google/models',
   };
 };
 
 export const getGeminiGenerationConfig = () => {
   return {
-    responseModalities: ["Text", "Image"] as const,
+    responseModalities: ['Text', 'Image'] as const,
     temperature: 0.7,
     maxOutputTokens: 4096,
     topP: 0.8,

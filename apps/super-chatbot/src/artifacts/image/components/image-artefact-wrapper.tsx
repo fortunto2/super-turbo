@@ -77,8 +77,16 @@ export const ImageArtifactWrapper = memo(
         // AICODE-FIX: Remove duplicate save - database save is now handled in server.ts
         // Only save to database when generation is completed AND documentId is valid UUID
         // Skip for Nano Banana images (they don't have valid UUIDs)
-        const isValidUUID = documentId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(documentId);
-        if (newContent.status === 'completed' && newContent.imageUrl && isValidUUID) {
+        const isValidUUID =
+          documentId &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            documentId,
+          );
+        if (
+          newContent.status === 'completed' &&
+          newContent.imageUrl &&
+          isValidUUID
+        ) {
           const thumbnailUrl =
             newContent.thumbnailUrl ||
             (newContent.status === 'completed'

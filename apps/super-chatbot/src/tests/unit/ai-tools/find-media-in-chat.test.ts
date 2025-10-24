@@ -90,7 +90,9 @@ describe('findMediaInChat', () => {
     expect(result.success).toBe(true);
     expect(result.found).toBeGreaterThan(0);
     // Should find img-2 because prompt contains "moon"
-    const hasMoonImage = result.media.some((m: any) => m.prompt?.includes('moon'));
+    const hasMoonImage = result.media.some((m: any) =>
+      m.prompt?.includes('moon'),
+    );
     expect(hasMoonImage).toBe(true);
   });
 

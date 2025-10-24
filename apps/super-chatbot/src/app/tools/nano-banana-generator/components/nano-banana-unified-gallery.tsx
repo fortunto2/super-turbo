@@ -1,12 +1,12 @@
 // AICODE-NOTE: Unified gallery component for Nano Banana image generation and editing results
 // Combines functionality from both generator and editor galleries
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Download,
   Copy,
@@ -17,18 +17,18 @@ import {
   Calendar,
   Image as ImageIcon,
   Sparkles,
-} from "lucide-react";
+} from 'lucide-react';
 import type {
   NanoBananaImageResult,
   NanoBananaEditResult,
-} from "../api/nano-banana-api";
+} from '../api/nano-banana-api';
 
 interface UnifiedImageResult {
   id: string;
   url: string;
   prompt: string;
   timestamp: number;
-  type: "generated" | "edited";
+  type: 'generated' | 'edited';
   settings?: {
     style?: string;
     quality?: string;
@@ -82,7 +82,7 @@ export function NanoBananaUnifiedGallery({
   isEditing,
 }: NanoBananaUnifiedGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<UnifiedImageResult | null>(
-    null
+    null,
   );
   // No view mode filtering - show all images together
 
@@ -90,12 +90,12 @@ export function NanoBananaUnifiedGallery({
   const allImages: UnifiedImageResult[] = [
     ...generatedImages.map((img) => ({
       ...img,
-      type: "generated" as const,
+      type: 'generated' as const,
     })),
     ...editedImages.map((img) => ({
       ...img,
-      prompt: img.editPrompt || "",
-      type: "edited" as const,
+      prompt: img.editPrompt || '',
+      type: 'edited' as const,
     })),
   ].sort((a, b) => b.timestamp - a.timestamp);
 
@@ -106,7 +106,7 @@ export function NanoBananaUnifiedGallery({
       ? [
           {
             ...currentGeneration,
-            type: "generated" as const,
+            type: 'generated' as const,
           },
         ]
       : []),
@@ -114,8 +114,8 @@ export function NanoBananaUnifiedGallery({
       ? [
           {
             ...currentEdit,
-            prompt: currentEdit.editPrompt || "",
-            type: "edited" as const,
+            prompt: currentEdit.editPrompt || '',
+            type: 'edited' as const,
           },
         ]
       : []),
@@ -127,7 +127,7 @@ export function NanoBananaUnifiedGallery({
 
   const handleDownload = (image: UnifiedImageResult) => {
     const filename = `nano-banana-${image.type}-${image.id}.png`;
-    if (image.type === "generated") {
+    if (image.type === 'generated') {
       onDownloadGeneratedImage(image.url, filename);
     } else {
       onDownloadEditedImage(image.url, filename);
@@ -135,7 +135,7 @@ export function NanoBananaUnifiedGallery({
   };
 
   const handleCopyUrl = (image: UnifiedImageResult) => {
-    if (image.type === "generated") {
+    if (image.type === 'generated') {
       onCopyGeneratedImageUrl(image.url);
     } else {
       onCopyEditedImageUrl(image.url);
@@ -143,7 +143,7 @@ export function NanoBananaUnifiedGallery({
   };
 
   const handleDelete = (image: UnifiedImageResult) => {
-    if (image.type === "generated") {
+    if (image.type === 'generated') {
       onDeleteGeneratedImage(image.id);
     } else {
       onDeleteEditedImage(image.id);
@@ -155,22 +155,16 @@ export function NanoBananaUnifiedGallery({
   };
 
   const getStatusBadge = (image: UnifiedImageResult) => {
-    if (image.type === "generated") {
+    if (image.type === 'generated') {
       return (
-        <Badge
-          variant="secondary"
-          className="flex items-center gap-1"
-        >
+        <Badge variant="secondary" className="flex items-center gap-1">
           <Wand2 className="size-3" />
           Generated
         </Badge>
       );
     } else {
       return (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-1"
-        >
+        <Badge variant="outline" className="flex items-center gap-1">
           <Edit3 className="size-3" />
           Edited
         </Badge>
@@ -192,7 +186,7 @@ export function NanoBananaUnifiedGallery({
             <span>Image Gallery</span>
             <Badge variant="secondary">
               {filteredImages.length} image
-              {filteredImages.length !== 1 ? "s" : ""}
+              {filteredImages.length !== 1 ? 's' : ''}
             </Badge>
           </div>
           <div className="flex items-center space-x-2">
@@ -226,7 +220,7 @@ export function NanoBananaUnifiedGallery({
               <div className="flex items-center justify-center space-x-2 text-primary">
                 <Sparkles className="size-4 animate-spin" />
                 <span className="text-sm">
-                  {isGenerating ? "Generating..." : "Editing..."}
+                  {isGenerating ? 'Generating...' : 'Editing...'}
                 </span>
               </div>
             )}
@@ -320,7 +314,7 @@ export function NanoBananaUnifiedGallery({
 
                   {/* Settings Summary */}
                   <div className="flex flex-wrap gap-1">
-                    {image.type === "generated" && (
+                    {image.type === 'generated' && (
                       <>
                         {image.settings?.style && (
                           <Badge
@@ -340,14 +334,14 @@ export function NanoBananaUnifiedGallery({
                         )}
                       </>
                     )}
-                    {image.type === "edited" && (
+                    {image.type === 'edited' && (
                       <>
                         {image.settings?.editType && (
                           <Badge
                             variant="secondary"
                             className="text-xs px-1 py-0 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
                           >
-                            {image.settings.editType.replace(/_/g, " ")}
+                            {image.settings.editType.replace(/_/g, ' ')}
                           </Badge>
                         )}
                         {image.settings?.precisionLevel && (
@@ -407,7 +401,7 @@ export function NanoBananaUnifiedGallery({
 
                   {/* Settings Info */}
                   <div className="flex flex-wrap gap-2">
-                    {selectedImage.type === "generated" && (
+                    {selectedImage.type === 'generated' && (
                       <>
                         {selectedImage.settings?.style && (
                           <Badge
@@ -427,14 +421,14 @@ export function NanoBananaUnifiedGallery({
                         )}
                       </>
                     )}
-                    {selectedImage.type === "edited" && (
+                    {selectedImage.type === 'edited' && (
                       <>
                         {selectedImage.settings?.editType && (
                           <Badge
                             variant="secondary"
                             className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
                           >
-                            {selectedImage.settings.editType.replace(/_/g, " ")}
+                            {selectedImage.settings.editType.replace(/_/g, ' ')}
                           </Badge>
                         )}
                         {selectedImage.settings?.precisionLevel && (

@@ -8,7 +8,7 @@ import { getSuperduperAIConfig, createWSURL } from '@/lib/config/superduperai';
 interface ChatImageWebSocketOptions {
   chatId: string;
   messages: any[];
-  setMessages: any // AI SDK v5: setMessages type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
   enabled?: boolean;
 }
 
@@ -295,7 +295,8 @@ export const useChatImageWebSocket = ({
 
                 // Check if any parts were actually updated
                 const wasUpdated = updatedParts?.some(
-                  (part: any, index: any) => part !== candidateMessage.parts?.[index],
+                  (part: any, index: any) =>
+                    part !== candidateMessage.parts?.[index],
                 );
 
                 if (wasUpdated) {

@@ -1,4 +1,4 @@
-import { describe, it, expect, } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   normalizeUIMessage,
   convertDBMessagesToUIMessages,
@@ -119,7 +119,9 @@ describe('message-utils', () => {
       const attachments = [
         { url: 'https://example.com/image.jpg', contentType: 'image/jpeg' },
       ];
-      const message = createUserMessage({ experimental_attachments: attachments });
+      const message = createUserMessage({
+        experimental_attachments: attachments,
+      });
 
       const normalized = normalizeUIMessage(message);
 

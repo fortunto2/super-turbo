@@ -25,10 +25,10 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
         draftContent += textDelta;
 
         // AICODE-NOTE: AI SDK 5.0 - use writer.write() with 'text' type, not writeData()
-// AI SDK v5: Streaming handled differently -         dataStream.write({
-// AI SDK v5: Streaming handled differently -           type: 'text',
-// AI SDK v5: Streaming handled differently -           value: textDelta,
-// AI SDK v5: Streaming handled differently -         });
+        // AI SDK v5: Streaming handled differently -         dataStream.write({
+        // AI SDK v5: Streaming handled differently -           type: 'text',
+        // AI SDK v5: Streaming handled differently -           value: textDelta,
+        // AI SDK v5: Streaming handled differently -         });
       }
     }
 
@@ -52,10 +52,10 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
         const { text: textDelta } = delta; // AI SDK v5: renamed from textDelta to text
 
         draftContent += textDelta;
-// AI SDK v5: Streaming handled differently -         dataStream.write({
-// AI SDK v5: Streaming handled differently -           type: 'text',
-// AI SDK v5: Streaming handled differently -           value: textDelta,
-// AI SDK v5: Streaming handled differently -         });
+        // AI SDK v5: Streaming handled differently -         dataStream.write({
+        // AI SDK v5: Streaming handled differently -           type: 'text',
+        // AI SDK v5: Streaming handled differently -           value: textDelta,
+        // AI SDK v5: Streaming handled differently -         });
       }
     }
 

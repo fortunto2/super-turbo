@@ -10,7 +10,7 @@ import { getGuestSessionId } from '@/lib/session-utils';
 // Database initialization
 const client = postgres(
   process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
-  { ssl: 'require' }
+  { ssl: 'require' },
 );
 const db = drizzle(client);
 

@@ -6,8 +6,18 @@ import { TEST_PROMPTS } from './basic';
 type StreamPart =
   | { type: 'text-delta'; id: string; delta: string }
   | { type: 'reasoning'; id: string; delta: string }
-  | { type: 'tool-call'; toolCallId: string; toolName: string; toolCallType: string; args: string }
-  | { type: 'finish'; finishReason: string; usage: { completionTokens: number; promptTokens: number } };
+  | {
+      type: 'tool-call';
+      toolCallId: string;
+      toolName: string;
+      toolCallType: string;
+      args: string;
+    }
+  | {
+      type: 'finish';
+      finishReason: string;
+      usage: { completionTokens: number; promptTokens: number };
+    };
 
 export function compareMessages(
   firstMessage: CoreMessage,
@@ -55,25 +65,21 @@ export function compareMessages(
 }
 
 const textToDeltas = (text: string): StreamPart[] => {
-  const deltas = text
-    .split(' ')
-    .map((char, i) => ({
-      type: 'text-delta' as const,
-      id: `text-${i}`,
-      delta: `${char} `
-    }));
+  const deltas = text.split(' ').map((char, i) => ({
+    type: 'text-delta' as const,
+    id: `text-${i}`,
+    delta: `${char} `,
+  }));
 
   return deltas;
 };
 
 const reasoningToDeltas = (text: string): StreamPart[] => {
-  const deltas = text
-    .split(' ')
-    .map((char, i) => ({
-      type: 'reasoning' as const,
-      id: `reasoning-${i}`,
-      delta: `${char} `
-    }));
+  const deltas = text.split(' ').map((char, i) => ({
+    type: 'reasoning' as const,
+    id: `reasoning-${i}`,
+    delta: `${char} `,
+  }));
 
   return deltas;
 };

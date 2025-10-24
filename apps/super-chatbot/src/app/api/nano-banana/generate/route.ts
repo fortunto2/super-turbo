@@ -61,16 +61,15 @@ export async function POST(request: NextRequest) {
     // Вызываем инструмент генерации
     const tool = nanoBananaImageGeneration(toolParams);
     if (!tool?.execute) {
-      throw new Error('nanoBananaImageGeneration tool is not properly initialized');
+      throw new Error(
+        'nanoBananaImageGeneration tool is not properly initialized',
+      );
     }
 
-    const result = await tool.execute(
-      validatedData,
-      {
-        toolCallId: 'nano-banana-generate',
-        messages: [],
-      },
-    );
+    const result = await tool.execute(validatedData, {
+      toolCallId: 'nano-banana-generate',
+      messages: [],
+    });
 
     console.log('🍌 Generation result:', result);
 
@@ -129,7 +128,9 @@ export async function GET() {
     // Получаем конфигурацию без промпта
     const tool = nanoBananaImageGeneration(toolParams);
     if (!tool?.execute) {
-      throw new Error('nanoBananaImageGeneration tool is not properly initialized');
+      throw new Error(
+        'nanoBananaImageGeneration tool is not properly initialized',
+      );
     }
 
     const config = await tool.execute(
@@ -150,11 +151,18 @@ export async function GET() {
     );
 
     // Извлекаем нужные данные из конфигурации
-    const styles = 'nanoBananaStyles' in config ? (config as any).nanoBananaStyles?.map((s: any) => s.id) || [] : [];
+    const styles =
+      'nanoBananaStyles' in config
+        ? (config as any).nanoBananaStyles?.map((s: any) => s.id) || []
+        : [];
     const qualityLevels =
-      'nanoBananaQualityLevels' in config ? (config as any).nanoBananaQualityLevels?.map((q: any) => q.id) || [] : [];
+      'nanoBananaQualityLevels' in config
+        ? (config as any).nanoBananaQualityLevels?.map((q: any) => q.id) || []
+        : [];
     const aspectRatios =
-      'nanoBananaAspectRatios' in config ? (config as any).nanoBananaAspectRatios?.map((a: any) => a.id) || [] : [];
+      'nanoBananaAspectRatios' in config
+        ? (config as any).nanoBananaAspectRatios?.map((a: any) => a.id) || []
+        : [];
 
     return NextResponse.json({
       success: true,

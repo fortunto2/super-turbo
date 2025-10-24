@@ -82,17 +82,17 @@ async function runAllTests() {
     fal: await testEndpoint(
       '1. Fal.ai (Recommended)',
       `${BASE_URL}/api/video/generate`,
-      'Использует Fal.ai для Google Veo 3 (работает с простым API ключом)'
+      'Использует Fal.ai для Google Veo 3 (работает с простым API ключом)',
     ),
     google: await testEndpoint(
       '2. Google Direct',
       `${BASE_URL}/api/video/generate-google`,
-      'Попытка использовать GOOGLE_AI_API_KEY напрямую (вернёт ошибку OAuth2)'
+      'Попытка использовать GOOGLE_AI_API_KEY напрямую (вернёт ошибку OAuth2)',
     ),
     vertex: await testEndpoint(
       '3. Vertex AI',
       `${BASE_URL}/api/video/generate-vertex`,
-      'Ваш запрос: использовать Vertex AI с вашим ключом'
+      'Ваш запрос: использовать Vertex AI с вашим ключом',
     ),
   };
 
@@ -114,7 +114,9 @@ async function runAllTests() {
   if (results.google.success) {
     console.log('   ✅ Endpoint доступен');
     console.log('   📌 Статус: Вернёт ошибку OAuth2 (как и ожидалось)');
-    console.log('   💡 Назначение: Демонстрация почему прямой вызов не работает');
+    console.log(
+      '   💡 Назначение: Демонстрация почему прямой вызов не работает',
+    );
   } else {
     console.log('   ❌ Endpoint не доступен');
   }
@@ -128,14 +130,18 @@ async function runAllTests() {
       console.log('   ✅ Auth0: Настроен и работает');
     }
 
-    if (results.vertex.data?.status?.googleApiKey?.includes('✅') ||
-        results.vertex.data?.status?.vertexApiKey?.includes('✅')) {
+    if (
+      results.vertex.data?.status?.googleApiKey?.includes('✅') ||
+      results.vertex.data?.status?.vertexApiKey?.includes('✅')
+    ) {
       console.log('   ✅ API Key: Найден');
       console.log('   ⚠️ Но: Может не работать для Veo (требует OAuth2)');
     }
 
     console.log('\n   💡 Попробуйте вызвать POST с промптом:');
-    console.log('      Если получите ошибку OAuth2 - используйте вариант 1 (Fal.ai)');
+    console.log(
+      '      Если получите ошибку OAuth2 - используйте вариант 1 (Fal.ai)',
+    );
     console.log('      Если сработает - отлично, используйте этот endpoint!');
   } else {
     console.log('   ❌ Endpoint не доступен');
@@ -174,13 +180,15 @@ async function runAllTests() {
   console.log('2. Откройте DevTools → Network');
   console.log('3. Скопируйте cookie из запроса');
   console.log('4. Запустите:');
-  console.log('\n   TEST_AUTH_COOKIE="ваш_cookie" node test-all-video-endpoints.js');
+  console.log(
+    '\n   TEST_AUTH_COOKIE="ваш_cookie" node test-all-video-endpoints.js',
+  );
 
   console.log(`\n${'='.repeat(60)}`);
 }
 
 // Run tests
-runAllTests().catch(error => {
+runAllTests().catch((error) => {
   console.error('💥 Fatal error:', error);
   process.exit(1);
 });

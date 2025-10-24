@@ -46,14 +46,17 @@ async function handleForeignKeyRecovery(params: {
     await getOrCreateOAuthUser(params.userId, params.userEmail);
     console.log(`✅ Auto-created user during FK recovery: ${params.userId}`);
   } catch (recoveryError) {
-    console.error('❌ Failed to auto-create user during recovery:', recoveryError);
+    console.error(
+      '❌ Failed to auto-create user during recovery:',
+      recoveryError,
+    );
     throw recoveryError;
   }
 }
 
 export async function ensureUserExists(
   userId: string,
-  email: string
+  email: string,
 ): Promise<User> {
   try {
     const user = await getOrCreateOAuthUser(userId, email);
@@ -65,7 +68,7 @@ export async function ensureUserExists(
 }
 
 export async function ensureChatExists(
-  params: EnsureChatParams
+  params: EnsureChatParams,
 ): Promise<Chat> {
   const { chatId, userId, userEmail, firstMessage, visibility } = params;
 
@@ -86,8 +89,8 @@ export async function ensureChatExists(
       ? await generateTitleFromUserMessage({
           message: {
             ...normalizedMessage,
-            parts: normalizedMessage.parts as any
-          } as any
+            parts: normalizedMessage.parts as any,
+          } as any,
         })
       : 'New Chat';
 
@@ -108,7 +111,7 @@ export async function ensureChatExists(
   } catch (error) {
     if (error instanceof Error && isForeignKeyError(error)) {
       console.log(
-        `🔄 FK error detected, attempting recovery for user: ${userId}`
+        `🔄 FK error detected, attempting recovery for user: ${userId}`,
       );
 
       await handleForeignKeyRecovery({ userId, userEmail });
@@ -121,8 +124,8 @@ export async function ensureChatExists(
         ? await generateTitleFromUserMessage({
             message: {
               ...normalizedMessage,
-              parts: normalizedMessage.parts as any
-            } as any
+              parts: normalizedMessage.parts as any,
+            } as any,
           })
         : 'New Chat';
 
@@ -149,7 +152,7 @@ export async function ensureChatExists(
 }
 
 export async function saveUserMessage(
-  params: SaveMessageParams
+  params: SaveMessageParams,
 ): Promise<void> {
   const { chatId, message, attachments } = params;
 
@@ -179,7 +182,7 @@ export async function saveUserMessage(
   } catch (error) {
     if (error instanceof Error && isForeignKeyError(error)) {
       console.log(
-        `🔄 FK error while saving message, ensuring chat exists: ${chatId}`
+        `🔄 FK error while saving message, ensuring chat exists: ${chatId}`,
       );
 
       try {

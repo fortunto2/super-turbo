@@ -68,7 +68,9 @@ export async function POST(request: NextRequest) {
 
     // Вызываем инструмент улучшения промпта
     if (!nanoBananaPromptEnhancer?.execute) {
-      throw new Error('nanoBananaPromptEnhancer tool is not properly initialized');
+      throw new Error(
+        'nanoBananaPromptEnhancer tool is not properly initialized',
+      );
     }
 
     const result = await nanoBananaPromptEnhancer.execute(validatedData, {
@@ -125,7 +127,9 @@ export async function GET() {
 
     // Получаем информацию о техниках и стилях
     if (!nanoBananaPromptEnhancer?.execute) {
-      throw new Error('nanoBananaPromptEnhancer tool is not properly initialized');
+      throw new Error(
+        'nanoBananaPromptEnhancer tool is not properly initialized',
+      );
     }
 
     const techniquesInfo = await nanoBananaPromptEnhancer.execute(

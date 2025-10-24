@@ -107,7 +107,9 @@ async function testVideoGenerateValidation() {
 }
 
 async function testVideoGenerateWithAuth() {
-  console.log('\n🧪 Testing POST /api/video/generate (with auth - requires login)...');
+  console.log(
+    '\n🧪 Testing POST /api/video/generate (with auth - requires login)...',
+  );
   console.log('⚠️ This test requires valid authentication cookies');
   console.log('   Please test this manually after logging in to the app');
 
@@ -123,7 +125,7 @@ async function testVideoGenerateWithAuth() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': authCookie,
+        Cookie: authCookie,
       },
       body: JSON.stringify({
         prompt: 'A cat playing with a ball of yarn in slow motion',
@@ -157,7 +159,7 @@ async function testVideoGenerateWithAuth() {
 
 async function runAllTests() {
   console.log('🎬 Starting Video Generation API Tests');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   const results = {
     info: await testVideoGenerateInfo(),
@@ -168,20 +170,26 @@ async function runAllTests() {
 
   console.log(`\n${'='.repeat(60)}`);
   console.log('📊 Test Results Summary:');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   console.log(`Info Endpoint:        ${results.info ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`Auth Protection:      ${results.authProtection ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`Validation:           ${results.validation ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`Generation (w/ auth): ${results.generation === true ? '✅ PASS' : results.generation === false ? '❌ FAIL' : '⏭️ SKIPPED'}`);
+  console.log(
+    `Auth Protection:      ${results.authProtection ? '✅ PASS' : '❌ FAIL'}`,
+  );
+  console.log(
+    `Validation:           ${results.validation ? '✅ PASS' : '❌ FAIL'}`,
+  );
+  console.log(
+    `Generation (w/ auth): ${results.generation === true ? '✅ PASS' : results.generation === false ? '❌ FAIL' : '⏭️ SKIPPED'}`,
+  );
 
-  const passed = Object.values(results).filter(r => r === true).length;
-  const failed = Object.values(results).filter(r => r === false).length;
-  const skipped = Object.values(results).filter(r => r === null).length;
+  const passed = Object.values(results).filter((r) => r === true).length;
+  const failed = Object.values(results).filter((r) => r === false).length;
+  const skipped = Object.values(results).filter((r) => r === null).length;
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`Total: ${passed} passed, ${failed} failed, ${skipped} skipped`);
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   if (failed > 0) {
     console.log('\n⚠️ Some tests failed. Check the output above for details.');
@@ -191,13 +199,15 @@ async function runAllTests() {
     console.log('\n💡 To test with authentication:');
     console.log('   1. Login to the app in your browser');
     console.log('   2. Copy the auth cookie');
-    console.log('   3. Run: TEST_AUTH_COOKIE="your_cookie" node video-api-test.js');
+    console.log(
+      '   3. Run: TEST_AUTH_COOKIE="your_cookie" node video-api-test.js',
+    );
     process.exit(0);
   }
 }
 
 // Run tests
-runAllTests().catch(error => {
+runAllTests().catch((error) => {
   console.error('💥 Fatal error:', error);
   process.exit(1);
 });

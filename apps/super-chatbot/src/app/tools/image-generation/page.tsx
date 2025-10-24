@@ -29,8 +29,16 @@ export default function ImageGenerationPage() {
 
   const [config, setConfig] = useState({
     styles: [] as Array<{ id: string; label: string; description: string }>,
-    qualityLevels: [] as Array<{ id: string; label: string; description: string }>,
-    aspectRatios: [] as Array<{ id: string; label: string; description: string }>,
+    qualityLevels: [] as Array<{
+      id: string;
+      label: string;
+      description: string;
+    }>,
+    aspectRatios: [] as Array<{
+      id: string;
+      label: string;
+      description: string;
+    }>,
   });
 
   useEffect(() => {
@@ -87,8 +95,8 @@ export default function ImageGenerationPage() {
         </div>
 
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          Create stunning images using Nano Banana AI technology. Simply describe
-          what you want to see and let AI bring your ideas to life.
+          Create stunning images using Nano Banana AI technology. Simply
+          describe what you want to see and let AI bring your ideas to life.
         </p>
 
         {/* Feature highlights */}
@@ -137,12 +145,14 @@ export default function ImageGenerationPage() {
               onClearAll={clearAllImages}
               onDownloadImage={(url, filename) => {
                 const image =
-                  generatedImages.find((img) => img.url === url) || currentGeneration;
+                  generatedImages.find((img) => img.url === url) ||
+                  currentGeneration;
                 if (image) downloadImage(image);
               }}
               onCopyImageUrl={(url) => {
                 const image =
-                  generatedImages.find((img) => img.url === url) || currentGeneration;
+                  generatedImages.find((img) => img.url === url) ||
+                  currentGeneration;
                 if (image) copyImageUrl(image);
               }}
               isGenerating={isGenerating}
@@ -154,9 +164,9 @@ export default function ImageGenerationPage() {
       {/* Footer info */}
       <div className="text-center text-sm text-muted-foreground border-t pt-8">
         <p>
-          Powered by <strong>Nano Banana AI</strong> • Images are generated using
-          advanced AI models • For best results, be specific and detailed in your
-          prompts
+          Powered by <strong>Nano Banana AI</strong> • Images are generated
+          using advanced AI models • For best results, be specific and detailed
+          in your prompts
         </p>
       </div>
     </div>

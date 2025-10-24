@@ -1,14 +1,14 @@
 // AICODE-NOTE: Component for displaying style guide results
 // Shows style information, tips, examples, and techniques
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
-import { BookOpen, Lightbulb, Star, Tag, Eye, Search } from "lucide-react";
-import type { NanoBananaStyleInfo } from "../api/nano-banana-api";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
+import { BookOpen, Lightbulb, Star, Tag, Eye, Search } from 'lucide-react';
+import type { NanoBananaStyleInfo } from '../api/nano-banana-api';
 
 interface NanoBananaStyleGuideDisplayProps {
   styleInfos: NanoBananaStyleInfo[];
@@ -27,39 +27,39 @@ export function NanoBananaStyleGuideDisplay({
   const getDifficultyBadgeColor = (difficulty: string) => {
     const colors: Record<string, string> = {
       beginner:
-        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
       intermediate:
-        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
       advanced:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+        'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
     };
     return (
       colors[difficulty] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+      'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
     );
   };
 
   const getCategoryBadgeColor = (category: string) => {
     const colors: Record<string, string> = {
       realistic:
-        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-      cinematic: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+        'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      cinematic: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
       artistic:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+        'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
       fantasy:
-        "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
-      "sci-fi":
-        "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+        'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+      'sci-fi':
+        'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
       portrait:
-        "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
+        'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
       landscape:
-        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
       macro:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+        'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
     };
     return (
       colors[category] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+      'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
     );
   };
 
@@ -145,7 +145,7 @@ export function NanoBananaStyleGuideDisplay({
                 <Badge
                   className={`text-xs px-1 py-0 ${getCategoryBadgeColor(styleInfo.category)}`}
                 >
-                  {styleInfo.category.replace(/_/g, " ")}
+                  {styleInfo.category.replace(/_/g, ' ')}
                 </Badge>
                 <Badge
                   className={`text-xs px-1 py-0 ${getDifficultyBadgeColor(styleInfo.difficulty)}`}
@@ -237,11 +237,11 @@ export function NanoBananaStyleGuideDisplay({
                   <Badge
                     className={getCategoryBadgeColor(selectedStyle.category)}
                   >
-                    {selectedStyle.category.replace(/_/g, " ")}
+                    {selectedStyle.category.replace(/_/g, ' ')}
                   </Badge>
                   <Badge
                     className={getDifficultyBadgeColor(
-                      selectedStyle.difficulty
+                      selectedStyle.difficulty,
                     )}
                   >
                     {selectedStyle.difficulty}
@@ -288,10 +288,7 @@ export function NanoBananaStyleGuideDisplay({
                     </h4>
                     <div className="space-y-2">
                       {selectedStyle.tips.map((tip, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start space-x-2"
-                        >
+                        <div key={idx} className="flex items-start space-x-2">
                           <Star className="size-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-muted-foreground leading-relaxed">
                             {tip}

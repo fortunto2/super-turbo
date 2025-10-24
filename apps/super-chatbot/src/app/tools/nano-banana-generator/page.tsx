@@ -1,12 +1,12 @@
 // AICODE-NOTE: Main page for Nano Banana Generator
 // Integrates all four main functionalities: unified generation/editing, prompt enhancement, and style guide
 
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Suspense } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Wand2,
   Sparkles,
@@ -15,28 +15,28 @@ import {
   Settings,
   Palette,
   Lightbulb,
-} from "lucide-react";
+} from 'lucide-react';
 
 // Hooks
-import { useNanoBananaGenerator } from "./hooks/use-nano-banana-generator";
-import { useNanoBananaEditor } from "./hooks/use-nano-banana-editor";
-import { useNanoBananaPromptEnhancer } from "./hooks/use-nano-banana-prompt-enhancer";
-import { useNanoBananaStyleGuide } from "./hooks/use-nano-banana-style-guide";
+import { useNanoBananaGenerator } from './hooks/use-nano-banana-generator';
+import { useNanoBananaEditor } from './hooks/use-nano-banana-editor';
+import { useNanoBananaPromptEnhancer } from './hooks/use-nano-banana-prompt-enhancer';
+import { useNanoBananaStyleGuide } from './hooks/use-nano-banana-style-guide';
 
 // Components
-import { NanoBananaUnifiedForm } from "./components/nano-banana-unified-form";
-import { NanoBananaUnifiedGallery } from "./components/nano-banana-unified-gallery";
-import { NanoBananaPromptEnhancerForm } from "./components/nano-banana-prompt-enhancer-form";
-import { NanoBananaStyleGuideForm } from "./components/nano-banana-style-guide-form";
-import { NanoBananaEnhancedPromptDisplay } from "./components/nano-banana-enhanced-prompt-display";
-import { NanoBananaStyleGuideDisplay } from "./components/nano-banana-style-guide-display";
+import { NanoBananaUnifiedForm } from './components/nano-banana-unified-form';
+import { NanoBananaUnifiedGallery } from './components/nano-banana-unified-gallery';
+import { NanoBananaPromptEnhancerForm } from './components/nano-banana-prompt-enhancer-form';
+import { NanoBananaStyleGuideForm } from './components/nano-banana-style-guide-form';
+import { NanoBananaEnhancedPromptDisplay } from './components/nano-banana-enhanced-prompt-display';
+import { NanoBananaStyleGuideDisplay } from './components/nano-banana-style-guide-display';
 
 // API
-import { getNanoBananaConfig } from "./api/nano-banana-api";
+import { getNanoBananaConfig } from './api/nano-banana-api';
 
 export default function NanoBananaGeneratorPage() {
   // State for active tab
-  const [activeTab, setActiveTab] = useState("generate");
+  const [activeTab, setActiveTab] = useState('generate');
 
   // Configuration state
   const [config, setConfig] = useState({
@@ -63,7 +63,7 @@ export default function NanoBananaGeneratorPage() {
         const configData = await getNanoBananaConfig();
         setConfig(configData);
       } catch (error) {
-        console.error("Failed to load Nano Banana config:", error);
+        console.error('Failed to load Nano Banana config:', error);
       }
     };
 
@@ -73,25 +73,25 @@ export default function NanoBananaGeneratorPage() {
   // Tab configuration
   const tabs = [
     {
-      id: "generate",
-      label: "Generate & Edit",
+      id: 'generate',
+      label: 'Generate & Edit',
       icon: Wand2,
-      description: "Create and edit images with AI",
-      color: "text-blue-600",
+      description: 'Create and edit images with AI',
+      color: 'text-blue-600',
     },
     {
-      id: "enhance",
-      label: "Enhance Prompts",
+      id: 'enhance',
+      label: 'Enhance Prompts',
       icon: Sparkles,
-      description: "Optimize your prompts",
-      color: "text-purple-600",
+      description: 'Optimize your prompts',
+      color: 'text-purple-600',
     },
     {
-      id: "guide",
-      label: "Style Guide",
+      id: 'guide',
+      label: 'Style Guide',
       icon: BookOpen,
-      description: "Explore styles and techniques",
-      color: "text-orange-600",
+      description: 'Explore styles and techniques',
+      color: 'text-orange-600',
     },
   ];
 
@@ -108,10 +108,7 @@ export default function NanoBananaGeneratorPage() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 Nano Banana Generator
               </h1>
-              <Badge
-                variant="secondary"
-                className="ml-2"
-              >
+              <Badge variant="secondary" className="ml-2">
                 AI-Powered
               </Badge>
             </div>
@@ -173,10 +170,7 @@ export default function NanoBananaGeneratorPage() {
           {/* Tab Content */}
           <div className="space-y-6">
             {/* Generate & Edit Tab */}
-            <TabsContent
-              value="generate"
-              className="space-y-6"
-            >
+            <TabsContent value="generate" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Suspense fallback={<div>Loading form...</div>}>
                   <NanoBananaUnifiedForm
@@ -198,19 +192,29 @@ export default function NanoBananaGeneratorPage() {
                     onClearAllGenerated={generator.clearAllImages}
                     onClearAllEdited={editor.clearAllEditedImages}
                     onDownloadGeneratedImage={(url, filename) => {
-                      const image = generator.generatedImages.find(img => img.url === url) || generator.currentGeneration;
+                      const image =
+                        generator.generatedImages.find(
+                          (img) => img.url === url,
+                        ) || generator.currentGeneration;
                       if (image) generator.downloadImage(image);
                     }}
                     onDownloadEditedImage={(url, filename) => {
-                      const image = editor.editedImages.find(img => img.url === url) || editor.currentEdit;
+                      const image =
+                        editor.editedImages.find((img) => img.url === url) ||
+                        editor.currentEdit;
                       if (image) editor.downloadEditedImage(image);
                     }}
                     onCopyGeneratedImageUrl={(url) => {
-                      const image = generator.generatedImages.find(img => img.url === url) || generator.currentGeneration;
+                      const image =
+                        generator.generatedImages.find(
+                          (img) => img.url === url,
+                        ) || generator.currentGeneration;
                       if (image) generator.copyImageUrl(image);
                     }}
                     onCopyEditedImageUrl={(url) => {
-                      const image = editor.editedImages.find(img => img.url === url) || editor.currentEdit;
+                      const image =
+                        editor.editedImages.find((img) => img.url === url) ||
+                        editor.currentEdit;
                       if (image) editor.copyEditedImageUrl(image);
                     }}
                     isGenerating={generator.isGenerating}
@@ -221,10 +225,7 @@ export default function NanoBananaGeneratorPage() {
             </TabsContent>
 
             {/* Enhance Tab */}
-            <TabsContent
-              value="enhance"
-              className="space-y-6"
-            >
+            <TabsContent value="enhance" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Suspense fallback={<div>Loading form...</div>}>
                   <NanoBananaPromptEnhancerForm
@@ -248,10 +249,7 @@ export default function NanoBananaGeneratorPage() {
             </TabsContent>
 
             {/* Style Guide Tab */}
-            <TabsContent
-              value="guide"
-              className="space-y-6"
-            >
+            <TabsContent value="guide" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Suspense fallback={<div>Loading form...</div>}>
                   <NanoBananaStyleGuideForm

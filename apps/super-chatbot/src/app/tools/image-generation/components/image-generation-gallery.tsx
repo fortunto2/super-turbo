@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Card,
@@ -6,11 +6,11 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from "@turbo-super/ui";
-import { Download, Copy, Trash2, X, ImageIcon, Loader2 } from "lucide-react";
-import { useState } from "react";
-import type { GeneratedImageResult } from "../api/image-generation-api";
-import Image from "next/image";
+} from '@turbo-super/ui';
+import { Download, Copy, Trash2, X, ImageIcon, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import type { GeneratedImageResult } from '../api/image-generation-api';
+import Image from 'next/image';
 
 interface ImageGenerationGalleryProps {
   generatedImages: GeneratedImageResult[];

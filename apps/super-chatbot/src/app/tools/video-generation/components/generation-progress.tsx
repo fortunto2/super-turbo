@@ -9,7 +9,10 @@ interface GenerationProgressProps {
   prompt: string;
 }
 
-export function GenerationProgress({ generationStatus, prompt }: GenerationProgressProps) {
+export function GenerationProgress({
+  generationStatus,
+  prompt,
+}: GenerationProgressProps) {
   if (generationStatus.status === 'idle') {
     return null;
   }
@@ -77,7 +80,8 @@ export function GenerationProgress({ generationStatus, prompt }: GenerationProgr
         </div>
 
         {/* Progress Bar */}
-        {(generationStatus.status === 'pending' || generationStatus.status === 'processing') && (
+        {(generationStatus.status === 'pending' ||
+          generationStatus.status === 'processing') && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span>Progress</span>

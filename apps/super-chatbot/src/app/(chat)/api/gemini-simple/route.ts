@@ -1,17 +1,17 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
 import {
   callGeminiDirect,
   convertToGeminiMessages,
-} from "@/lib/ai/gemini-direct";
+} from '@/lib/ai/gemini-direct';
 import {
   getChatById,
   getMessagesByChatId,
   saveChat,
   saveMessages,
-} from "@/lib/db/queries";
-import { generateUUID } from "@/lib/utils";
-import { generateTitleFromUserMessage } from "../../actions";
+} from '@/lib/db/queries';
+import { generateUUID } from '@/lib/utils';
+import { generateTitleFromUserMessage } from '../../actions';
 
 export const maxDuration = 60;
 
@@ -36,19 +36,19 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const {
       id,
       message,
-      selectedVisibilityType = "private",
+      selectedVisibilityType = 'private',
     } = await request.json();
 
     if (!id || !message) {
       return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+        { error: 'Missing required fields' },
+        { status: 400 },
       );
     }
 
@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         {
-          error: "GOOGLE_AI_API_KEY not configured",
+          error: 'GOOGLE_AI_API_KEY not configured',
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
 
     // Добавляем системный промпт
     geminiMessages.unshift({
-      role: "user",
+      role: 'user',
       parts: [{ text: geminiSystemPrompt }],
     });
 
     console.log(
-      "🔍 Calling Gemini API directly with messages:",
-      geminiMessages.length
+      '🔍 Calling Gemini API directly with messages:',
+      geminiMessages.length,
     );
 
     // Вызываем Gemini API
@@ -99,9 +99,9 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(
-      "🔍 Gemini API response received:",
+      '🔍 Gemini API response received:',
       response.length,
-      "characters"
+      'characters',
     );
 
     // Сохраняем сообщения в базу данных
@@ -113,15 +113,15 @@ export async function POST(request: NextRequest) {
         {
           chatId: id,
           id: userMessageId,
-          role: "user",
-          parts: [{ text: message.content || message.parts?.[0]?.text || "" }],
+          role: 'user',
+          parts: [{ text: message.content || message.parts?.[0]?.text || '' }],
           attachments: message.attachments || [],
           createdAt: new Date(),
         },
         {
           chatId: id,
           id: assistantMessageId,
-          role: "assistant",
+          role: 'assistant',
           parts: [{ text: response }],
           attachments: [],
           createdAt: new Date(),
@@ -135,14 +135,14 @@ export async function POST(request: NextRequest) {
       messageId: assistantMessageId,
     });
   } catch (error) {
-    console.error("Gemini simple API error:", error);
+    console.error('Gemini simple API error:', error);
 
     return NextResponse.json(
       {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -151,23 +151,23 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const chatId = searchParams.get("id");
+    const chatId = searchParams.get('id');
 
     if (!chatId) {
-      return NextResponse.json({ error: "Chat ID required" }, { status: 400 });
+      return NextResponse.json({ error: 'Chat ID required' }, { status: 400 });
     }
 
     const chat = await getChatById({ id: chatId });
     if (!chat) {
-      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
     }
 
-    if (chat.visibility === "private" && chat.userId !== session.user.id) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    if (chat.visibility === 'private' && chat.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const messages = await getMessagesByChatId({ id: chatId });
@@ -178,14 +178,14 @@ export async function GET(request: NextRequest) {
       messages,
     });
   } catch (error) {
-    console.error("Gemini simple GET error:", error);
+    console.error('Gemini simple GET error:', error);
 
     return NextResponse.json(
       {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

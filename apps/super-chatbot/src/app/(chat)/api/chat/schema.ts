@@ -1,9 +1,11 @@
 import { z } from 'zod';
 
-const textPartSchema = z.object({
-  text: z.union([z.string(), z.array(z.any())]).optional(), // AI SDK v5: text can be string or array
-  type: z.string(), // AI SDK v5: Accept any string type (will be normalized internally)
-}).passthrough(); // Allow additional fields for tool-specific data
+const textPartSchema = z
+  .object({
+    text: z.union([z.string(), z.array(z.any())]).optional(), // AI SDK v5: text can be string or array
+    type: z.string(), // AI SDK v5: Accept any string type (will be normalized internally)
+  })
+  .passthrough(); // Allow additional fields for tool-specific data
 
 const messageSchema = z
   .object({
@@ -68,14 +70,20 @@ export const postRequestBodySchema = z
     // Поддерживаем оба формата: message (объект) или messages (массив)
     message: messageSchema.optional(),
     messages: z.array(messageSchema).optional(),
-    selectedChatModel: z.enum([
-      'chat-model',
-      'chat-model-reasoning',
-      'o3-reasoning',
-      'o3-pro-reasoning',
-      'gemini-2.5-flash-lite',
-    ]).optional().default('chat-model'), // AI SDK v5: optional with default
-    selectedVisibilityType: z.enum(['public', 'private']).optional().default('private'), // AI SDK v5: optional with default
+    selectedChatModel: z
+      .enum([
+        'chat-model',
+        'chat-model-reasoning',
+        'o3-reasoning',
+        'o3-pro-reasoning',
+        'gemini-2.5-flash-lite',
+      ])
+      .optional()
+      .default('chat-model'), // AI SDK v5: optional with default
+    selectedVisibilityType: z
+      .enum(['public', 'private'])
+      .optional()
+      .default('private'), // AI SDK v5: optional with default
   })
   .refine(
     (data) => data.message || (data.messages && data.messages.length > 0),

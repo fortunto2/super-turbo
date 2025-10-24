@@ -6,7 +6,7 @@ import { imageSSEStore } from '@/artifacts/image';
 interface ChatImageSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: any // AI SDK v5: setMessages type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
   enabled?: boolean;
 }
 
@@ -308,7 +308,7 @@ export const useChatImageSSE = ({
             // AI SDK v5: Check tool outputs for image artifacts
             if (
               (part.type === 'tool-configureImageGeneration' ||
-               part.type === 'tool-configureVideoGeneration') &&
+                part.type === 'tool-configureVideoGeneration') &&
               part.state === 'output-available' &&
               part.output
             ) {
@@ -316,7 +316,10 @@ export const useChatImageSSE = ({
                 // Extract artifact from nested structure
                 const artifactData = part.output?.parts?.[0] || part.output;
 
-                if (artifactData?.kind === 'image' || artifactData?.kind === 'video') {
+                if (
+                  artifactData?.kind === 'image' ||
+                  artifactData?.kind === 'video'
+                ) {
                   // Parse title which contains the configuration
                   let config: any = null;
                   try {
@@ -328,7 +331,9 @@ export const useChatImageSSE = ({
                   // Parse content which contains the project/file ID
                   console.log('🔍 Attempting to parse artifact content:', {
                     hasContent: !!artifactData.content,
-                    contentPreview: artifactData.content ? artifactData.content.substring(0, 200) : 'none',
+                    contentPreview: artifactData.content
+                      ? artifactData.content.substring(0, 200)
+                      : 'none',
                   });
 
                   let content: any = null;
@@ -347,15 +352,24 @@ export const useChatImageSSE = ({
 
                   if (content?.projectId) {
                     ids.add(content.projectId);
-                    console.log('🔍 Found projectId in AI SDK v5 artifact:', content.projectId);
+                    console.log(
+                      '🔍 Found projectId in AI SDK v5 artifact:',
+                      content.projectId,
+                    );
                   }
                   if (content?.fileId) {
                     ids.add(`file.${content.fileId}`);
-                    console.log('🔍 Found fileId in AI SDK v5 artifact:', content.fileId);
+                    console.log(
+                      '🔍 Found fileId in AI SDK v5 artifact:',
+                      content.fileId,
+                    );
                   }
                 }
               } catch (e) {
-                console.error('❌ Failed to extract project ID from tool output:', e);
+                console.error(
+                  '❌ Failed to extract project ID from tool output:',
+                  e,
+                );
               }
             }
 

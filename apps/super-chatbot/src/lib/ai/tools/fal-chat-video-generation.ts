@@ -316,8 +316,8 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
 
         // Extract detailed error message from Fal.ai validation errors
         let errorMessage = 'Unknown generation error';
-        if (error instanceof Error) {
-          errorMessage = error.message;
+        if (error) {
+          errorMessage = error.message || String(error);
           // Check if there's a body with validation details
           if (error.body && typeof error.body === 'object') {
             console.error('🎬 ❌ Error body:', error.body);

@@ -64,7 +64,9 @@ function updateMainModel(envContent, newModel) {
   } else {
     // Добавляем новую строку после GOOGLE_AI_API_KEY
     const lines = envContent.split('\n');
-    const apiKeyIndex = lines.findIndex(line => line.startsWith('GOOGLE_AI_API_KEY='));
+    const apiKeyIndex = lines.findIndex((line) =>
+      line.startsWith('GOOGLE_AI_API_KEY='),
+    );
 
     if (apiKeyIndex === -1) {
       // Добавляем в конец файла
@@ -85,7 +87,9 @@ function showCurrentConfig() {
   console.log(`   Main:  ${models.main}`);
   console.log(`   Pro:   ${models.pro}`);
   console.log(`   Flash: ${models.flash}`);
-  console.log('\n💡 Для изменения используйте: node switch-gemini-model.mjs <model-name>');
+  console.log(
+    '\n💡 Для изменения используйте: node switch-gemini-model.mjs <model-name>',
+  );
   console.log('💡 Для списка моделей: node switch-gemini-model.mjs --list\n');
 }
 
@@ -97,7 +101,9 @@ function listModels() {
   }
 
   console.log('\n💡 Для полного списка запустите: node list-gemini-models.mjs');
-  console.log('💡 Для переключения: node switch-gemini-model.mjs <model-name>\n');
+  console.log(
+    '💡 Для переключения: node switch-gemini-model.mjs <model-name>\n',
+  );
 }
 
 function switchModel(newModel) {

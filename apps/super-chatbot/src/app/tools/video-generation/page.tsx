@@ -29,7 +29,11 @@ export default function VideoGenerationPage() {
 
   const [config, setConfig] = useState({
     durations: [] as Array<{ id: number; label: string; description: string }>,
-    aspectRatios: [] as Array<{ id: string; label: string; description: string }>,
+    aspectRatios: [] as Array<{
+      id: string;
+      label: string;
+      description: string;
+    }>,
   });
 
   useEffect(() => {
@@ -136,12 +140,14 @@ export default function VideoGenerationPage() {
               onClearAll={clearAllVideos}
               onDownloadVideo={(url, filename) => {
                 const video =
-                  generatedVideos.find((vid) => vid.url === url) || currentGeneration;
+                  generatedVideos.find((vid) => vid.url === url) ||
+                  currentGeneration;
                 if (video) downloadVideo(video);
               }}
               onCopyVideoUrl={(url) => {
                 const video =
-                  generatedVideos.find((vid) => vid.url === url) || currentGeneration;
+                  generatedVideos.find((vid) => vid.url === url) ||
+                  currentGeneration;
                 if (video) copyVideoUrl(video);
               }}
               isGenerating={isGenerating}
@@ -154,8 +160,8 @@ export default function VideoGenerationPage() {
       <div className="text-center text-sm text-muted-foreground border-t pt-8">
         <p>
           Powered by <strong>Google VEO3</strong> • Videos are generated using
-          advanced AI models • For best results, be specific and detailed in your
-          prompts
+          advanced AI models • For best results, be specific and detailed in
+          your prompts
         </p>
       </div>
     </div>

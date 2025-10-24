@@ -7,7 +7,8 @@ import {
 import { createBalanceErrorResponse } from '@/lib/utils/balance-error-handler';
 
 // Google Veo 3.1 API endpoint
-const GOOGLE_VEO_API = 'https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning';
+const GOOGLE_VEO_API =
+  'https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning';
 
 interface GoogleVeoOperation {
   name: string;
@@ -54,9 +55,7 @@ async function waitForVideoGeneration(
     const operation: GoogleVeoOperation = await response.json();
 
     if (operation.error) {
-      throw new Error(
-        `Video generation failed: ${operation.error.message}`,
-      );
+      throw new Error(`Video generation failed: ${operation.error.message}`);
     }
 
     if (operation.done) {
@@ -74,7 +73,9 @@ async function waitForVideoGeneration(
 
     // Wait 10 seconds before next check (Veo typically takes 30s-2min)
     await new Promise((resolve) => setTimeout(resolve, 10000));
-    console.log(`⏳ Waiting for video generation... Attempt ${i + 1}/${maxAttempts}`);
+    console.log(
+      `⏳ Waiting for video generation... Attempt ${i + 1}/${maxAttempts}`,
+    );
   }
 
   throw new Error('Video generation timeout - exceeded maximum wait time');
@@ -173,7 +174,9 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Google Veo API error:', errorText);
-      throw new Error(`Google Veo API error: ${response.status} - ${errorText}`);
+      throw new Error(
+        `Google Veo API error: ${response.status} - ${errorText}`,
+      );
     }
 
     const operationData: GoogleVeoOperation = await response.json();

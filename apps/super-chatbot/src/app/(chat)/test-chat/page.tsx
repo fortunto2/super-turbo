@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 interface Message {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
 }
 
 export default function TestChatPage() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -19,7 +19,7 @@ export default function TestChatPage() {
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      role: "user",
+      role: 'user',
       content: text,
     };
 
@@ -28,9 +28,9 @@ export default function TestChatPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/test-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/test-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
             role: m.role,
@@ -44,17 +44,17 @@ export default function TestChatPage() {
       }
 
       if (!response.body) {
-        throw new Error("No response body");
+        throw new Error('No response body');
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let assistantContent = "";
+      let assistantContent = '';
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "",
+        role: 'assistant',
+        content: '',
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -70,13 +70,13 @@ export default function TestChatPage() {
           prev.map((m) =>
             m.id === assistantMessage.id
               ? { ...m, content: assistantContent }
-              : m
-          )
+              : m,
+          ),
         );
       }
     } catch (err) {
       setError(err as Error);
-      console.error("Chat error:", err);
+      console.error('Chat error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -111,24 +111,24 @@ export default function TestChatPage() {
           <div
             key={message.id}
             className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
+              message.role === 'user' ? 'justify-end' : 'justify-start'
             }`}
           >
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
-                message.role === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white border border-gray-200"
+                message.role === 'user'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white border border-gray-200'
               }`}
             >
               <div className="text-xs font-semibold mb-1 opacity-70">
-                {message.role === "user" ? "You" : "AI"}
+                {message.role === 'user' ? 'You' : 'AI'}
               </div>
               <div className="whitespace-pre-wrap">
                 {(message as any).parts
                   ? // v5 API - parts array
                     (message as any).parts.map((part: any, index: number) => {
-                      if (part.type === "text") {
+                      if (part.type === 'text') {
                         return <span key={index}>{part.text}</span>;
                       }
                       return null;
@@ -167,7 +167,7 @@ export default function TestChatPage() {
             //   sendMessage({ role: "user", content: input });
             // }
             sendMessage(input);
-            setInput("");
+            setInput('');
           }
         }}
         className="flex gap-2"
@@ -185,13 +185,13 @@ export default function TestChatPage() {
           disabled={isLoading || !input.trim()}
           className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? "Sending..." : "Send"}
+          {isLoading ? 'Sending...' : 'Send'}
         </button>
       </form>
 
       <div className="mt-4 text-xs text-gray-500 text-center">
         <p>Messages: {messages.length}</p>
-        <p>Status: {isLoading ? "Loading..." : "Ready"}</p>
+        <p>Status: {isLoading ? 'Loading...' : 'Ready'}</p>
       </div>
     </div>
   );

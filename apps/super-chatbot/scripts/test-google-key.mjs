@@ -49,7 +49,6 @@ try {
   console.log('📝 Ответ от Gemini:', result.text);
   console.log('');
   console.log('🎉 Ваш чатбот готов к работе!');
-
 } catch (error) {
   console.error('❌ ОШИБКА при проверке ключа:');
   console.error(error.message);

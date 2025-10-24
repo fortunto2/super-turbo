@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Card,
@@ -6,10 +6,10 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from "@turbo-super/ui";
-import { Download, Copy, Trash2, X, VideoIcon, Loader2 } from "lucide-react";
-import { useState } from "react";
-import type { GeneratedVideoResult } from "../api/video-generation-api";
+} from '@turbo-super/ui';
+import { Download, Copy, Trash2, X, VideoIcon, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import type { GeneratedVideoResult } from '../api/video-generation-api';
 
 interface VideoGenerationGalleryProps {
   generatedVideos: GeneratedVideoResult[];

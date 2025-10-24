@@ -1,5 +1,3 @@
-
-
 interface GeminiChatMessage {
   role: 'user' | 'model';
   parts: { text: string }[];
@@ -21,8 +19,11 @@ interface GeminiGenerateContentRequest {
  * This works with your VERTEX_AI_API_KEY
  * Note: Streaming is not supported with API key, falls back to non-streaming
  */
-export function createGeminiDirectModel(modelId = 'gemini-2.5-flash-lite'): any {
-  const apiKey = process.env.VERTEX_AI_API_KEY || process.env.GOOGLE_AI_API_KEY || '';
+export function createGeminiDirectModel(
+  modelId = 'gemini-2.5-flash-lite',
+): any {
+  const apiKey =
+    process.env.VERTEX_AI_API_KEY || process.env.GOOGLE_AI_API_KEY || '';
 
   if (!apiKey) {
     throw new Error('VERTEX_AI_API_KEY or GOOGLE_AI_API_KEY not configured');
@@ -83,11 +84,19 @@ export function createGeminiDirectModel(modelId = 'gemini-2.5-flash-lite'): any 
 
       const data = await response.json();
 
-      console.log('🤖 Gemini API response data:', JSON.stringify(data, null, 2));
+      console.log(
+        '🤖 Gemini API response data:',
+        JSON.stringify(data, null, 2),
+      );
 
       if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-        console.error('❌ Invalid Gemini API response structure:', JSON.stringify(data, null, 2));
-        throw new Error(`Invalid response from Gemini API: ${JSON.stringify(data)}`);
+        console.error(
+          '❌ Invalid Gemini API response structure:',
+          JSON.stringify(data, null, 2),
+        );
+        throw new Error(
+          `Invalid response from Gemini API: ${JSON.stringify(data)}`,
+        );
       }
 
       const text = data.candidates[0].content.parts[0].text;
@@ -104,7 +113,10 @@ export function createGeminiDirectModel(modelId = 'gemini-2.5-flash-lite'): any 
           timestamp: new Date(),
           modelId: modelId,
         },
-        rawCall: { rawPrompt: contents, rawSettings: requestBody.generationConfig },
+        rawCall: {
+          rawPrompt: contents,
+          rawSettings: requestBody.generationConfig,
+        },
         rawResponse: { headers: {} },
         warnings: [],
       };
@@ -113,7 +125,9 @@ export function createGeminiDirectModel(modelId = 'gemini-2.5-flash-lite'): any 
     async doStream(options: any) {
       // AI Platform API doesn't support streaming with API key (requires OAuth2)
       // Fallback to non-streaming mode
-      console.log('🤖 Gemini API: Streaming not supported with API key, using doGenerate fallback');
+      console.log(
+        '🤖 Gemini API: Streaming not supported with API key, using doGenerate fallback',
+      );
 
       // Вызываем doGenerate асинхронно
       const generatePromise = this.doGenerate(options);

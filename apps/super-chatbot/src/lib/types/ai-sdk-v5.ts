@@ -1,4 +1,3 @@
-
 import type { UIMessage } from 'ai';
 
 /**
@@ -15,9 +14,14 @@ import type { UIMessage } from 'ai';
 export interface ExtendedUseChatHelpers {
   // V5 properties (from SDK5UseChatHelpers)
   readonly id: string;
-  setMessages: (messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[])) => void;
+  setMessages: (
+    messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[]),
+  ) => void;
   error?: Error | undefined;
-  sendMessage?: (message?: any, options?: any) => Promise<string | null | undefined>;
+  sendMessage?: (
+    message?: any,
+    options?: any,
+  ) => Promise<string | null | undefined>;
   regenerate?: () => void;
   stop?: () => void;
   resumeStream?: () => void;
@@ -37,14 +41,22 @@ export interface ExtendedUseChatHelpers {
 /**
  * Type guard to check if a chat helper has sendMessage
  */
-export function hasSendMessage(helpers: any): helpers is { sendMessage: NonNullable<ExtendedUseChatHelpers['sendMessage']> } {
+export function hasSendMessage(
+  helpers: any,
+): helpers is {
+  sendMessage: NonNullable<ExtendedUseChatHelpers['sendMessage']>;
+} {
   return typeof helpers?.sendMessage === 'function';
 }
 
 /**
  * Type guard to check if a chat helper has regenerate
  */
-export function hasRegenerate(helpers: any): helpers is { regenerate: NonNullable<ExtendedUseChatHelpers['regenerate']> } {
+export function hasRegenerate(
+  helpers: any,
+): helpers is {
+  regenerate: NonNullable<ExtendedUseChatHelpers['regenerate']>;
+} {
   return typeof helpers?.regenerate === 'function';
 }
 
@@ -109,6 +121,8 @@ export function hasContent(message: any): message is { content: string } {
 /**
  * Helper to check if message has attachments
  */
-export function hasAttachments(message: any): message is { experimental_attachments: any[] } {
+export function hasAttachments(
+  message: any,
+): message is { experimental_attachments: any[] } {
   return Array.isArray(message?.experimental_attachments);
 }

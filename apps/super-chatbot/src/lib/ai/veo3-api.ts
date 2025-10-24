@@ -57,7 +57,9 @@ export async function createVeo3Video(
 
     // Normalize duration format for Fal.ai (needs 's' suffix)
     const duration = request.duration || '8s';
-    const normalizedDuration = duration.endsWith('s') ? duration : `${duration}s`;
+    const normalizedDuration = duration.endsWith('s')
+      ? duration
+      : `${duration}s`;
 
     // Call Fal.ai Veo3 API
     const result = await fal.subscribe('fal-ai/veo3', {

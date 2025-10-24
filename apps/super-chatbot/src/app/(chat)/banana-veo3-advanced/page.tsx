@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
 import {
   Send,
   Loader2,
@@ -11,23 +11,23 @@ import {
   Play,
   List,
   Lightbulb,
-} from "lucide-react";
-import { useChat } from "@ai-sdk/react";
+} from 'lucide-react';
+import { useChat } from '@ai-sdk/react';
 
 export default function BananaVeo3AdvancedPage() {
   const [chatId] = useState(() => crypto.randomUUID());
 
   // AI SDK v5: Manage input state manually
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
 
   const chatHelpers = useChat({
     id: chatId,
     fetch: async (url: string, options?: RequestInit) => {
-      return fetch("/api/banana-veo3-advanced", {
+      return fetch('/api/banana-veo3-advanced', {
         ...options,
         body: JSON.stringify({
-          ...JSON.parse(options?.body as string || "{}"),
-          selectedVisibilityType: "private",
+          ...JSON.parse((options?.body as string) || '{}'),
+          selectedVisibilityType: 'private',
         }),
       });
     },
@@ -36,7 +36,7 @@ export default function BananaVeo3AdvancedPage() {
   const { messages, status, stop } = chatHelpers;
   const sendMessage = (chatHelpers as any).sendMessage;
   const regenerate = (chatHelpers as any).regenerate;
-  const isLoading = status !== "ready";
+  const isLoading = status !== 'ready';
 
   // AI SDK v5: Create handleSubmit manually using sendMessage
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -44,7 +44,7 @@ export default function BananaVeo3AdvancedPage() {
     if (!input.trim() || isLoading) return;
 
     await sendMessage({ text: input });
-    setInput("");
+    setInput('');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -58,34 +58,34 @@ export default function BananaVeo3AdvancedPage() {
   const quickActions = [
     {
       icon: List,
-      label: "Показать модели Banana",
-      action: "Покажи доступные модели Banana для inference",
-      color: "bg-yellow-500 hover:bg-yellow-600",
+      label: 'Показать модели Banana',
+      action: 'Покажи доступные модели Banana для inference',
+      color: 'bg-yellow-500 hover:bg-yellow-600',
     },
     {
       icon: Play,
-      label: "Создать видео VEO3",
-      action: "Создай видео про AI технологии с помощью VEO3",
-      color: "bg-blue-500 hover:bg-blue-600",
+      label: 'Создать видео VEO3',
+      action: 'Создай видео про AI технологии с помощью VEO3',
+      color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
       icon: Lightbulb,
-      label: "Идеи для видео",
-      action: "Сгенерируй идеи для видео про роботов",
-      color: "bg-purple-500 hover:bg-purple-600",
+      label: 'Идеи для видео',
+      action: 'Сгенерируй идеи для видео про роботов',
+      color: 'bg-purple-500 hover:bg-purple-600',
     },
     {
       icon: Zap,
-      label: "Banana Inference",
-      action: "Запусти inference на Banana для анализа текста",
-      color: "bg-green-500 hover:bg-green-600",
+      label: 'Banana Inference',
+      action: 'Запусти inference на Banana для анализа текста',
+      color: 'bg-green-500 hover:bg-green-600',
     },
   ];
 
   const handleQuickAction = (action: string) => {
     setInput(action);
     // Simulate form submission
-    const event = new Event("submit") as any;
+    const event = new Event('submit') as any;
     event.preventDefault = () => {};
     handleSubmit(event);
   };
@@ -140,27 +140,31 @@ export default function BananaVeo3AdvancedPage() {
             <div
               key={message.id}
               className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
+                message.role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
               <div
                 className={`max-w-3xl p-4 rounded-lg ${
-                  message.role === "user"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                  message.role === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  {message.role === "user" ? (
+                  {message.role === 'user' ? (
                     <Banana className="w-4 h-4" />
                   ) : (
                     <Video className="w-4 h-4" />
                   )}
                   <span className="text-sm font-medium">
-                    {message.role === "user" ? "Вы" : "Banana + VEO3"}
+                    {message.role === 'user' ? 'Вы' : 'Banana + VEO3'}
                   </span>
                 </div>
-                <div className="whitespace-pre-wrap">{(message as any).content || (message.parts?.[0] as any)?.text || ""}</div>
+                <div className="whitespace-pre-wrap">
+                  {(message as any).content ||
+                    (message.parts?.[0] as any)?.text ||
+                    ''}
+                </div>
               </div>
             </div>
           ))}
@@ -168,10 +172,7 @@ export default function BananaVeo3AdvancedPage() {
       </div>
 
       {/* Input Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="input"
@@ -210,21 +211,13 @@ export default function BananaVeo3AdvancedPage() {
           </Button>
 
           {isLoading && (
-            <Button
-              type="button"
-              onClick={stop}
-              variant="outline"
-            >
+            <Button type="button" onClick={stop} variant="outline">
               Остановить
             </Button>
           )}
 
           {messages.length > 0 && (
-            <Button
-              type="button"
-              onClick={() => reload()}
-              variant="outline"
-            >
+            <Button type="button" onClick={() => reload()} variant="outline">
               Перезапустить
             </Button>
           )}

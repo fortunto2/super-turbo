@@ -11,7 +11,7 @@ import { eq, and } from 'drizzle-orm';
 // Database initialization
 const client = postgres(
   process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
-  { ssl: 'require' }
+  { ssl: 'require' },
 );
 const db = drizzle(client);
 
@@ -55,12 +55,7 @@ export async function DELETE(request: NextRequest) {
 
     const deleted = await db
       .delete(generatedMedia)
-      .where(
-        and(
-          eq(generatedMedia.id, id),
-          ownershipConditions,
-        ),
-      )
+      .where(and(eq(generatedMedia.id, id), ownershipConditions))
       .returning();
 
     if (deleted.length === 0) {

@@ -20,13 +20,14 @@ export const chatModel = new MockLanguageModelV2({
     content: [{ type: 'text', text: `Hello, world!` }],
     warnings: [],
   }),
-  doStream: async () => ({
-    stream: simulateReadableStream({
-      chunkDelayInMs: 500,
-      initialDelayInMs: 1000,
-      chunks: getDefaultResponseChunks(),
-    }),
-  } as any),
+  doStream: async () =>
+    ({
+      stream: simulateReadableStream({
+        chunkDelayInMs: 500,
+        initialDelayInMs: 1000,
+        chunks: getDefaultResponseChunks(),
+      }),
+    }) as any,
 });
 
 export const reasoningModel = new MockLanguageModelV2({
@@ -112,11 +113,12 @@ export const artifactModel = new MockLanguageModelV2({
     content: [{ type: 'text', text: `Hello, world!` }],
     warnings: [],
   }),
-  doStream: async () => ({
-    stream: simulateReadableStream({
-      chunkDelayInMs: 50,
-      initialDelayInMs: 100,
-      chunks: getDefaultResponseChunks(),
-    }),
-  } as any),
+  doStream: async () =>
+    ({
+      stream: simulateReadableStream({
+        chunkDelayInMs: 50,
+        initialDelayInMs: 100,
+        chunks: getDefaultResponseChunks(),
+      }),
+    }) as any,
 });

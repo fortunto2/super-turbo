@@ -11,7 +11,7 @@ import { eq, and, desc } from 'drizzle-orm';
 // Database initialization
 const client = postgres(
   process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
-  { ssl: 'require' }
+  { ssl: 'require' },
 );
 const db = drizzle(client);
 
@@ -30,7 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid request parameters', details: validation.error.issues },
+        {
+          error: 'Invalid request parameters',
+          details: validation.error.issues,
+        },
         { status: 400 },
       );
     }

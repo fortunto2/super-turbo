@@ -23,7 +23,10 @@ import { configureImageGeneration } from '@/lib/ai/tools/configure-image-generat
 import { configureVideoGeneration } from '@/lib/ai/tools/configure-video-generation';
 import { configureAudioGeneration } from '@/lib/ai/tools/configure-audio-generation';
 import { configureScriptGeneration } from '@/lib/ai/tools/configure-script-generation';
-import { listVideoModels, findBestVideoModel } from '@/lib/ai/tools/list-video-models';
+import {
+  listVideoModels,
+  findBestVideoModel,
+} from '@/lib/ai/tools/list-video-models';
 import { enhancePromptUnified } from '@/lib/ai/tools/enhance-prompt-unified';
 
 import {
@@ -82,12 +85,12 @@ export async function POST(request: Request) {
             timestamp: new Date().toISOString(),
           },
           null,
-          2
+          2,
         ),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 
@@ -119,7 +122,7 @@ export async function POST(request: Request) {
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 
@@ -139,7 +142,7 @@ export async function POST(request: Request) {
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new Response(
         'You have exceeded your maximum number of messages for the day! Please try again later.',
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -163,7 +166,7 @@ export async function POST(request: Request) {
         {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 
@@ -174,16 +177,16 @@ export async function POST(request: Request) {
     const previousMessages = await getMessagesByChatId({ id });
 
     const normalizedNewMessage = normalizeUIMessage(messageToProcess);
-    const normalizedNewMessageWithParts = normalizeMessageParts(normalizedNewMessage);
+    const normalizedNewMessageWithParts =
+      normalizeMessageParts(normalizedNewMessage);
 
     // Normalize all messages including history to convert tool-specific types
     const dbMessages = convertDBMessagesToUIMessages(previousMessages);
-    const normalizedDbMessages = dbMessages.map(msg => normalizeMessageParts(msg));
+    const normalizedDbMessages = dbMessages.map((msg) =>
+      normalizeMessageParts(msg),
+    );
 
-    const messages = [
-      ...normalizedDbMessages,
-      normalizedNewMessageWithParts,
-    ];
+    const messages = [...normalizedDbMessages, normalizedNewMessageWithParts];
 
     await saveUserMessage({
       chatId: id,
@@ -212,7 +215,7 @@ export async function POST(request: Request) {
         normalizedNewMessageWithParts.content,
         id,
         (messageToProcess as any)?.experimental_attachments,
-        session.user.id
+        session.user.id,
       );
 
       defaultSourceImageUrl = imageContext.sourceUrl;
@@ -221,7 +224,7 @@ export async function POST(request: Request) {
         normalizedNewMessageWithParts.content,
         id,
         (messageToProcess as any)?.experimental_attachments,
-        session.user.id
+        session.user.id,
       );
 
       defaultSourceVideoUrl = videoContext.sourceUrl;
@@ -253,10 +256,10 @@ export async function POST(request: Request) {
       ];
 
       const hasEditIntent = editKeywords.some((keyword) =>
-        userText.includes(keyword)
+        userText.includes(keyword),
       );
       const hasAnimationIntent = animationKeywords.some((keyword) =>
-        userText.includes(keyword)
+        userText.includes(keyword),
       );
 
       if (hasEditIntent) {
@@ -292,10 +295,20 @@ export async function POST(request: Request) {
       requestSuggestions: requestSuggestions({ session }),
     };
 
+    // CRITICAL FIX: Remove experimental_attachments from all messages to prevent token overflow
+    // Images and videos in attachments can cause massive token consumption
+    const messagesWithoutAttachments = enhancedMessages.map((msg) => {
+      const { experimental_attachments, ...rest } = msg as any;
+      return rest;
+    });
+    console.log(
+      `🔍 Removed attachments from ${enhancedMessages.length} messages to prevent token overflow`,
+    );
+
     const result = streamText({
       model: myProvider.languageModel('gemini-2.5-flash-lite'),
       system: geminiSystemPrompt,
-      messages: enhancedMessages,
+      messages: messagesWithoutAttachments,
       experimental_activeTools: [
         'configureImageGeneration',
         'configureVideoGeneration',
@@ -348,7 +361,7 @@ export async function POST(request: Request) {
 
         try {
           const assistantMessages = response.messages.filter(
-            (msg) => msg.role === 'assistant'
+            (msg) => msg.role === 'assistant',
           );
 
           if (assistantMessages.length === 0) {
@@ -408,7 +421,7 @@ export async function GET(request: Request) {
 
     if (
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        chatId
+        chatId,
       )
     ) {
       return new Response(
@@ -420,7 +433,7 @@ export async function GET(request: Request) {
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 
@@ -441,7 +454,7 @@ export async function GET(request: Request) {
         {
           status: 404,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 
@@ -454,7 +467,7 @@ export async function GET(request: Request) {
         {
           status: 403,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 

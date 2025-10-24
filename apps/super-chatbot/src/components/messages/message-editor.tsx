@@ -14,8 +14,8 @@ import { Button, Textarea } from '@turbo-super/ui';
 export type MessageEditorProps = {
   message: Message;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: any // AI SDK v5: setMessages type changed;
-  reload: any // AI SDK v5: reload type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
+  reload: any; // AI SDK v5: reload type changed;
 };
 
 export function MessageEditor({
@@ -27,10 +27,13 @@ export function MessageEditor({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // AI SDK v5: Extract text from parts instead of content
-  const initialContent = message.parts
-    ?.filter((p: any) => p.type === 'text')
-    ?.map((p: any) => p.text)
-    ?.join('') || (message as any).content || '';
+  const initialContent =
+    message.parts
+      ?.filter((p: any) => p.type === 'text')
+      ?.map((p: any) => p.text)
+      ?.join('') ||
+    (message as any).content ||
+    '';
 
   const [draftContent, setDraftContent] = useState<string>(initialContent);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

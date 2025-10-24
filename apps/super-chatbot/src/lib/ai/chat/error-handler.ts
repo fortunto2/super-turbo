@@ -1,5 +1,3 @@
-
-
 export type ErrorContext = string;
 export type ForeignKeyErrorType = 'Chat' | 'Message' | 'Stream';
 
@@ -20,10 +18,7 @@ const FOREIGN_KEY_CONSTRAINTS: ForeignKeyConstraintMap = {
  * Development: detailed error information with stack traces
  * Production: generic user-friendly message
  */
-export function formatErrorResponse(
-  error: unknown,
-  context = 'API',
-): Response {
+export function formatErrorResponse(error: unknown, context = 'API'): Response {
   console.error(`Error in ${context}:`, error);
 
   const isProduction = process.env.NODE_ENV === 'production';

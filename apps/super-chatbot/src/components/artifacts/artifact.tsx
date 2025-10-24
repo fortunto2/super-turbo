@@ -121,7 +121,9 @@ function PureArtifact({
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
-  setMessages: (messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[])) => void; // AI SDK v5: setMessages accepts value or updater function
+  setMessages: (
+    messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[]),
+  ) => void; // AI SDK v5: setMessages accepts value or updater function
   votes: Array<Vote> | undefined;
   append: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
   handleSubmit: (event?: any, options?: any) => void; // AI SDK v5: handleSubmit type
@@ -151,7 +153,8 @@ function PureArtifact({
   const isValidDocumentId = (id: string) => {
     if (!id || id === 'init' || id.startsWith('nano-banana-')) return false;
     // Check if it's a valid UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   };
 

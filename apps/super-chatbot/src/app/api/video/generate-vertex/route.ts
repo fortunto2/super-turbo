@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     console.log('✅ User authenticated via Auth0:', session.user.email);
 
     // Проверяем наличие Vertex AI API Key
-    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.VERTEXT_AI_API_KEY;
+    const apiKey =
+      process.env.GOOGLE_AI_API_KEY || process.env.VERTEXT_AI_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
         url: 'https://us-central1-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/veo-3.1:predictLongRunning',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
       },
     ];
@@ -158,14 +159,20 @@ export async function POST(request: NextRequest) {
 
         const responseText = await response.text();
         console.log(`📋 ${endpoint.name} Response Status:`, response.status);
-        console.log(`📋 ${endpoint.name} Response:`, responseText.substring(0, 200));
+        console.log(
+          `📋 ${endpoint.name} Response:`,
+          responseText.substring(0, 200),
+        );
 
         if (response.ok) {
           // Успех! Парсим ответ
           const operationData = JSON.parse(responseText);
           const fileId = `vertex-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-          console.log('✅ SUCCESS! Video generation started with', endpoint.name);
+          console.log(
+            '✅ SUCCESS! Video generation started with',
+            endpoint.name,
+          );
 
           // Деduct balance
           try {
@@ -301,10 +308,13 @@ export async function GET() {
       status: {
         auth0: hasAuth0 ? '✅ Настроен' : '❌ Не настроен',
         googleApiKey: hasGoogleApiKey ? '✅ Найден' : '❌ Не найден',
-        vertexApiKey: hasVertexKey ? '✅ Найден (опечатка VERTEXT)' : '❌ Не найден',
-        recommendation: hasGoogleApiKey || hasVertexKey
-          ? 'Ключ найден, но может не работать для Veo (требует OAuth2)'
-          : 'Добавьте GOOGLE_AI_API_KEY в .env.local',
+        vertexApiKey: hasVertexKey
+          ? '✅ Найден (опечатка VERTEXT)'
+          : '❌ Не найден',
+        recommendation:
+          hasGoogleApiKey || hasVertexKey
+            ? 'Ключ найден, но может не работать для Veo (требует OAuth2)'
+            : 'Добавьте GOOGLE_AI_API_KEY в .env.local',
       },
       configuration: {
         auth0Issuer: process.env.AUTH_AUTH0_ISSUER || 'не настроен',

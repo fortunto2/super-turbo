@@ -110,7 +110,9 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
 
       // If no prompt provided, return FAL VEO3 configuration panel
       if (!prompt) {
-        console.log('🎬 No prompt provided, returning FAL VEO3 configuration panel');
+        console.log(
+          '🎬 No prompt provided, returning FAL VEO3 configuration panel',
+        );
         return {
           availableDurations: FAL_DURATIONS,
           availableResolutions: FAL_RESOLUTIONS,
@@ -136,13 +138,20 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
       try {
         // Map old duration format to FAL duration
         const foundDuration = duration
-          ? FAL_DURATIONS.find((d) => d.label === duration || d.id === duration || duration.includes(d.id))
+          ? FAL_DURATIONS.find(
+              (d) =>
+                d.label === duration ||
+                d.id === duration ||
+                duration.includes(d.id),
+            )
           : null;
         const selectedDuration = (foundDuration || FAL_DURATIONS[2])!; // default to 8s, Always has value from array
 
         // Map old resolution format to FAL resolution
         const foundResolution = resolution
-          ? FAL_RESOLUTIONS.find((r) => r.label === resolution || resolution.includes(r.id))
+          ? FAL_RESOLUTIONS.find(
+              (r) => r.label === resolution || resolution.includes(r.id),
+            )
           : null;
         const selectedResolution = (foundResolution || FAL_RESOLUTIONS[0])!; // default to 720p, Always has value from array
 
@@ -309,7 +318,10 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
           const result = await fal.subscribe('fal-ai/veo3', {
             input: {
               prompt,
-              aspect_ratio: selectedAspectRatio.value as '16:9' | '9:16' | '1:1',
+              aspect_ratio: selectedAspectRatio.value as
+                | '16:9'
+                | '9:16'
+                | '1:1',
               duration: selectedDuration.value as '4s' | '6s' | '8s',
               resolution: selectedResolution.value as '720p' | '1080p',
               generate_audio: true,

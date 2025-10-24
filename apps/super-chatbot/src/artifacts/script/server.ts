@@ -11,7 +11,10 @@ export const scriptDocumentHandler = createDocumentHandler<'script'>({
 
     const scriptContent = content || title;
 
-    console.log('📄 Script content will be saved by createDocumentHandler. ID:', id);
+    console.log(
+      '📄 Script content will be saved by createDocumentHandler. ID:',
+      id,
+    );
 
     // AICODE-FIX: Don't save here - let createDocumentHandler save it
     // This prevents double-saving and ensures consistent behavior with other artifact types

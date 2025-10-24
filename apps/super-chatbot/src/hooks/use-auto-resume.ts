@@ -8,7 +8,7 @@ export interface UseAutoResumeParams {
   autoResume: boolean;
   initialMessages: UIMessage[];
   data?: any; // AI SDK v5: data property no longer exists in UseChatHelpers, kept for backward compatibility
-  setMessages: any // AI SDK v5: setMessages type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
 }
 
 export function useAutoResume({

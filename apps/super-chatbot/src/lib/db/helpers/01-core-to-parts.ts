@@ -155,7 +155,9 @@ async function migrateMessages() {
           // TODO: appendResponseMessages was removed in AI SDK v5
           // This migration script needs to be updated or removed
           // For now, we'll skip this migration step
-          const uiSection = userMessage ? [userMessage, ...assistantMessages] : assistantMessages;
+          const uiSection = userMessage
+            ? [userMessage, ...assistantMessages]
+            : assistantMessages;
 
           const projectedUISection = uiSection
             .map((message: any) => {

@@ -38,8 +38,8 @@ const nextConfig: NextConfig = {
     rules: {
       '*.svg': {
         loaders: ['@svgr/webpack'],
-        as: '*.js'
-      }
+        as: '*.js',
+      },
     },
   },
 
@@ -59,13 +59,13 @@ const nextConfig: NextConfig = {
     // Игнорируем тестовые файлы и зависимости
     config.module = config.module || {};
     config.module.rules = config.module.rules || [];
-    
+
     // Игнорируем тестовые файлы
     config.module.rules.push({
       test: /\.(test|spec)\.(ts|tsx|js|jsx)$/,
       loader: 'ignore-loader',
     });
-    
+
     // Игнорируем папку tests
     config.module.rules.push({
       test: /[\\/]tests[\\/]/,
@@ -82,7 +82,7 @@ const nextConfig: NextConfig = {
         /^vitest/,
         /^@vitest\//,
         /^@testing-library\//,
-        '@testing-library/jest-dom'
+        '@testing-library/jest-dom',
       );
     }
 
@@ -105,15 +105,21 @@ const nextConfig: NextConfig = {
     config.plugins.push(
       new (class {
         apply(compiler: any) {
-          compiler.hooks.normalModuleFactory.tap('SubpathImportsPlugin', (nmf: any) => {
-            nmf.hooks.beforeResolve.tap('SubpathImportsPlugin', (resolveData: any) => {
-              if (resolveData.request === '#async_hooks') {
-                resolveData.request = 'async_hooks';
-              }
-            });
-          });
+          compiler.hooks.normalModuleFactory.tap(
+            'SubpathImportsPlugin',
+            (nmf: any) => {
+              nmf.hooks.beforeResolve.tap(
+                'SubpathImportsPlugin',
+                (resolveData: any) => {
+                  if (resolveData.request === '#async_hooks') {
+                    resolveData.request = 'async_hooks';
+                  }
+                },
+              );
+            },
+          );
         }
-      })()
+      })(),
     );
 
     // Добавляем полифилл для 'self' на сервере

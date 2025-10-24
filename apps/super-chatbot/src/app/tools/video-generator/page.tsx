@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useChat } from "@ai-sdk/react";
-import { VideoGeneratorForm } from "./components/video-generator-form";
-import { VideoGallery } from "./components/video-gallery";
-import { VideoGenerationProgress } from "./components/video-generation-progress";
-import { useVideoGenerator } from "./hooks/use-video-generator";
-import { VideoIcon } from "lucide-react";
-import { useVideoEffects } from "@/artifacts/video";
+import { useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { VideoGeneratorForm } from './components/video-generator-form';
+import { VideoGallery } from './components/video-gallery';
+import { VideoGenerationProgress } from './components/video-generation-progress';
+import { useVideoGenerator } from './hooks/use-video-generator';
+import { VideoIcon } from 'lucide-react';
+import { useVideoEffects } from '@/artifacts/video';
 
 export default function VideoGeneratorPage() {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState('');
   const [hasInitialized, setHasInitialized] = useState(false);
 
   // AICODE-NOTE: Initialize chat for video persistence
   const { messages, setMessages } = useChat({
-    id: "video-generator-tool",
+    id: 'video-generator-tool',
   });
 
   const {
@@ -37,13 +37,13 @@ export default function VideoGeneratorPage() {
 
   // AICODE-NOTE: Video effects hook for auto-saving and side effects management
   useVideoEffects({
-    videoUrl: currentGeneration?.url ?? "",
+    videoUrl: currentGeneration?.url ?? '',
     status: generationStatus.status,
     prompt,
     hasInitialized,
-    chatId: "video-generator-tool",
+    chatId: 'video-generator-tool',
     resetState: () => {
-      setPrompt("");
+      setPrompt('');
       setHasInitialized(false);
     },
     setPrompt,
@@ -74,7 +74,7 @@ export default function VideoGeneratorPage() {
         <div className="space-y-4">
           <VideoGeneratorForm
             onGenerate={(formData) => {
-              console.log("formData", formData);
+              console.log('formData', formData);
               setPrompt(formData.prompt);
               setHasInitialized(true);
               generateVideo(formData);
@@ -83,7 +83,7 @@ export default function VideoGeneratorPage() {
           />
 
           {/* Progress Indicator */}
-          {(isGenerating || generationStatus.status !== "idle") && (
+          {(isGenerating || generationStatus.status !== 'idle') && (
             <VideoGenerationProgress
               generationStatus={generationStatus}
               prompt={prompt}
@@ -98,12 +98,12 @@ export default function VideoGeneratorPage() {
               <div className="flex items-center gap-2 text-sm">
                 <div
                   className={`size-2 rounded-full ${
-                    isConnected ? "bg-green-500" : "bg-yellow-500"
+                    isConnected ? 'bg-green-500' : 'bg-yellow-500'
                   }`}
                 />
                 <span className="text-blue-800">
                   SSE Connection: {connectionStatus}
-                  {isConnected && " ✓"}
+                  {isConnected && ' ✓'}
                 </span>
               </div>
             </div>

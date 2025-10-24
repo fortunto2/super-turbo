@@ -81,13 +81,19 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
             }));
             setGeneratedVideos(videos);
             // Update localStorage cache
-            localStorage.setItem('video-generation-videos', JSON.stringify(videos.slice(0, 10)));
+            localStorage.setItem(
+              'video-generation-videos',
+              JSON.stringify(videos.slice(0, 10)),
+            );
             console.log('📂 Loaded', videos.length, 'videos from database');
             return;
           }
         }
       } catch (error) {
-        console.warn('Failed to load videos from database, falling back to localStorage:', error);
+        console.warn(
+          'Failed to load videos from database, falling back to localStorage:',
+          error,
+        );
       }
 
       // Fallback to localStorage
@@ -96,7 +102,11 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
         try {
           const parsed = JSON.parse(storedVideos);
           setGeneratedVideos(parsed);
-          console.log('📂 Loaded', parsed.length, 'stored videos from localStorage');
+          console.log(
+            '📂 Loaded',
+            parsed.length,
+            'stored videos from localStorage',
+          );
         } catch (error) {
           console.error('Failed to load stored videos:', error);
         }
@@ -272,7 +282,9 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
         if (response.ok) {
           console.log('✅ Video deleted from database:', videoId);
         } else {
-          console.warn('Failed to delete from database, removing from local cache anyway');
+          console.warn(
+            'Failed to delete from database, removing from local cache anyway',
+          );
         }
       } catch (error) {
         console.error('Error deleting from database:', error);

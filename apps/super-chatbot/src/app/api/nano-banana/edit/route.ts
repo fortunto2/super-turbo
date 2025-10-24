@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (!tool || !tool.execute) {
       return NextResponse.json(
         { error: 'Failed to initialize editing tool' },
-        { status: 500 }
+        { status: 500 },
       );
     }
     const result = await tool.execute(validated, {
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     if (!configTool || !configTool.execute) {
       return NextResponse.json(
         { error: 'Failed to initialize editing tool' },
-        { status: 500 }
+        { status: 500 },
       );
     }
     const config = await configTool.execute(

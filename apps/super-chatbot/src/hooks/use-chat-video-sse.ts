@@ -9,7 +9,7 @@ import {
 interface ChatVideoSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: any // AI SDK v5: setMessages type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
   enabled?: boolean;
 }
 

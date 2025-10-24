@@ -113,10 +113,18 @@ export async function generateImage(
         ...(request.quality && { quality: request.quality }),
         ...(request.aspectRatio && { aspectRatio: request.aspectRatio }),
         ...(typeof request.seed === 'number' && { seed: request.seed }),
-        ...(typeof request.batchSize === 'number' && { batchSize: request.batchSize }),
-        ...(typeof request.enableContextAwareness === 'boolean' && { enableContextAwareness: request.enableContextAwareness }),
-        ...(typeof request.enableSurgicalPrecision === 'boolean' && { enableSurgicalPrecision: request.enableSurgicalPrecision }),
-        ...(typeof request.creativeMode === 'boolean' && { creativeMode: request.creativeMode }),
+        ...(typeof request.batchSize === 'number' && {
+          batchSize: request.batchSize,
+        }),
+        ...(typeof request.enableContextAwareness === 'boolean' && {
+          enableContextAwareness: request.enableContextAwareness,
+        }),
+        ...(typeof request.enableSurgicalPrecision === 'boolean' && {
+          enableSurgicalPrecision: request.enableSurgicalPrecision,
+        }),
+        ...(typeof request.creativeMode === 'boolean' && {
+          creativeMode: request.creativeMode,
+        }),
       },
     };
 
@@ -168,32 +176,92 @@ export async function getImageGenerationConfig(): Promise<{
 }> {
   return {
     styles: [
-      { id: 'realistic', label: 'Realistic', description: 'Photorealistic images' },
-      { id: 'cinematic', label: 'Cinematic', description: 'Movie-style with dramatic lighting' },
+      {
+        id: 'realistic',
+        label: 'Realistic',
+        description: 'Photorealistic images',
+      },
+      {
+        id: 'cinematic',
+        label: 'Cinematic',
+        description: 'Movie-style with dramatic lighting',
+      },
       { id: 'anime', label: 'Anime', description: 'Japanese animation style' },
-      { id: 'cartoon', label: 'Cartoon', description: 'Cartoon animation style' },
+      {
+        id: 'cartoon',
+        label: 'Cartoon',
+        description: 'Cartoon animation style',
+      },
       { id: 'chibi', label: 'Chibi', description: 'Cute miniature style' },
-      { id: '3d-render', label: '3D Render', description: 'Three-dimensional computer graphics' },
-      { id: 'oil-painting', label: 'Oil Painting', description: 'Classic oil painting' },
-      { id: 'watercolor', label: 'Watercolor', description: 'Gentle watercolor technique' },
+      {
+        id: '3d-render',
+        label: '3D Render',
+        description: 'Three-dimensional computer graphics',
+      },
+      {
+        id: 'oil-painting',
+        label: 'Oil Painting',
+        description: 'Classic oil painting',
+      },
+      {
+        id: 'watercolor',
+        label: 'Watercolor',
+        description: 'Gentle watercolor technique',
+      },
       { id: 'sketch', label: 'Sketch', description: 'Pencil sketch' },
-      { id: 'digital-art', label: 'Digital Art', description: 'Modern digital artwork' },
+      {
+        id: 'digital-art',
+        label: 'Digital Art',
+        description: 'Modern digital artwork',
+      },
       { id: 'fantasy', label: 'Fantasy', description: 'Magical fantasy world' },
-      { id: 'sci-fi', label: 'Sci-Fi', description: 'Futuristic science fiction style' },
-      { id: 'steampunk', label: 'Steampunk', description: 'Victorian era with technology' },
-      { id: 'cyberpunk', label: 'Cyberpunk', description: 'Neon futuristic style' },
-      { id: 'vintage', label: 'Vintage', description: 'Retro style of past eras' },
-      { id: 'minimalist', label: 'Minimalist', description: 'Simple and clean design' },
+      {
+        id: 'sci-fi',
+        label: 'Sci-Fi',
+        description: 'Futuristic science fiction style',
+      },
+      {
+        id: 'steampunk',
+        label: 'Steampunk',
+        description: 'Victorian era with technology',
+      },
+      {
+        id: 'cyberpunk',
+        label: 'Cyberpunk',
+        description: 'Neon futuristic style',
+      },
+      {
+        id: 'vintage',
+        label: 'Vintage',
+        description: 'Retro style of past eras',
+      },
+      {
+        id: 'minimalist',
+        label: 'Minimalist',
+        description: 'Simple and clean design',
+      },
       { id: 'abstract', label: 'Abstract', description: 'Abstract art' },
-      { id: 'portrait', label: 'Portrait', description: 'Focus on face and character' },
-      { id: 'landscape', label: 'Landscape', description: 'Nature and city views' },
+      {
+        id: 'portrait',
+        label: 'Portrait',
+        description: 'Focus on face and character',
+      },
+      {
+        id: 'landscape',
+        label: 'Landscape',
+        description: 'Nature and city views',
+      },
       { id: 'macro', label: 'Macro', description: 'Close-up of small objects' },
     ],
     qualityLevels: [
       { id: 'standard', label: 'Standard', description: 'Base quality' },
       { id: 'high', label: 'High', description: 'Improved quality' },
       { id: 'ultra', label: 'Ultra', description: 'Maximum quality' },
-      { id: 'masterpiece', label: 'Masterpiece', description: 'Professional quality' },
+      {
+        id: 'masterpiece',
+        label: 'Masterpiece',
+        description: 'Professional quality',
+      },
     ],
     aspectRatios: [
       { id: '1:1', label: 'Square (1:1)', description: '1024x1024' },

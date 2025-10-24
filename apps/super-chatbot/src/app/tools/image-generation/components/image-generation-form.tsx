@@ -1,10 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Label, Input } from '@turbo-super/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Label,
+  Input,
+} from '@turbo-super/ui';
 import { Textarea } from '@turbo-super/ui';
 import { Loader2, ImageIcon, Wand2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { ImageGenerationRequest } from '../api/image-generation-api';
 
 interface ImageGenerationFormProps {
@@ -22,8 +36,16 @@ export function ImageGenerationForm({
   isGenerating,
   config = {
     styles: [
-      { id: 'realistic', label: 'Realistic', description: 'Photorealistic images' },
-      { id: 'cinematic', label: 'Cinematic', description: 'Movie-style with dramatic lighting' },
+      {
+        id: 'realistic',
+        label: 'Realistic',
+        description: 'Photorealistic images',
+      },
+      {
+        id: 'cinematic',
+        label: 'Cinematic',
+        description: 'Movie-style with dramatic lighting',
+      },
       { id: 'anime', label: 'Anime', description: 'Japanese animation style' },
     ],
     qualityLevels: [
@@ -111,7 +133,10 @@ export function ImageGenerationForm({
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {config.styles.find(s => s.id === formData.style)?.description}
+                {
+                  config.styles.find((s) => s.id === formData.style)
+                    ?.description
+                }
               </p>
             </div>
 
@@ -135,7 +160,10 @@ export function ImageGenerationForm({
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {config.qualityLevels.find(q => q.id === formData.quality)?.description}
+                {
+                  config.qualityLevels.find((q) => q.id === formData.quality)
+                    ?.description
+                }
               </p>
             </div>
 
@@ -159,7 +187,10 @@ export function ImageGenerationForm({
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {config.aspectRatios.find(r => r.id === formData.aspectRatio)?.description}
+                {
+                  config.aspectRatios.find((r) => r.id === formData.aspectRatio)
+                    ?.description
+                }
               </p>
             </div>
 
@@ -168,7 +199,9 @@ export function ImageGenerationForm({
               <Label htmlFor="batchSize">Batch Size</Label>
               <Select
                 value={formData.batchSize?.toString() ?? '1'}
-                onValueChange={(value) => updateField('batchSize', Number.parseInt(value))}
+                onValueChange={(value) =>
+                  updateField('batchSize', Number.parseInt(value))
+                }
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -190,18 +223,25 @@ export function ImageGenerationForm({
 
           {/* Advanced Options */}
           <div className="space-y-3 border-t pt-4">
-            <Label className="text-sm font-medium">Advanced Options (Nano Banana)</Label>
+            <Label className="text-sm font-medium">
+              Advanced Options (Nano Banana)
+            </Label>
 
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="enableContextAwareness"
                 checked={formData.enableContextAwareness ?? true}
-                onChange={(e) => updateField('enableContextAwareness', e.target.checked)}
+                onChange={(e) =>
+                  updateField('enableContextAwareness', e.target.checked)
+                }
                 disabled={isGenerating}
                 className="rounded"
               />
-              <Label htmlFor="enableContextAwareness" className="text-sm font-normal cursor-pointer">
+              <Label
+                htmlFor="enableContextAwareness"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Context Awareness
               </Label>
             </div>
@@ -214,11 +254,16 @@ export function ImageGenerationForm({
                 type="checkbox"
                 id="enableSurgicalPrecision"
                 checked={formData.enableSurgicalPrecision ?? true}
-                onChange={(e) => updateField('enableSurgicalPrecision', e.target.checked)}
+                onChange={(e) =>
+                  updateField('enableSurgicalPrecision', e.target.checked)
+                }
                 disabled={isGenerating}
                 className="rounded"
               />
-              <Label htmlFor="enableSurgicalPrecision" className="text-sm font-normal cursor-pointer">
+              <Label
+                htmlFor="enableSurgicalPrecision"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Surgical Precision
               </Label>
             </div>
@@ -235,7 +280,10 @@ export function ImageGenerationForm({
                 disabled={isGenerating}
                 className="rounded"
               />
-              <Label htmlFor="creativeMode" className="text-sm font-normal cursor-pointer">
+              <Label
+                htmlFor="creativeMode"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Creative Mode
               </Label>
             </div>
@@ -261,7 +309,11 @@ export function ImageGenerationForm({
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isGenerating || !formData.prompt.trim()}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isGenerating || !formData.prompt.trim()}
+          >
             {isGenerating ? (
               <>
                 <Loader2 className="size-4 animate-spin mr-2" />

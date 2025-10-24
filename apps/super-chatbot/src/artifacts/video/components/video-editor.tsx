@@ -31,8 +31,8 @@ const copyVideoUrlToClipboard = async (url: string) => {
 
 interface VideoEditorProps {
   chatId?: string;
-  append?: any // AI SDK v5: append type changed;
-  setMessages?: any // AI SDK v5: setMessages type changed;
+  append?: any; // AI SDK v5: append type changed;
+  setMessages?: any; // AI SDK v5: setMessages type changed;
   initialState?: VideoState;
   setArtifact?: (fn: (prev: any) => any) => void;
   availableResolutions?: any[];

@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { z } from 'zod';
-import {
-  validateOperationBalance,
-} from '@/lib/utils/tools-balance';
+import { validateOperationBalance } from '@/lib/utils/tools-balance';
 import { createBalanceErrorResponse } from '@/lib/utils/balance-error-handler';
 
 // Zod schema for video generation request validation
@@ -43,7 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'GOOGLE_AI_API_KEY не настроен',
-          hint: 'Добавьте GOOGLE_AI_API_KEY в .env.local'
+          hint: 'Добавьте GOOGLE_AI_API_KEY в .env.local',
         },
         { status: 500 },
       );
@@ -97,10 +95,15 @@ export async function POST(request: NextRequest) {
     );
 
     // Попытка вызвать Google Veo 3.1 API напрямую
-    const GOOGLE_VEO_API = 'https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning';
+    const GOOGLE_VEO_API =
+      'https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning';
 
-    console.log('🚀 Attempting to call Google Veo 3.1 API with GOOGLE_AI_API_KEY...');
-    console.log('⚠️ Вероятно получим ошибку - Google требует OAuth2, а не API ключ');
+    console.log(
+      '🚀 Attempting to call Google Veo 3.1 API with GOOGLE_AI_API_KEY...',
+    );
+    console.log(
+      '⚠️ Вероятно получим ошибку - Google требует OAuth2, а не API ключ',
+    );
 
     const response = await fetch(GOOGLE_VEO_API, {
       method: 'POST',
@@ -147,7 +150,8 @@ export async function POST(request: NextRequest) {
           recommendation: {
             message: 'Используйте /api/video/generate вместо этого endpoint',
             reason: 'Google Veo требует OAuth2 токен, а не API ключ',
-            solution: 'Получите Fal.ai ключ на https://fal.ai - он работает с простыми API ключами',
+            solution:
+              'Получите Fal.ai ключ на https://fal.ai - он работает с простыми API ключами',
           },
         },
         { status: 400 },

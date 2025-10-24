@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Banana, Video, Zap } from "lucide-react";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2, Banana, Video, Zap } from 'lucide-react';
 
 export default function BananaVeo3Page() {
   const router = useRouter();

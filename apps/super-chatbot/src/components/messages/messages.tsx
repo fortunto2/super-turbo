@@ -13,13 +13,13 @@ interface MessagesProps {
   status: UseChatHelpers<any>['status'];
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: any // AI SDK v5: setMessages type changed;
-  reload: any // AI SDK v5: reload type changed;
+  setMessages: any; // AI SDK v5: setMessages type changed;
+  reload: any; // AI SDK v5: reload type changed;
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedChatModel: string;
   selectedVisibilityType: 'public' | 'private';
-  append?: any // AI SDK v5: append type changed;
+  append?: any; // AI SDK v5: append type changed;
 }
 
 function PureMessages({

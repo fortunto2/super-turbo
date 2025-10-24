@@ -60,7 +60,7 @@ function createMockDBMessage(overrides = {}) {
 
 function createForeignKeyError(constraint: string) {
   const error = new Error(
-    `insert or update on table violates foreign key constraint "${constraint}"`
+    `insert or update on table violates foreign key constraint "${constraint}"`,
   );
   return error;
 }
@@ -77,14 +77,14 @@ describe('chat-management', () => {
         parts: msg.parts || [{ type: 'text', text: msg.content || '' }],
         createdAt: msg.createdAt || new Date(),
         role: msg.role || 'user',
-      })
+      }),
     );
 
     vi.mocked(mockMessageUtils.ensureMessageHasUUID).mockImplementation(
       (msg: any) => ({
         ...msg,
         id: msg.id && /^[0-9a-f]{8}-/.test(msg.id) ? msg.id : 'uuid-generated',
-      })
+      }),
     );
   });
 
@@ -102,7 +102,7 @@ describe('chat-management', () => {
       expect(result).toEqual(mockUser);
       expect(mockQueries.getOrCreateOAuthUser).toHaveBeenCalledWith(
         'user-123',
-        'test@example.com'
+        'test@example.com',
       );
     });
 
@@ -112,20 +112,20 @@ describe('chat-management', () => {
 
       const result = await ensureUserExists(
         'new-user-456',
-        'newuser@example.com'
+        'newuser@example.com',
       );
 
       expect(result).toEqual(newUser);
       expect(mockQueries.getOrCreateOAuthUser).toHaveBeenCalledWith(
         'new-user-456',
-        'newuser@example.com'
+        'newuser@example.com',
       );
     });
 
     it('should handle duplicate user creation gracefully', async () => {
       const existingUser = createMockUser();
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        existingUser
+        existingUser,
       );
 
       const result = await ensureUserExists('user-123', 'test@example.com');
@@ -136,13 +136,10 @@ describe('chat-management', () => {
     it('should use email as fallback when userId differs', async () => {
       const userByEmail = createMockUser({ id: 'different-id' });
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        userByEmail
+        userByEmail,
       );
 
-      const result = await ensureUserExists(
-        'requested-id',
-        'test@example.com'
-      );
+      const result = await ensureUserExists('requested-id', 'test@example.com');
 
       expect(result).toBeDefined();
       expect(mockQueries.getOrCreateOAuthUser).toHaveBeenCalled();
@@ -177,10 +174,10 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(newChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        createMockUser()
+        createMockUser(),
       );
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'Generated Title'
+        'Generated Title',
       );
       vi.mocked(mockQueries.saveChat).mockResolvedValue(undefined as any);
 
@@ -197,7 +194,7 @@ describe('chat-management', () => {
       expect(result).toEqual(newChat);
       expect(mockQueries.getOrCreateOAuthUser).toHaveBeenCalledWith(
         'user-123',
-        'test@example.com'
+        'test@example.com',
       );
       expect(mockActions.generateTitleFromUserMessage).toHaveBeenCalled();
       expect(mockQueries.saveChat).toHaveBeenCalledWith({
@@ -217,7 +214,7 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(newChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(mockUser);
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'Test Title'
+        'Test Title',
       );
       vi.mocked(mockQueries.saveChat).mockResolvedValue(undefined as any);
 
@@ -246,7 +243,7 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(newChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(mockUser);
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'Recovery Title'
+        'Recovery Title',
       );
       vi.mocked(mockQueries.saveChat)
         .mockRejectedValueOnce(fkError)
@@ -275,10 +272,10 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(newChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        createMockUser()
+        createMockUser(),
       );
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'Data Analysis Chat'
+        'Data Analysis Chat',
       );
       vi.mocked(mockQueries.saveChat).mockResolvedValue(undefined as any);
 
@@ -300,7 +297,7 @@ describe('chat-management', () => {
       expect(mockQueries.saveChat).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Data Analysis Chat',
-        })
+        }),
       );
     });
 
@@ -311,10 +308,10 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(newChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        createMockUser()
+        createMockUser(),
       );
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'New Chat'
+        'New Chat',
       );
       vi.mocked(mockQueries.saveChat).mockResolvedValue(undefined as any);
 
@@ -338,10 +335,10 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(publicChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        createMockUser()
+        createMockUser(),
       );
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'Public Chat'
+        'Public Chat',
       );
       vi.mocked(mockQueries.saveChat).mockResolvedValue(undefined as any);
 
@@ -358,7 +355,7 @@ describe('chat-management', () => {
       expect(mockQueries.saveChat).toHaveBeenCalledWith(
         expect.objectContaining({
           visibility: 'public',
-        })
+        }),
       );
     });
   });
@@ -431,10 +428,10 @@ describe('chat-management', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(mockChat);
       vi.mocked(mockQueries.getOrCreateOAuthUser).mockResolvedValue(
-        createMockUser()
+        createMockUser(),
       );
       vi.mocked(mockActions.generateTitleFromUserMessage).mockResolvedValue(
-        'Recovery Chat'
+        'Recovery Chat',
       );
       vi.mocked(mockQueries.saveChat).mockResolvedValue(undefined as any);
 
@@ -484,7 +481,7 @@ describe('chat-management', () => {
         messages: [
           expect.objectContaining({
             id: expect.stringMatching(
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
             ),
           }),
         ],

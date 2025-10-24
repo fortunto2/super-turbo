@@ -22,7 +22,8 @@ async function testGoogleApiKeyDirectly() {
 
   console.log('✅ GOOGLE_AI_API_KEY found:', `${apiKey.substring(0, 10)}...`);
 
-  const GOOGLE_VEO_API = 'https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning';
+  const GOOGLE_VEO_API =
+    'https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning';
 
   try {
     console.log('🚀 Calling Google Veo API...');
@@ -52,7 +53,10 @@ async function testGoogleApiKeyDirectly() {
     console.log('\n📋 Response Status:', response.status);
     console.log('📋 Response Body:', responseText);
 
-    if (response.status === 400 && responseText.includes('API keys are not supported')) {
+    if (
+      response.status === 400 &&
+      responseText.includes('API keys are not supported')
+    ) {
       console.log('\n✅ Получили ожидаемую ошибку!');
       console.log('   Google Veo API НЕ поддерживает API ключи');
       console.log('   Требуется OAuth2 токен');
@@ -131,7 +135,7 @@ async function runTests() {
 }
 
 // Запуск тестов
-runTests().catch(error => {
+runTests().catch((error) => {
   console.error('💥 Fatal error:', error);
   process.exit(1);
 });
