@@ -1,12 +1,12 @@
-import { generateUUID } from "@/lib/utils";
+import { generateUUID } from '@/lib/utils';
 import {
   convertDBMessagesToUIMessages as convertFromDB,
   type DBMessage,
-} from "@/lib/types/message-conversion";
+} from '@/lib/types/message-conversion';
 
 export interface NormalizedUIMessage {
   id: string;
-  role: "user" | "assistant" | "system";
+  role: 'user' | 'assistant' | 'system';
   content: string;
   parts?: Array<{ type: string; text: string; [key: string]: any }>;
   experimental_attachments?: any[];
@@ -16,19 +16,19 @@ export interface NormalizedUIMessage {
 
 function extractContentFromParts(parts?: Array<any>): string {
   if (!parts || parts.length === 0) {
-    return "";
+    return '';
   }
 
   return parts
-    .filter((part) => part && typeof part === "object")
+    .filter((part) => part && typeof part === 'object')
     .map((part) => {
       // Handle text parts
-      if (part.type === "text") {
-        return part.text || "";
+      if (part.type === 'text') {
+        return part.text || '';
       }
 
       // Handle tool-call parts - extract any text content
-      if (part.type === "tool-call" || part.type?.startsWith("tool-")) {
+      if (part.type === 'tool-call' || part.type?.startsWith('tool-')) {
         // Try to extract text from tool result or output
         if (part.result?.text) return part.result.text;
         if (part.output?.text) return part.output.text;
@@ -46,30 +46,30 @@ function extractContentFromParts(parts?: Array<any>): string {
           return part.output.parts[0].content;
 
         // If no text found, return empty string for tool calls
-        return "";
+        return '';
       }
 
       // Handle other part types
       if (part.text) return part.text;
       if (part.content) return part.content;
 
-      return "";
+      return '';
     })
     .filter((text) => text && text.trim().length > 0)
-    .join(" ");
+    .join(' ');
 }
 
 function ensurePartsArray(
   message: any,
-  content: string
+  content: string,
 ): Array<{ type: string; text: string; [key: string]: any }> {
   if (!message.parts || message.parts.length === 0) {
-    return [{ type: "text", text: content }];
+    return [{ type: 'text', text: content }];
   }
 
   return message.parts.map((part: any) => ({
     ...part,
-    text: part.text || "",
+    text: part.text || '',
   }));
 }
 
@@ -81,53 +81,53 @@ function isValidUUID(uuid: string): boolean {
 
 export function normalizeUIMessage(message: any): NormalizedUIMessage {
   const normalizedMessage =
-    !message || typeof message !== "object" ? {} : message;
+    !message || typeof message !== 'object' ? {} : message;
 
   // Debug logging for problematic messages
-  if (normalizedMessage.role === "assistant" && normalizedMessage.content) {
+  if (normalizedMessage.role === 'assistant' && normalizedMessage.content) {
     console.log(
-      "🔍 normalizeUIMessage - assistant message content type:",
-      typeof normalizedMessage.content
+      '🔍 normalizeUIMessage - assistant message content type:',
+      typeof normalizedMessage.content,
     );
     if (Array.isArray(normalizedMessage.content)) {
       console.log(
-        "🔍 normalizeUIMessage - content is array, length:",
-        normalizedMessage.content.length
+        '🔍 normalizeUIMessage - content is array, length:',
+        normalizedMessage.content.length,
       );
-    } else if (typeof normalizedMessage.content === "object") {
+    } else if (typeof normalizedMessage.content === 'object') {
       console.log(
-        "🔍 normalizeUIMessage - content is object, keys:",
-        Object.keys(normalizedMessage.content)
+        '🔍 normalizeUIMessage - content is object, keys:',
+        Object.keys(normalizedMessage.content),
       );
     }
   }
 
   // Handle different content types from AI SDK v5
-  let contentFromField = normalizedMessage.content || "";
+  let contentFromField = normalizedMessage.content || '';
 
   // If content is an array (AI SDK v5 tool responses), convert to string
   if (Array.isArray(contentFromField)) {
     contentFromField = contentFromField
-      .filter((item) => item && typeof item === "object")
+      .filter((item) => item && typeof item === 'object')
       .map((item) => {
-        if (typeof item === "string") return item;
+        if (typeof item === 'string') return item;
         if (item.text) return item.text;
         if (item.content) return item.content;
         return JSON.stringify(item);
       })
-      .join(" ");
+      .join(' ');
   }
 
   // If content is an object, try to extract text or convert to string
-  if (typeof contentFromField === "object" && contentFromField !== null) {
+  if (typeof contentFromField === 'object' && contentFromField !== null) {
     if (contentFromField.text) {
       contentFromField = contentFromField.text;
     } else if (contentFromField.content) {
       contentFromField = contentFromField.content;
     } else {
       // For tool calls, try to extract meaningful text or return empty
-      if (contentFromField.type === "tool-call") {
-        contentFromField = ""; // Tool calls don't need text content
+      if (contentFromField.type === 'tool-call') {
+        contentFromField = ''; // Tool calls don't need text content
       } else {
         contentFromField = JSON.stringify(contentFromField);
       }
@@ -135,7 +135,23 @@ export function normalizeUIMessage(message: any): NormalizedUIMessage {
   }
 
   const contentFromParts = extractContentFromParts(normalizedMessage.parts);
-  const content = contentFromField || contentFromParts || "";
+  let content = contentFromField || contentFromParts || '';
+
+  // CRITICAL FIX: If assistant message has only tool calls without text content,
+  // add default text to prevent validation errors on next request
+  if (
+    normalizedMessage.role === 'assistant' &&
+    !content &&
+    normalizedMessage.parts &&
+    Array.isArray(normalizedMessage.parts) &&
+    normalizedMessage.parts.some((p: any) =>
+      p && typeof p === 'object' && p.type &&
+      (p.type === 'tool-call' || p.type.startsWith('tool-'))
+    )
+  ) {
+    content = 'Generated content using AI tools.';
+    console.log('🔧 Added default content for tool-only message');
+  }
 
   const parts = ensurePartsArray(normalizedMessage, content);
 
@@ -152,12 +168,12 @@ export function normalizeUIMessage(message: any): NormalizedUIMessage {
     content,
     parts,
     createdAt,
-    role: normalizedMessage.role || "user",
+    role: normalizedMessage.role || 'user',
   };
 
   // Debug logging for final result
-  if (normalizedMessage.role === "assistant") {
-    console.log("🔍 normalizeUIMessage - final result:", {
+  if (normalizedMessage.role === 'assistant') {
+    console.log('🔍 normalizeUIMessage - final result:', {
       id: result.id,
       contentLength: result.content?.length || 0,
       hasContent: !!result.content,
@@ -170,7 +186,7 @@ export function normalizeUIMessage(message: any): NormalizedUIMessage {
 
 export function ensureMessageHasUUID(message: any): NormalizedUIMessage {
   const normalizedMessage =
-    !message || typeof message !== "object" ? {} : message;
+    !message || typeof message !== 'object' ? {} : message;
 
   const hasValidUUID =
     normalizedMessage.id && isValidUUID(normalizedMessage.id);
@@ -195,15 +211,15 @@ export function normalizeMessageParts(message: any): any {
   }
 
   const normalizedParts = message.parts.map((part: any) => {
-    if (part && typeof part === "object" && part.type) {
+    if (part && typeof part === 'object' && part.type) {
       // If the type starts with "tool-" but isn't one of the allowed generic types
       if (
-        part.type.startsWith("tool-") &&
-        part.type !== "tool-call" &&
-        part.type !== "tool-result" &&
-        part.type !== "tool-invocation"
+        part.type.startsWith('tool-') &&
+        part.type !== 'tool-call' &&
+        part.type !== 'tool-result' &&
+        part.type !== 'tool-invocation'
       ) {
-        return { ...part, type: "tool-call" };
+        return { ...part, type: 'tool-call' };
       }
     }
     return part;

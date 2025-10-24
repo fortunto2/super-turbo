@@ -3,7 +3,7 @@
  * Solves @ts-expect-error issues in chat/route.ts and message-editor.tsx
  */
 
-import type { UIMessage } from "ai";
+import type { UIMessage } from 'ai';
 
 // Database message type (matches actual DB query structure)
 export interface DBMessage {
@@ -28,45 +28,45 @@ export interface MessageDeprecated {
  * Convert database messages to UI messages compatible with AI SDK
  */
 export function convertDBMessagesToUIMessages(
-  dbMessages: DBMessage[]
+  dbMessages: DBMessage[],
 ): UIMessage[] {
   return dbMessages.map((dbMessage): UIMessage => {
     // Safely parse parts from unknown type
     const parts = Array.isArray(dbMessage.parts) ? dbMessage.parts : [];
 
     // Handle different role types
-    if (dbMessage.role === "user") {
+    if (dbMessage.role === 'user') {
       // User messages: combine parts into content string
       const textContent = parts
         .filter(
           (part: any) =>
-            part && typeof part === "object" && part.type === "text"
+            part && typeof part === 'object' && part.type === 'text',
         )
-        .map((part: any) => part.text || "")
-        .join(" ");
+        .map((part: any) => part.text || '')
+        .join(' ');
 
       return {
         id: dbMessage.id,
-        role: "user",
-        content: textContent || "Empty message",
+        role: 'user',
+        content: textContent || 'Empty message',
         createdAt: dbMessage.createdAt,
         parts: [],
       } as UIMessage;
     }
 
-    if (dbMessage.role === "assistant") {
+    if (dbMessage.role === 'assistant') {
       // Assistant messages: normalize parts structure for schema validation
       // Tool-specific types like "tool-configureImageGeneration" need to be converted to "tool-call"
       const normalizedParts = parts.map((part: any) => {
-        if (part && typeof part === "object" && part.type) {
+        if (part && typeof part === 'object' && part.type) {
           // If the type starts with "tool-" but isn't one of the allowed generic types
           if (
-            part.type.startsWith("tool-") &&
-            part.type !== "tool-call" &&
-            part.type !== "tool-result" &&
-            part.type !== "tool-invocation"
+            part.type.startsWith('tool-') &&
+            part.type !== 'tool-call' &&
+            part.type !== 'tool-result' &&
+            part.type !== 'tool-invocation'
           ) {
-            return { ...part, type: "tool-call" };
+            return { ...part, type: 'tool-call' };
           }
         }
         return part;
@@ -77,15 +77,24 @@ export function convertDBMessagesToUIMessages(
       const textContent = normalizedParts
         .filter(
           (part: any) =>
-            part && typeof part === "object" && part.type === "text"
+            part && typeof part === 'object' && part.type === 'text',
         )
-        .map((part: any) => part.text || "")
-        .join(" ");
+        .map((part: any) => part.text || '')
+        .join(' ');
+
+      // CRITICAL FIX: If message has only tool calls without text content,
+      // add default text to prevent validation errors
+      const hasToolCalls = normalizedParts.some(
+        (part: any) =>
+          part && typeof part === 'object' && part.type &&
+          (part.type === 'tool-call' || part.type.startsWith('tool-'))
+      );
+      const finalContent = textContent || (hasToolCalls ? 'Generated content using AI tools.' : '');
 
       return {
         id: dbMessage.id,
-        role: "assistant",
-        content: textContent || "", // Populate content from parts for Gemini API
+        role: 'assistant',
+        content: finalContent, // Populate content from parts for Gemini API
         parts: normalizedParts as any, // Explicit cast to fix TypeScript error
         createdAt: dbMessage.createdAt,
       } as UIMessage;
@@ -96,7 +105,7 @@ export function convertDBMessagesToUIMessages(
       id: dbMessage.id,
       role: dbMessage.role as any,
       content:
-        typeof dbMessage.parts === "string"
+        typeof dbMessage.parts === 'string'
           ? dbMessage.parts
           : JSON.stringify(dbMessage.parts),
       createdAt: dbMessage.createdAt,
@@ -109,19 +118,21 @@ export function convertDBMessagesToUIMessages(
  * Convert legacy deprecated messages to UI messages for migration
  */
 export function convertDeprecatedMessagesToUIMessages(
-  messages: MessageDeprecated[]
+  messages: MessageDeprecated[],
 ): UIMessage[] {
   return messages.map((message): UIMessage => {
     // Handle content as string or array
     const content =
-      typeof message.content === "string"
+      typeof message.content === 'string'
         ? message.content
         : Array.isArray(message.content)
           ? message.content
               .map((part) =>
-                typeof part === "object" && part.text ? part.text : String(part)
+                typeof part === 'object' && part.text
+                  ? part.text
+                  : String(part),
               )
-              .join(" ")
+              .join(' ')
           : String(message.content);
 
     return {
@@ -140,9 +151,9 @@ export function convertDeprecatedMessagesToUIMessages(
 export function isDBMessage(message: any): message is DBMessage {
   return (
     message &&
-    typeof message.id === "string" &&
-    typeof message.chatId === "string" &&
-    typeof message.role === "string" &&
+    typeof message.id === 'string' &&
+    typeof message.chatId === 'string' &&
+    typeof message.role === 'string' &&
     Array.isArray(message.parts) &&
     message.createdAt instanceof Date
   );
@@ -152,14 +163,14 @@ export function isDBMessage(message: any): message is DBMessage {
  * Type guard to check if a message is a deprecated message
  */
 export function isDeprecatedMessage(
-  message: any
+  message: any,
 ): message is MessageDeprecated {
   return (
     message &&
-    typeof message.id === "string" &&
-    typeof message.chatId === "string" &&
-    typeof message.role === "string" &&
-    (typeof message.content === "string" || Array.isArray(message.content)) &&
+    typeof message.id === 'string' &&
+    typeof message.chatId === 'string' &&
+    typeof message.role === 'string' &&
+    (typeof message.content === 'string' || Array.isArray(message.content)) &&
     message.createdAt instanceof Date
   );
 }
