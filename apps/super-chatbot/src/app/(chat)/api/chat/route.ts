@@ -513,6 +513,39 @@ export const POST = withMonitoring(async (request: Request) => {
             );
           }
 
+          // CRITICAL FIX: Check if message has only tool calls without text
+          // This happens when toolChoice: 'required' forces tool execution without text generation
+          const parts = (responseMessage as any).parts || [];
+          const hasTextPart = parts.some((p: any) => p.type === 'text' && p.text);
+          const hasToolPart = parts.some((p: any) => p.type && typeof p.type === 'string' && p.type.startsWith('tool-'));
+
+          // If message has tool calls but no text, add text from tool result message
+          if (hasToolPart && !hasTextPart) {
+            console.log('📝 🔧 Tool-only message detected, adding text part from tool result');
+
+            // Find tool result with message
+            const toolPart = parts.find((p: any) =>
+              p.type?.startsWith('tool-') &&
+              p.output?.message
+            );
+
+            if (toolPart?.output?.message) {
+              // Add text part with message from tool result
+              parts.push({
+                type: 'text',
+                text: toolPart.output.message,
+              });
+              console.log('📝 ✅ Added text part:', toolPart.output.message);
+            } else {
+              // Fallback: add generic message
+              parts.push({
+                type: 'text',
+                text: 'Generated content using AI tools.',
+              });
+              console.log('📝 ✅ Added default text part');
+            }
+          }
+
           // Extract document IDs from tool results in the response message parts
           const toolDocuments: Array<{
             id: string;
@@ -521,13 +554,13 @@ export const POST = withMonitoring(async (request: Request) => {
           }> = [];
 
           // Check responseMessage parts for tool invocations
-          if ((responseMessage as any).parts) {
+          if (parts.length > 0) {
             console.log(
               '📝 🔍 Processing',
-              (responseMessage as any).parts.length,
+              parts.length,
               'parts...',
             );
-            for (const part of (responseMessage as any).parts) {
+            for (const part of parts) {
               console.log('📝 🔍 Part type:', part.type);
               console.log('📝 🔍 Part state:', (part as any).state);
               console.log('📝 🔍 Part output:', (part as any).output);
@@ -591,6 +624,9 @@ export const POST = withMonitoring(async (request: Request) => {
               }
             }
           }
+
+          // Update responseMessage with modified parts (may include added text part)
+          (responseMessage as any).parts = parts;
 
           // Normalize the response message and add attachments for script documents
           const normalized = normalizeUIMessage(responseMessage);
