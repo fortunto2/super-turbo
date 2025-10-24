@@ -342,8 +342,25 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
 
           console.log("🍌 ✅ NANO BANANA API RESULT:", result);
 
+          // CRITICAL: content must be JSON string with projectId/fileId for SSE connection
+          const contentData = {
+            status: 'completed', // Image is already generated
+            imageUrl: result.url,
+            projectId: result.id, // Use result.id as projectId for SSE
+            fileId: result.id, // Use result.id as fileId for SSE
+            prompt: result.prompt,
+            timestamp: result.timestamp,
+            style: selectedStyle,
+            quality: selectedQuality,
+            aspectRatio: selectedAspectRatio,
+            seed: seed,
+            message: 'Image generated successfully!',
+          };
+
           return {
             ...result,
+            content: JSON.stringify(contentData), // JSON string with projectId/fileId for SSE
+            kind: 'image', // Required for artifact system
             message: `Image generated successfully using Nano Banana (Gemini 2.5 Flash Image): "${prompt}". Style: ${selectedStyle.label}, Quality: ${selectedQuality.label}, Format: ${selectedAspectRatio.label}.`,
             nanoBananaInfo: {
               model: "gemini-2.5-flash-image",

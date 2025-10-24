@@ -77,7 +77,11 @@ const NANO_BANANA_STYLES = [
     label: 'Cyberpunk',
     description: 'Neon futuristic style',
   },
-  { id: 'vintage', label: 'Vintage', description: 'Retro style from past eras' },
+  {
+    id: 'vintage',
+    label: 'Vintage',
+    description: 'Retro style from past eras',
+  },
   {
     id: 'minimalist',
     label: 'Minimalist',
@@ -214,10 +218,7 @@ export const nanoBananaImageGenerationForChat = (
         .optional()
         .default('1:1')
         .describe('Image aspect ratio.'),
-      seed: z
-        .number()
-        .optional()
-        .describe('Seed for reproducible results'),
+      seed: z.number().optional().describe('Seed for reproducible results'),
       batchSize: z
         .number()
         .min(1)
@@ -261,6 +262,7 @@ export const nanoBananaImageGenerationForChat = (
       enableSurgicalPrecision,
       creativeMode,
     }) => {
+      console.log('🍌🍌🍌 ===== NANO BANANA TOOL EXECUTE STARTED ===== 🍌🍌🍌');
       console.log('🍌 nanoBananaImageGenerationForChat called with:', {
         prompt,
         style,
@@ -271,6 +273,7 @@ export const nanoBananaImageGenerationForChat = (
         enableSurgicalPrecision,
         creativeMode,
       });
+      console.log('🍌 Tool execution timestamp:', new Date().toISOString());
 
       // Get image configuration
       const config = await getImageGenerationConfig();
@@ -434,9 +437,7 @@ export const nanoBananaImageGenerationForChat = (
         // Use Nano Banana Provider (Gemini API)
         console.log('🍌 🚀 NANO BANANA: Using Gemini API');
 
-        const { nanoBananaProvider } = await import(
-          '../providers/nano-banana'
-        );
+        const { nanoBananaProvider } = await import('../providers/nano-banana');
 
         const nanoBananaParams = {
           prompt: nanoBananaPrompt,
@@ -452,14 +453,40 @@ export const nanoBananaImageGenerationForChat = (
           },
         };
 
-        const result =
-          await nanoBananaProvider.generateImage(nanoBananaParams);
+        const result = await nanoBananaProvider.generateImage(nanoBananaParams);
 
         console.log('🍌 ✅ NANO BANANA API RESULT:', result);
 
-        // Return result directly (AI SDK v5 handles artifacts via tool return values)
+        // Return artifact-compatible structure (matching video tool pattern)
+        // CRITICAL: content must be JSON string with projectId/fileId for SSE connection
+        const contentData = {
+          status: 'completed', // Image is already generated
+          imageUrl: result.url,
+          projectId: result.id, // Use result.id as projectId for SSE
+          fileId: result.id, // Use result.id as fileId for SSE
+          prompt: result.prompt,
+          timestamp: result.timestamp,
+          style: selectedStyle,
+          quality: selectedQuality,
+          aspectRatio: selectedAspectRatio,
+          seed: seed,
+          batchSize: batchSize || 1,
+          enableContextAwareness,
+          enableSurgicalPrecision,
+          creativeMode,
+          message: 'Image generated successfully!',
+        };
+
         return {
-          ...result,
+          success: true, // Required for AI model to understand tool succeeded
+          id: result.id, // Unique ID for artifact
+          kind: 'image', // Required for artifact system
+          title: `Image: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`,
+          content: JSON.stringify(contentData), // JSON string with projectId/fileId for SSE
+          url: result.url, // Keep url for backward compatibility
+          prompt: result.prompt,
+          timestamp: result.timestamp,
+          settings: result.settings,
           message: `Image generated successfully using Nano Banana (Gemini 2.5 Flash Image): "${prompt}". Style: ${selectedStyle.label}, Quality: ${selectedQuality.label}, Format: ${selectedAspectRatio.label}.`,
           nanoBananaInfo: {
             model: 'gemini-2.5-flash-image',
@@ -475,10 +502,7 @@ export const nanoBananaImageGenerationForChat = (
           },
         };
       } catch (error: any) {
-        console.error(
-          '🍌 ❌ ERROR IN NANO BANANA IMAGE GENERATION:',
-          error,
-        );
+        console.error('🍌 ❌ ERROR IN NANO BANANA IMAGE GENERATION:', error);
         // Throw error without fallback
         throw error;
       }
