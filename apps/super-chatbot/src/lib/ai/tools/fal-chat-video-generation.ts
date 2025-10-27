@@ -208,6 +208,8 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
           aspectRatio: aspectRatio || '16:9',
           resolution: resolution || '720p',
           ...(negativePrompt && { negativePrompt }),
+          // Add source image URL for image-to-video transformation (from context analysis)
+          ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
           model: 'veo3',
         };
 
