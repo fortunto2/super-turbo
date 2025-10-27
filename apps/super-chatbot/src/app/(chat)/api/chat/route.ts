@@ -281,7 +281,7 @@ export const POST = withMonitoring(async (request: Request) => {
         try {
           // Try to parse content as JSON (for tool results with embedded base64)
           const parsed = JSON.parse(rest.content);
-          if (parsed.imageUrl && parsed.imageUrl.startsWith('data:image/')) {
+          if (parsed.imageUrl?.startsWith('data:image/')) {
             // Remove base64 image URL, keep other metadata
             const { imageUrl, ...contentWithoutImage } = parsed;
             rest.content = JSON.stringify(contentWithoutImage);
@@ -311,7 +311,7 @@ export const POST = withMonitoring(async (request: Request) => {
             // Check if text is JSON with base64 imageUrl
             try {
               const parsed = JSON.parse(part.text);
-              if (parsed.imageUrl && parsed.imageUrl.startsWith('data:image/')) {
+              if (parsed.imageUrl?.startsWith('data:image/')) {
                 const { imageUrl, ...contentWithoutImage } = parsed;
                 return {
                   ...part,

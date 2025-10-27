@@ -6,7 +6,11 @@ import {
 } from '@/lib/utils/ai-tools-balance';
 import type { Session } from 'next-auth';
 import { analyzeVideoContext } from '@/lib/ai/context';
-import { fal } from '@fal-ai/client';
+import {
+  generateVertexVideo,
+  checkVertexVideoStatus,
+  type VertexVideoRequest,
+} from '@/lib/ai/vertex-video-generation';
 
 interface CreateVideoDocumentParams {
   createDocument: any;
@@ -18,33 +22,20 @@ interface CreateVideoDocumentParams {
   currentAttachments?: any[];
 }
 
-// Video model types
-type VideoModel = 'fal-veo3' | 'vertex-veo3' | 'vertex-veo2';
-
-// Configure Fal.ai client with API key
-function configureFalClient() {
-  const falKey = process.env.FAL_KEY;
-  if (!falKey) {
-    throw new Error('FAL_KEY environment variable is not configured');
-  }
-  fal.config({ credentials: falKey });
-}
-
 export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
   tool({
     description:
-      'Generate videos using AI models (VEO3 by default). Supports text-to-video generation with multiple providers: Fal.ai VEO3 (recommended), Vertex AI VEO3, and Vertex AI VEO2.',
+      'Generate videos using Google Vertex AI VEO 3.1. Supports text-to-video generation with high quality output.',
     inputSchema: z.object({
       prompt: z
         .string()
+        .min(1)
         .describe('Detailed description of the video to generate'),
       model: z
-        .enum(['fal-veo3', 'vertex-veo3', 'vertex-veo2'])
+        .enum(['veo3'])
         .optional()
-        .default('fal-veo3')
-        .describe(
-          'AI model to use: fal-veo3 (default, recommended), vertex-veo3 (requires special access), vertex-veo2 (older version)',
-        ),
+        .default('veo3')
+        .describe('AI model to use: veo3 (Google VEO 3.1 - latest)'),
       duration: z
         .enum(['4', '6', '8'])
         .optional()
@@ -62,21 +53,10 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
         .optional()
         .default('16:9')
         .describe('Aspect ratio'),
-      generateAudio: z
-        .boolean()
-        .optional()
-        .default(true)
-        .describe('Generate audio for the video'),
-      enhancePrompt: z
-        .boolean()
-        .optional()
-        .default(true)
-        .describe('AI-enhance the prompt'),
       negativePrompt: z
         .string()
         .optional()
         .describe('What to avoid in the video'),
-      seed: z.number().optional().describe('Seed for reproducible results'),
     }),
     execute: async ({
       prompt,
@@ -84,10 +64,7 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
       duration,
       resolution,
       aspectRatio,
-      generateAudio,
-      enhancePrompt,
       negativePrompt,
-      seed,
     }) => {
       console.log('🎬 falVideoGenerationForChat called with:', {
         prompt,
@@ -95,7 +72,7 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
         duration,
         resolution,
         aspectRatio,
-        generateAudio,
+        negativePrompt,
       });
 
       if (!prompt) {
@@ -133,31 +110,19 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
           ],
           availableModels: [
             {
-              id: 'fal-veo3',
-              label: 'Fal.ai Veo 3',
-              description: 'Google Veo 3 via Fal.ai (Recommended)',
+              id: 'veo3',
+              label: 'Vertex AI VEO3',
+              description: 'Google VEO 3.1 (Latest)',
               badge: 'Best',
             },
-            {
-              id: 'vertex-veo3',
-              label: 'Vertex AI Veo 3',
-              description: 'Direct Google Veo 3.1 (Requires special access)',
-              badge: 'Direct',
-            },
-            {
-              id: 'vertex-veo2',
-              label: 'Vertex AI Veo 2',
-              description: 'Google Veo 2 (Older version)',
-            },
           ],
-          model: 'fal-veo3',
-          provider: 'fal.ai',
+          model: 'veo3',
+          provider: 'vertex-ai',
           capabilities: [
             'Text-to-video generation',
-            'Multiple AI models',
-            'Audio generation',
-            'Prompt enhancement',
+            'Google VEO 3.1 model',
             'Negative prompts',
+            'High quality output',
           ],
         };
       }
@@ -225,61 +190,89 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
           };
         }
 
-        // Use the selected model (default: fal-veo3)
-        const selectedModel = model || 'fal-veo3';
-        const durationValue = durationSeconds;
-
-        console.log('🎬 Using model:', selectedModel);
-
-        // For now, only support Fal.ai VEO3 (default and recommended)
-        // Vertex AI models require different API structure and will be added later
-        if (selectedModel !== 'fal-veo3') {
-          console.warn(
-            `⚠️ Model ${selectedModel} not yet supported in chat, using fal-veo3 instead`,
-          );
+        // Check session
+        if (!params?.session) {
+          throw new Error('Session required for Vertex AI video generation');
         }
 
-        // Configure Fal.ai client
-        configureFalClient();
+        // Use Vertex AI VEO3
+        const selectedModel = model || 'veo3';
+        const durationValue = duration || '8';
 
-        // Prepare duration format for Fal.ai (requires 's' suffix)
-        const durationFormatted = `${durationValue}s`;
+        console.log('🎬 Using model: VEO3 (Vertex AI VEO 3.1)');
 
-        // Call Fal.ai Veo3 API directly
-        console.log('🚀 Calling Fal.ai Veo3 API...');
-        const result = await fal.subscribe('fal-ai/veo3', {
-          input: {
-            prompt,
-            aspect_ratio: (aspectRatio || '16:9') as '16:9' | '9:16' | '1:1',
-            duration: durationFormatted as '4s' | '6s' | '8s',
-            resolution: (resolution || '720p') as '720p' | '1080p',
-            generate_audio: generateAudio ?? true,
-            enhance_prompt: enhancePrompt ?? true,
-            ...(negativePrompt && { negative_prompt: negativePrompt }),
-            ...(seed && { seed }),
-          },
-          logs: true,
-          onQueueUpdate: (update) => {
-            console.log('📊 Queue update:', update);
-          },
-        });
+        // Prepare request for Vertex AI
+        const vertexRequest: VertexVideoRequest = {
+          prompt,
+          duration: durationValue as '4' | '6' | '8',
+          aspectRatio: aspectRatio || '16:9',
+          resolution: resolution || '720p',
+          ...(negativePrompt && { negativePrompt }),
+          model: 'veo3',
+        };
 
-        console.log('✅ Video generation result:', result);
+        console.log('🚀 Calling Vertex AI directly...');
 
-        // Extract video URL from response
-        const videoUrl = result.data?.video?.url;
+        // Call Vertex AI video generation
+        const result = await generateVertexVideo(vertexRequest, params.session);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Vertex AI generation failed');
+        }
+
+        console.log('✅ Video generation started:', result);
+
+        // Poll for completion (max 180 seconds = 3 minutes)
+        let videoUrl: string | undefined;
+        const fileId = result.fileId || `video-${Date.now()}`;
+
+        if (result.status === 'processing' && result.operationName) {
+          console.log('⏳ Video is processing, polling for completion...');
+
+          const maxAttempts = 36; // 36 * 5s = 180s (3 minutes)
+          const pollInterval = 5000; // 5 seconds
+          const operationName = result.operationName;
+
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            console.log(`🔄 Polling attempt ${attempt}/${maxAttempts}...`);
+
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+
+            const status = await checkVertexVideoStatus(operationName);
+            console.log(`📊 Status check result:`, status);
+
+            if (status.status === 'completed' && status.videoUrl) {
+              console.log('✅ Video ready!', status.videoUrl);
+              // Use proxy URL for Vertex AI videos to handle authentication
+              videoUrl = `/api/video/proxy-vertex?url=${encodeURIComponent(status.videoUrl)}`;
+              console.log('🔄 Using proxy URL:', videoUrl);
+              break;
+            }
+
+            if (status.status === 'failed') {
+              throw new Error(status.error || 'Video generation failed');
+            }
+          }
+
+          if (!videoUrl) {
+            throw new Error(
+              'Video generation timeout. Please try again later.',
+            );
+          }
+        } else if (result.videoUrl) {
+          videoUrl = result.videoUrl;
+        }
+
         if (!videoUrl) {
-          throw new Error('No video URL in response');
+          throw new Error('No video URL returned from Vertex AI');
         }
-
-        // Generate unique file ID
-        const fileId = `fal-video-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
         console.log('🎬 ✅ VIDEO GENERATED:', {
           fileId,
           videoUrl,
-          duration: durationFormatted,
+          duration: durationValue,
           resolution,
+          model: selectedModel,
         });
 
         // Return artifact-compatible structure
@@ -296,25 +289,24 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
             url: videoUrl,
             prompt,
             timestamp: Date.now(),
-            provider: 'fal.ai',
-            model: 'veo3',
+            provider: result.provider || 'vertex-ai',
+            model: result.model || 'veo-3.1',
             settings: {
-              duration: durationValue,
+              duration: Number(durationValue),
               aspectRatio: aspectRatio || '16:9',
               resolution: resolution || '720p',
-              generateAudio: generateAudio ?? true,
-              ...(seed && { seed }),
+              ...(negativePrompt && { negativePrompt }),
             },
           },
-          creditsUsed: balanceCheck.cost,
-          provider: 'fal.ai',
-          model: 'veo3',
-          message: `Video generated successfully using FAL AI VEO3: "${prompt}". Duration: ${durationValue}s, Resolution: ${resolution}, Aspect Ratio: ${aspectRatio}.`,
+          creditsUsed: result.creditsUsed || balanceCheck.cost,
+          provider: result.provider || 'vertex-ai',
+          model: result.model || 'veo-3.1',
+          message: `Video generated successfully using Vertex AI VEO 3.1: "${prompt}". Duration: ${durationValue}s, Resolution: ${resolution}, Aspect Ratio: ${aspectRatio}.`,
         };
       } catch (error: any) {
         console.error('🎬 ❌ ERROR IN VIDEO GENERATION:', error);
 
-        // Extract detailed error message from Fal.ai validation errors
+        // Extract detailed error message
         let errorMessage = 'Unknown generation error';
         if (error) {
           errorMessage = error.message || String(error);
