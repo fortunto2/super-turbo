@@ -99,21 +99,3 @@ export {
   contextPerformanceMonitor,
   ContextPerformanceMonitor,
 } from './performance-monitor';
-
-// Semantic search (keep as optional enhancement)
-export { semanticAnalyzer, SemanticContextAnalyzer } from './semantic-search';
-export {
-  semanticIndex,
-  SemanticIndex,
-  type SemanticIndexEntry,
-  type SearchResult,
-} from './semantic-index';
-
-// Temporal analysis
-export { temporalAnalyzer, TemporalAnalyzer } from './temporal-analysis';
-
-// User preferences
-export {
-  userPreferenceLearner,
-  UserPreferenceLearner,
-} from './user-preferences';
