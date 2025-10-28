@@ -1,67 +1,67 @@
-import { auth } from '@/app/(auth)/auth';
-import { systemPrompt } from '@/lib/ai/prompts';
-import { myProvider } from '@/lib/ai/providers';
+import { auth } from "@/app/(auth)/auth";
+import { systemPrompt } from "@/lib/ai/prompts";
+import { myProvider } from "@/lib/ai/providers";
 import {
   getChatById,
   getMessagesByChatId,
   saveMessages,
-} from '@/lib/db/queries';
-import { withMonitoring } from '@/lib/monitoring/simple-monitor';
-import { streamText } from 'ai';
-import { NextResponse } from 'next/server';
-import { postRequestBodySchema } from './schema';
+} from "@/lib/db/queries";
+import { withMonitoring } from "@/lib/monitoring/simple-monitor";
+import { streamText } from "ai";
+import { NextResponse } from "next/server";
+import { postRequestBodySchema } from "./schema";
 
 import {
   ensureChatExists,
   saveUserMessage,
-} from '@/lib/ai/chat/chat-management';
-import { formatErrorResponse } from '@/lib/ai/chat/error-handler';
+} from "@/lib/ai/chat/chat-management";
+import { formatErrorResponse } from "@/lib/ai/chat/error-handler";
 // Import utilities
 import {
   convertDBMessagesToUIMessages,
   ensureMessageHasUUID,
   normalizeMessageParts,
   normalizeUIMessage,
-} from '@/lib/ai/chat/message-utils';
+} from "@/lib/ai/chat/message-utils";
 
 // Import tools (old SuperDuperAI tools - kept for backward compatibility)
-import { configureImageGeneration } from '@/lib/ai/tools/configure-image-generation';
-import { configureScriptGeneration } from '@/lib/ai/tools/configure-script-generation';
-import { configureVideoGeneration } from '@/lib/ai/tools/configure-video-generation';
-import { createDocument } from '@/lib/ai/tools/create-document';
-import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { updateDocument } from '@/lib/ai/tools/update-document';
+import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
+import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
+import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
+import { createDocument } from "@/lib/ai/tools/create-document";
+import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+import { updateDocument } from "@/lib/ai/tools/update-document";
 
 // Import new tools (Nano Banana + FAL AI)
-import { nanoBananaImageGenerationForChat } from '@/lib/ai/tools/nano-banana-chat-image-generation';
-import { falVideoGenerationForChat } from '@/lib/ai/tools/fal-chat-video-generation';
+import { nanoBananaImageGenerationForChat } from "@/lib/ai/tools/nano-banana-chat-image-generation";
+import { falVideoGenerationForChat } from "@/lib/ai/tools/fal-chat-video-generation";
 
 export const maxDuration = 300;
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const POST = withMonitoring(async (request: Request) => {
   try {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
 
     // Debug: Log raw request to understand what AI SDK v5 sends
     console.log(
-      '🔍 REQUEST BODY - messages count:',
-      body.messages?.length || 0,
+      "🔍 REQUEST BODY - messages count:",
+      body.messages?.length || 0
     );
     if (body.messages) {
       console.log(
-        '🔍 REQUEST BODY - message roles:',
-        body.messages.map((m: any) => m.role),
+        "🔍 REQUEST BODY - message roles:",
+        body.messages.map((m: any) => m.role)
       );
       console.log(
-        '🔍 REQUEST BODY - message IDs:',
-        body.messages.map((m: any) => m.id),
+        "🔍 REQUEST BODY - message IDs:",
+        body.messages.map((m: any) => m.id)
       );
     }
 
@@ -70,10 +70,10 @@ export const POST = withMonitoring(async (request: Request) => {
     if (!validationResult.success) {
       return NextResponse.json(
         {
-          error: 'Invalid request format',
+          error: "Invalid request format",
           details: validationResult.error.issues,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -93,8 +93,8 @@ export const POST = withMonitoring(async (request: Request) => {
     // Ensure we have messages
     if (!rawMessages || rawMessages.length === 0) {
       return NextResponse.json(
-        { error: 'No messages provided' },
-        { status: 400 },
+        { error: "No messages provided" },
+        { status: 400 }
       );
     }
 
@@ -112,14 +112,14 @@ export const POST = withMonitoring(async (request: Request) => {
       userId: session.user.id,
       userEmail: session.user.email || `user-${session.user.id}@example.com`,
       firstMessage: normalizedMessages[normalizedMessages.length - 1],
-      visibility: selectedVisibilityType || 'private',
+      visibility: selectedVisibilityType || "private",
     });
 
     const chat = await getChatById({ id: chatId });
     if (!chat) {
       return formatErrorResponse(
-        new Error('Failed to create chat'),
-        'Chat API',
+        new Error("Failed to create chat"),
+        "Chat API"
       );
     }
 
@@ -136,7 +136,7 @@ export const POST = withMonitoring(async (request: Request) => {
         role: m.role,
         partsCount: m.parts?.length || 0,
         hasAttachments: !!(m as any).experimental_attachments?.length,
-      })),
+      }))
     );
 
     // CRITICAL FIX: AI SDK v5 sendMessage creates new IDs each time
@@ -146,13 +146,13 @@ export const POST = withMonitoring(async (request: Request) => {
     for (const msg of previousUIMessages) {
       // Create a content hash based on role + text content
       // IMPORTANT: Check both content field AND parts array
-      let textContent = '';
+      let textContent = "";
       const msgAny = msg as any;
-      if (typeof msgAny.content === 'string' && msgAny.content.trim()) {
+      if (typeof msgAny.content === "string" && msgAny.content.trim()) {
         textContent = msgAny.content;
       } else {
-        const textPart = msg.parts?.find((p: any) => p.type === 'text') as any;
-        textContent = textPart?.text || '';
+        const textPart = msg.parts?.find((p: any) => p.type === "text") as any;
+        textContent = textPart?.text || "";
       }
       const contentHash = `${msg.role}:${textContent}`;
       previousMessageMap.set(contentHash, msg);
@@ -160,26 +160,26 @@ export const POST = withMonitoring(async (request: Request) => {
 
     // Filter out messages that already exist by content (not just ID)
     const newMessages = normalizedMessages.filter((msg) => {
-      if (msg.role === 'system') return false;
+      if (msg.role === "system") return false;
 
       const msgAny = msg as any;
       const textContent =
-        typeof msgAny.content === 'string'
+        typeof msgAny.content === "string"
           ? msgAny.content
-          : msg.parts?.find((p: any) => p.type === 'text')?.text || '';
+          : msg.parts?.find((p: any) => p.type === "text")?.text || "";
       const contentHash = `${msg.role}:${textContent}`;
 
       const isDuplicate = previousMessageMap.has(contentHash);
       if (isDuplicate) {
         console.log(
-          `🔍 Skipping duplicate message: ${contentHash.substring(0, 50)}...`,
+          `🔍 Skipping duplicate message: ${contentHash.substring(0, 50)}...`
         );
       }
       return !isDuplicate;
     });
 
     console.log(
-      `🔍 Filtered messages: ${newMessages.length} new out of ${normalizedMessages.length} total`,
+      `🔍 Filtered messages: ${newMessages.length} new out of ${normalizedMessages.length} total`
     );
 
     // Combine previous messages with only NEW messages
@@ -194,13 +194,13 @@ export const POST = withMonitoring(async (request: Request) => {
         if (
           (!msg.parts || msg.parts.length === 0) &&
           msgAny.content &&
-          typeof msgAny.content === 'string'
+          typeof msgAny.content === "string"
         ) {
           return {
             ...msg,
             parts: [
               {
-                type: 'text',
+                type: "text",
                 text: msgAny.content,
               },
             ],
@@ -213,15 +213,15 @@ export const POST = withMonitoring(async (request: Request) => {
           const validParts = msg.parts.filter((p: any) => {
             // Keep text parts with valid content
             if (
-              p.type === 'text' &&
+              p.type === "text" &&
               p.text &&
-              typeof p.text === 'string' &&
+              typeof p.text === "string" &&
               p.text.trim().length > 0
             ) {
               return true;
             }
             // Keep tool invocation parts (needed for image/video generation)
-            if (p.type?.startsWith('tool-')) {
+            if (p.type?.startsWith("tool-")) {
               return true;
             }
             // Filter out everything else (step-start, etc.)
@@ -244,14 +244,14 @@ export const POST = withMonitoring(async (request: Request) => {
         // Text parts are required for conversation, tool parts are required for image/video generation
         const hasTextPart = msg.parts?.some(
           (p: any) =>
-            p.type === 'text' &&
+            p.type === "text" &&
             p.text &&
-            typeof p.text === 'string' &&
-            p.text.trim().length > 0,
+            typeof p.text === "string" &&
+            p.text.trim().length > 0
         );
 
         const hasToolPart = msg.parts?.some((p: any) =>
-          p.type?.startsWith('tool-'),
+          p.type?.startsWith("tool-")
         );
 
         const isValid = hasTextPart || hasToolPart;
@@ -263,7 +263,7 @@ export const POST = withMonitoring(async (request: Request) => {
               id: msg.id,
               role: msg.role,
               partsCount: msg.parts?.length,
-            },
+            }
           );
         }
 
@@ -277,22 +277,25 @@ export const POST = withMonitoring(async (request: Request) => {
 
       // Also remove base64 images from content field
       // These are typically generated images that have been saved as base64 strings
-      if (rest.content && typeof rest.content === 'string') {
+      if (rest.content && typeof rest.content === "string") {
         try {
           // Try to parse content as JSON (for tool results with embedded base64)
           const parsed = JSON.parse(rest.content);
-          if (parsed.imageUrl?.startsWith('data:image/')) {
+          if (parsed.imageUrl?.startsWith("data:image/")) {
             // Remove base64 image URL, keep other metadata
             const { imageUrl, ...contentWithoutImage } = parsed;
             rest.content = JSON.stringify(contentWithoutImage);
-            console.log('🔍 Removed base64 image from message content');
+            console.log("🔍 Removed base64 image from message content");
           }
         } catch {
           // Not JSON, check if it's a base64 data URL
-          if (rest.content.startsWith('data:image/') || rest.content.startsWith('data:video/')) {
+          if (
+            rest.content.startsWith("data:image/") ||
+            rest.content.startsWith("data:video/")
+          ) {
             // Replace with placeholder to prevent token overflow
-            rest.content = '[Media content removed to prevent token overflow]';
-            console.log('🔍 Replaced base64 data URL with placeholder');
+            rest.content = "[Media content removed to prevent token overflow]";
+            console.log("🔍 Replaced base64 data URL with placeholder");
           }
         }
       }
@@ -300,18 +303,25 @@ export const POST = withMonitoring(async (request: Request) => {
       // Also check parts array for base64 content
       if (rest.parts && Array.isArray(rest.parts)) {
         rest.parts = rest.parts.map((part: any) => {
-          if (part.type === 'text' && part.text && typeof part.text === 'string') {
+          if (
+            part.type === "text" &&
+            part.text &&
+            typeof part.text === "string"
+          ) {
             // Check if text contains base64 data URL
-            if (part.text.startsWith('data:image/') || part.text.startsWith('data:video/')) {
+            if (
+              part.text.startsWith("data:image/") ||
+              part.text.startsWith("data:video/")
+            ) {
               return {
                 ...part,
-                text: '[Media content removed to prevent token overflow]',
+                text: "[Media content removed to prevent token overflow]",
               };
             }
             // Check if text is JSON with base64 imageUrl
             try {
               const parsed = JSON.parse(part.text);
-              if (parsed.imageUrl?.startsWith('data:image/')) {
+              if (parsed.imageUrl?.startsWith("data:image/")) {
                 const { imageUrl, ...contentWithoutImage } = parsed;
                 return {
                   ...part,
@@ -330,10 +340,10 @@ export const POST = withMonitoring(async (request: Request) => {
     });
 
     console.log(
-      `🔍 Messages for API: ${messagesWithoutAttachments.length} out of ${allMessages.length} total`,
+      `🔍 Messages for API: ${messagesWithoutAttachments.length} out of ${allMessages.length} total`
     );
     console.log(
-      `🔍 Removed attachments from messages to prevent token overflow`,
+      `🔍 Removed attachments from messages to prevent token overflow`
     );
 
     // Debug: Log all messages structure before sending to API
@@ -342,15 +352,15 @@ export const POST = withMonitoring(async (request: Request) => {
       console.log(`🔍 Message ${index}:`, {
         role: msg.role,
         partsCount: msg.parts?.length,
-        partsTypes: msg.parts?.map((p: any) => p.type).join(', '),
+        partsTypes: msg.parts?.map((p: any) => p.type).join(", "),
         contentLength:
-          typeof msgAny.content === 'string' ? msgAny.content.length : 0,
+          typeof msgAny.content === "string" ? msgAny.content.length : 0,
       });
     });
 
     // Save user messages to database (with automatic FK recovery)
     const userMessages = normalizedMessages.filter(
-      (msg) => msg.role === 'user',
+      (msg) => msg.role === "user"
     );
 
     // AICODE-FIX: Only save NEW user messages that aren't already in the database
@@ -358,39 +368,37 @@ export const POST = withMonitoring(async (request: Request) => {
     const newUserMessages = userMessages.filter((msg) => {
       const msgAny = msg as any;
       const textContent =
-        typeof msgAny.content === 'string'
+        typeof msgAny.content === "string"
           ? msgAny.content
-          : msg.parts?.find((p: any) => p.type === 'text')?.text || '';
+          : msg.parts?.find((p: any) => p.type === "text")?.text || "";
       const contentHash = `${msg.role}:${textContent}`;
       return !previousMessageMap.has(contentHash);
     });
 
-    console.log(
-      `💾 Saving user messages: ${newUserMessages.length} new out of ${userMessages.length} total`,
-    );
-    console.log(`💾 Previous messages count:`, previousMessageMap.size);
-    console.log(
-      `💾 Previous message hashes:`,
-      Array.from(previousMessageMap.keys()).map((hash) =>
-        hash.substring(0, 50),
-      ),
-    );
-    console.log(
-      `💾 User message contents:`,
-      userMessages.map((m) => {
-        const text =
-          typeof m.content === 'string'
-            ? m.content
-            : m.parts?.find((p: any) => p.type === 'text')?.text || '';
-        const hash = `${m.role}:${text}`;
-        const isDuplicate = previousMessageMap.has(hash);
-        return {
-          text: text.substring(0, 30),
-          hash: hash.substring(0, 50),
-          isDuplicate,
-        };
-      }),
-    );
+    // console.log(
+    //   `💾 Saving user messages: ${newUserMessages.length} new out of ${userMessages.length} total`
+    // );
+    // console.log(`💾 Previous messages count:`, previousMessageMap.size);
+    // console.log(
+    //   `💾 Previous message hashes:`,
+    //   Array.from(previousMessageMap.keys()).map((hash) => hash.substring(0, 50))
+    // );
+    // console.log(
+    //   `💾 User message contents:`,
+    //   userMessages.map((m) => {
+    //     const text =
+    //       typeof m.content === "string"
+    //         ? m.content
+    //         : m.parts?.find((p: any) => p.type === "text")?.text || "";
+    //     const hash = `${m.role}:${text}`;
+    //     const isDuplicate = previousMessageMap.has(hash);
+    //     return {
+    //       text: text.substring(0, 30),
+    //       hash: hash.substring(0, 50),
+    //       isDuplicate,
+    //     };
+    //   })
+    // );
 
     for (const userMsg of newUserMessages) {
       await saveUserMessage({
@@ -400,7 +408,7 @@ export const POST = withMonitoring(async (request: Request) => {
     }
 
     // Generate response using AI SDK v5
-    const chatModel = selectedChatModel || 'chat-model';
+    const chatModel = selectedChatModel || "chat-model";
 
     // Create tools with proper parameters
     const createDocumentTool = createDocument({ session });
@@ -412,14 +420,14 @@ export const POST = withMonitoring(async (request: Request) => {
       createDocument: createDocumentTool,
       session,
       chatId,
-      userMessage: lastMessage?.content || '',
+      userMessage: lastMessage?.content || "",
       currentAttachments: lastMessage?.experimental_attachments || [],
     });
     const videoGenerationTool = configureVideoGeneration({
       createDocument: createDocumentTool,
       session,
       chatId,
-      userMessage: lastMessage?.content || '',
+      userMessage: lastMessage?.content || "",
       currentAttachments: lastMessage?.experimental_attachments || [],
     });
 
@@ -428,14 +436,14 @@ export const POST = withMonitoring(async (request: Request) => {
       createDocument: createDocumentTool,
       session,
       chatId,
-      userMessage: lastMessage?.content || '',
+      userMessage: lastMessage?.content || "",
       currentAttachments: lastMessage?.experimental_attachments || [],
     });
     const falVideoTool = falVideoGenerationForChat({
       createDocument: createDocumentTool,
       session,
       chatId,
-      userMessage: lastMessage?.content || '',
+      userMessage: lastMessage?.content || "",
       currentAttachments: lastMessage?.experimental_attachments || [],
     });
 
@@ -460,36 +468,44 @@ export const POST = withMonitoring(async (request: Request) => {
       requestSuggestions: suggestionsTool,
     };
 
-    console.log('🔧 Available tools:', Object.keys(toolsObject));
-    console.log('🤖 Using model:', chatModel);
-    console.log('📝 Messages count:', messagesWithoutAttachments.length);
-    console.log(
-      '📝 Last user message:',
-      messagesWithoutAttachments[messagesWithoutAttachments.length - 1]
-        ?.content,
-    );
+    // console.log("🔧 Available tools:", Object.keys(toolsObject));
+    // console.log("🤖 Using model:", chatModel);
+    // console.log("📝 Messages count:", messagesWithoutAttachments.length);
+    // console.log(
+    //   "📝 Last user message:",
+    //   messagesWithoutAttachments[messagesWithoutAttachments.length - 1]?.content
+    // );
 
     const systemPromptText = systemPrompt({
       selectedChatModel: chatModel,
-      requestHints: { latitude: '0', longitude: '0', city: '', country: '' },
+      requestHints: { latitude: "0", longitude: "0", city: "", country: "" },
     });
-    console.log(
-      '📋 System prompt first 500 chars:',
-      systemPromptText.substring(0, 500),
-    );
+    // console.log(
+    //   "📋 System prompt first 500 chars:",
+    //   systemPromptText.substring(0, 500)
+    // );
 
     // CRITICAL: Detect image and video generation requests
-    const lastUserMessage = messagesWithoutAttachments[messagesWithoutAttachments.length - 1];
-    const isImageGenerationRequest = lastUserMessage?.content && typeof lastUserMessage.content === 'string' &&
-      /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|draw|show|need|want|can you).*?(?:фото|картинк|изображени|рисунок|иллюстраци|image|picture|photo|drawing|illustration)/i.test(lastUserMessage.content.toLowerCase());
+    const lastUserMessage =
+      messagesWithoutAttachments[messagesWithoutAttachments.length - 1];
+    const isImageGenerationRequest =
+      lastUserMessage?.content &&
+      typeof lastUserMessage.content === "string" &&
+      /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|draw|show|need|want|can you).*?(?:фото|картинк|изображени|рисунок|иллюстраци|image|picture|photo|drawing|illustration)/i.test(
+        lastUserMessage.content.toLowerCase()
+      );
 
-    const isVideoGenerationRequest = lastUserMessage?.content && typeof lastUserMessage.content === 'string' &&
-      /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|show|need|want|can you).*?(?:видео|ролик|анимаци|video|clip|animation)/i.test(lastUserMessage.content.toLowerCase());
+    const isVideoGenerationRequest =
+      lastUserMessage?.content &&
+      typeof lastUserMessage.content === "string" &&
+      /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|show|need|want|can you).*?(?:видео|ролик|анимаци|video|clip|animation)/i.test(
+        lastUserMessage.content.toLowerCase()
+      );
 
-    console.log('🔍 Request type detection:', {
+    console.log("🔍 Request type detection:", {
       isImageGeneration: isImageGenerationRequest,
       isVideoGeneration: isVideoGenerationRequest,
-      lastMessage: lastUserMessage?.content?.substring(0, 100)
+      lastMessage: lastUserMessage?.content?.substring(0, 100),
     });
 
     const result = streamText({
@@ -511,15 +527,18 @@ export const POST = withMonitoring(async (request: Request) => {
         requestSuggestions: suggestionsTool,
       },
       // CRITICAL: Force tool usage for image/video generation to ensure models call the right tool
-      toolChoice: (isImageGenerationRequest || isVideoGenerationRequest) ? 'required' : 'auto',
+      toolChoice:
+        isImageGenerationRequest || isVideoGenerationRequest
+          ? "required"
+          : "auto",
       // CRITICAL: Allow model to generate text after tool call
       // With maxSteps: 2, model can: step 1 = call tool, step 2 = generate text response
       maxSteps: 2,
       // REMOVED stopWhen - let AI SDK handle tool execution naturally without interference
       onError: ({ error }) => {
-        console.error('❌ Stream error:', error);
+        console.error("❌ Stream error:", error);
         if (error instanceof Error) {
-          console.error('❌ Error stack:', error.stack);
+          console.error("❌ Error stack:", error.stack);
         }
       },
     });
@@ -532,80 +551,70 @@ export const POST = withMonitoring(async (request: Request) => {
       onFinish: async ({ messages: finishedMessages, responseMessage }) => {
         try {
           console.log(
-            '📝 onFinish called with messages:',
-            finishedMessages.length,
-          );
-          console.log(
-            '📝 responseMessage:',
-            responseMessage ? 'present' : 'null',
+            "📝 onFinish called with messages:",
+            finishedMessages.length
           );
 
           if (!responseMessage) {
-            console.log('📝 ⚠️ No response message to save');
+            console.log("📝 ⚠️ No response message to save");
             return;
           }
 
           // Debug: Log the raw responseMessage structure
-          console.log(
-            '📝 🔍 responseMessage keys:',
-            Object.keys(responseMessage),
-          );
-          console.log(
-            '📝 🔍 responseMessage.parts:',
-            (responseMessage as any).parts ? 'present' : 'missing',
-          );
-          if ((responseMessage as any).parts) {
-            console.log(
-              '📝 🔍 responseMessage.parts length:',
-              (responseMessage as any).parts.length,
-            );
-            console.log(
-              '📝 🔍 responseMessage.parts types:',
-              (responseMessage as any).parts.map((p: any) => p.type).join(', '),
-            );
-          }
 
           // CRITICAL FIX: Check if message has only tool calls without text
           // This happens when toolChoice: 'required' forces tool execution without text generation
           const parts = (responseMessage as any).parts || [];
-          const hasTextPart = parts.some((p: any) => p.type === 'text' && p.text);
-          const hasToolPart = parts.some((p: any) => p.type && typeof p.type === 'string' && p.type.startsWith('tool-'));
+          const hasTextPart = parts.some(
+            (p: any) => p.type === "text" && p.text
+          );
+          const hasToolPart = parts.some(
+            (p: any) =>
+              p.type && typeof p.type === "string" && p.type.startsWith("tool-")
+          );
 
           // If message has tool calls but no text, add text from tool result message
           if (hasToolPart && !hasTextPart) {
-            console.log('📝 🔧 Tool-only message detected, adding text part from tool result');
+            console.log(
+              "📝 🔧 Tool-only message detected, adding text part from tool result"
+            );
 
             // Find tool part with output
-            const toolPart = parts.find((p: any) =>
-              p.type?.startsWith('tool-') && p.output
+            const toolPart = parts.find(
+              (p: any) => p.type?.startsWith("tool-") && p.output
             );
 
             if (toolPart?.output) {
-              console.log('📝 🔍 Tool output structure:', JSON.stringify(toolPart.output, null, 2));
+              console.log(
+                "📝 🔍 Tool output structure:"
+                // JSON.stringify(toolPart.output, null, 2)
+              );
 
               // Try to extract message from various possible locations
               // Priority: error message > explicit message > success message > fallback
               const message =
-                toolPart.output.error ||  // Error message (highest priority)
-                toolPart.output.message ||  // Direct message field
-                toolPart.output.data?.message ||  // Nested in data
+                toolPart.output.error || // Error message (highest priority)
+                toolPart.output.message || // Direct message field
+                toolPart.output.data?.message || // Nested in data
                 (toolPart.output.success === false
-                  ? 'Tool execution failed'  // Failed without error message
-                  : 'Content generated successfully using AI tools.');  // Success without message
+                  ? "Tool execution failed" // Failed without error message
+                  : "Content generated successfully using AI tools."); // Success without message
 
               // Add text part with message from tool result
               parts.push({
-                type: 'text',
+                type: "text",
                 text: message,
               });
-              console.log('📝 ✅ Added text part:', message);
+              console.log("📝 ✅ Added text part:", message);
             } else {
               // Fallback: add generic message
               parts.push({
-                type: 'text',
-                text: 'Generated content using AI tools.',
+                type: "text",
+                text: "Generated content using AI tools.",
               });
-              console.log('📝 ✅ Added default text part (no tool output found)');
+              console.log(
+                "📝 ✅ Added default text part (no tool output found)"
+              );
             }
           }
 
@@ -618,70 +627,66 @@ export const POST = withMonitoring(async (request: Request) => {
 
           // Check responseMessage parts for tool invocations
           if (parts.length > 0) {
-            console.log(
-              '📝 🔍 Processing',
-              parts.length,
-              'parts...',
-            );
+            console.log("📝 🔍 Processing", parts.length, "parts...");
             for (const part of parts) {
-              console.log('📝 🔍 Part type:', part.type);
-              console.log('📝 🔍 Part state:', (part as any).state);
-              console.log('📝 🔍 Part output:', (part as any).output);
-              console.log('📝 🔍 Part keys:', Object.keys(part));
+              // console.log('📝 🔍 Part type:', part.type);
+              // console.log('📝 🔍 Part state:', (part as any).state);
+              // console.log('📝 🔍 Part output:', (part as any).output);
+              // console.log('📝 🔍 Part keys:', Object.keys(part));
 
               // AI SDK v5: Tool data is directly in part, not in nested toolInvocation
               // Check for tool parts with completed state and output
               // State can be 'output-available' or 'result'
               if (
                 part.type &&
-                typeof part.type === 'string' &&
-                part.type.startsWith('tool-') &&
-                ((part as any).state === 'output-available' ||
-                  (part as any).state === 'result') &&
+                typeof part.type === "string" &&
+                part.type.startsWith("tool-") &&
+                ((part as any).state === "output-available" ||
+                  (part as any).state === "result") &&
                 (part as any).output
               ) {
-                const toolName = part.type.replace('tool-', '');
+                const toolName = part.type.replace("tool-", "");
                 const toolResult = (part as any).output;
 
                 console.log(
-                  '📝 🔍 Tool found:',
+                  "📝 🔍 Tool found:",
                   toolName,
-                  'state:',
-                  (part as any).state,
+                  "state:",
+                  (part as any).state
                 );
-                console.log('📝 🔍 Tool result:', toolResult);
+                // console.log('📝 🔍 Tool result:', toolResult);
 
                 // Check for script documents from either configureScriptGeneration OR createDocument
                 // Case 1: configureScriptGeneration tool
                 if (
-                  toolName === 'configureScriptGeneration' &&
+                  toolName === "configureScriptGeneration" &&
                   toolResult.id &&
                   toolResult.kind
                 ) {
                   toolDocuments.push({
                     id: toolResult.id,
-                    title: toolResult.title || 'Document',
+                    title: toolResult.title || "Document",
                     kind: toolResult.kind,
                   });
                   console.log(
-                    '📝 ✅ Found script document from configureScriptGeneration:',
-                    toolResult.id,
+                    "📝 ✅ Found script document from configureScriptGeneration:",
+                    toolResult.id
                   );
                 }
                 // Case 2: createDocument tool with kind === "script"
                 else if (
-                  toolName === 'createDocument' &&
-                  toolResult.kind === 'script' &&
+                  toolName === "createDocument" &&
+                  toolResult.kind === "script" &&
                   toolResult.id
                 ) {
                   toolDocuments.push({
                     id: toolResult.id,
-                    title: toolResult.title || 'Document',
+                    title: toolResult.title || "Document",
                     kind: toolResult.kind,
                   });
                   console.log(
-                    '📝 ✅ Found script document from createDocument:',
-                    toolResult.id,
+                    "📝 ✅ Found script document from createDocument:",
+                    toolResult.id
                   );
                 }
               }
@@ -699,22 +704,22 @@ export const POST = withMonitoring(async (request: Request) => {
 
           // Add attachments for script documents created by tools
           for (const doc of toolDocuments) {
-            if (doc.kind === 'script') {
+            if (doc.kind === "script") {
               attachments.push({
                 name:
                   doc.title.length > 200
                     ? `${doc.title.substring(0, 200)}...`
                     : doc.title,
                 url: `${
-                  typeof process !== 'undefined' &&
+                  typeof process !== "undefined" &&
                   process.env.NEXT_PUBLIC_APP_URL
                     ? process.env.NEXT_PUBLIC_APP_URL
-                    : 'http://localhost:3001'
+                    : "http://localhost:3001"
                 }/api/document?id=${doc.id}`,
-                contentType: 'text/markdown' as const,
+                contentType: "text/markdown" as const,
                 documentId: doc.id,
               });
-              console.log('📝 ✅ Added script attachment to message:', doc.id);
+              console.log("📝 ✅ Added script attachment to message:", doc.id);
             }
           }
 
@@ -722,27 +727,27 @@ export const POST = withMonitoring(async (request: Request) => {
           const assistantMessage = {
             id: withUUID.id,
             chatId,
-            role: 'assistant' as const,
+            role: "assistant" as const,
             parts: normalized.parts,
             attachments: attachments,
             createdAt: new Date(),
           };
 
-          console.log('📝 Saving assistant message to database');
+          console.log("📝 Saving assistant message to database");
           await saveMessages({ messages: [assistantMessage] });
-          console.log('📝 ✅ Assistant message saved successfully');
-          console.log('📝 ✅ Message details:', {
+          console.log("📝 ✅ Assistant message saved successfully");
+          console.log("📝 ✅ Message details:", {
             id: assistantMessage.id,
             attachments: attachments.length,
             partsCount: normalized.parts?.length || 0,
           });
         } catch (error) {
-          console.error('Failed to save assistant messages:', error);
+          console.error("Failed to save assistant messages:", error);
           // Don't throw - let the stream complete even if save fails
         }
       },
     });
   } catch (error) {
-    return formatErrorResponse(error, 'Chat API');
+    return formatErrorResponse(error, "Chat API");
   }
 });
