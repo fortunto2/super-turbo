@@ -10,11 +10,23 @@ import { createBalanceErrorResponse } from '@/lib/utils/balance-error-handler';
 // Zod schema for video generation request validation
 const videoGenerationSchema = z.object({
   prompt: z.string().min(1, 'Промпт обязателен'),
+  sourceImageUrl: z.string().optional(),
   duration: z.enum(['4', '6', '8']).optional().default('8'),
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).optional().default('16:9'),
   resolution: z.enum(['720p', '1080p']).optional().default('720p'),
   negativePrompt: z.string().optional(),
 });
+
+function extractBase64FromDataUrl(dataUrl: string): string {
+  const base64Match = dataUrl.match(/^data:image\/[^;]+;base64,(.+)$/);
+  if (base64Match && base64Match[1]) return base64Match[1];
+  return dataUrl;
+}
+
+function getMimeTypeFromDataUrl(dataUrl: string): string {
+  const mimeMatch = dataUrl.match(/^data:(image\/[^;]+);base64,/);
+  return mimeMatch && mimeMatch[1] ? mimeMatch[1] : 'image/jpeg';
+}
 
 /**
  * Vertex AI Video Generation через Google Cloud
@@ -73,7 +85,9 @@ export async function POST(request: NextRequest) {
 
     // Валидация баланса пользователя
     const userId = session.user.id;
-    const generationType = 'text-to-video';
+    const generationType = validatedData.sourceImageUrl
+      ? 'image-to-video'
+      : 'text-to-video';
 
     // Определяем множители стоимости
     const multipliers: string[] = [];
@@ -144,6 +158,16 @@ export async function POST(request: NextRequest) {
             instances: [
               {
                 prompt: validatedData.prompt,
+                ...(validatedData.sourceImageUrl && {
+                  image: {
+                    bytesBase64Encoded: extractBase64FromDataUrl(
+                      validatedData.sourceImageUrl,
+                    ),
+                    mimeType: getMimeTypeFromDataUrl(
+                      validatedData.sourceImageUrl,
+                    ),
+                  },
+                }),
                 ...(validatedData.negativePrompt && {
                   negativePrompt: validatedData.negativePrompt,
                 }),

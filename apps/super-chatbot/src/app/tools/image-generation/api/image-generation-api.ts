@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 // Types for Image Generation operations (Nano Banana)
 export interface ImageGenerationRequest {
   prompt: string;
   sourceImageUrl?: string;
   style?: string;
-  quality?: 'standard' | 'high' | 'ultra' | 'masterpiece';
-  aspectRatio?: '1:1' | '4:3' | '16:9' | '3:2' | '9:16' | '21:9';
+  quality?: "standard" | "high" | "ultra" | "masterpiece";
+  aspectRatio?: "1:1" | "4:3" | "16:9" | "3:2" | "9:16" | "21:9";
   seed?: number;
   batchSize?: number;
   enableContextAwareness?: boolean;
@@ -47,7 +47,7 @@ export interface GeneratedImageResult {
     style?: string;
     quality?: string;
     aspectRatio?: string;
-    seed?: number;
+    seed?: number | undefined;
     batchSize?: number;
     enableContextAwareness?: boolean;
     enableSurgicalPrecision?: boolean;
@@ -73,7 +73,7 @@ export interface EditedImageResult {
 
 // API Functions
 export async function generateImage(
-  request: ImageGenerationRequest,
+  request: ImageGenerationRequest
 ): Promise<ImageGenerationApiResponse<GeneratedImageResult>> {
   try {
     // AICODE-NOTE: Copied logic from nano-banana-generator
@@ -83,11 +83,11 @@ export async function generateImage(
     if (request.sourceImageUrl) {
       // Image-to-image mode - use edit endpoint
       const editPayload = {
-        editType: 'style-transfer', // Using style-transfer as default for image-to-image
+        editType: "style-transfer", // Using style-transfer as default for image-to-image
         editPrompt: request.prompt,
         sourceImageUrl: request.sourceImageUrl,
-        precisionLevel: 'automatic',
-        blendMode: 'natural',
+        precisionLevel: "automatic",
+        blendMode: "natural",
         preserveOriginalStyle: false,
         enhanceLighting: true,
         preserveShadows: true,
@@ -95,10 +95,10 @@ export async function generateImage(
         batchSize: request.batchSize || 1,
       };
 
-      const response = await fetch('/api/nano-banana/edit', {
-        method: 'POST',
+      const response = await fetch("/api/nano-banana/edit", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(editPayload),
       });
@@ -108,7 +108,7 @@ export async function generateImage(
       if (!response.ok || !data?.success || !data?.data?.url) {
         return {
           success: false,
-          error: data?.error || 'Failed to generate image with source',
+          error: data?.error || "Failed to generate image with source",
         };
       }
 
@@ -138,10 +138,10 @@ export async function generateImage(
       };
     } else {
       // Text-to-image mode - use direct-image endpoint (like nano-banana-generator)
-      const response = await fetch('/api/nano-banana/direct-image', {
-        method: 'POST',
+      const response = await fetch("/api/nano-banana/direct-image", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ prompt: request.prompt }),
       });
@@ -151,7 +151,7 @@ export async function generateImage(
       if (!response.ok || !data?.success || !data?.url) {
         return {
           success: false,
-          error: data?.error || 'Failed to generate image',
+          error: data?.error || "Failed to generate image",
         };
       }
 
@@ -161,9 +161,9 @@ export async function generateImage(
         prompt: request.prompt,
         timestamp: Date.now(),
         settings: {
-          style: request.style || '',
-          quality: request.quality || '',
-          aspectRatio: request.aspectRatio || '',
+          style: request.style || "",
+          quality: request.quality || "",
+          aspectRatio: request.aspectRatio || "",
           seed: request.seed,
           enableContextAwareness: request.enableContextAwareness ?? true,
           enableSurgicalPrecision: request.enableSurgicalPrecision ?? true,
@@ -174,22 +174,22 @@ export async function generateImage(
       return { success: true, data: result };
     }
   } catch (error) {
-    console.error('Image generation error:', error);
+    console.error("Image generation error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Generation failed',
+      error: error instanceof Error ? error.message : "Generation failed",
     };
   }
 }
 
 export async function editImage(
-  request: ImageEditingRequest,
+  request: ImageEditingRequest
 ): Promise<ImageGenerationApiResponse<EditedImageResult>> {
   try {
-    const response = await fetch('/api/nano-banana/edit', {
-      method: 'POST',
+    const response = await fetch("/api/nano-banana/edit", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(request),
     });
@@ -197,10 +197,10 @@ export async function editImage(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Image editing error:', error);
+    console.error("Image editing error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Editing failed',
+      error: error instanceof Error ? error.message : "Editing failed",
     };
   }
 }
@@ -214,99 +214,99 @@ export async function getImageGenerationConfig(): Promise<{
   return {
     styles: [
       {
-        id: 'realistic',
-        label: 'Realistic',
-        description: 'Photorealistic images',
+        id: "realistic",
+        label: "Realistic",
+        description: "Photorealistic images",
       },
       {
-        id: 'cinematic',
-        label: 'Cinematic',
-        description: 'Movie-style with dramatic lighting',
+        id: "cinematic",
+        label: "Cinematic",
+        description: "Movie-style with dramatic lighting",
       },
-      { id: 'anime', label: 'Anime', description: 'Japanese animation style' },
+      { id: "anime", label: "Anime", description: "Japanese animation style" },
       {
-        id: 'cartoon',
-        label: 'Cartoon',
-        description: 'Cartoon animation style',
+        id: "cartoon",
+        label: "Cartoon",
+        description: "Cartoon animation style",
       },
-      { id: 'chibi', label: 'Chibi', description: 'Cute miniature style' },
+      { id: "chibi", label: "Chibi", description: "Cute miniature style" },
       {
-        id: '3d-render',
-        label: '3D Render',
-        description: 'Three-dimensional computer graphics',
-      },
-      {
-        id: 'oil-painting',
-        label: 'Oil Painting',
-        description: 'Classic oil painting',
+        id: "3d-render",
+        label: "3D Render",
+        description: "Three-dimensional computer graphics",
       },
       {
-        id: 'watercolor',
-        label: 'Watercolor',
-        description: 'Gentle watercolor technique',
-      },
-      { id: 'sketch', label: 'Sketch', description: 'Pencil sketch' },
-      {
-        id: 'digital-art',
-        label: 'Digital Art',
-        description: 'Modern digital artwork',
-      },
-      { id: 'fantasy', label: 'Fantasy', description: 'Magical fantasy world' },
-      {
-        id: 'sci-fi',
-        label: 'Sci-Fi',
-        description: 'Futuristic science fiction style',
+        id: "oil-painting",
+        label: "Oil Painting",
+        description: "Classic oil painting",
       },
       {
-        id: 'steampunk',
-        label: 'Steampunk',
-        description: 'Victorian era with technology',
+        id: "watercolor",
+        label: "Watercolor",
+        description: "Gentle watercolor technique",
+      },
+      { id: "sketch", label: "Sketch", description: "Pencil sketch" },
+      {
+        id: "digital-art",
+        label: "Digital Art",
+        description: "Modern digital artwork",
+      },
+      { id: "fantasy", label: "Fantasy", description: "Magical fantasy world" },
+      {
+        id: "sci-fi",
+        label: "Sci-Fi",
+        description: "Futuristic science fiction style",
       },
       {
-        id: 'cyberpunk',
-        label: 'Cyberpunk',
-        description: 'Neon futuristic style',
+        id: "steampunk",
+        label: "Steampunk",
+        description: "Victorian era with technology",
       },
       {
-        id: 'vintage',
-        label: 'Vintage',
-        description: 'Retro style of past eras',
+        id: "cyberpunk",
+        label: "Cyberpunk",
+        description: "Neon futuristic style",
       },
       {
-        id: 'minimalist',
-        label: 'Minimalist',
-        description: 'Simple and clean design',
-      },
-      { id: 'abstract', label: 'Abstract', description: 'Abstract art' },
-      {
-        id: 'portrait',
-        label: 'Portrait',
-        description: 'Focus on face and character',
+        id: "vintage",
+        label: "Vintage",
+        description: "Retro style of past eras",
       },
       {
-        id: 'landscape',
-        label: 'Landscape',
-        description: 'Nature and city views',
+        id: "minimalist",
+        label: "Minimalist",
+        description: "Simple and clean design",
       },
-      { id: 'macro', label: 'Macro', description: 'Close-up of small objects' },
+      { id: "abstract", label: "Abstract", description: "Abstract art" },
+      {
+        id: "portrait",
+        label: "Portrait",
+        description: "Focus on face and character",
+      },
+      {
+        id: "landscape",
+        label: "Landscape",
+        description: "Nature and city views",
+      },
+      { id: "macro", label: "Macro", description: "Close-up of small objects" },
     ],
     qualityLevels: [
-      { id: 'standard', label: 'Standard', description: 'Base quality' },
-      { id: 'high', label: 'High', description: 'Improved quality' },
-      { id: 'ultra', label: 'Ultra', description: 'Maximum quality' },
+      { id: "standard", label: "Standard", description: "Base quality" },
+      { id: "high", label: "High", description: "Improved quality" },
+      { id: "ultra", label: "Ultra", description: "Maximum quality" },
       {
-        id: 'masterpiece',
-        label: 'Masterpiece',
-        description: 'Professional quality',
+        id: "masterpiece",
+        label: "Masterpiece",
+        description: "Professional quality",
       },
     ],
     aspectRatios: [
-      { id: '1:1', label: 'Square (1:1)', description: '1024x1024' },
-      { id: '4:3', label: 'Classic (4:3)', description: '1024x768' },
-      { id: '16:9', label: 'Widescreen (16:9)', description: '1920x1080' },
-      { id: '3:2', label: 'Photo (3:2)', description: '1536x1024' },
-      { id: '9:16', label: 'Vertical (9:16)', description: '768x1366' },
-      { id: '21:9', label: 'Ultrawide (21:9)', description: '2560x1080' },
+      { id: "1:1", label: "Square (1:1)", description: "1024x1024" },
+      { id: "4:3", label: "Classic (4:3)", description: "1024x768" },
+      { id: "16:9", label: "Widescreen (16:9)", description: "1920x1080" },
+      { id: "3:2", label: "Photo (3:2)", description: "1536x1024" },
+      { id: "9:16", label: "Vertical (9:16)", description: "768x1366" },
+      { id: "21:9", label: "Ultrawide (21:9)", description: "2560x1080" },
     ],
   };
 }

@@ -12,7 +12,7 @@ import {
 } from '@turbo-super/ui';
 import { Textarea } from '@turbo-super/ui';
 import { Badge } from '@turbo-super/ui';
-import { Loader2, VideoIcon, Wand2, Sparkles } from 'lucide-react';
+import { Loader2, VideoIcon, Wand2, Sparkles, Upload, X } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 import type {
   VideoGenerationRequest,
   VideoModel,
@@ -92,6 +93,42 @@ export function VideoGenerationForm({
   });
 
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    const maxSizeInBytes = 10 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      toast.error('Image size must be less than 10MB');
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target?.result as string;
+      setImagePreview(imageUrl);
+      setFormData((prev) => ({ ...prev, sourceImageUrl: imageUrl }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData((prev) => {
+      const { sourceImageUrl, ...rest } = prev;
+      return rest;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,6 +194,54 @@ export function VideoGenerationForm({
               </p>
             )}
           </div>
+
+          {/* Image Upload Section - Only show for Vertex AI models */}
+          {formData.model?.startsWith('vertex-') && (
+            <div className="space-y-2">
+              <Label htmlFor="sourceImage">
+                Source Image (Optional - for Image-to-Video)
+              </Label>
+              {!imagePreview ? (
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="sourceImage"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleFileUpload}
+                      disabled={isGenerating}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative inline-block">
+                    <img
+                      src={imagePreview}
+                      alt="Source preview"
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      onClick={clearImage}
+                      disabled={isGenerating}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {imagePreview
+                  ? 'Image will be animated with your prompt. Click X to remove.'
+                  : 'Upload an image to animate (JPEG, PNG, WebP, max 10MB). Only available with Vertex AI models.'}
+              </p>
+            </div>
+          )}
 
           {/* Prompt */}
           <div className="space-y-2">

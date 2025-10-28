@@ -5,6 +5,7 @@ export type VideoModel = 'fal-veo3' | 'vertex-veo3' | 'vertex-veo2';
 
 export interface VideoGenerationRequest {
   prompt: string;
+  sourceImageUrl?: string;
   duration?: number;
   aspectRatio?: '16:9' | '9:16' | '1:1';
   resolution?: '720p' | '1080p';
@@ -70,6 +71,9 @@ export async function generateVideo(
     // Prepare request body
     const requestBody = {
       prompt: request.prompt,
+      ...(request.sourceImageUrl && {
+        sourceImageUrl: request.sourceImageUrl,
+      }),
       duration,
       aspectRatio: request.aspectRatio || '16:9',
       resolution: request.resolution || '720p',
