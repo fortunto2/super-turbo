@@ -1,4 +1,4 @@
-import { getSuperduperAIConfig } from '@/lib/config/superduperai';
+import { getSuperduperAIConfig } from "@/lib/config/superduperai";
 
 export type INextCursor = {
   offset: number;
@@ -39,23 +39,23 @@ export const getStyles = async () => {
     const response = await fetch(
       `${url}/api/v1/style?order_by=name&order=descendent&limit=100`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      },
+      }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('🎨 ❌ API Error Response:', errorText);
+      // Suppress non-critical API errors (e.g., timeouts) - fallback values are used
 
       if (response.status === 401) {
         return {
           success: false,
           error:
-            'Authentication failed. The API token may be invalid or expired.',
+            "Authentication failed. The API token may be invalid or expired.",
           token,
         };
       }
@@ -64,7 +64,7 @@ export const getStyles = async () => {
         return {
           success: false,
           error:
-            'Server error occurred. Please try again later or contact support.',
+            "Server error occurred. Please try again later or contact support.",
         };
       }
 
@@ -81,10 +81,10 @@ export const getStyles = async () => {
 
     return result;
   } catch (error: any) {
-    console.error('🎨 ❌ Style getting error:', error);
+    // Suppress non-critical API errors (e.g., timeouts) - fallback values are used
     return {
       success: false,
-      error: error?.message || 'Unknown error occurred during style',
+      error: error?.message || "Unknown error occurred during style",
     };
   }
 };
