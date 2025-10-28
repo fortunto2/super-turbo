@@ -71,6 +71,10 @@ export function ImageGenerationForm({
     creativeMode: false,
   });
 
+  // File upload state
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.prompt.trim()) return;
@@ -79,6 +83,28 @@ export function ImageGenerationForm({
 
   const updateField = (field: keyof ImageGenerationRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle file upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        setImagePreview(imageUrl);
+        setFormData((prev) => ({ ...prev, sourceImageUrl: imageUrl }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Clear image
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData((prev) => ({ ...prev, sourceImageUrl: '' }));
   };
 
   return (
@@ -94,6 +120,44 @@ export function ImageGenerationForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Source Image Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="sourceImage">
+              Source Image (Optional - upload to enable image-to-image)
+            </Label>
+            <div className="flex items-center space-x-4">
+              <Input
+                id="sourceImage"
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="flex-1"
+                disabled={isGenerating}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={clearImage}
+                disabled={isGenerating || !imageFile}
+              >
+                Clear
+              </Button>
+            </div>
+            {imagePreview && (
+              <div className="mt-2">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Upload an image for image-to-image generation or style reference
+            </p>
+          </div>
+
           {/* Prompt */}
           <div className="space-y-2">
             <Label htmlFor="prompt">Image Description *</Label>

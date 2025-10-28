@@ -76,66 +76,103 @@ export async function generateImage(
   request: ImageGenerationRequest,
 ): Promise<ImageGenerationApiResponse<GeneratedImageResult>> {
   try {
-    // Using Nano Banana API with correct parameters
-    const response = await fetch('/api/nano-banana/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
+    // AICODE-NOTE: Copied logic from nano-banana-generator
+    // Without sourceImageUrl → use /api/nano-banana/direct-image (simple generation)
+    // With sourceImageUrl → use /api/nano-banana/edit (image-to-image editing)
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        success: false,
-        error: data?.error || data?.details || 'Failed to generate image',
+    if (request.sourceImageUrl) {
+      // Image-to-image mode - use edit endpoint
+      const editPayload = {
+        editType: 'style-transfer', // Using style-transfer as default for image-to-image
+        editPrompt: request.prompt,
+        sourceImageUrl: request.sourceImageUrl,
+        precisionLevel: 'automatic',
+        blendMode: 'natural',
+        preserveOriginalStyle: false,
+        enhanceLighting: true,
+        preserveShadows: true,
+        seed: request.seed,
+        batchSize: request.batchSize || 1,
       };
-    }
 
-    if (!data?.success) {
-      return {
-        success: false,
-        error: data?.error || data?.details || 'Image generation failed',
-      };
-    }
+      const response = await fetch('/api/nano-banana/edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editPayload),
+      });
 
-    // Nano Banana returns data in data field
-    const imageData = data.data;
-    const result: GeneratedImageResult = {
-      id: imageData?.id || `img-${Date.now()}`,
-      url: imageData?.url || '',
-      prompt: request.prompt,
-      timestamp: Date.now(),
-      settings: {
-        ...(request.style && { style: request.style }),
-        ...(request.quality && { quality: request.quality }),
-        ...(request.aspectRatio && { aspectRatio: request.aspectRatio }),
-        ...(typeof request.seed === 'number' && { seed: request.seed }),
-        ...(typeof request.batchSize === 'number' && {
+      const data = await response.json();
+
+      if (!response.ok || !data?.success || !data?.data?.url) {
+        return {
+          success: false,
+          error: data?.error || 'Failed to generate image with source',
+        };
+      }
+
+      const result: GeneratedImageResult = {
+        id: data.data.id || `img-${Date.now()}`,
+        url: data.data.url,
+        prompt: request.prompt,
+        timestamp: Date.now(),
+        settings: {
+          style: request.style,
+          quality: request.quality,
+          aspectRatio: request.aspectRatio,
+          seed: request.seed,
           batchSize: request.batchSize,
-        }),
-        ...(typeof request.enableContextAwareness === 'boolean' && {
           enableContextAwareness: request.enableContextAwareness,
-        }),
-        ...(typeof request.enableSurgicalPrecision === 'boolean' && {
           enableSurgicalPrecision: request.enableSurgicalPrecision,
-        }),
-        ...(typeof request.creativeMode === 'boolean' && {
           creativeMode: request.creativeMode,
-        }),
-      },
-    };
+        },
+      };
 
-    return {
-      success: true,
-      data: result,
-      projectId: imageData?.projectId,
-      requestId: imageData?.id,
-      fileId: imageData?.id,
-      url: imageData?.url,
-    };
+      return {
+        success: true,
+        data: result,
+        projectId: data.projectId,
+        requestId: data.requestId,
+        fileId: data.fileId,
+      };
+    } else {
+      // Text-to-image mode - use direct-image endpoint (like nano-banana-generator)
+      const response = await fetch('/api/nano-banana/direct-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: request.prompt }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.success || !data?.url) {
+        return {
+          success: false,
+          error: data?.error || 'Failed to generate image',
+        };
+      }
+
+      const result: GeneratedImageResult = {
+        id: `vertex-${Date.now()}`,
+        url: data.url,
+        prompt: request.prompt,
+        timestamp: Date.now(),
+        settings: {
+          style: request.style || '',
+          quality: request.quality || '',
+          aspectRatio: request.aspectRatio || '',
+          seed: request.seed,
+          enableContextAwareness: request.enableContextAwareness ?? true,
+          enableSurgicalPrecision: request.enableSurgicalPrecision ?? true,
+          creativeMode: request.creativeMode ?? false,
+        },
+      };
+
+      return { success: true, data: result };
+    }
   } catch (error) {
     console.error('Image generation error:', error);
     return {
