@@ -106,9 +106,10 @@ async function analyzeMediaReferenceWithLLM(
     )
     .join("\n");
 
-  console.log("🤖 [AI Analyzer] Starting analysis for mediaType:", mediaType);
-  console.log("🤖 [AI Analyzer] User message:", userMessage);
-  console.log("🤖 [AI Analyzer] Available media count:", availableMedia.length);
+  console.log("🤖 ai:analyze", {
+    mediaType,
+    mediaCount: availableMedia.length,
+  });
 
   // Define Zod schema for structured output
   const analysisSchema = z.object({
@@ -148,7 +149,7 @@ Response JSON format:
   let analysis: z.infer<typeof analysisSchema>;
 
   try {
-    console.log("🤖 [AI Analyzer] Calling generateObject with schema...");
+    console.log("🤖 ai:generateObject");
     const { object } = await generateObject({
       model: myProvider.languageModel("chat-model"),
       prompt,
@@ -156,15 +157,16 @@ Response JSON format:
       maxOutputTokens: 500, // Увеличено с 300 до 500
     });
 
-    console.log(
-      "🤖 [AI Analyzer] Successfully got structured response:",
-      object
-    );
+    console.log("🤖 ai:response", {
+      isReferencing: object.isReferencing,
+      mediaNumber: object.mediaNumber,
+      confidence: object.confidence,
+    });
     analysis = object;
   } catch (error) {
     console.error(
-      "[AI Analyzer] Failed to generate structured response:",
-      error
+      "🤖 ai:error",
+      error instanceof Error ? error.message : String(error)
     );
     // Fallback
     return {

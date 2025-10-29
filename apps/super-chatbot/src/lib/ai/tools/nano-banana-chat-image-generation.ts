@@ -261,28 +261,20 @@ export const nanoBananaImageGenerationForChat = (
       enableSurgicalPrecision,
       creativeMode,
     }) => {
-      console.log("🍌🍌🍌 ===== NANO BANANA TOOL EXECUTE STARTED ===== 🍌🍌🍌");
-      console.log("🍌 nanoBananaImageGenerationForChat called with:", {
-        prompt,
-        referenceImageDescription,
+      console.log("🍌 image:tool start", {
+        hasPrompt: !!prompt,
+        hasRef: !!referenceImageDescription,
         style,
         quality,
         aspectRatio,
-        batchSize,
-        enableContextAwareness,
-        enableSurgicalPrecision,
-        creativeMode,
       });
-      console.log("🍌 Tool execution timestamp:", new Date().toISOString());
 
       // Get image configuration
       const config = await getImageGenerationConfig();
 
       // If no prompt, return Nano Banana configuration panel
       if (!prompt) {
-        console.log(
-          "🍌 No prompt provided, returning Nano Banana configuration panel"
-        );
+        console.log("🍌 image:config");
         return {
           ...config,
           nanoBananaStyles: NANO_BANANA_STYLES,
@@ -300,10 +292,7 @@ export const nanoBananaImageGenerationForChat = (
         };
       }
 
-      console.log(
-        "🍌 ✅ PROMPT PROVIDED, CREATING NANO BANANA IMAGE DOCUMENT:",
-        prompt
-      );
+      console.log("🍌 image:generate requested");
 
       try {
         // Find selected options
@@ -328,9 +317,7 @@ export const nanoBananaImageGenerationForChat = (
 
         if (params?.chatId) {
           try {
-            console.log("🔍 Analyzing image context for Nano Banana...");
-            console.log("🔍 User message:", params.userMessage);
-            console.log("🔍 Reference description:", referenceImageDescription);
+            console.log("🔍 image:analyze start");
 
             // Create enhanced message that includes both original message and reference description
             const enhancedMessage = referenceImageDescription
@@ -344,28 +331,14 @@ export const nanoBananaImageGenerationForChat = (
               params.session?.user?.id
             );
 
-            console.log("🔍 Context analysis result:", {
-              confidence: contextResult.confidence,
-              reasoning: contextResult.reasoning,
-              hasSourceUrl: !!contextResult.sourceUrl,
-            });
-
             if (contextResult.sourceUrl && contextResult.confidence !== "low") {
-              console.log(
-                "🔍 ✅ Using sourceUrl from context analysis:",
-                contextResult.sourceUrl
-              );
+              console.log("🔍 image:source found");
               normalizedSourceUrl = contextResult.sourceUrl;
             } else if (referenceImageDescription) {
-              // If AI provided reference description but analysis found nothing,
-              // this is likely an error - inform user
-              console.warn(
-                "🔍 ⚠️ Reference image description provided but no image found:",
-                referenceImageDescription
-              );
+              console.warn("🔍 image:source not found");
             }
           } catch (error) {
-            console.error("🔍 ❌ Error in context analysis:", error);
+            console.warn("🔍 image:analyze error");
             // Continue without source image - will be text-to-image
           }
         }
@@ -374,6 +347,7 @@ export const nanoBananaImageGenerationForChat = (
         const operationType = normalizedSourceUrl
           ? "image-to-image"
           : "text-to-image";
+        console.log("🍌 image:mode", operationType);
 
         // Check balance
         const multipliers: string[] = [];
@@ -434,31 +408,8 @@ export const nanoBananaImageGenerationForChat = (
             ", creative interpretation, artistic vision, unique perspective";
         }
 
-        // Create document parameters with Nano Banana marker
-        const imageParams = {
-          prompt: nanoBananaPrompt,
-          model: "gemini-2.5-flash-image",
-          provider: "nano-banana",
-          style: selectedStyle,
-          quality: selectedQuality,
-          aspectRatio: selectedAspectRatio,
-          seed: seed || undefined,
-          batchSize: batchSize || 1,
-          enableContextAwareness,
-          enableSurgicalPrecision,
-          creativeMode,
-          ...(normalizedSourceUrl
-            ? { sourceImageUrl: normalizedSourceUrl }
-            : {}),
-        };
-
-        console.log(
-          "🍌 ✅ CREATING NANO BANANA IMAGE DOCUMENT WITH PARAMS:",
-          imageParams
-        );
-
         // Use Nano Banana Provider (Gemini API)
-        console.log("🍌 🚀 NANO BANANA: Using Gemini API");
+        console.log("🍌 image:gemini call");
 
         const { nanoBananaProvider } = await import("../providers/nano-banana");
 
@@ -477,17 +428,14 @@ export const nanoBananaImageGenerationForChat = (
           ...(seed && { seed }),
         };
 
-        console.log("🍌 🔍 Calling Nano Banana provider with params:", {
-          hasSourceImageUrl: !!normalizedSourceUrl,
-          sourceImageUrl: normalizedSourceUrl?.substring(0, 50),
+        const result = await nanoBananaProvider.generateImage(nanoBananaParams);
+
+        console.log("🍌 image:done", {
+          id: result.id,
           operationType: normalizedSourceUrl
             ? "image-to-image"
             : "text-to-image",
         });
-
-        const result = await nanoBananaProvider.generateImage(nanoBananaParams);
-
-        console.log("🍌 ✅ NANO BANANA API RESULT:", result);
 
         // Return artifact-compatible structure (matching video tool pattern)
         // CRITICAL: content must be JSON string with projectId/fileId for SSE connection
@@ -534,7 +482,7 @@ export const nanoBananaImageGenerationForChat = (
           },
         };
       } catch (error: any) {
-        console.error("🍌 ❌ ERROR IN NANO BANANA IMAGE GENERATION:", error);
+        console.error("🍌 image:error", error?.message || String(error));
         // Throw error without fallback
         throw error;
       }

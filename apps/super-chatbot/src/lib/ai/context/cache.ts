@@ -57,9 +57,7 @@ export class ContextCache {
 
     if (cached && this.isValid(cached)) {
       this.stats.hits++;
-      console.log(
-        `🎯 ContextCache: Cache HIT for ${mediaType} in chat ${chatId}`,
-      );
+      console.log(`🎯 cache:hit`, { mediaType });
       return cached.context;
     }
 
@@ -70,9 +68,7 @@ export class ContextCache {
     }
 
     this.stats.misses++;
-    console.log(
-      `❌ ContextCache: Cache MISS for ${mediaType} in chat ${chatId}`,
-    );
+    console.log(`❌ cache:miss`, { mediaType });
     return null;
   }
 
@@ -101,9 +97,7 @@ export class ContextCache {
     }
 
     this.cache.set(key, cachedContext);
-    console.log(
-      `💾 ContextCache: Cached ${mediaType} context for chat ${chatId}`,
-    );
+    console.log(`💾 cache:saved`, { mediaType });
   }
 
   /**
@@ -140,7 +134,7 @@ export class ContextCache {
     }
 
     if (cleaned > 0) {
-      console.log(`🧹 ContextCache: Cleaned up ${cleaned} expired entries`);
+      console.log(`🧹 cache:cleanup`, { cleaned });
     }
   }
 
@@ -161,7 +155,7 @@ export class ContextCache {
     if (oldestKey) {
       this.cache.delete(oldestKey);
       this.stats.evictions++;
-      console.log(`🗑️ ContextCache: Evicted oldest entry: ${oldestKey}`);
+      console.log(`🗑️ cache:evict`);
     }
   }
 
@@ -179,9 +173,7 @@ export class ContextCache {
     }
 
     if (cleared > 0) {
-      console.log(
-        `🧹 ContextCache: Cleared ${cleared} entries for chat ${chatId}`,
-      );
+      console.log(`🧹 cache:clearChat`, { cleared });
     }
   }
 
@@ -219,7 +211,7 @@ export class ContextCache {
   clear(): void {
     const size = this.cache.size;
     this.cache.clear();
-    console.log(`🧹 ContextCache: Cleared entire cache (${size} entries)`);
+    console.log(`🧹 cache:clearAll`, { size });
   }
 }
 

@@ -3,12 +3,12 @@
  * Uses AI SDK for intelligent media analysis instead of regex patterns
  */
 
-import { analyzeMediaWithAI } from './ai-powered-analyzer';
-import { contextCache, generateMessageHash } from './cache';
+import { analyzeMediaWithAI } from "./ai-powered-analyzer";
+import { contextCache, generateMessageHash } from "./cache";
 
-export type MediaType = 'image' | 'video' | 'audio' | 'document';
-export type ConfidenceLevel = 'high' | 'medium' | 'low';
-export type UserIntent = 'edit' | 'transform' | 'create_new';
+export type MediaType = "image" | "video" | "audio" | "document";
+export type ConfidenceLevel = "high" | "medium" | "low";
+export type UserIntent = "edit" | "transform" | "create_new";
 
 export interface MediaContext {
   sourceUrl?: string;
@@ -24,7 +24,7 @@ export interface MediaContext {
 export interface ChatMedia {
   url: string;
   id?: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   timestamp: Date;
   prompt?: string;
   messageIndex: number;
@@ -42,11 +42,9 @@ export class AIContextAnalyzer {
     userMessage: string,
     chatMedia: ChatMedia[],
     currentAttachments?: any[],
-    chatId?: string,
+    chatId?: string
   ): Promise<MediaContext> {
-    console.log(
-      `🤖 [AI Analyzer] Analyzing ${mediaType} context for: "${userMessage}"`,
-    );
+    console.log(`🤖 ai:analyze start`, { mediaType });
 
     // Check cache first (only if chatId is provided)
     if (chatId) {
@@ -54,10 +52,10 @@ export class AIContextAnalyzer {
       const cached = await contextCache.getCachedContext(
         chatId,
         messageHash,
-        mediaType,
+        mediaType
       );
       if (cached) {
-        console.log(`✅ [AI Analyzer] Cache hit for ${mediaType}`);
+        console.log(`✅ ai:cache hit`, { mediaType });
         return cached;
       }
     }
@@ -67,24 +65,28 @@ export class AIContextAnalyzer {
       userMessage,
       chatMedia,
       mediaType,
-      currentAttachments,
+      currentAttachments
     );
 
     // Cache result (only if chatId is provided and confidence is not low)
-    if (chatId && result.confidence !== 'low') {
+    if (chatId && result.confidence !== "low") {
       const messageHash = generateMessageHash(userMessage, chatMedia);
       await contextCache.setCachedContext(
         chatId,
         messageHash,
         mediaType,
-        result,
+        result
       );
     }
 
-    console.log(`✅ [AI Analyzer] Result:`, {
+    console.log(`✅ ai:analyze result`, {
       confidence: result.confidence,
-      reasoning: result.reasoning,
-      sourceUrl: `${result.sourceUrl?.substring(0, 50)}...`,
+      hasSourceUrl: !!result.sourceUrl,
+      sourceUrlType: result.sourceUrl?.startsWith("data:")
+        ? "base64"
+        : result.sourceUrl
+          ? "url"
+          : "none",
     });
 
     return result;
@@ -107,14 +109,14 @@ export class UniversalContextManager {
     chatMedia: ChatMedia[],
     currentAttachments?: any[],
     chatId?: string,
-    userId?: string,
+    userId?: string
   ): Promise<MediaContext> {
     return this.analyzer.analyzeContext(
       mediaType,
       userMessage,
       chatMedia,
       currentAttachments,
-      chatId,
+      chatId
     );
   }
 
@@ -123,17 +125,15 @@ export class UniversalContextManager {
    * Fetches media artifacts from database (message parts and attachments)
    */
   async getChatMedia(chatId: string): Promise<ChatMedia[]> {
-    console.log(`📋 [Context Manager] getChatMedia called for chat: ${chatId}`);
+    console.log(`📋 context:getMedia`, { chatId });
 
     try {
       // Dynamic import to avoid circular dependencies
-      const { getChatMediaArtifacts } = await import('@/lib/db/queries');
+      const { getChatMediaArtifacts } = await import("@/lib/db/queries");
 
       const mediaArtifacts = await getChatMediaArtifacts({ chatId, limit: 50 });
 
-      console.log(
-        `📋 [Context Manager] Found ${mediaArtifacts.length} media artifacts`,
-      );
+      console.log(`📋 context:found`, { count: mediaArtifacts.length });
 
       // Convert to ChatMedia format
       return mediaArtifacts.map((artifact) => {
@@ -150,7 +150,7 @@ export class UniversalContextManager {
         return chatMedia;
       });
     } catch (error) {
-      console.error('[Context Manager] Failed to fetch chat media:', error);
+      console.error("[Context Manager] Failed to fetch chat media:", error);
       return [];
     }
   }

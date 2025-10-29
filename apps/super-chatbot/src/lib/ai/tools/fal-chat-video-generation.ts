@@ -1,16 +1,16 @@
-import { tool } from 'ai';
-import { z } from 'zod';
+import { tool } from "ai";
+import { z } from "zod";
 import {
   checkBalanceBeforeArtifact,
   getOperationDisplayName,
-} from '@/lib/utils/ai-tools-balance';
-import type { Session } from 'next-auth';
-import { analyzeVideoContext } from '@/lib/ai/context';
+} from "@/lib/utils/ai-tools-balance";
+import type { Session } from "next-auth";
+import { analyzeVideoContext } from "@/lib/ai/context";
 import {
   generateVertexVideo,
   checkVertexVideoStatus,
   type VertexVideoRequest,
-} from '@/lib/ai/vertex-video-generation';
+} from "@/lib/ai/vertex-video-generation";
 
 interface CreateVideoDocumentParams {
   createDocument: any;
@@ -25,166 +25,178 @@ interface CreateVideoDocumentParams {
 export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
   tool({
     description:
-      'Generate videos using Google Vertex AI VEO 3.1. Supports text-to-video generation with high quality output.',
+      "Generate videos using Google Vertex AI VEO 3.1. Supports text-to-video and image-to-video (uses a reference image from chat history or attachments) with high quality output.",
     inputSchema: z.object({
       prompt: z
         .string()
         .min(1)
-        .describe('Detailed description of the video to generate'),
-      model: z
-        .enum(['veo3'])
+        .describe("Detailed description of the video to generate"),
+      referenceImageDescription: z
+        .string()
         .optional()
-        .default('veo3')
-        .describe('AI model to use: veo3 (Google VEO 3.1 - latest)'),
-      duration: z
-        .enum(['4', '6', '8'])
-        .optional()
-        .default('8')
         .describe(
-          'Video duration in seconds: must be exactly 4, 6, or 8 seconds',
+          'Description of which image from chat history to use as the starting frame for image-to-video. Examples: "last image", "the one with a dragon", "первая картинка", "та что я загрузил". Leave empty for pure text-to-video.'
+        ),
+      model: z
+        .enum(["veo3"])
+        .optional()
+        .default("veo3")
+        .describe("AI model to use: veo3 (Google VEO 3.1 - latest)"),
+      duration: z
+        .enum(["4", "6", "8"])
+        .optional()
+        .default("8")
+        .describe(
+          "Video duration in seconds: must be exactly 4, 6, or 8 seconds"
         ),
       resolution: z
-        .enum(['720p', '1080p'])
+        .enum(["720p", "1080p"])
         .optional()
-        .default('720p')
-        .describe('Video resolution'),
+        .default("720p")
+        .describe("Video resolution"),
       aspectRatio: z
-        .enum(['16:9', '9:16', '1:1'])
+        .enum(["16:9", "9:16", "1:1"])
         .optional()
-        .default('16:9')
-        .describe('Aspect ratio'),
+        .default("16:9")
+        .describe("Aspect ratio"),
       negativePrompt: z
         .string()
         .optional()
-        .describe('What to avoid in the video'),
+        .describe("What to avoid in the video"),
     }),
     execute: async ({
       prompt,
+      referenceImageDescription,
       model,
       duration,
       resolution,
       aspectRatio,
       negativePrompt,
     }) => {
-      console.log('🎬 falVideoGenerationForChat called with:', {
-        prompt,
+      console.log("🎬 video:tool start", {
+        hasPrompt: !!prompt,
+        hasRef: !!referenceImageDescription,
         model,
         duration,
         resolution,
         aspectRatio,
-        negativePrompt,
       });
 
       if (!prompt) {
-        console.log('🎬 No prompt provided, returning configuration panel');
+        console.log("🎬 video:config");
         return {
           availableDurations: [
-            { id: 4, label: '4 seconds', description: 'Quick clip' },
-            { id: 6, label: '6 seconds', description: 'Medium clip' },
+            { id: 4, label: "4 seconds", description: "Quick clip" },
+            { id: 6, label: "6 seconds", description: "Medium clip" },
             {
               id: 8,
-              label: '8 seconds',
-              description: 'Standard duration (recommended)',
+              label: "8 seconds",
+              description: "Standard duration (recommended)",
             },
           ],
           availableResolutions: [
-            { id: '720p', label: '720p', description: 'HD (faster, cheaper)' },
+            { id: "720p", label: "720p", description: "HD (faster, cheaper)" },
             {
-              id: '1080p',
-              label: '1080p',
-              description: 'Full HD (better quality)',
+              id: "1080p",
+              label: "1080p",
+              description: "Full HD (better quality)",
             },
           ],
           availableAspectRatios: [
             {
-              id: '16:9',
-              label: 'Landscape (16:9)',
-              description: 'Widescreen, YouTube',
+              id: "16:9",
+              label: "Landscape (16:9)",
+              description: "Widescreen, YouTube",
             },
             {
-              id: '9:16',
-              label: 'Portrait (9:16)',
-              description: 'Stories, Reels',
+              id: "9:16",
+              label: "Portrait (9:16)",
+              description: "Stories, Reels",
             },
-            { id: '1:1', label: 'Square (1:1)', description: 'Instagram' },
+            { id: "1:1", label: "Square (1:1)", description: "Instagram" },
           ],
           availableModels: [
             {
-              id: 'veo3',
-              label: 'Vertex AI VEO3',
-              description: 'Google VEO 3.1 (Latest)',
-              badge: 'Best',
+              id: "veo3",
+              label: "Vertex AI VEO3",
+              description: "Google VEO 3.1 (Latest)",
+              badge: "Best",
             },
           ],
-          model: 'veo3',
-          provider: 'vertex-ai',
+          model: "veo3",
+          provider: "vertex-ai",
           capabilities: [
-            'Text-to-video generation',
-            'Google VEO 3.1 model',
-            'Negative prompts',
-            'High quality output',
+            "Text-to-video generation",
+            "Image-to-video from reference image",
+            "Google VEO 3.1 model",
+            "Negative prompts",
+            "High quality output",
           ],
         };
       }
 
-      console.log('🎬 ✅ PROMPT PROVIDED, CREATING VIDEO:', prompt);
+      console.log("🎬 video:generate requested");
 
       try {
-        // Analyze video context
+        // Analyze video context (determine text-to-video vs image-to-video)
         let normalizedSourceUrl: string | undefined;
 
         if (params?.chatId && params?.userMessage) {
           try {
-            console.log('🔍 Analyzing video context...');
+            console.log("🔍 video:analyze start");
+            // Combine user message with optional reference description for better disambiguation
+            const enhancedMessage = referenceImageDescription
+              ? `${params.userMessage}\n\nReference: ${referenceImageDescription}`
+              : params.userMessage;
             const contextResult = await analyzeVideoContext(
-              params.userMessage,
+              enhancedMessage,
               params.chatId,
               params.currentAttachments,
-              params.session?.user?.id,
+              params.session?.user?.id
             );
 
-            if (contextResult.sourceUrl && contextResult.confidence !== 'low') {
-              console.log(
-                '🔍 Using sourceUrl from context analysis:',
-                contextResult.sourceUrl,
-              );
+            if (contextResult.sourceUrl && contextResult.confidence !== "low") {
+              console.log("🔍 video:source found");
               normalizedSourceUrl = contextResult.sourceUrl;
+            } else if (referenceImageDescription) {
+              console.warn("🔍 video:source not found");
             }
           } catch (error) {
-            console.warn('🔍 Error in context analysis, falling back:', error);
+            console.warn("🔍 video:analyze error");
           }
         }
 
         // Determine operation type
         const operationType = normalizedSourceUrl
-          ? 'image-to-video'
-          : 'text-to-video';
+          ? "image-to-video"
+          : "text-to-video";
+        console.log("🎬 video:mode", operationType);
 
         // Check balance
         const multipliers: string[] = [];
-        const durationSeconds = Number(duration || '8');
-        if (durationSeconds <= 5) multipliers.push('duration-5s');
-        else if (durationSeconds <= 10) multipliers.push('duration-10s');
-        else if (durationSeconds <= 15) multipliers.push('duration-15s');
+        const durationSeconds = Number(duration || "8");
+        if (durationSeconds <= 5) multipliers.push("duration-5s");
+        else if (durationSeconds <= 10) multipliers.push("duration-10s");
+        else if (durationSeconds <= 15) multipliers.push("duration-15s");
 
-        if (resolution === '1080p') {
-          multipliers.push('hd-quality');
+        if (resolution === "1080p") {
+          multipliers.push("hd-quality");
         }
 
         const balanceCheck = await checkBalanceBeforeArtifact(
           params?.session || null,
-          'video-generation',
+          "video-generation",
           operationType,
           multipliers,
-          getOperationDisplayName(operationType),
+          getOperationDisplayName(operationType)
         );
 
         if (!balanceCheck.valid) {
-          console.log('🎬 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT');
+          console.log("🎬 ❌ INSUFFICIENT BALANCE, NOT CREATING ARTIFACT");
           return {
             error:
               balanceCheck.userMessage ||
-              'Insufficient funds for video generation',
+              "Insufficient funds for video generation",
             balanceError: true,
             requiredCredits: balanceCheck.cost,
           };
@@ -192,73 +204,69 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
 
         // Check session
         if (!params?.session) {
-          throw new Error('Session required for Vertex AI video generation');
+          throw new Error("Session required for Vertex AI video generation");
         }
 
         // Use Vertex AI VEO3
-        const selectedModel = model || 'veo3';
-        const durationValue = duration || '8';
+        const selectedModel = model || "veo3";
+        const durationValue = duration || "8";
 
-        console.log('🎬 Using model: VEO3 (Vertex AI VEO 3.1)');
+        console.log("🎬 video:model VEO3");
 
         // Prepare request for Vertex AI
         const vertexRequest: VertexVideoRequest = {
           prompt,
-          duration: durationValue as '4' | '6' | '8',
-          aspectRatio: aspectRatio || '16:9',
-          resolution: resolution || '720p',
+          duration: durationValue as "4" | "6" | "8",
+          aspectRatio: aspectRatio || "16:9",
+          resolution: resolution || "720p",
           ...(negativePrompt && { negativePrompt }),
           // Add source image URL for image-to-video transformation (from context analysis)
           ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
-          model: 'veo3',
+          model: "veo3",
         };
 
-        console.log('🚀 Calling Vertex AI directly...');
+        console.log("🚀 video:vertex call");
 
         // Call Vertex AI video generation
         const result = await generateVertexVideo(vertexRequest, params.session);
 
         if (!result.success) {
-          throw new Error(result.error || 'Vertex AI generation failed');
+          throw new Error(result.error || "Vertex AI generation failed");
         }
-
-        console.log('✅ Video generation started:', result);
+        console.log("✅ video:started");
 
         // Poll for completion (max 180 seconds = 3 minutes)
         let videoUrl: string | undefined;
         const fileId = result.fileId || `video-${Date.now()}`;
 
-        if (result.status === 'processing' && result.operationName) {
-          console.log('⏳ Video is processing, polling for completion...');
+        if (result.status === "processing" && result.operationName) {
+          console.log("⏳ video:processing");
 
-          const maxAttempts = 36; // 36 * 5s = 180s (3 minutes)
+          const maxAttempts = 50; // 36 * 5s = 180s (3 minutes)
           const pollInterval = 5000; // 5 seconds
           const operationName = result.operationName;
 
           for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            console.log(`🔄 Polling attempt ${attempt}/${maxAttempts}...`);
-
             await new Promise((resolve) => setTimeout(resolve, pollInterval));
 
             const status = await checkVertexVideoStatus(operationName);
-            console.log(`📊 Status check result:`, status);
 
-            if (status.status === 'completed' && status.videoUrl) {
-              console.log('✅ Video ready!', status.videoUrl);
+            if (status.status === "completed" && status.videoUrl) {
+              console.log("✅ video:ready");
               // Use proxy URL for Vertex AI videos to handle authentication
               videoUrl = `/api/video/proxy-vertex?url=${encodeURIComponent(status.videoUrl)}`;
-              console.log('🔄 Using proxy URL:', videoUrl);
+              console.log("🔄 video:proxy-url set");
               break;
             }
 
-            if (status.status === 'failed') {
-              throw new Error(status.error || 'Video generation failed');
+            if (status.status === "failed") {
+              throw new Error(status.error || "Video generation failed");
             }
           }
 
           if (!videoUrl) {
             throw new Error(
-              'Video generation timeout. Please try again later.',
+              "Video generation timeout. Please try again later."
             );
           }
         } else if (result.videoUrl) {
@@ -266,12 +274,11 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
         }
 
         if (!videoUrl) {
-          throw new Error('No video URL returned from Vertex AI');
+          throw new Error("No video URL returned from Vertex AI");
         }
 
-        console.log('🎬 ✅ VIDEO GENERATED:', {
+        console.log("🎬 video:done", {
           fileId,
-          videoUrl,
           duration: durationValue,
           resolution,
           model: selectedModel,
@@ -281,8 +288,8 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
         return {
           success: true,
           id: fileId, // Required for artifact system
-          kind: 'video', // Required for artifact system
-          title: `Video: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`,
+          kind: "video", // Required for artifact system
+          title: `Video: ${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`,
           content: videoUrl, // Video URL as content
           fileId,
           videoUrl,
@@ -291,30 +298,30 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
             url: videoUrl,
             prompt,
             timestamp: Date.now(),
-            provider: result.provider || 'vertex-ai',
-            model: result.model || 'veo-3.1',
+            provider: result.provider || "vertex-ai",
+            model: result.model || "veo-3.1",
             settings: {
               duration: Number(durationValue),
-              aspectRatio: aspectRatio || '16:9',
-              resolution: resolution || '720p',
+              aspectRatio: aspectRatio || "16:9",
+              resolution: resolution || "720p",
               ...(negativePrompt && { negativePrompt }),
             },
           },
           creditsUsed: result.creditsUsed || balanceCheck.cost,
-          provider: result.provider || 'vertex-ai',
-          model: result.model || 'veo-3.1',
+          provider: result.provider || "vertex-ai",
+          model: result.model || "veo-3.1",
           message: `Video generated successfully using Vertex AI VEO 3.1: "${prompt}". Duration: ${durationValue}s, Resolution: ${resolution}, Aspect Ratio: ${aspectRatio}.`,
         };
       } catch (error: any) {
-        console.error('🎬 ❌ ERROR IN VIDEO GENERATION:', error);
+        console.error("🎬 video:error", error?.message || String(error));
 
         // Extract detailed error message
-        let errorMessage = 'Unknown generation error';
+        let errorMessage = "Unknown generation error";
         if (error) {
           errorMessage = error.message || String(error);
           // Check if there's a body with validation details
-          if (error.body && typeof error.body === 'object') {
-            console.error('🎬 ❌ Error body:', error.body);
+          if (error.body && typeof error.body === "object") {
+            console.error("🎬 ❌ Error body:", error.body);
             if (error.body.detail) {
               errorMessage = `Validation error: ${JSON.stringify(error.body.detail)}`;
             }
