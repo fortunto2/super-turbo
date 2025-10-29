@@ -8,7 +8,7 @@ import type {
   GeminiEditParams,
   GeminiImageResult,
   GeminiEditResult,
-} from '../types/gemini';
+} from "../types/gemini";
 
 export class NanoBananaProvider {
   /**
@@ -17,39 +17,80 @@ export class NanoBananaProvider {
    */
   async generateImage(
     params: GeminiImageParams,
-    config?: any,
+    config?: any
   ): Promise<GeminiImageResult> {
-    console.log('🍌 🚀 NANO BANANA: Generating image with Gemini API');
-    console.log('🍌 📝 Original Prompt:', params.prompt);
-    console.log('🍌 🎨 Style:', params.style);
-    console.log('🍌 ⚙️ Features:', params.nanoBananaFeatures);
+    const isImageToImage = !!params.sourceImageUrl;
+    console.log("🍌 🚀 NANO BANANA: Generating image with Gemini API");
+    console.log("🍌 📝 Original Prompt:", params.prompt);
+    console.log("🍌 🎨 Style:", params.style);
+    console.log(
+      "🍌 🖼️ Operation Type:",
+      isImageToImage ? "IMAGE-TO-IMAGE" : "TEXT-TO-IMAGE"
+    );
+    console.log("🍌 ⚙️ Features:", params.nanoBananaFeatures);
+    if (isImageToImage) {
+      console.log(
+        "🍌 🔗 Source Image URL:",
+        params.sourceImageUrl?.substring(0, 100)
+      );
+    }
 
     // Улучшаем промпт с Nano Banana особенностями
     const enhancedPrompt = this.enhancePrompt(params);
 
-    console.log('🍌 ✨ Enhanced Prompt:', enhancedPrompt);
+    console.log("🍌 ✨ Enhanced Prompt:", enhancedPrompt);
 
     // Получаем размеры из aspectRatio
     const dimensions = this.getAspectRatioDimensions(params.aspectRatio);
 
     // Пытаемся сгенерировать реальное изображение через Gemini 2.5 Flash Image (Vertex AI)
-    const apiKey = process.env.VERTEX_AI_API_KEY || '';
+    const apiKey = process.env.VERTEX_AI_API_KEY || "";
     if (!apiKey) {
       throw new Error(
-        'VERTEX_AI_API_KEY is not configured. Please add your Gemini API key to environment variables.',
+        "VERTEX_AI_API_KEY is not configured. Please add your Gemini API key to environment variables."
       );
     }
 
     const url = `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+
+    // CRITICAL: Build parts array based on operation type
+    const parts: any[] = [{ text: enhancedPrompt }];
+
+    console.log("sourceImage", params.sourceImageUrl);
+
+    // If image-to-image, add source image as inline data
+    if (isImageToImage && params.sourceImageUrl) {
+      console.log(
+        "🍌 📥 Fetching source image for image-to-image generation..."
+      );
+      try {
+        const imageBase64 = await this.fetchImageAsBase64(
+          params.sourceImageUrl
+        );
+        parts.push({
+          inlineData: {
+            mimeType: "image/png",
+            data: imageBase64,
+          },
+        });
+        console.log("🍌 ✅ Source image loaded successfully");
+      } catch (error) {
+        console.error("🍌 ❌ Failed to load source image:", error);
+        throw new Error(
+          `Failed to load source image for image-to-image generation: ${error}`
+        );
+      }
+    }
+
     const requestBody = {
       contents: [
         {
-          role: 'user',
-          parts: [{ text: enhancedPrompt }],
+          role: "user",
+          parts: parts,
         },
       ],
       generationConfig: {
-        responseModalities: ['Image'],
+        responseModalities: ["Image"],
         temperature: 0.4,
         topP: 0.8,
         topK: 40,
@@ -57,8 +98,8 @@ export class NanoBananaProvider {
     };
 
     const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
     });
 
@@ -76,7 +117,7 @@ export class NanoBananaProvider {
       const parts = c?.content?.parts || [];
       for (const part of parts) {
         const inline = part?.inlineData;
-        if (inline?.data && inline?.mimeType?.startsWith('image/')) {
+        if (inline?.data && inline?.mimeType?.startsWith("image/")) {
           generatedImageUrl = `data:${inline.mimeType};base64,${inline.data}`;
           break;
         }
@@ -86,7 +127,7 @@ export class NanoBananaProvider {
 
     if (!generatedImageUrl) {
       throw new Error(
-        'No image data returned from Gemini API. The API might not support image generation yet or returned an unexpected response format.',
+        "No image data returned from Gemini API. The API might not support image generation yet or returned an unexpected response format."
       );
     }
 
@@ -107,36 +148,39 @@ export class NanoBananaProvider {
         creativeMode: params.nanoBananaFeatures.creativeMode,
       },
       nanoBananaInfo: {
-        model: 'gemini-2.5-flash-image',
+        model: "gemini-2.5-flash-image",
         capabilities: [
-          'Context-aware editing',
-          'Surgical precision',
-          'Physical logic understanding',
-          'Intelligent lighting',
+          "Context-aware editing",
+          "Surgical precision",
+          "Physical logic understanding",
+          "Intelligent lighting",
+          ...(isImageToImage ? ["Image-to-image transformation"] : []),
         ],
         style: {
           id: params.style,
           label: params.style,
-          description: 'Nano Banana style',
+          description: "Nano Banana style",
         },
         quality: {
           id: params.quality,
           label: params.quality,
           multiplier: 1.0,
-          description: 'Nano Banana quality',
+          description: "Nano Banana quality",
         },
         aspectRatio: {
           id: params.aspectRatio,
           label: params.aspectRatio,
           width: dimensions.width,
           height: dimensions.height,
-          description: 'Nano Banana aspect ratio',
+          description: "Nano Banana aspect ratio",
         },
       },
       geminiResponse: enhancedPrompt,
     };
 
-    console.log('🍌 ✅ NANO BANANA: Image generated successfully');
+    console.log(
+      `🍌 ✅ NANO BANANA: ${isImageToImage ? "Image-to-image" : "Text-to-image"} generation completed successfully`
+    );
     return result;
   }
 
@@ -146,17 +190,17 @@ export class NanoBananaProvider {
    */
   async editImage(
     params: GeminiEditParams,
-    config?: any,
+    config?: any
   ): Promise<GeminiEditResult> {
-    console.log('🍌 🚀 NANO BANANA: Editing image with Gemini API');
+    console.log("🍌 🚀 NANO BANANA: Editing image with Gemini API");
 
     const enhancedEditPrompt = this.enhanceEditPrompt(params);
-    console.log('🍌 ✨ Enhanced Edit Prompt:', enhancedEditPrompt);
+    console.log("🍌 ✨ Enhanced Edit Prompt:", enhancedEditPrompt);
 
-    const apiKey = process.env.VERTEX_AI_API_KEY || '';
+    const apiKey = process.env.VERTEX_AI_API_KEY || "";
     if (!apiKey) {
       throw new Error(
-        'VERTEX_AI_API_KEY is not configured. Please add your Gemini API key to environment variables.',
+        "VERTEX_AI_API_KEY is not configured. Please add your Gemini API key to environment variables."
       );
     }
 
@@ -165,12 +209,12 @@ export class NanoBananaProvider {
     const requestBody = {
       contents: [
         {
-          role: 'user',
+          role: "user",
           parts: [
             { text: enhancedEditPrompt },
             {
               inlineData: {
-                mimeType: 'image/png',
+                mimeType: "image/png",
                 data: await this.fetchImageAsBase64(params.sourceImageUrl),
               },
             },
@@ -178,7 +222,7 @@ export class NanoBananaProvider {
         },
       ],
       generationConfig: {
-        responseModalities: ['Image'],
+        responseModalities: ["Image"],
         temperature: 0.4,
         topP: 0.8,
         topK: 40,
@@ -186,15 +230,15 @@ export class NanoBananaProvider {
     };
 
     const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Gemini edit API error: ${response.status} - ${errorText}`,
+        `Gemini edit API error: ${response.status} - ${errorText}`
       );
     }
 
@@ -206,7 +250,7 @@ export class NanoBananaProvider {
       const parts = c?.content?.parts || [];
       for (const part of parts) {
         const inline = part?.inlineData;
-        if (inline?.data && inline?.mimeType?.startsWith('image/')) {
+        if (inline?.data && inline?.mimeType?.startsWith("image/")) {
           editedImageUrl = `data:${inline.mimeType};base64,${inline.data}`;
           break;
         }
@@ -216,7 +260,7 @@ export class NanoBananaProvider {
 
     if (!editedImageUrl) {
       throw new Error(
-        'No image returned from Gemini edit API. The API might not support image editing yet or returned an unexpected response format.',
+        "No image returned from Gemini edit API. The API might not support image editing yet or returned an unexpected response format."
       );
     }
 
@@ -234,28 +278,28 @@ export class NanoBananaProvider {
         preserveShadows: params.preserveShadows,
       },
       nanoBananaEditInfo: {
-        model: 'gemini-2.5-flash-image',
+        model: "gemini-2.5-flash-image",
         editType: {
           id: params.editType,
           label: params.editType,
-          description: 'Nano Banana edit type',
+          description: "Nano Banana edit type",
         },
         precisionLevel: {
           id: params.precisionLevel,
           label: params.precisionLevel,
-          description: 'Nano Banana precision level',
+          description: "Nano Banana precision level",
         },
         blendMode: {
           id: params.blendMode,
           label: params.blendMode,
-          description: 'Nano Banana blend mode',
+          description: "Nano Banana blend mode",
         },
         capabilities: [
-          'Context-aware editing',
-          'Surgical precision',
-          'Intelligent lighting',
-          'Style preservation',
-          'Natural blending',
+          "Context-aware editing",
+          "Surgical precision",
+          "Intelligent lighting",
+          "Style preservation",
+          "Natural blending",
         ],
       },
     };
@@ -268,21 +312,21 @@ export class NanoBananaProvider {
     let enhanced = params.prompt;
 
     if (params.nanoBananaFeatures.enableContextAwareness) {
-      enhanced += ', context-aware editing for natural object relationships';
+      enhanced += ", context-aware editing for natural object relationships";
     }
 
     if (params.nanoBananaFeatures.enableSurgicalPrecision) {
-      enhanced += ', surgical precision in placement and integration';
+      enhanced += ", surgical precision in placement and integration";
     }
 
     if (params.nanoBananaFeatures.creativeMode) {
       enhanced +=
-        ', creative and artistic interpretation while maintaining realism';
+        ", creative and artistic interpretation while maintaining realism";
     }
 
     enhanced += `, ${params.style} style, ${params.quality} quality`;
     enhanced +=
-      ', intelligent lighting and reflections, perfect occlusion handling';
+      ", intelligent lighting and reflections, perfect occlusion handling";
 
     return enhanced;
   }
@@ -294,23 +338,23 @@ export class NanoBananaProvider {
     let enhanced = params.editPrompt;
 
     if (params.nanoBananaEditFeatures.enableContextAwareness) {
-      enhanced += ', maintain relationships between objects and environment';
+      enhanced += ", maintain relationships between objects and environment";
     }
 
     if (params.nanoBananaEditFeatures.enableSurgicalPrecision) {
-      enhanced += ', surgical precision for accurate editing';
+      enhanced += ", surgical precision for accurate editing";
     }
 
     if (params.nanoBananaEditFeatures.preserveOriginalStyle) {
-      enhanced += ', preserve the original style and aesthetic';
+      enhanced += ", preserve the original style and aesthetic";
     }
 
     if (params.nanoBananaEditFeatures.enhanceLighting) {
-      enhanced += ', enhance lighting naturally';
+      enhanced += ", enhance lighting naturally";
     }
 
     if (params.nanoBananaEditFeatures.preserveShadows) {
-      enhanced += ', preserve realistic shadows and reflections';
+      enhanced += ", preserve realistic shadows and reflections";
     }
 
     enhanced += `, ${params.editType} editing with ${params.precisionLevel} precision`;
@@ -327,13 +371,13 @@ export class NanoBananaProvider {
     height: number;
   } {
     const ratios: Record<string, { width: number; height: number }> = {
-      '1:1': { width: 1024, height: 1024 },
-      '16:9': { width: 1024, height: 576 },
-      '9:16': { width: 576, height: 1024 },
-      '4:3': { width: 1024, height: 768 },
-      '3:4': { width: 768, height: 1024 },
-      '3:2': { width: 1536, height: 1024 },
-      '21:9': { width: 2560, height: 1080 },
+      "1:1": { width: 1024, height: 1024 },
+      "16:9": { width: 1024, height: 576 },
+      "9:16": { width: 576, height: 1024 },
+      "4:3": { width: 1024, height: 768 },
+      "3:4": { width: 768, height: 1024 },
+      "3:2": { width: 1536, height: 1024 },
+      "21:9": { width: 2560, height: 1080 },
     };
 
     return ratios[aspectRatio] || { width: 1024, height: 1024 };
@@ -346,7 +390,7 @@ export class NanoBananaProvider {
     }
 
     const buffer = await response.arrayBuffer();
-    return Buffer.from(buffer).toString('base64');
+    return Buffer.from(buffer).toString("base64");
   }
 }
 

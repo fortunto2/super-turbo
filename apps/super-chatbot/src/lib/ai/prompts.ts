@@ -1,5 +1,5 @@
-import type { ArtifactKind } from '@/components/artifacts/artifact';
-import type { Geo } from '@vercel/functions';
+import type { ArtifactKind } from "@/components/artifacts/artifact";
+import type { Geo } from "@vercel/functions";
 
 export const artifactsPrompt = `
 **CRITICAL: IMAGE GENERATION RULE**
@@ -84,15 +84,27 @@ You have access to TWO image generation systems:
 - Example: "I'll generate that image using Nano Banana, Google's advanced AI model!"
 
 **Image-to-Image (editing an existing image):**
-- If the user's message contains an image attachment AND an edit/transform request, treat this as image-to-image.
-  - Russian intent examples: "сделай", "подправь", "замени", "исправь", "сделай глаза голубыми", "улучшить эту фотку", "на этой картинке".
-  - English intent examples: "make", "change", "edit", "fix", "enhance", "on this image".
-- In this case call \`configureImageGeneration\` WITH:
-  - \`prompt\`: the user's edit instruction (enhance/translate if needed)
-  - \`sourceImageUrl\`: take from the latest image attachment of the user's message (or the most recent image attachment in the chat if the message references "this image").
-- If multiple images are present, ask which one to use unless the user clearly refers to the last one.
-- If the user uploads an image without text, use a safe default prompt like "Enhance this image" and proceed.
-- Always prefer image-to-image when an image attachment is present and the instruction implies editing that image.
+- **CRITICAL: Smart Reference System** - The system now uses AI to automatically find the right image from chat history!
+- When user wants to edit an existing image, use the \`referenceImageDescription\` parameter to specify which image:
+  - Examples (Russian): "последняя картинка", "та что с драконом", "первое изображение", "которую я загрузил", "предыдущее фото"
+  - Examples (English): "last image", "the one with dragon", "first picture", "the one I uploaded", "previous photo"
+- How it works:
+  1. User says "измени последнюю картинку - добавь луну"
+  2. Call nanoBananaImageGeneration with:
+     - prompt: "add moon to the image"
+     - referenceImageDescription: "последняя картинка" (or "last image")
+  3. The system will automatically find and use the correct image!
+- The AI analyzes chat history to find the exact image user is referring to
+- Works with:
+  - Position references: "last", "first", "second", "latest", "recent"
+  - Content references: "with cat", "with dragon", "sunset photo", "portrait"
+  - Source references: "I uploaded", "you generated", "from me", "your creation"
+  - Combined: "last image you generated", "first photo I uploaded"
+- **DO NOT use placeholder URLs** - let the system find the image automatically
+- If user message already contains image attachment, you can omit referenceImageDescription (system will use current attachment)
+- Russian intent examples: "сделай", "подправь", "замени", "исправь", "сделай глаза голубыми", "улучшить эту фотку", "измени последнюю картинку"
+- English intent examples: "make", "change", "edit", "fix", "enhance", "modify the last image", "update that picture"
+- **Legacy support**: configureImageGeneration still works with direct sourceImageUrl if needed for backward compatibility
 
 **Smart Media Discovery Tools:**
 You now have access to powerful AI SDK tools for finding media in chat history:
@@ -128,14 +140,22 @@ When user wants to edit/animate existing media:
 - The system will automatically select sourceImageUrl if you don't use tools (backward compatibility)
 
 **CRITICAL: Image Editing Instructions:**
-- When user asks to edit/modify an existing image (like "добавь в картинку луну", "сделай глаза голубыми", "измени фон"), you MUST call nanoBananaImageGeneration tool (RECOMMENDED) or configureImageGeneration
+- When user asks to edit/modify an existing image (like "добавь в картинку луну", "сделай глаза голубыми", "измени последнюю картинку"), you MUST call nanoBananaImageGeneration tool
 - Do NOT just respond with text - you MUST create an image artifact and start the generation process
-- The system will automatically provide the correct sourceImageUrl for the image to edit
+- Use the \`referenceImageDescription\` parameter to specify which image to edit
 - Always call the tool with the user's edit instruction as the prompt
 - Examples of edit requests that require nanoBananaImageGeneration:
-  - "добавь в картинку самолет" → call nanoBananaImageGeneration with prompt "add airplane to the image"
-  - "сделай глаза голубыми" → call nanoBananaImageGeneration with prompt "make eyes blue"
-  - "измени фон на закат" → call nanoBananaImageGeneration with prompt "change background to sunset"
+  - "добавь в последнюю картинку самолет" → call nanoBananaImageGeneration with:
+    - prompt: "add airplane to the image"
+    - referenceImageDescription: "последнюю картинку" or "last image"
+  - "сделай глаза голубыми на той картинке с девушкой" → call nanoBananaImageGeneration with:
+    - prompt: "make eyes blue"
+    - referenceImageDescription: "той картинке с девушкой" or "picture with girl"
+  - "измени фон на предыдущем фото на закат" → call nanoBananaImageGeneration with:
+    - prompt: "change background to sunset"
+    - referenceImageDescription: "предыдущем фото" or "previous photo"
+- If user says just "add moon" without specifying image, assume they mean the last image:
+  - referenceImageDescription: "last image" or "последняя картинка"
 
 **IMPORTANT: Video Generation in Chat:**
 
@@ -277,10 +297,10 @@ When user requests image/photo generation in ANY language (like 'сделай ф
 DO NOT just respond with text without calling the tool - you MUST create the image artifact by calling the tool.`;
 
 export interface RequestHints {
-  latitude: Geo['latitude'];
-  longitude: Geo['longitude'];
-  city: Geo['city'];
-  country: Geo['country'];
+  latitude: Geo["latitude"];
+  longitude: Geo["longitude"];
+  city: Geo["city"];
+  country: Geo["country"];
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
@@ -300,7 +320,7 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === 'chat-model-reasoning') {
+  if (selectedChatModel === "chat-model-reasoning") {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
@@ -339,30 +359,30 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind,
+  type: ArtifactKind
 ) =>
-  type === 'text'
+  type === "text"
     ? `\
 Improve the following contents of the document based on the given prompt.
 
 ${currentContent}
 `
-    : type === 'sheet'
+    : type === "sheet"
       ? `\
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-      : type === 'image'
+      : type === "image"
         ? `\
 Update the following image generation settings based on the given prompt.
 
 ${currentContent}
 `
-        : type === 'video'
+        : type === "video"
           ? `\
 Update the following video generation settings based on the given prompt.
 
 ${currentContent}
 `
-          : '';
+          : "";

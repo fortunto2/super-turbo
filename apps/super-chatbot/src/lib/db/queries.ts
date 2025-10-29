@@ -1,4 +1,4 @@
-import 'server-only';
+import "server-only";
 
 import {
   and,
@@ -14,9 +14,9 @@ import {
   sql,
   ilike,
   type SQL,
-} from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+} from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
 import {
   user,
@@ -30,11 +30,11 @@ import {
   type DBMessage,
   type Chat,
   stream,
-} from './schema';
-import type { ArtifactKind } from '@/components/artifacts/artifact';
-import { generateUUID } from '../utils';
-import { generateHashedPassword } from './utils';
-import type { VisibilityType } from '@/components/shared/visibility-selector';
+} from "./schema";
+import type { ArtifactKind } from "@/components/artifacts/artifact";
+import { generateUUID } from "../utils";
+import { generateHashedPassword } from "./utils";
+import type { VisibilityType } from "@/components/shared/visibility-selector";
 
 // Re-export types for external use
 export type { User, Chat };
@@ -53,11 +53,11 @@ function __ensureDb() {
     // Fallback для разработки - используем хардкодированный URL если переменные не загружены
     if (!url || url.length === 0) {
       url =
-        'postgresql://neondb_owner:npg_u78sbCLzfEoe@ep-green-glade-a49gpc57-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require';
-      console.warn('Using fallback database URL for development');
+        "postgresql://neondb_owner:npg_u78sbCLzfEoe@ep-green-glade-a49gpc57-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require";
+      console.warn("Using fallback database URL for development");
     }
 
-    __client = postgres(url, { ssl: 'require' });
+    __client = postgres(url, { ssl: "require" });
     __db = drizzle(__client);
   }
   return __db;
@@ -70,7 +70,7 @@ export async function getUser(email: string): Promise<Array<User>> {
   try {
     return await db().select().from(user).where(eq(user.email, email));
   } catch (error) {
-    console.error('Failed to get user from database');
+    console.error("Failed to get user from database");
     throw error;
   }
 }
@@ -81,7 +81,7 @@ export async function getUser(email: string): Promise<Array<User>> {
  */
 export async function getOrCreateOAuthUser(
   userId: string,
-  email: string,
+  email: string
 ): Promise<User> {
   try {
     // Сначала проверяем, существует ли пользователь с этим ID
@@ -99,19 +99,19 @@ export async function getOrCreateOAuthUser(
     if (existingUsers.length > 0) {
       const existingUser = existingUsers[0];
       if (!existingUser) {
-        throw new Error('User not found in existing users array');
+        throw new Error("User not found in existing users array");
       }
 
       // Если пользователь найден по email, возвращаем его, даже если ID отличается
       console.log(
-        `Found user with email ${email} but different ID (${existingUser.id} vs ${userId}). Using existing user ID.`,
+        `Found user with email ${email} but different ID (${existingUser.id} vs ${userId}). Using existing user ID.`
       );
       return existingUser;
     }
 
     // Если пользователь не найден, создаем нового
     console.log(
-      `User not found, creating new user with ID: ${userId} and email: ${email}`,
+      `User not found, creating new user with ID: ${userId} and email: ${email}`
     );
 
     try {
@@ -119,10 +119,10 @@ export async function getOrCreateOAuthUser(
       const createUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
       if (!createUrl) {
         throw new Error(
-          'Database URL is not configured. Set POSTGRES_URL or DATABASE_URL in environment.',
+          "Database URL is not configured. Set POSTGRES_URL or DATABASE_URL in environment."
         );
       }
-      const createClient = postgres(createUrl, { max: 1, ssl: 'require' });
+      const createClient = postgres(createUrl, { max: 1, ssl: "require" });
       const createDb = drizzle(createClient);
 
       try {
@@ -137,18 +137,18 @@ export async function getOrCreateOAuthUser(
           .returning();
 
         if (!newUser) {
-          throw new Error('Failed to create OAuth user: No user returned');
+          throw new Error("Failed to create OAuth user: No user returned");
         }
 
         console.log(
-          `Created new OAuth user with ID: ${userId} and email: ${email}`,
+          `Created new OAuth user with ID: ${userId} and email: ${email}`
         );
         return newUser;
       } finally {
         // Закрываем соединение
         await createClient
           .end()
-          .catch((e) => console.error('Error closing create client:', e));
+          .catch((e) => console.error("Error closing create client:", e));
       }
     } catch (createError) {
       console.error(`Failed to create user with ID ${userId}:`, createError);
@@ -173,7 +173,7 @@ export async function getOrCreateOAuthUser(
 
       if (lastChanceUserByEmail) {
         console.log(
-          `Found user by email ${email} with ID ${lastChanceUserByEmail.id}`,
+          `Found user by email ${email} with ID ${lastChanceUserByEmail.id}`
         );
         return lastChanceUserByEmail;
       }
@@ -181,7 +181,7 @@ export async function getOrCreateOAuthUser(
       throw createError;
     }
   } catch (error) {
-    console.error('Failed to get or create OAuth user:', error);
+    console.error("Failed to get or create OAuth user:", error);
     throw error;
   }
 }
@@ -192,7 +192,7 @@ export async function createUser(email: string, password: string) {
   try {
     return await db().insert(user).values({ email, password: hashedPassword });
   } catch (error) {
-    console.error('Failed to create user in database');
+    console.error("Failed to create user in database");
     throw error;
   }
 }
@@ -215,7 +215,7 @@ export async function createGuestUser(sessionId?: string) {
         sessionId: user.sessionId,
       });
   } catch (error) {
-    console.error('Failed to create guest user in database');
+    console.error("Failed to create guest user in database");
     throw error;
   }
 }
@@ -238,13 +238,13 @@ export async function getGuestUserById(userId: string) {
 
     const [userData] = users;
     // Проверяем, что это действительно гость
-    if (!userData?.email?.includes('guest')) {
+    if (!userData?.email?.includes("guest")) {
       return null;
     }
 
     return userData;
   } catch (error) {
-    console.error('Failed to get guest user by ID:', error);
+    console.error("Failed to get guest user by ID:", error);
     return null;
   }
 }
@@ -267,13 +267,13 @@ export async function getGuestUserBySessionId(sessionId: string) {
 
     const [userData] = users;
     // Проверяем, что это действительно гость
-    if (!userData?.email?.includes('guest')) {
+    if (!userData?.email?.includes("guest")) {
       return null;
     }
 
     return userData;
   } catch (error) {
-    console.error('Failed to get guest user by session ID:', error);
+    console.error("Failed to get guest user by session ID:", error);
     return null;
   }
 }
@@ -298,7 +298,7 @@ export async function saveChat({
       visibility,
     });
   } catch (error) {
-    console.error('Failed to save chat in database');
+    console.error("Failed to save chat in database");
     throw error;
   }
 }
@@ -315,7 +315,7 @@ export async function deleteChatById({ id }: { id: string }) {
       .returning();
     return chatsDeleted;
   } catch (error) {
-    console.error('Failed to delete chat by id from database');
+    console.error("Failed to delete chat by id from database");
     throw error;
   }
 }
@@ -341,7 +341,7 @@ export async function getChatsByUserId({
         .where(
           whereCondition
             ? and(whereCondition, eq(chat.userId, id))
-            : eq(chat.userId, id),
+            : eq(chat.userId, id)
         )
         .orderBy(desc(chat.createdAt))
         .limit(extendedLimit);
@@ -383,7 +383,7 @@ export async function getChatsByUserId({
       hasMore,
     };
   } catch (error) {
-    console.error('Failed to get chats by user from database');
+    console.error("Failed to get chats by user from database");
     throw error;
   }
 }
@@ -396,7 +396,7 @@ export async function getChatById({ id }: { id: string }) {
       .where(eq(chat.id, id));
     return selectedChat;
   } catch (error) {
-    console.error('Failed to get chat by id from database');
+    console.error("Failed to get chat by id from database");
     throw error;
   }
 }
@@ -415,7 +415,7 @@ export async function saveMessages({
     // This resolves a race condition where both the client and server might try to save the same message.
     return await db().insert(message).values(messages).onConflictDoNothing();
   } catch (error) {
-    console.error('Failed to save messages in database', error);
+    console.error("Failed to save messages in database", error);
     throw error;
   }
 }
@@ -428,7 +428,7 @@ export async function getMessagesByChatId({ id }: { id: string }) {
       .where(eq(message.chatId, id))
       .orderBy(asc(message.createdAt));
   } catch (error) {
-    console.error('Failed to get messages by chat id from database', error);
+    console.error("Failed to get messages by chat id from database", error);
     throw error;
   }
 }
@@ -440,7 +440,7 @@ export async function voteMessage({
 }: {
   chatId: string;
   messageId: string;
-  type: 'up' | 'down';
+  type: "up" | "down";
 }) {
   try {
     const [existingVote] = await db()
@@ -451,7 +451,7 @@ export async function voteMessage({
     if (existingVote) {
       return await db()
         .update(vote)
-        .set({ isUpvoted: type === 'up' })
+        .set({ isUpvoted: type === "up" })
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
     }
     return await db()
@@ -459,10 +459,10 @@ export async function voteMessage({
       .values({
         chatId,
         messageId,
-        isUpvoted: type === 'up',
+        isUpvoted: type === "up",
       });
   } catch (error) {
-    console.error('Failed to upvote message in database', error);
+    console.error("Failed to upvote message in database", error);
     throw error;
   }
 }
@@ -471,7 +471,7 @@ export async function getVotesByChatId({ id }: { id: string }) {
   try {
     return await db().select().from(vote).where(eq(vote.chatId, id));
   } catch (error) {
-    console.error('Failed to get votes by chat id from database', error);
+    console.error("Failed to get votes by chat id from database", error);
     throw error;
   }
 }
@@ -491,12 +491,12 @@ export async function saveDocument({
   content: string;
   userId: string;
   thumbnailUrl?: string | null;
-  visibility?: 'public' | 'private';
+  visibility?: "public" | "private";
 }) {
   try {
     // Set default visibility based on kind
     const defaultVisibility =
-      visibility || (kind === 'script' ? 'public' : 'private');
+      visibility || (kind === "script" ? "public" : "private");
 
     // Check if document with this ID already exists
     const existingDocs = await db()
@@ -507,7 +507,7 @@ export async function saveDocument({
 
     if (existingDocs.length > 0) {
       // Update existing document
-      console.log('📄 Document already exists, updating:', id);
+      console.log("📄 Document already exists, updating:", id);
       return await db()
         .update(document)
         .set({
@@ -520,7 +520,7 @@ export async function saveDocument({
         .returning();
     } else {
       // Insert new document
-      console.log('📄 Creating new document:', id);
+      console.log("📄 Creating new document:", id);
       return await db()
         .insert(document)
         .values({
@@ -536,7 +536,7 @@ export async function saveDocument({
         .returning();
     }
   } catch (error) {
-    console.error('Failed to save document in database');
+    console.error("Failed to save document in database");
     throw error;
   }
 }
@@ -551,7 +551,7 @@ export async function getDocumentsById({ id }: { id: string }) {
 
     return documents;
   } catch (error) {
-    console.error('Failed to get document by id from database');
+    console.error("Failed to get document by id from database");
     throw error;
   }
 }
@@ -566,7 +566,7 @@ export async function getDocumentById({ id }: { id: string }) {
 
     return selectedDocument;
   } catch (error) {
-    console.error('Failed to get document by id from database');
+    console.error("Failed to get document by id from database");
     throw error;
   }
 }
@@ -584,8 +584,8 @@ export async function deleteDocumentsByIdAfterTimestamp({
       .where(
         and(
           eq(suggestion.documentId, id),
-          gt(suggestion.documentCreatedAt, timestamp),
-        ),
+          gt(suggestion.documentCreatedAt, timestamp)
+        )
       );
 
     return await db()
@@ -594,7 +594,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
       .returning();
   } catch (error) {
     console.error(
-      'Failed to delete documents by id after timestamp from database',
+      "Failed to delete documents by id after timestamp from database"
     );
     throw error;
   }
@@ -608,7 +608,7 @@ export async function saveSuggestions({
   try {
     return await db().insert(suggestion).values(suggestions);
   } catch (error) {
-    console.error('Failed to save suggestions in database');
+    console.error("Failed to save suggestions in database");
     throw error;
   }
 }
@@ -625,7 +625,7 @@ export async function getSuggestionsByDocumentId({
       .where(and(eq(suggestion.documentId, documentId)));
   } catch (error) {
     console.error(
-      'Failed to get suggestions by document version from database',
+      "Failed to get suggestions by document version from database"
     );
     throw error;
   }
@@ -635,7 +635,7 @@ export async function getMessageById({ id }: { id: string }) {
   try {
     return await db().select().from(message).where(eq(message.id, id));
   } catch (error) {
-    console.error('Failed to get message by id from database');
+    console.error("Failed to get message by id from database");
     throw error;
   }
 }
@@ -652,7 +652,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       .select({ id: message.id })
       .from(message)
       .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
+        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp))
       );
 
     const messageIds = messagesToDelete.map((message) => message.id);
@@ -661,20 +661,20 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       await db()
         .delete(vote)
         .where(
-          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)),
+          and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds))
         );
 
       return await db()
         .delete(message)
         .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
+          and(eq(message.chatId, chatId), inArray(message.id, messageIds))
         );
     }
 
     return messageIds.length;
   } catch (error) {
     console.error(
-      'Failed to delete messages by id after timestamp from database',
+      "Failed to delete messages by id after timestamp from database"
     );
     throw error;
   }
@@ -685,7 +685,7 @@ export async function updateChatVisiblityById({
   visibility,
 }: {
   chatId: string;
-  visibility: 'private' | 'public';
+  visibility: "private" | "public";
 }) {
   try {
     return await db()
@@ -693,7 +693,7 @@ export async function updateChatVisiblityById({
       .set({ visibility })
       .where(eq(chat.id, chatId));
   } catch (error) {
-    console.error('Failed to update chat visibility in database');
+    console.error("Failed to update chat visibility in database");
     throw error;
   }
 }
@@ -707,7 +707,7 @@ export async function getMessageCountByUserId({
 }) {
   try {
     const twentyFourHoursAgo = new Date(
-      Date.now() - differenceInHours * 60 * 60 * 1000,
+      Date.now() - differenceInHours * 60 * 60 * 1000
     );
 
     const [stats] = await db()
@@ -718,15 +718,15 @@ export async function getMessageCountByUserId({
         and(
           eq(chat.userId, id),
           gte(message.createdAt, twentyFourHoursAgo),
-          eq(message.role, 'user'),
-        ),
+          eq(message.role, "user")
+        )
       )
       .execute();
 
     return stats?.count ?? 0;
   } catch (error) {
     console.error(
-      'Failed to get message count by user id for the last 24 hours from database',
+      "Failed to get message count by user id for the last 24 hours from database"
     );
     throw error;
   }
@@ -744,7 +744,7 @@ export async function createStreamId({
       .insert(stream)
       .values({ id: streamId, chatId, createdAt: new Date() });
   } catch (error) {
-    console.error('Failed to create stream id in database');
+    console.error("Failed to create stream id in database");
     throw error;
   }
 }
@@ -760,7 +760,7 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 
     return streamIds.map(({ id }) => id);
   } catch (error) {
-    console.error('Failed to get stream ids by chat id from database');
+    console.error("Failed to get stream ids by chat id from database");
     throw error;
   }
 }
@@ -798,7 +798,7 @@ export async function getChatImageArtifacts({
       if (msg.parts && Array.isArray(msg.parts)) {
         for (const part of msg.parts) {
           // Check if part contains image artifact
-          if (part && typeof part === 'object' && 'text' in part) {
+          if (part && typeof part === "object" && "text" in part) {
             const text = part.text as string;
 
             // Look for image artifacts in the text
@@ -806,24 +806,24 @@ export async function getChatImageArtifacts({
               text &&
               (text.includes('"kind":"image"') ||
                 text.includes("'kind':'image'") ||
-                text.includes('ImageArtifact'))
+                text.includes("ImageArtifact"))
             ) {
               try {
                 let artifactContent = null;
 
                 // Try to parse JSON content
-                if (text.includes('```json')) {
+                if (text.includes("```json")) {
                   const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
                   if (jsonMatch) {
-                    artifactContent = JSON.parse(jsonMatch[1] || '');
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
                   }
-                } else if (text.startsWith('{') && text.endsWith('}')) {
+                } else if (text.startsWith("{") && text.endsWith("}")) {
                   artifactContent = JSON.parse(text);
                 }
 
                 if (
                   artifactContent &&
-                  artifactContent.status === 'completed' &&
+                  artifactContent.status === "completed" &&
                   artifactContent.imageUrl
                 ) {
                   imageArtifacts.push({
@@ -832,7 +832,7 @@ export async function getChatImageArtifacts({
                       artifactContent.projectId ||
                       msg.id,
                     url: artifactContent.imageUrl,
-                    prompt: artifactContent.prompt || 'Generated image',
+                    prompt: artifactContent.prompt || "Generated image",
                     createdAt: msg.createdAt,
                     projectId: artifactContent.projectId,
                   });
@@ -858,7 +858,7 @@ export async function getChatImageArtifacts({
 
     return imageArtifacts;
   } catch (error) {
-    console.error('Failed to get chat image artifacts from database');
+    console.error("Failed to get chat image artifacts from database");
     throw error;
   }
 }
@@ -869,11 +869,11 @@ export async function getChatImageArtifacts({
 export interface MediaArtifact {
   id: string;
   url: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   timestamp: Date;
   prompt?: string;
   messageIndex: number;
-  mediaType: 'image' | 'video' | 'audio';
+  mediaType: "image" | "video" | "audio";
   metadata?: Record<string, any>;
 }
 
@@ -911,7 +911,8 @@ export async function getChatMediaArtifacts({
       // 1. Extract artifacts from message parts (AI-generated content)
       if (msg.parts && Array.isArray(msg.parts)) {
         for (const part of msg.parts) {
-          if (part && typeof part === 'object' && 'text' in part) {
+          // Check TEXT parts for JSON artifacts
+          if (part && typeof part === "object" && "text" in part) {
             const text = part.text as string;
 
             // Check for image artifacts
@@ -919,23 +920,23 @@ export async function getChatMediaArtifacts({
               text &&
               (text.includes('"kind":"image"') ||
                 text.includes("'kind':'image'") ||
-                text.includes('ImageArtifact'))
+                text.includes("ImageArtifact"))
             ) {
               try {
                 let artifactContent = null;
 
-                if (text.includes('```json')) {
+                if (text.includes("```json")) {
                   const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
                   if (jsonMatch) {
-                    artifactContent = JSON.parse(jsonMatch[1] || '');
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
                   }
-                } else if (text.startsWith('{') && text.endsWith('}')) {
+                } else if (text.startsWith("{") && text.endsWith("}")) {
                   artifactContent = JSON.parse(text);
                 }
 
                 if (
                   artifactContent &&
-                  artifactContent.status === 'completed' &&
+                  artifactContent.status === "completed" &&
                   artifactContent.imageUrl
                 ) {
                   mediaArtifacts.push({
@@ -944,11 +945,11 @@ export async function getChatMediaArtifacts({
                       artifactContent.projectId ||
                       msg.id,
                     url: artifactContent.imageUrl,
-                    role: msg.role as 'user' | 'assistant',
+                    role: msg.role as "user" | "assistant",
                     timestamp: msg.createdAt,
-                    prompt: artifactContent.prompt || 'Generated image',
+                    prompt: artifactContent.prompt || "Generated image",
                     messageIndex,
-                    mediaType: 'image',
+                    mediaType: "image",
                     metadata: {
                       projectId: artifactContent.projectId,
                       requestId: artifactContent.requestId,
@@ -965,23 +966,23 @@ export async function getChatMediaArtifacts({
               text &&
               (text.includes('"kind":"video"') ||
                 text.includes("'kind':'video'") ||
-                text.includes('VideoArtifact'))
+                text.includes("VideoArtifact"))
             ) {
               try {
                 let artifactContent = null;
 
-                if (text.includes('```json')) {
+                if (text.includes("```json")) {
                   const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
                   if (jsonMatch) {
-                    artifactContent = JSON.parse(jsonMatch[1] || '');
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
                   }
-                } else if (text.startsWith('{') && text.endsWith('}')) {
+                } else if (text.startsWith("{") && text.endsWith("}")) {
                   artifactContent = JSON.parse(text);
                 }
 
                 if (
                   artifactContent &&
-                  artifactContent.status === 'completed' &&
+                  artifactContent.status === "completed" &&
                   artifactContent.videoUrl
                 ) {
                   mediaArtifacts.push({
@@ -990,11 +991,11 @@ export async function getChatMediaArtifacts({
                       artifactContent.projectId ||
                       msg.id,
                     url: artifactContent.videoUrl,
-                    role: msg.role as 'user' | 'assistant',
+                    role: msg.role as "user" | "assistant",
                     timestamp: msg.createdAt,
-                    prompt: artifactContent.prompt || 'Generated video',
+                    prompt: artifactContent.prompt || "Generated video",
                     messageIndex,
-                    mediaType: 'video',
+                    mediaType: "video",
                     metadata: {
                       projectId: artifactContent.projectId,
                       requestId: artifactContent.requestId,
@@ -1011,23 +1012,23 @@ export async function getChatMediaArtifacts({
               text &&
               (text.includes('"kind":"script"') ||
                 text.includes("'kind':'script'") ||
-                text.includes('ScriptArtifact'))
+                text.includes("ScriptArtifact"))
             ) {
               try {
                 let artifactContent = null;
 
-                if (text.includes('```json')) {
+                if (text.includes("```json")) {
                   const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
                   if (jsonMatch) {
-                    artifactContent = JSON.parse(jsonMatch[1] || '');
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
                   }
-                } else if (text.startsWith('{') && text.endsWith('}')) {
+                } else if (text.startsWith("{") && text.endsWith("}")) {
                   artifactContent = JSON.parse(text);
                 }
 
                 if (
                   artifactContent &&
-                  artifactContent.status === 'completed' &&
+                  artifactContent.status === "completed" &&
                   artifactContent.audioUrl
                 ) {
                   mediaArtifacts.push({
@@ -1036,11 +1037,11 @@ export async function getChatMediaArtifacts({
                       artifactContent.projectId ||
                       msg.id,
                     url: artifactContent.audioUrl,
-                    role: msg.role as 'user' | 'assistant',
+                    role: msg.role as "user" | "assistant",
                     timestamp: msg.createdAt,
-                    prompt: artifactContent.scriptText || 'Generated audio',
+                    prompt: artifactContent.scriptText || "Generated audio",
                     messageIndex,
-                    mediaType: 'audio',
+                    mediaType: "audio",
                     metadata: {
                       projectId: artifactContent.projectId,
                       requestId: artifactContent.requestId,
@@ -1053,6 +1054,141 @@ export async function getChatMediaArtifacts({
               }
             }
           }
+
+          // CRITICAL: Check TOOL-RESULT parts for Nano Banana and other tool outputs
+          // Tool parts have type like 'tool-call-nanoBananaImageGeneration' with output field
+          if (
+            part &&
+            typeof part === "object" &&
+            "type" in part &&
+            "output" in part
+          ) {
+            const partType = (part as any).type;
+            const partOutput = (part as any).output;
+
+            // Check if this is an image generation tool
+            if (
+              partType &&
+              typeof partType === "string" &&
+              (partType.includes("ImageGeneration") ||
+                partType.includes("nanoBananaImageGeneration") ||
+                partType.includes("configureImageGeneration"))
+            ) {
+              try {
+                // Tool output can be direct object or JSON string in content field
+                let toolResult = partOutput;
+
+                // If output has content field with JSON string, parse it
+                if (
+                  toolResult &&
+                  typeof toolResult === "object" &&
+                  "content" in toolResult &&
+                  typeof toolResult.content === "string"
+                ) {
+                  try {
+                    toolResult = {
+                      ...toolResult,
+                      ...JSON.parse(toolResult.content),
+                    };
+                  } catch {
+                    // Content is not JSON, use as is
+                  }
+                }
+
+                // Extract image URL from tool result
+                const imageUrl =
+                  toolResult?.url ||
+                  toolResult?.imageUrl ||
+                  toolResult?.data?.imageUrl;
+
+                if (imageUrl && typeof imageUrl === "string") {
+                  mediaArtifacts.push({
+                    id: toolResult?.id || msg.id,
+                    url: imageUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: toolResult?.prompt || "Generated image",
+                    messageIndex,
+                    mediaType: "image",
+                    metadata: {
+                      toolType: partType,
+                      projectId: toolResult?.projectId,
+                      requestId: toolResult?.requestId,
+                    },
+                  });
+                  console.log(
+                    `✅ [getChatMediaArtifacts] Found image in tool part: ${partType}`
+                  );
+                }
+              } catch (error) {
+                console.warn(
+                  "[getChatMediaArtifacts] Failed to parse tool output:",
+                  error
+                );
+                continue;
+              }
+            }
+
+            // Check if this is a video generation tool
+            if (
+              partType &&
+              typeof partType === "string" &&
+              (partType.includes("VideoGeneration") ||
+                partType.includes("falVideoGeneration") ||
+                partType.includes("configureVideoGeneration"))
+            ) {
+              try {
+                let toolResult = partOutput;
+
+                if (
+                  toolResult &&
+                  typeof toolResult === "object" &&
+                  "content" in toolResult &&
+                  typeof toolResult.content === "string"
+                ) {
+                  try {
+                    toolResult = {
+                      ...toolResult,
+                      ...JSON.parse(toolResult.content),
+                    };
+                  } catch {
+                    // Content is not JSON, use as is
+                  }
+                }
+
+                const videoUrl =
+                  toolResult?.url ||
+                  toolResult?.videoUrl ||
+                  toolResult?.data?.videoUrl;
+
+                if (videoUrl && typeof videoUrl === "string") {
+                  mediaArtifacts.push({
+                    id: toolResult?.id || msg.id,
+                    url: videoUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: toolResult?.prompt || "Generated video",
+                    messageIndex,
+                    mediaType: "video",
+                    metadata: {
+                      toolType: partType,
+                      projectId: toolResult?.projectId,
+                      requestId: toolResult?.requestId,
+                    },
+                  });
+                  console.log(
+                    `✅ [getChatMediaArtifacts] Found video in tool part: ${partType}`
+                  );
+                }
+              } catch (error) {
+                console.warn(
+                  "[getChatMediaArtifacts] Failed to parse tool output:",
+                  error
+                );
+                continue;
+              }
+            }
+          }
         }
       }
 
@@ -1061,53 +1197,53 @@ export async function getChatMediaArtifacts({
         for (const attachment of msg.attachments) {
           if (
             attachment &&
-            typeof attachment === 'object' &&
-            'contentType' in attachment &&
-            'url' in attachment
+            typeof attachment === "object" &&
+            "contentType" in attachment &&
+            "url" in attachment
           ) {
             const contentType = attachment.contentType as string;
             const url = attachment.url as string;
             const name = (attachment as any).name as string | undefined;
 
-            if (contentType?.startsWith('image/')) {
+            if (contentType?.startsWith("image/")) {
               mediaArtifacts.push({
                 id: (attachment as any).id || `${msg.id}-attachment`,
                 url,
-                role: msg.role as 'user' | 'assistant',
+                role: msg.role as "user" | "assistant",
                 timestamp: msg.createdAt,
-                prompt: name || 'Uploaded image',
+                prompt: name || "Uploaded image",
                 messageIndex,
-                mediaType: 'image',
+                mediaType: "image",
                 metadata: {
                   contentType,
                   name,
                   isAttachment: true,
                 },
               });
-            } else if (contentType?.startsWith('video/')) {
+            } else if (contentType?.startsWith("video/")) {
               mediaArtifacts.push({
                 id: (attachment as any).id || `${msg.id}-attachment`,
                 url,
-                role: msg.role as 'user' | 'assistant',
+                role: msg.role as "user" | "assistant",
                 timestamp: msg.createdAt,
-                prompt: name || 'Uploaded video',
+                prompt: name || "Uploaded video",
                 messageIndex,
-                mediaType: 'video',
+                mediaType: "video",
                 metadata: {
                   contentType,
                   name,
                   isAttachment: true,
                 },
               });
-            } else if (contentType?.startsWith('audio/')) {
+            } else if (contentType?.startsWith("audio/")) {
               mediaArtifacts.push({
                 id: (attachment as any).id || `${msg.id}-attachment`,
                 url,
-                role: msg.role as 'user' | 'assistant',
+                role: msg.role as "user" | "assistant",
                 timestamp: msg.createdAt,
-                prompt: name || 'Uploaded audio',
+                prompt: name || "Uploaded audio",
                 messageIndex,
-                mediaType: 'audio',
+                mediaType: "audio",
                 metadata: {
                   contentType,
                   name,
@@ -1128,7 +1264,7 @@ export async function getChatMediaArtifacts({
 
     return mediaArtifacts;
   } catch (error) {
-    console.error('Failed to get chat media artifacts from database', error);
+    console.error("Failed to get chat media artifacts from database", error);
     throw error;
   }
 }
@@ -1138,22 +1274,22 @@ export async function getDocuments({
   userId,
   kind,
   model,
-  visibility = 'all',
+  visibility = "all",
   search,
   dateFrom,
   dateTo,
-  sortBy = 'newest',
+  sortBy = "newest",
   page = 1,
   limit = 20,
 }: {
   userId?: string;
   kind?: ArtifactKind;
   model?: string;
-  visibility?: 'mine' | 'public' | 'all';
+  visibility?: "mine" | "public" | "all";
   search?: string;
   dateFrom?: Date;
   dateTo?: Date;
-  sortBy?: 'newest' | 'oldest' | 'popular';
+  sortBy?: "newest" | "oldest" | "popular";
   page?: number;
   limit?: number;
 }) {
@@ -1162,14 +1298,14 @@ export async function getDocuments({
     const conditions: SQL[] = [];
 
     // Visibility filter
-    if (visibility === 'mine' && userId) {
+    if (visibility === "mine" && userId) {
       conditions.push(eq(document.userId, userId));
-    } else if (visibility === 'public') {
-      conditions.push(eq(document.visibility, 'public'));
-    } else if (visibility === 'all' && userId) {
+    } else if (visibility === "public") {
+      conditions.push(eq(document.visibility, "public"));
+    } else if (visibility === "all" && userId) {
       const visibilityCondition = or(
         eq(document.userId, userId),
-        eq(document.visibility, 'public'),
+        eq(document.visibility, "public")
       );
       if (visibilityCondition) {
         conditions.push(visibilityCondition);
@@ -1195,10 +1331,10 @@ export async function getDocuments({
     }
 
     // Search filter - search in title and tags
-    if (search && typeof search === 'string' && search.length > 0) {
+    if (search && typeof search === "string" && search.length > 0) {
       const searchCondition = or(
         ilike(document.title, `%${search}%`),
-        sql`${document.tags}::text LIKE ${`%${search}%`}`, // <-- исправлено
+        sql`${document.tags}::text LIKE ${`%${search}%`}` // <-- исправлено
       );
       if (searchCondition) {
         conditions.push(searchCondition);
@@ -1229,11 +1365,11 @@ export async function getDocuments({
 
     // Apply sorting
     const queryWithSort =
-      sortBy === 'newest'
+      sortBy === "newest"
         ? queryWithWhere.orderBy(desc(document.createdAt))
-        : sortBy === 'oldest'
+        : sortBy === "oldest"
           ? queryWithWhere.orderBy(asc(document.createdAt))
-          : sortBy === 'popular'
+          : sortBy === "popular"
             ? queryWithWhere.orderBy(desc(document.viewCount))
             : queryWithWhere.orderBy(desc(document.createdAt));
 
@@ -1260,7 +1396,7 @@ export async function getDocuments({
       },
     };
   } catch (error) {
-    console.error('Failed to get documents from database');
+    console.error("Failed to get documents from database");
     throw error;
   }
 }
@@ -1271,7 +1407,7 @@ export async function getPublicDocuments({
   search,
   dateFrom,
   dateTo,
-  sortBy = 'newest',
+  sortBy = "newest",
   page = 1,
   limit = 20,
 }: {
@@ -1280,12 +1416,12 @@ export async function getPublicDocuments({
   search?: string;
   dateFrom?: Date;
   dateTo?: Date;
-  sortBy?: 'newest' | 'oldest' | 'popular';
+  sortBy?: "newest" | "oldest" | "popular";
   page?: number;
   limit?: number;
 }) {
   return getDocuments({
-    visibility: 'public',
+    visibility: "public",
     ...(kind && { kind }),
     ...(model && { model }),
     ...(search && { search }),
@@ -1304,7 +1440,7 @@ export async function incrementDocumentViewCount({ id }: { id: string }) {
       .set({ viewCount: sql`${document.viewCount} + 1` })
       .where(eq(document.id, id));
   } catch (error) {
-    console.error('Failed to increment document view count');
+    console.error("Failed to increment document view count");
     throw error;
   }
 }
@@ -1315,7 +1451,7 @@ export async function updateDocumentVisibility({
   userId,
 }: {
   id: string;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   userId: string;
 }) {
   try {
@@ -1324,7 +1460,7 @@ export async function updateDocumentVisibility({
       .set({ visibility })
       .where(and(eq(document.id, id), eq(document.userId, userId)));
   } catch (error) {
-    console.error('Failed to update document visibility');
+    console.error("Failed to update document visibility");
     throw error;
   }
 }
@@ -1344,7 +1480,7 @@ export async function updateDocumentMetadata({
       .set({ metadata })
       .where(and(eq(document.id, id), eq(document.userId, userId)));
   } catch (error) {
-    console.error('Failed to update document metadata');
+    console.error("Failed to update document metadata");
     throw error;
   }
 }
@@ -1376,7 +1512,7 @@ export async function updateDocumentThumbnail({
       .set(updateData)
       .where(and(eq(document.id, id), eq(document.userId, userId)));
   } catch (error) {
-    console.error('Failed to update document thumbnail');
+    console.error("Failed to update document thumbnail");
     throw error;
   }
 }

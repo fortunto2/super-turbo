@@ -182,19 +182,18 @@ export const nanoBananaImageGenerationForChat = (
 ) =>
   tool({
     description:
-      "Generate images with Gemini-2.5-Flash-Image (Nano Banana) - advanced Google model for creating and editing images. Supports text-to-image and image-to-image generation with context-aware editing.",
+      "Generate images with Gemini-2.5-Flash-Image (Nano Banana) - advanced Google model for creating and editing images. Supports text-to-image and image-to-image generation with context-aware editing. For image-to-image, specify which image to use with referenceImageDescription.",
     inputSchema: z.object({
       prompt: z
         .string()
         .describe(
-          "Detailed description of the image to generate. Nano Banana understands context, lighting and physical logic."
+          "Detailed description of the image to generate or edits to apply. Nano Banana understands context, lighting and physical logic."
         ),
-      sourceImageUrl: z
+      referenceImageDescription: z
         .string()
-        .url()
         .optional()
         .describe(
-          "URL of source image for image-to-image generation. Nano Banana can intelligently edit existing images."
+          'Description of which image from chat history to use as source for image-to-image editing. Examples: "last image", "the one with a dragon", "первая картинка", "та что я загрузил", "latest generated image". Leave empty for text-to-image generation.'
         ),
       style: z
         .enum(NANO_BANANA_STYLES.map((s) => s.id) as [string, ...string[]])
@@ -252,7 +251,7 @@ export const nanoBananaImageGenerationForChat = (
     }),
     execute: async ({
       prompt,
-      sourceImageUrl,
+      referenceImageDescription,
       style,
       quality,
       aspectRatio,
@@ -265,6 +264,7 @@ export const nanoBananaImageGenerationForChat = (
       console.log("🍌🍌🍌 ===== NANO BANANA TOOL EXECUTE STARTED ===== 🍌🍌🍌");
       console.log("🍌 nanoBananaImageGenerationForChat called with:", {
         prompt,
+        referenceImageDescription,
         style,
         quality,
         aspectRatio,
@@ -322,30 +322,51 @@ export const nanoBananaImageGenerationForChat = (
             NANO_BANANA_ASPECT_RATIOS[0]
           : NANO_BANANA_ASPECT_RATIOS[0];
 
-        // Analyze image context
-        let normalizedSourceUrl = sourceImageUrl;
+        // Analyze image context using AI
+        // CRITICAL: Use both userMessage AND referenceImageDescription for better accuracy
+        let normalizedSourceUrl: string | undefined = undefined;
 
-        console.log("contextResult", normalizedSourceUrl);
-
-        if (params?.chatId && params?.userMessage) {
+        if (params?.chatId) {
           try {
             console.log("🔍 Analyzing image context for Nano Banana...");
+            console.log("🔍 User message:", params.userMessage);
+            console.log("🔍 Reference description:", referenceImageDescription);
+
+            // Create enhanced message that includes both original message and reference description
+            const enhancedMessage = referenceImageDescription
+              ? `${params.userMessage}\n\nReference: ${referenceImageDescription}`
+              : params.userMessage || "";
+
             const contextResult = await analyzeImageContext(
-              params.userMessage,
+              enhancedMessage,
               params.chatId,
               params.currentAttachments,
               params.session?.user?.id
             );
 
+            console.log("🔍 Context analysis result:", {
+              confidence: contextResult.confidence,
+              reasoning: contextResult.reasoning,
+              hasSourceUrl: !!contextResult.sourceUrl,
+            });
+
             if (contextResult.sourceUrl && contextResult.confidence !== "low") {
               console.log(
-                "🔍 Using sourceUrl from context analysis:",
+                "🔍 ✅ Using sourceUrl from context analysis:",
                 contextResult.sourceUrl
               );
               normalizedSourceUrl = contextResult.sourceUrl;
+            } else if (referenceImageDescription) {
+              // If AI provided reference description but analysis found nothing,
+              // this is likely an error - inform user
+              console.warn(
+                "🔍 ⚠️ Reference image description provided but no image found:",
+                referenceImageDescription
+              );
             }
           } catch (error) {
-            console.warn("🔍 Error in context analysis, falling back:", error);
+            console.error("🔍 ❌ Error in context analysis:", error);
+            // Continue without source image - will be text-to-image
           }
         }
 
@@ -441,19 +462,28 @@ export const nanoBananaImageGenerationForChat = (
 
         const { nanoBananaProvider } = await import("../providers/nano-banana");
 
-        const nanoBananaParams = {
+        const nanoBananaParams: any = {
           prompt: nanoBananaPrompt,
-          ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
           style: selectedStyle.id,
           quality: selectedQuality.id,
           aspectRatio: selectedAspectRatio.id,
-          ...(seed && { seed }),
           nanoBananaFeatures: {
             enableContextAwareness,
             enableSurgicalPrecision,
             creativeMode,
           },
+          // CRITICAL: Conditionally add sourceImageUrl for image-to-image (only if present)
+          ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
+          ...(seed && { seed }),
         };
+
+        console.log("🍌 🔍 Calling Nano Banana provider with params:", {
+          hasSourceImageUrl: !!normalizedSourceUrl,
+          sourceImageUrl: normalizedSourceUrl?.substring(0, 50),
+          operationType: normalizedSourceUrl
+            ? "image-to-image"
+            : "text-to-image",
+        });
 
         const result = await nanoBananaProvider.generateImage(nanoBananaParams);
 
