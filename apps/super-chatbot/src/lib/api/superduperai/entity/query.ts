@@ -1,12 +1,12 @@
-import { createQueryKeys } from "@lukemorales/query-key-factory";
-import { cancelableRequest } from "@/lib/utils/cancelable-request";
+import { createQueryKeys } from '@lukemorales/query-key-factory';
+import { cancelableRequest } from '@/lib/utils/cancelable-request';
 import {
   type IEntityRead,
   type IResponsePaginated_IEntityRead_,
   EntityService,
-} from "@turbo-super/api";
-import { useQuery } from "@tanstack/react-query";
-import type { UseQueryOptions } from "@/lib/types/query";
+} from '@turbo-super/api';
+import { useQuery } from '@tanstack/react-query';
+import type { UseQueryOptions } from '@/lib/types/query';
 
 export type IEntityListParams = Parameters<
   typeof EntityService.entityGetList
@@ -18,7 +18,7 @@ export type IEntityListByIdsParams = Parameters<
   typeof EntityService.entityGetListByIds
 >[0];
 
-export const entityKeys = createQueryKeys("entity", {
+export const entityKeys = createQueryKeys('entity', {
   list: (params: IEntityListParams) => ({
     queryKey: [params],
     queryFn: cancelableRequest(() => EntityService.entityGetList(params)),
@@ -35,7 +35,7 @@ export const entityKeys = createQueryKeys("entity", {
 
 export const useEntityList = (
   params?: IEntityListParams,
-  options?: UseQueryOptions<IResponsePaginated_IEntityRead_>
+  options?: UseQueryOptions<IResponsePaginated_IEntityRead_>,
 ) => {
   return useQuery({
     ...entityKeys.list(params ?? {}),
@@ -45,7 +45,7 @@ export const useEntityList = (
 
 export const useEntityListByIds = (
   params: IEntityListByIdsParams,
-  options?: UseQueryOptions<IEntityRead[]>
+  options?: UseQueryOptions<IEntityRead[]>,
 ) => {
   return useQuery({
     ...entityKeys.getByIds(params),
@@ -55,7 +55,7 @@ export const useEntityListByIds = (
 
 export const useEntityGetById = (
   params: IEntityByIdParams,
-  options?: UseQueryOptions<IEntityRead>
+  options?: UseQueryOptions<IEntityRead>,
 ) => {
   return useQuery({
     ...entityKeys.getById(params),

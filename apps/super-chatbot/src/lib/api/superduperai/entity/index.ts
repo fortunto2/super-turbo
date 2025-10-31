@@ -1,3 +1,3 @@
-export * from "./query";
-export * from "./update/query";
-export * from "./create/query";
+export * from './query';
+export * from './update/query';
+export * from './create/query';

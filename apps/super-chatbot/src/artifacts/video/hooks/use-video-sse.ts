@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 import {
   videoSSEStore,
   type VideoEventHandler,
-} from "../stores/video-sse-store";
-import { getSuperduperAIConfig } from "@/lib/config/superduperai";
+} from '../stores/video-sse-store';
+import { getSuperduperAIConfig } from '@/lib/config/superduperai';
 
 type Props = {
   projectId: string;
@@ -25,7 +25,7 @@ export const useVideoSSE = ({
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const maxAttempts = 3; // Keep for compatibility, though SSE handles reconnection automatically
   const connectionHandlerRef = useRef<((connected: boolean) => void) | null>(
-    null
+    null,
   );
   const mountedRef = useRef(true);
 
@@ -44,7 +44,7 @@ export const useVideoSSE = ({
       return;
     }
 
-    console.log("🔌 Setting up video SSE connection for project:", projectId);
+    console.log('🔌 Setting up video SSE connection for project:', projectId);
 
     // Reset attempts for new project
     setConnectionAttempts(0);
@@ -59,10 +59,10 @@ export const useVideoSSE = ({
       if (!mountedRef.current) return; // Don't update state if unmounted
 
       console.log(
-        "📡 Video SSE connection state changed:",
+        '📡 Video SSE connection state changed:',
         connected,
-        "for project:",
-        projectId
+        'for project:',
+        projectId,
       );
       setIsConnected(connected);
 
@@ -84,24 +84,24 @@ export const useVideoSSE = ({
     let sseBaseUrl = config.url;
 
     // If config returns localhost, use SuperDuperAI directly
-    if (sseBaseUrl.includes("localhost")) {
-      sseBaseUrl = "https://dev-editor.superduperai.co";
+    if (sseBaseUrl.includes('localhost')) {
+      sseBaseUrl = 'https://dev-editor.superduperai.co';
       console.log(
-        "🔌 Using SuperDuperAI directly for SSE (localhost detected)"
+        '🔌 Using SuperDuperAI directly for SSE (localhost detected)',
       );
     }
 
     // Convert to SSE URL format - use file.{fileId} channel (projectId is actually fileId)
     const sseUrl = `${sseBaseUrl}/api/v1/events/file.${projectId}`;
 
-    console.log("🔌 Initializing video SSE connection to:", sseUrl);
-    console.log("🔌 Request ID for SSE:", requestId || "no-request-id");
+    console.log('🔌 Initializing video SSE connection to:', sseUrl);
+    console.log('🔌 Request ID for SSE:', requestId || 'no-request-id');
 
     // Initialize SSE connection with project-specific handlers and requestId
     videoSSEStore.initConnection(sseUrl, eventHandlers, requestId);
 
     return () => {
-      console.log("🧹 Cleaning up video SSE hook for project:", projectId);
+      console.log('🧹 Cleaning up video SSE hook for project:', projectId);
 
       // Remove specific connection handler
       if (connectionHandlerRef.current) {
@@ -130,7 +130,7 @@ export const useVideoSSE = ({
       // Force cleanup if too many handlers accumulated
       const debugInfo = videoSSEStore.getDebugInfo();
       if (debugInfo.totalHandlers > 5) {
-        console.log("🧹 Force cleanup due to handler accumulation on unmount");
+        console.log('🧹 Force cleanup due to handler accumulation on unmount');
         videoSSEStore.forceCleanup();
       }
     };
@@ -143,8 +143,8 @@ export const useVideoSSE = ({
     maxAttempts,
     disconnect: () => {
       console.log(
-        "🔌 Manual video SSE disconnect requested for project:",
-        projectId
+        '🔌 Manual video SSE disconnect requested for project:',
+        projectId,
       );
       videoSSEStore.disconnect();
       setConnectionAttempts(0);

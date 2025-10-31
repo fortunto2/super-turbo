@@ -1,5 +1,5 @@
-import type { WSMessage } from "@turbo-super/api";
-import { create } from "zustand";
+import type { WSMessage } from '@turbo-super/api';
+import { create } from 'zustand';
 
 export type EventHandler = (eventData: WSMessage) => void;
 
@@ -41,7 +41,7 @@ export const createEventSourceStore = (name: string) =>
 
       const eventSource = new EventSource(url);
 
-      const channel = url.split("/").pop();
+      const channel = url.split('/').pop();
 
       eventSource.onopen = () => {
         addHandlers(handlers);
@@ -68,7 +68,7 @@ export const createEventSourceStore = (name: string) =>
         }
       };
 
-      eventSource.addEventListener("error", () => {
+      eventSource.addEventListener('error', () => {
         // reconnect handled automatically by EventSource
         removeHandlers(handlers);
         console.log(`${name} SSE disconnected. Channel: ${channel}`);

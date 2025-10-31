@@ -5,7 +5,7 @@ import type {
   ImageEventHandler,
   ConnectionStateHandler,
   ImageProjectHandler as ProjectHandler,
-} from "@/types/websocket-types";
+} from '@/types/websocket-types';
 
 export type { ImageSSEMessage, ImageEventHandler, ConnectionStateHandler };
 
@@ -27,20 +27,20 @@ class ImageSSEStore {
   addProjectHandlers(
     projectId: string,
     handlers: ImageEventHandler[],
-    requestId?: string
+    requestId?: string,
   ) {
     if (!projectId) {
-      console.error("❌ Cannot add handlers without projectId");
+      console.error('❌ Cannot add handlers without projectId');
       return;
     }
 
     console.log(
-      "➕ Adding SSE handlers for project:",
+      '➕ Adding SSE handlers for project:',
       projectId,
-      "count:",
+      'count:',
       handlers.length,
-      "requestId:",
-      requestId
+      'requestId:',
+      requestId,
     );
 
     // Initialize project handler array if not exists
@@ -53,7 +53,7 @@ class ImageSSEStore {
 
     // Check project-specific handler limit
     if (projectHandlerList.length >= this.maxHandlersPerProject) {
-      console.warn("⚠️ Max handlers per project limit reached for:", projectId);
+      console.warn('⚠️ Max handlers per project limit reached for:', projectId);
       // Remove oldest handler to make room
       projectHandlerList.shift();
     }
@@ -73,28 +73,28 @@ class ImageSSEStore {
     });
 
     console.log(
-      "➕ Project",
+      '➕ Project',
       projectId,
-      "now has",
+      'now has',
       projectHandlerList.length,
-      "SSE handlers"
+      'SSE handlers',
     );
   }
 
   // AICODE-NOTE: Remove handlers for a specific project
   removeProjectHandlers(
     projectId: string,
-    handlersToRemove: ImageEventHandler[]
+    handlersToRemove: ImageEventHandler[],
   ) {
     if (!projectId || !this.projectHandlers.has(projectId)) {
       return;
     }
 
     console.log(
-      "➖ Removing SSE handlers for project:",
+      '➖ Removing SSE handlers for project:',
       projectId,
-      "count:",
-      handlersToRemove.length
+      'count:',
+      handlersToRemove.length,
     );
 
     const projectHandlerList = this.projectHandlers.get(projectId);
@@ -102,7 +102,7 @@ class ImageSSEStore {
 
     handlersToRemove.forEach((handlerToRemove) => {
       const index = projectHandlerList.findIndex(
-        (ph) => ph.handler === handlerToRemove
+        (ph) => ph.handler === handlerToRemove,
       );
       if (index > -1) {
         projectHandlerList.splice(index, 1);
@@ -110,18 +110,18 @@ class ImageSSEStore {
     });
 
     console.log(
-      "➖ Project",
+      '➖ Project',
       projectId,
-      "now has",
+      'now has',
       projectHandlerList.length,
-      "SSE handlers"
+      'SSE handlers',
     );
 
     // Clean up empty project
     if (projectHandlerList.length === 0) {
       this.projectHandlers.delete(projectId);
       this.activeProjects.delete(projectId);
-      console.log("🧹 Cleaned up empty project:", projectId);
+      console.log('🧹 Cleaned up empty project:', projectId);
     }
 
     // Schedule disconnect if no handlers remain for any project
@@ -141,7 +141,7 @@ class ImageSSEStore {
 
   // AICODE-NOTE: Schedule disconnect with proper cleanup
   private scheduleDisconnect() {
-    console.log("🔌 No SSE handlers left, scheduling disconnect in 1000ms");
+    console.log('🔌 No SSE handlers left, scheduling disconnect in 1000ms');
 
     if (this.disconnectTimeout) {
       clearTimeout(this.disconnectTimeout);
@@ -150,11 +150,11 @@ class ImageSSEStore {
     this.disconnectTimeout = setTimeout(() => {
       if (this.getTotalHandlersCount() === 0) {
         console.log(
-          "🔌 Actually disconnecting SSE after timeout - no handlers remain"
+          '🔌 Actually disconnecting SSE after timeout - no handlers remain',
         );
         this.disconnect();
       } else {
-        console.log("🔌 SSE disconnect cancelled - handlers were re-added");
+        console.log('🔌 SSE disconnect cancelled - handlers were re-added');
       }
     }, 1000);
   }
@@ -164,7 +164,7 @@ class ImageSSEStore {
     // Check connection handler limit
     if (this.connectionHandlers.length >= this.maxConnectionHandlers) {
       console.warn(
-        "⚠️ Max connection handlers limit reached, rejecting new handler"
+        '⚠️ Max connection handlers limit reached, rejecting new handler',
       );
       return;
     }
@@ -178,41 +178,41 @@ class ImageSSEStore {
   // AICODE-NOTE: Remove connection state handler
   removeConnectionHandler(handler: (connected: boolean) => void) {
     this.connectionHandlers = this.connectionHandlers.filter(
-      (h) => h !== handler
+      (h) => h !== handler,
     );
   }
 
   // AICODE-NOTE: Notify all connection handlers of state change
   private notifyConnectionState(connected: boolean) {
     console.log(
-      "📡 Notifying SSE connection state:",
+      '📡 Notifying SSE connection state:',
       connected,
-      "to",
+      'to',
       this.connectionHandlers.length,
-      "handlers"
+      'handlers',
     );
     this.connectionHandlers.forEach((handler) => {
       try {
         handler(connected);
       } catch (error) {
-        console.error("❌ Error in SSE connection handler:", error);
+        console.error('❌ Error in SSE connection handler:', error);
       }
     });
   }
 
   // AICODE-NOTE: Force cleanup method for React Strict Mode
   forceCleanup() {
-    console.log("🧹 Force SSE cleanup initiated");
-    console.log("🧹 Current handlers:", this.getTotalHandlersCount());
-    console.log("🧹 Connection handlers:", this.connectionHandlers.length);
-    console.log("🧹 Active projects:", Array.from(this.activeProjects));
+    console.log('🧹 Force SSE cleanup initiated');
+    console.log('🧹 Current handlers:', this.getTotalHandlersCount());
+    console.log('🧹 Connection handlers:', this.connectionHandlers.length);
+    console.log('🧹 Active projects:', Array.from(this.activeProjects));
 
     // Clear all handlers but be more conservative during development (React Strict Mode)
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     if (isDevelopment && this.getTotalHandlersCount() < 5) {
       console.log(
-        "🧹 Skipping force cleanup in development with few handlers (React Strict Mode)"
+        '🧹 Skipping force cleanup in development with few handlers (React Strict Mode)',
       );
       return;
     }
@@ -222,7 +222,7 @@ class ImageSSEStore {
     this.activeProjects.clear();
 
     if (this.eventSource && this.eventSource.readyState === EventSource.OPEN) {
-      console.log("🧹 Closing SSE connection");
+      console.log('🧹 Closing SSE connection');
       this.eventSource.close();
     }
     this.eventSource = null;
@@ -232,7 +232,7 @@ class ImageSSEStore {
 
   // AICODE-NOTE: Clean up specific project
   cleanupProject(projectId: string) {
-    console.log("🧹 Cleaning up project:", projectId);
+    console.log('🧹 Cleaning up project:', projectId);
 
     if (this.projectHandlers.has(projectId)) {
       this.projectHandlers.delete(projectId);
@@ -260,15 +260,15 @@ class ImageSSEStore {
       activeProjects: Array.from(this.activeProjects),
       projectHandlerCounts: Object.fromEntries(
         Array.from(this.projectHandlers.entries()).map(
-          ([projectId, handlers]) => [projectId, handlers.length]
-        )
+          ([projectId, handlers]) => [projectId, handlers.length],
+        ),
       ),
     };
   }
 
   // AICODE-NOTE: Disconnect SSE connection
   disconnect() {
-    console.log("🔌 Disconnecting SSE connection");
+    console.log('🔌 Disconnecting SSE connection');
 
     if (this.disconnectTimeout) {
       clearTimeout(this.disconnectTimeout);
@@ -290,24 +290,24 @@ class ImageSSEStore {
   // AICODE-NOTE: Initialize SSE connection using EventSource
   initConnection(url: string, handlers: ImageEventHandler[]) {
     // Extract ID from URL for tracking (supports both file.{fileId} and project.{projectId})
-    const fileIdMatch = url.match(/file\.([^/]+)/);
-    const projectIdMatch = url.match(/project\.([^/]+)/);
+    const fileIdMatch = url?.match(/file\.([^/]+)/);
+    const projectIdMatch = url?.match(/project\.([^/]+)/);
 
     const fileId = fileIdMatch ? fileIdMatch[1] : null;
     const projectId = projectIdMatch ? projectIdMatch[1] : null;
     const trackingId = fileId || projectId;
 
     if (!trackingId) {
-      console.error("❌ Cannot extract file/project ID from SSE URL:", url);
+      console.error('❌ Cannot extract file/project ID from SSE URL:', url);
       return;
     }
 
     console.log(
-      "🔌 Initializing SSE connection for ID:",
+      '🔌 Initializing SSE connection for ID:',
       trackingId,
-      fileId ? "(file)" : "(project)"
+      fileId ? '(file)' : '(project)',
     );
-    console.log("🔌 SSE URL:", url);
+    console.log('🔌 SSE URL:', url);
 
     // Track current ID
     this.currentProjectId = trackingId;
@@ -317,8 +317,8 @@ class ImageSSEStore {
     const channel = fileId ? `file.${fileId}` : `project.${projectId}`;
     const sseUrl = `/api/events/${channel}`;
 
-    console.log("🔌 SSE Channel:", channel);
-    console.log("🔌 Final SSE URL:", sseUrl);
+    console.log('🔌 SSE Channel:', channel);
+    console.log('🔌 Final SSE URL:', sseUrl);
 
     // Store current channel
     this.currentChannel = channel;
@@ -335,10 +335,10 @@ class ImageSSEStore {
     // Close existing connection if different channel
     if (this.eventSource && this.currentChannel !== channel) {
       console.log(
-        "🔄 Switching SSE channel from",
+        '🔄 Switching SSE channel from',
         this.currentChannel,
-        "to",
-        channel
+        'to',
+        channel,
       );
       this.eventSource.close();
       this.eventSource = null;
@@ -350,14 +350,14 @@ class ImageSSEStore {
       this.eventSource.readyState === EventSource.CLOSED
     ) {
       try {
-        console.log("🆕 Creating new SSE connection to:", sseUrl);
+        console.log('🆕 Creating new SSE connection to:', sseUrl);
 
         // AICODE-NOTE: Create EventSource with authentication headers
         this.eventSource = new EventSource(sseUrl);
 
         // AICODE-NOTE: Handle successful connection
         this.eventSource.onopen = () => {
-          console.log("🔌 ✅ SSE connected to channel:", channel);
+          console.log('🔌 ✅ SSE connected to channel:', channel);
           this.notifyConnectionState(true);
         };
 
@@ -365,24 +365,24 @@ class ImageSSEStore {
         this.eventSource.onmessage = (event) => {
           try {
             const message: ImageSSEMessage = JSON.parse(event.data);
-            console.log("📡 SSE message received:", message);
+            console.log('📡 SSE message received:', message);
 
             // Handle the message with all registered handlers for the project
             this.handleMessage(message);
           } catch (error) {
             console.error(
-              "❌ SSE message parse error:",
+              '❌ SSE message parse error:',
               error,
-              "Raw data:",
-              event.data
+              'Raw data:',
+              event.data,
             );
           }
         };
 
         // AICODE-NOTE: Handle SSE errors (automatic reconnection by browser)
         this.eventSource.onerror = (error) => {
-          console.error("❌ SSE error:", error);
-          console.log("🔄 Browser will handle SSE reconnection automatically");
+          console.error('❌ SSE error:', error);
+          console.log('🔄 Browser will handle SSE reconnection automatically');
 
           // Note: EventSource handles reconnection automatically
           // We just need to notify connection handlers about temporary disconnection
@@ -391,11 +391,11 @@ class ImageSSEStore {
           }
         };
       } catch (error) {
-        console.error("❌ Failed to create SSE connection:", error);
+        console.error('❌ Failed to create SSE connection:', error);
         this.notifyConnectionState(false);
       }
     } else {
-      console.log("🔄 Reusing existing SSE connection for channel:", channel);
+      console.log('🔄 Reusing existing SSE connection for channel:', channel);
       // Connection already exists, just notify it's connected
       this.notifyConnectionState(true);
     }
@@ -407,7 +407,7 @@ class ImageSSEStore {
     const projectId = message.projectId || this.currentProjectId;
 
     if (!projectId) {
-      console.warn("⚠️ SSE message without project ID:", message);
+      console.warn('⚠️ SSE message without project ID:', message);
       return;
     }
 
@@ -416,19 +416,19 @@ class ImageSSEStore {
 
     if (!projectHandlerList || projectHandlerList.length === 0) {
       console.log(
-        "📡 No handlers for project:",
+        '📡 No handlers for project:',
         projectId,
-        "message type:",
-        message.type
+        'message type:',
+        message.type,
       );
       return;
     }
 
     console.log(
-      "📡 Distributing SSE message to",
+      '📡 Distributing SSE message to',
       projectHandlerList.length,
-      "handlers for project:",
-      projectId
+      'handlers for project:',
+      projectId,
     );
 
     // Call all handlers for this project
@@ -445,7 +445,7 @@ class ImageSSEStore {
 
         handler(messageWithContext);
       } catch (error) {
-        console.error("❌ Error in SSE handler:", error);
+        console.error('❌ Error in SSE handler:', error);
       }
     });
   }

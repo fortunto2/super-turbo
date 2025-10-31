@@ -6,7 +6,7 @@ import {
   Button,
   Textarea,
   Badge,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 import {
   Sparkles,
   Loader2,
@@ -14,7 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface AIEnhancementProps {
   enhancedPrompt: string;
@@ -25,7 +25,7 @@ interface AIEnhancementProps {
   enhancementInfo: any;
   selectedFocusTypes: string[];
   toggleFocusType: (
-    type: "character" | "action" | "cinematic" | "safe"
+    type: 'character' | 'action' | 'cinematic' | 'safe',
   ) => void;
   includeAudio: boolean;
   setIncludeAudio: (val: boolean) => void;
@@ -81,12 +81,12 @@ export function AIEnhancement({
               <>
                 <Sparkles className="w-6 h-6 mr-3" />
                 {enhancedPrompt.trim()
-                  ? "Re-enhance with AI"
-                  : "Enhance with AI"}
+                  ? 'Re-enhance with AI'
+                  : 'Enhance with AI'}
                 {selectedFocusTypes.length > 0 && (
                   <span className="ml-2 text-sm opacity-90">
                     ({selectedFocusTypes.length} focus
-                    {selectedFocusTypes.length !== 1 ? "es" : ""})
+                    {selectedFocusTypes.length !== 1 ? 'es' : ''})
                   </span>
                 )}
               </>
@@ -96,56 +96,56 @@ export function AIEnhancement({
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             <Button
               variant={
-                selectedFocusTypes.includes("character") ? "default" : "outline"
+                selectedFocusTypes.includes('character') ? 'default' : 'outline'
               }
               size="sm"
-              onClick={() => toggleFocusType("character")}
+              onClick={() => toggleFocusType('character')}
               className="text-xs"
             >
               👤 Focus Character
             </Button>
             <Button
               variant={
-                selectedFocusTypes.includes("action") ? "default" : "outline"
+                selectedFocusTypes.includes('action') ? 'default' : 'outline'
               }
               size="sm"
-              onClick={() => toggleFocusType("action")}
+              onClick={() => toggleFocusType('action')}
               className="text-xs"
             >
               🎬 Focus Action
             </Button>
             <Button
               variant={
-                selectedFocusTypes.includes("cinematic") ? "default" : "outline"
+                selectedFocusTypes.includes('cinematic') ? 'default' : 'outline'
               }
               size="sm"
-              onClick={() => toggleFocusType("cinematic")}
+              onClick={() => toggleFocusType('cinematic')}
               className="text-xs"
             >
               🎥 More Cinematic
             </Button>
             <Button
-              variant={includeAudio ? "default" : "outline"}
+              variant={includeAudio ? 'default' : 'outline'}
               size="sm"
               onClick={() => setIncludeAudio(!includeAudio)}
               className={`text-xs ${
                 includeAudio
-                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                  : "bg-blue-50 border-blue-200 hover:bg-blue-100"
+                  ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                  : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
               }`}
             >
               🔊 Audio & Voice
             </Button>
             <Button
               variant={
-                selectedFocusTypes.includes("safe") ? "default" : "outline"
+                selectedFocusTypes.includes('safe') ? 'default' : 'outline'
               }
               size="sm"
-              onClick={() => toggleFocusType("safe")}
+              onClick={() => toggleFocusType('safe')}
               className={`text-xs ${
-                selectedFocusTypes.includes("safe")
-                  ? "bg-green-600 text-white border-green-600 hover:bg-green-700"
-                  : "bg-green-50 border-green-200 hover:bg-green-100"
+                selectedFocusTypes.includes('safe')
+                  ? 'bg-green-600 text-white border-green-600 hover:bg-green-700'
+                  : 'bg-green-50 border-green-200 hover:bg-green-100'
               }`}
             >
               🛡️ Safe Content
@@ -161,10 +161,7 @@ export function AIEnhancement({
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
                 <span className="text-sm">Enhancement Settings</span>
-                <Badge
-                  variant="outline"
-                  className="text-xs"
-                >
+                <Badge variant="outline" className="text-xs">
                   {customCharacterLimit} chars • GPT-4.1
                 </Badge>
               </div>
@@ -182,10 +179,7 @@ export function AIEnhancement({
                     <span className="text-xs text-muted-foreground">
                       Character Limit
                     </span>
-                    <Badge
-                      variant="outline"
-                      className="text-xs"
-                    >
+                    <Badge variant="outline" className="text-xs">
                       {customCharacterLimit} chars
                     </Badge>
                   </div>
@@ -209,14 +203,14 @@ export function AIEnhancement({
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {customCharacterLimit < 600 && "Concise and focused"}
+                    {customCharacterLimit < 600 && 'Concise and focused'}
                     {customCharacterLimit >= 600 &&
                       customCharacterLimit < 1500 &&
-                      "Balanced detail"}
+                      'Balanced detail'}
                     {customCharacterLimit >= 1500 &&
                       customCharacterLimit < 3000 &&
-                      "Rich and detailed"}
-                    {customCharacterLimit >= 3000 && "Extremely detailed"}
+                      'Rich and detailed'}
+                    {customCharacterLimit >= 3000 && 'Extremely detailed'}
                   </div>
                 </div>
                 {/* Model Info */}
@@ -253,7 +247,7 @@ export function AIEnhancement({
               onClick={() => copyToClipboard(enhancedPrompt)}
               disabled={!enhancedPrompt}
               className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-background/80"
-              title={copied ? "Copied!" : "Copy enhanced prompt"}
+              title={copied ? 'Copied!' : 'Copy enhanced prompt'}
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -264,13 +258,13 @@ export function AIEnhancement({
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                 <div className="flex items-center gap-3">
                   <span>
-                    Model:{" "}
+                    Model:{' '}
                     <span className="font-medium text-foreground">
                       {enhancementInfo.modelName || enhancementInfo.model}
                     </span>
                   </span>
                   <span>
-                    Length:{" "}
+                    Length:{' '}
                     <span className="font-medium text-foreground">
                       {enhancementInfo.length}
                     </span>
@@ -278,9 +272,9 @@ export function AIEnhancement({
                 </div>
                 <div className="flex items-center gap-2">
                   <span>
-                    Characters:{" "}
+                    Characters:{' '}
                     <span className="font-medium text-foreground">
-                      {enhancementInfo.actualCharacters} /{" "}
+                      {enhancementInfo.actualCharacters} /{' '}
                       {enhancementInfo.targetCharacters}
                     </span>
                   </span>
@@ -288,15 +282,15 @@ export function AIEnhancement({
                     variant={
                       enhancementInfo.actualCharacters <=
                       enhancementInfo.targetCharacters
-                        ? "default"
-                        : "secondary"
+                        ? 'default'
+                        : 'secondary'
                     }
                     className="text-xs"
                   >
                     {enhancementInfo.actualCharacters <=
                     enhancementInfo.targetCharacters
-                      ? "✓ Within limit"
-                      : "⚠ Over limit"}
+                      ? '✓ Within limit'
+                      : '⚠ Over limit'}
                   </Badge>
                 </div>
               </div>
@@ -318,12 +312,12 @@ export function AIEnhancement({
               <>
                 <Sparkles className="w-6 h-6 mr-3" />
                 {enhancedPrompt.trim()
-                  ? "Re-enhance with AI"
-                  : "Enhance with AI"}
+                  ? 'Re-enhance with AI'
+                  : 'Enhance with AI'}
                 {selectedFocusTypes.length > 0 && (
                   <span className="ml-2 text-sm opacity-90">
                     ({selectedFocusTypes.length} focus
-                    {selectedFocusTypes.length !== 1 ? "es" : ""})
+                    {selectedFocusTypes.length !== 1 ? 'es' : ''})
                   </span>
                 )}
               </>

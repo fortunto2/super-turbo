@@ -1,12 +1,12 @@
-import { useImageSSE } from "../hooks/use-image-sse";
-import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { ImageErrorDisplay } from "@/components/chat/error-display";
-import { toast } from "sonner";
+import { useImageSSE } from '../hooks/use-image-sse';
+import { saveArtifactToDatabase, saveMediaToChat } from '@/lib/ai/chat/media';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import { ImageErrorDisplay } from '@/components/chat/error-display';
+import { toast } from 'sonner';
 
-import { Skeleton } from "@turbo-super/ui";
-import { ImageEditing } from "./editing";
+import { Skeleton } from '@turbo-super/ui';
+import { ImageEditing } from './editing';
 export const ImageArtifactWrapper = memo(
   function ImageArtifactWrapper(props: any) {
     const { content, setArtifact, documentId, title, chatId, setMessages } =
@@ -38,7 +38,7 @@ export const ImageArtifactWrapper = memo(
       } catch (error) {
         // Only log parsing errors for debugging if needed
         if (localContent?.trim()) {
-          console.log("🖼️ ❌ Failed to parse image content:", {
+          console.log('🖼️ ❌ Failed to parse image content:', {
             contentPreview: localContent?.substring(0, 100),
             error: error instanceof Error ? error.message : String(error),
           });
@@ -52,8 +52,8 @@ export const ImageArtifactWrapper = memo(
 
     // Logging for inpainting debugging
     useEffect(() => {
-      if (status === "completed" && imageUrl) {
-        console.log("🖼️ ImageArtifactWrapper - parsed content:", {
+      if (status === 'completed' && imageUrl) {
+        console.log('🖼️ ImageArtifactWrapper - parsed content:', {
           status,
           imageUrl: `${imageUrl?.substring(0, 50)}...`,
           prompt: `${prompt?.substring(0, 50)}...`,
@@ -71,110 +71,120 @@ export const ImageArtifactWrapper = memo(
         setArtifact((prev: any) => ({
           ...prev,
           content: finalContent,
-          status: "idle",
+          status: 'idle',
         }));
 
         // AICODE-FIX: Remove duplicate save - database save is now handled in server.ts
-        // Only save to database when generation is completed
-        if (newContent.status === "completed" && newContent.imageUrl) {
+        // Only save to database when generation is completed AND documentId is valid UUID
+        // Skip for Nano Banana images (they don't have valid UUIDs)
+        const isValidUUID =
+          documentId &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            documentId,
+          );
+        if (
+          newContent.status === 'completed' &&
+          newContent.imageUrl &&
+          isValidUUID
+        ) {
           const thumbnailUrl =
             newContent.thumbnailUrl ||
-            (newContent.status === "completed"
+            (newContent.status === 'completed'
               ? newContent.imageUrl
               : undefined);
           saveArtifactToDatabase(
             documentId,
             title,
             finalContent,
-            "image",
-            thumbnailUrl
+            'image',
+            thumbnailUrl,
           );
 
           // AICODE-FIX: Debug thumbnail save conditions
-          console.log("🖼️ 🔍 updateContent called:", {
+          console.log('🖼️ 🔍 updateContent called:', {
             status: newContent.status,
             hasImageUrl: !!newContent.imageUrl,
             hasThumbnailUrl: !!newContent.thumbnailUrl,
             documentId,
-            documentIdValid: documentId && documentId !== "undefined",
+            documentIdValid: documentId && documentId !== 'undefined',
             thumbnailUrl: newContent.thumbnailUrl,
             finalThumbnailUrl: thumbnailUrl,
-            fileId: newContent.fileId || "none", // AICODE-DEBUG: Add fileId to logging
-            projectId: newContent.projectId || "none", // AICODE-DEBUG: Add projectId to logging
+            fileId: newContent.fileId || 'none', // AICODE-DEBUG: Add fileId to logging
+            projectId: newContent.projectId || 'none', // AICODE-DEBUG: Add projectId to logging
           });
         }
 
-        console.log("🖼️ 🔍 About to check saveMediaToChat conditions...");
+        console.log('🖼️ 🔍 About to check saveMediaToChat conditions...');
 
         // AICODE-FIX: Add generated image to chat history
         // AICODE-DEBUG: Logging conditions for saveMediaToChat
         const saveConditions = {
-          statusIsCompleted: newContent.status === "completed",
+          statusIsCompleted: newContent.status === 'completed',
           hasImageUrl: !!newContent.imageUrl,
           hasChatId: !!chatId,
           hasSetMessages: !!setMessages,
           hasPrompt: !!newContent.prompt,
         };
 
-        console.log("🖼️ 🔍 SaveMediaToChat conditions check:", saveConditions);
+        console.log('🖼️ 🔍 SaveMediaToChat conditions check:', saveConditions);
         console.log(
-          "🖼️ 🔍 All conditions met:",
-          Object.values(saveConditions).every(Boolean)
+          '🖼️ 🔍 All conditions met:',
+          Object.values(saveConditions).every(Boolean),
         );
 
         // AICODE-DEBUG: Detailed logging of each condition
-        console.log("🖼️ 🔍 Detailed conditions:", {
+        console.log('🖼️ 🔍 Detailed conditions:', {
           status: newContent.status,
-          statusIsCompleted: newContent.status === "completed",
+          statusIsCompleted: newContent.status === 'completed',
           imageUrl: newContent.imageUrl
             ? `${newContent.imageUrl.substring(0, 50)}...`
-            : "none",
+            : 'none',
           hasImageUrl: !!newContent.imageUrl,
-          chatId: chatId || "none",
+          chatId: chatId || 'none',
           hasChatId: !!chatId,
-          setMessages: setMessages ? "function" : "none",
+          setMessages: setMessages ? 'function' : 'none',
           hasSetMessages: !!setMessages,
           prompt: newContent.prompt
             ? `${newContent.prompt.substring(0, 30)}...`
-            : "none",
+            : 'none',
           hasPrompt: !!newContent.prompt,
         });
 
         // AICODE-DEBUG: Логирование каждого условия отдельно для точной диагностики
-        console.log("🖼️ 🔍 Individual condition checks:", {
+        console.log('🖼️ 🔍 Individual condition checks:', {
           "newContent.status === 'completed'":
-            newContent.status === "completed",
-          "!!newContent.imageUrl": !!newContent.imageUrl,
-          "!!chatId": !!chatId,
-          "!!setMessages": !!setMessages,
-          "!!newContent.prompt": !!newContent.prompt,
+            newContent.status === 'completed',
+          '!!newContent.imageUrl': !!newContent.imageUrl,
+          '!!chatId': !!chatId,
+          '!!setMessages': !!setMessages,
+          '!!newContent.prompt': !!newContent.prompt,
         });
 
         if (
-          newContent.status === "completed" &&
+          newContent.status === 'completed' &&
           newContent.imageUrl &&
           chatId &&
           setMessages &&
           newContent.prompt
         ) {
           // AICODE-DEBUG: Логирование перед вызовом saveMediaToChat
-          console.log("🖼️ 🔍 Calling saveMediaToChat with:", {
-            chatId: chatId || "none",
+          console.log('🖼️ 🔍 Calling saveMediaToChat with:', {
+            chatId: chatId || 'none',
             imageUrl: newContent.imageUrl
               ? `${newContent.imageUrl.substring(0, 50)}...`
-              : "none",
+              : 'none',
             prompt: newContent.prompt
               ? `${newContent.prompt.substring(0, 30)}...`
-              : "none",
-            fileId: newContent.fileId || "none",
+              : 'none',
+            fileId: newContent.fileId || 'none',
             fileIdType: typeof newContent.fileId,
-            projectId: newContent.projectId || "none",
+            projectId: newContent.projectId || 'none',
             projectIdType: typeof newContent.projectId,
           });
 
           const thumbnailUrl =
             newContent.thumbnailUrl ||
-            (newContent.status === "completed"
+            (newContent.status === 'completed'
               ? newContent.imageUrl
               : undefined);
 
@@ -183,13 +193,13 @@ export const ImageArtifactWrapper = memo(
             newContent.imageUrl,
             newContent.prompt,
             setMessages,
-            "image",
+            'image',
             thumbnailUrl,
-            newContent.fileId // AICODE-FIX: Передаем fileId для встраивания в имя вложения
+            newContent.fileId, // AICODE-FIX: Передаем fileId для встраивания в имя вложения
           );
         }
       },
-      [setArtifact, documentId, title, chatId, setMessages]
+      [setArtifact, documentId, title, chatId, setMessages],
     );
 
     useEffect(() => {
@@ -197,18 +207,18 @@ export const ImageArtifactWrapper = memo(
 
       // AICODE-FIX: Also poll if completed but missing thumbnail
       const needsThumbnail =
-        status === "completed" && imageUrl && !parsedContent?.thumbnailUrl;
-      if (status === "completed" && !needsThumbnail) return;
+        status === 'completed' && imageUrl && !parsedContent?.thumbnailUrl;
+      if (status === 'completed' && !needsThumbnail) return;
 
       const pollTimeout = setTimeout(async () => {
         try {
           const { pollFileCompletion } = await import(
-            "@/lib/utils/smart-polling-manager"
+            '@/lib/utils/smart-polling-manager'
           );
           const result = await pollFileCompletion(projectId, {
             maxDuration: 7 * 60 * 1000,
           });
-          console.log("🖼️ 🔄 Polling result:", {
+          console.log('🖼️ 🔄 Polling result:', {
             success: result.success,
             hasUrl: !!result.data?.url,
             hasThumbnail: !!result.data?.thumbnail_url,
@@ -219,14 +229,14 @@ export const ImageArtifactWrapper = memo(
             // AICODE-FIX: Always force thumbnail update from polling, even if image already completed
             const newContent = {
               ...parsedContent,
-              status: "completed",
+              status: 'completed',
               imageUrl: result.data.url,
               thumbnailUrl: result.data.thumbnail_url, // AICODE-FIX: Include thumbnail from polling
               prompt:
                 result.data.image_generation?.prompt || parsedContent?.prompt, // Use prompt from polling result
               progress: 100,
             };
-            console.log("🖼️ 🔄 Forcing thumbnail update from polling:", {
+            console.log('🖼️ 🔄 Forcing thumbnail update from polling:', {
               imageUrl: result.data.url,
               thumbnailUrl: result.data.thumbnail_url,
               currentStatus: parsedContent?.status,
@@ -234,7 +244,7 @@ export const ImageArtifactWrapper = memo(
             updateContent(newContent);
           }
         } catch (error) {
-          console.error("❌ Artifact smart polling system error:", error);
+          console.error('❌ Artifact smart polling system error:', error);
         }
       }, 20000); // 20s delay
 
@@ -246,23 +256,23 @@ export const ImageArtifactWrapper = memo(
       eventHandlers: useMemo(
         () => [
           (message: any) => {
-            console.log("🖼️ 📡 SSE message received:", {
+            console.log('🖼️ 📡 SSE message received:', {
               type: message.type,
               hasUrl: !!message.object?.url,
               hasThumbnail: !!message.object?.thumbnail_url,
             });
             if (
-              message.type === "file" &&
+              message.type === 'file' &&
               message.object?.url &&
-              message.object?.contentType?.startsWith("image/")
+              message.object?.contentType?.startsWith('image/')
             ) {
-              console.log("🖼️ 📡 Processing file completion from SSE:", {
+              console.log('🖼️ 📡 Processing file completion from SSE:', {
                 url: message.object.url,
                 thumbnail_url: message.object.thumbnail_url,
               });
               updateContent({
                 ...parsedContent,
-                status: "completed",
+                status: 'completed',
                 imageUrl: message.object.url,
                 thumbnailUrl: message.object.thumbnail_url, // AICODE-FIX: Include thumbnail from SSE
                 prompt:
@@ -271,56 +281,56 @@ export const ImageArtifactWrapper = memo(
                 progress: 100,
               });
             } else if (
-              message.type === "render_progress" &&
+              message.type === 'render_progress' &&
               message.object?.progress !== undefined
             ) {
               setLocalContent(
                 JSON.stringify({
                   ...parsedContent,
-                  status: "processing",
+                  status: 'processing',
                   progress: message.object.progress,
-                })
+                }),
               );
             } else if (
-              message.type === "render_result" &&
+              message.type === 'render_result' &&
               (message.object?.url || message.object?.file_url)
             ) {
-              console.log("🖼️ 📡 Processing render_result from SSE:", {
+              console.log('🖼️ 📡 Processing render_result from SSE:', {
                 url: message.object.url || message.object.file_url,
                 thumbnail_url: message.object.thumbnail_url,
               });
               updateContent({
                 ...parsedContent,
-                status: "completed",
+                status: 'completed',
                 imageUrl: message.object.url || message.object.file_url,
                 thumbnailUrl: message.object.thumbnail_url, // AICODE-FIX: Include thumbnail from SSE
                 prompt: parsedContent?.prompt,
                 progress: 100,
               });
             } else if (
-              message.type === "error" ||
-              message.type === "image_error"
+              message.type === 'error' ||
+              message.type === 'image_error'
             ) {
-              console.error("🖼️ ❌ Image generation error via SSE:", message);
+              console.error('🖼️ ❌ Image generation error via SSE:', message);
 
               updateContent({
                 ...parsedContent,
-                status: "error",
+                status: 'error',
                 error:
-                  message.error || message.message || "Image generation failed",
+                  message.error || message.message || 'Image generation failed',
                 timestamp: Date.now(),
               });
 
               // Show error toast
               toast.error(
-                `Ошибка генерации изображения: ${message.error || message.message || "Неизвестная ошибка"}`
+                `Ошибка генерации изображения: ${message.error || message.message || 'Неизвестная ошибка'}`,
               );
             }
           },
         ],
-        [updateContent, parsedContent]
+        [updateContent, parsedContent],
       ),
-      enabled: !!projectId && status !== "completed" && !!requestId,
+      enabled: !!projectId && status !== 'completed' && !!requestId,
     });
 
     // Show skeleton while loading or if content cannot be parsed
@@ -334,27 +344,27 @@ export const ImageArtifactWrapper = memo(
     }
 
     // Show error state
-    if (status === "failed" || status === "error" || error) {
+    if (status === 'failed' || status === 'error' || error) {
       const handleRetry = () => {
         // Clear error and reset state for retry
         updateContent({
           ...parsedContent,
-          status: "idle",
+          status: 'idle',
           error: undefined,
         });
-        toast.info("Функция повтора будет добавлена в следующей версии");
+        toast.info('Функция повтора будет добавлена в следующей версии');
       };
 
       return (
         <ImageErrorDisplay
-          error={error || "Ошибка генерации изображения"}
+          error={error || 'Ошибка генерации изображения'}
           prompt={prompt}
           onRetry={handleRetry}
         />
       );
     }
 
-    if (status === "completed" && imageUrl) {
+    if (status === 'completed' && imageUrl) {
       return (
         <ImageDisplay
           imageUrl={imageUrl}
@@ -370,7 +380,7 @@ export const ImageArtifactWrapper = memo(
           onEditModeChange={setEditMode}
           onSaveEdit={(editedImageUrl: string) => {
             // Здесь будет ваша логика сохранения отредактированного изображения
-            console.log("🔧 Saving edited image:", editedImageUrl);
+            console.log('🔧 Saving edited image:', editedImageUrl);
 
             // Обновляем контент с новым изображением
             const newContent = {
@@ -400,7 +410,7 @@ export const ImageArtifactWrapper = memo(
       </div>
     );
   },
-  (prevProps, nextProps) => prevProps.content === nextProps.content
+  (prevProps, nextProps) => prevProps.content === nextProps.content,
 );
 
 const ImageDisplay = ({
@@ -446,7 +456,7 @@ const ImageDisplay = ({
         onCancelEdit={onCancelEdit}
         onSaveEdit={onSaveEdit}
         onEditModeChange={onEditModeChange}
-        editMode={editMode || "inpainting"}
+        editMode={editMode || 'inpainting'}
       />
     );
   }
@@ -457,11 +467,11 @@ const ImageDisplay = ({
       <div className="rounded-lg overflow-hidden border">
         <Image
           src={imageUrl}
-          alt={prompt || "AI-generated artwork"}
+          alt={prompt || 'AI-generated artwork'}
           width={800}
           height={600}
           className="w-full h-auto object-contain"
-          style={{ maxHeight: "70vh" }}
+          style={{ maxHeight: '70vh' }}
           unoptimized
         />
       </div>

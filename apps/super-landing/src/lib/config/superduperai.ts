@@ -28,8 +28,16 @@ export function getSuperduperAIConfig(): SuperduperAIConfig {
     process.env.SUPERDUPERAI_URL ?? "https://dev-editor.superduperai.co";
   const token = process.env.SUPERDUPERAI_TOKEN ?? "";
 
-  if (!token) {
-    throw new Error("SUPERDUPERAI_TOKEN environment variable is required");
+  // В режиме сборки или если токен не установлен, возвращаем конфигурацию с placeholder
+  if (
+    !token ||
+    token === "placeholder-token" ||
+    (process.env.NODE_ENV === "production" && !process.env.SUPERDUPERAI_TOKEN)
+  ) {
+    console.warn(
+      "⚠️ SUPERDUPERAI_TOKEN not set, using placeholder configuration"
+    );
+    return { url, token: "placeholder-token" };
   }
 
   if (!validateBearerToken(token)) {

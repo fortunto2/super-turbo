@@ -1,5 +1,3 @@
-
-
 export interface ArtifactMetadata {
   [key: string]: any;
 }
@@ -25,7 +23,10 @@ export interface ArtifactDefinition {
   kind: string;
   description: string;
   content: React.ComponentType<ArtifactProps>;
-  initialize?: (props: { documentId: string; setMetadata: (metadata: ArtifactMetadata) => void }) => Promise<void>;
+  initialize?: (props: {
+    documentId: string;
+    setMetadata: (metadata: ArtifactMetadata) => void;
+  }) => Promise<void>;
   onStreamPart?: (props: {
     streamPart: { type: string; content: any };
     setArtifact: (artifact: any) => void;
@@ -37,4 +38,4 @@ export interface ArtifactDefinition {
     onClick: (props: any) => void;
     isDisabled?: (props: any) => boolean;
   }>;
-} 
+}

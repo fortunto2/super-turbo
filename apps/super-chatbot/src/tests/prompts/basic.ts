@@ -16,7 +16,10 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
   USER_NEXTJS: {
     role: 'user',
     content: [
-      { type: 'text', text: 'Create a cinematic wide shot of a futuristic cityscape at sunset with flying cars and neon lights, photorealistic style' },
+      {
+        type: 'text',
+        text: 'Create a cinematic wide shot of a futuristic cityscape at sunset with flying cars and neon lights, photorealistic style',
+      },
     ],
   },
   USER_IMAGE_ATTACHMENT: {
@@ -57,12 +60,12 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
         type: 'tool-result',
         toolCallId: 'call_123',
         toolName: 'createDocument',
-        result: {
+        output: {
           id: '3ca386a4-40c6-4630-8ed1-84cbd46cc7eb',
           title: 'Essay about Silicon Valley',
           kind: 'text',
           content: 'A document was created and is now visible to the user.',
-        },
+        } as any,
       },
     ],
   },
@@ -82,7 +85,7 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
         type: 'tool-result',
         toolCallId: 'call_456',
         toolName: 'getWeather',
-        result: {
+        output: {
           latitude: 37.763283,
           longitude: -122.41286,
           generationtime_ms: 0.06449222564697266,
@@ -134,7 +137,7 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
               '2025-03-16T19:17',
             ],
           },
-        },
+        } as any,
       },
     ],
   },

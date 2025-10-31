@@ -25,30 +25,30 @@ console.log('');
 function testWebSocketConnection() {
   return new Promise((resolve, reject) => {
     console.log('🔌 Attempting WebSocket connection...');
-    
+
     const ws = new WebSocket(wsUrl);
-    
+
     // Set connection timeout
     const connectionTimeout = setTimeout(() => {
       console.log('⏰ Connection timeout (10s)');
       ws.close();
       reject(new Error('Connection timeout'));
     }, 10000);
-    
+
     ws.on('open', () => {
       clearTimeout(connectionTimeout);
       console.log('✅ WebSocket connected successfully!');
       console.log('📊 Connection state:', ws.readyState);
-      
+
       // Send subscribe message
       const subscribeMessage = {
         type: 'subscribe',
-        projectId: `project.${TEST_PROJECT_ID}`
+        projectId: `project.${TEST_PROJECT_ID}`,
       };
-      
+
       console.log('📤 Sending subscribe message:', subscribeMessage);
       ws.send(JSON.stringify(subscribeMessage));
-      
+
       // Wait for subscription confirmation
       setTimeout(() => {
         console.log('🔌 Closing test connection...');
@@ -56,12 +56,12 @@ function testWebSocketConnection() {
         resolve(true);
       }, 2000);
     });
-    
+
     ws.on('message', (data) => {
       try {
         const message = JSON.parse(data.toString());
         console.log('📨 Received message:', message);
-        
+
         if (message.type === 'subscribe') {
           console.log('✅ Subscription confirmed!');
         }
@@ -69,24 +69,28 @@ function testWebSocketConnection() {
         console.log('📨 Received raw message:', data.toString());
       }
     });
-    
+
     ws.on('error', (error) => {
       clearTimeout(connectionTimeout);
       console.error('❌ WebSocket error:', error.message);
-      
+
       // Don't fail the test for 403 errors - this is expected for WebSocket auth
       if (error.message.includes('403')) {
-        console.log('⚠️ WebSocket 403 error is expected - requires additional auth');
+        console.log(
+          '⚠️ WebSocket 403 error is expected - requires additional auth',
+        );
         resolve({ success: false, reason: 'WebSocket auth required' });
       } else {
         reject(error);
       }
     });
-    
+
     ws.on('close', (code, reason) => {
       clearTimeout(connectionTimeout);
-      console.log(`🔌 WebSocket closed. Code: ${code}, Reason: ${reason || 'No reason'}`);
-      
+      console.log(
+        `🔌 WebSocket closed. Code: ${code}, Reason: ${reason || 'No reason'}`,
+      );
+
       if (code === 1000) {
         console.log('✅ Clean close - test completed successfully');
         resolve(true);
@@ -105,53 +109,57 @@ function testWebSocketConnection() {
 function testImagePayloadStructure() {
   console.log('\n📦 Testing Image Generation Payload Structure');
   console.log('-'.repeat(50));
-  
+
   const imagePayload = {
     params: {
       config: {
         seed: 123456789,
-        size: "auto",
-        model: "cyberrealisticxlplayV2.f4ow.safetensors",
+        size: 'auto',
+        model: 'cyberrealisticxlplayV2.f4ow.safetensors',
         steps: 20,
         style: {
-          prompt: "Real estate photography style {prompt} . Professional, inviting, well-lit, high-resolution, property-focused, commercial, highly detailed",
-          negative_prompt: "dark, blurry, unappealing, noisy, unprofessional"
+          prompt:
+            'Real estate photography style {prompt} . Professional, inviting, well-lit, high-resolution, property-focused, commercial, highly detailed',
+          negative_prompt: 'dark, blurry, unappealing, noisy, unprofessional',
         },
         width: 1024,
         height: 1024,
-        prompt: "A test image for debugging",
-        quality: "auto",
+        prompt: 'A test image for debugging',
+        quality: 'auto',
         entities: [],
         k_sampler: {
           seed: 123456789,
-          steps: 20
+          steps: 20,
         },
-        shot_size: "Long Shot",
-        background: "auto",
+        shot_size: 'Long Shot',
+        background: 'auto',
         batch_size: 1,
-        aspect_ratio: "1:1",
-        output_format: "png"
+        aspect_ratio: '1:1',
+        output_format: 'png',
       },
       file_ids: [],
       references: [],
       generation_config: {
-        name: "comfyui/flux",
-        type: "text_to_image",
-        label: "Flux Dev",
+        name: 'comfyui/flux',
+        type: 'text_to_image',
+        label: 'Flux Dev',
         params: {
           price: 1,
-          workflow_path: "flux/default.json"
+          workflow_path: 'flux/default.json',
         },
-        source: "local"
-      }
-    }
+        source: 'local',
+      },
+    },
   };
-  
+
   console.log('✅ Image payload structure valid');
   console.log('📊 Payload size:', JSON.stringify(imagePayload).length, 'bytes');
   console.log('🔧 Model:', imagePayload.params.generation_config.name);
-  console.log('📐 Resolution:', `${imagePayload.params.config.width}x${imagePayload.params.config.height}`);
-  
+  console.log(
+    '📐 Resolution:',
+    `${imagePayload.params.config.width}x${imagePayload.params.config.height}`,
+  );
+
   return imagePayload;
 }
 
@@ -159,15 +167,15 @@ function testImagePayloadStructure() {
 async function runTests() {
   try {
     console.log('🚀 Starting WebSocket Debug Tests...\n');
-    
+
     // Test 1: Payload structure
     testImagePayloadStructure();
-    
+
     // Test 2: WebSocket connection
     console.log('\n🔌 Testing WebSocket Connection');
     console.log('-'.repeat(50));
     const wsResult = await testWebSocketConnection();
-    
+
     if (wsResult === true) {
       console.log('\n🎉 All tests completed successfully!');
     } else if (wsResult && wsResult.reason === 'WebSocket auth required') {
@@ -188,7 +196,6 @@ async function runTests() {
     console.log('- Use window.imageWebsocketStore.getDebugInfo() in browser');
     console.log('- Verify SUPERDUPERAI_TOKEN is set correctly');
     console.log('- Check network tab for WebSocket connection status');
-    
   } catch (error) {
     console.error('\n❌ Test failed:', error.message);
     console.log('\n🔍 Troubleshooting:');
@@ -207,5 +214,5 @@ if (require.main === module) {
 module.exports = {
   testWebSocketConnection,
   testImagePayloadStructure,
-  runTests
-}; 
+  runTests,
+};

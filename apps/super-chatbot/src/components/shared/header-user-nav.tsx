@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import { signOut, useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
-import { useWindowSize } from "usehooks-ts";
+import { useState } from 'react';
+import Image from 'next/image';
+import { signOut, useSession } from 'next-auth/react';
+import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
+import { useWindowSize } from 'usehooks-ts';
 
 import {
   DropdownMenu,
@@ -13,11 +13,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Button, cn } from "@turbo-super/ui";
-import { ChevronDownIcon, LoaderIcon, UserIcon } from "../common/icons";
-import { guestRegex } from "@/lib/constants";
-import { toast } from "../common/toast";
+} from '../ui/dropdown-menu';
+import { Button, cn } from '@turbo-super/ui';
+import { ChevronDownIcon, LoaderIcon, UserIcon } from '../common/icons';
+import { guestRegex } from '@/lib/constants';
+import { toast } from '../common/toast';
 
 interface HeaderUserNavProps {
   className?: string;
@@ -32,9 +32,9 @@ export function HeaderUserNav({ className }: HeaderUserNavProps) {
   const isMobile = windowWidth < 768;
 
   const user = data?.user;
-  const isGuest = guestRegex.test(user?.email ?? "");
+  const isGuest = guestRegex.test(user?.email ?? '');
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className={className}>
         <Button
@@ -57,23 +57,20 @@ export function HeaderUserNav({ className }: HeaderUserNavProps) {
 
   return (
     <div className={className}>
-      <DropdownMenu
-        open={open}
-        onOpenChange={setOpen}
-      >
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             data-testid="header-user-nav-button"
             variant="outline"
             className={cn(
-              "flex items-center justify-between gap-2 h-[34px]",
-              isMobile ? "px-2 w-auto" : "px-2"
+              'flex items-center justify-between gap-2 h-[34px]',
+              isMobile ? 'px-2 w-auto' : 'px-2',
             )}
           >
             {user?.email ? (
               <Image
                 src={`https://avatar.vercel.sh/${user.email}`}
-                alt={user.email ?? "User Avatar"}
+                alt={user.email ?? 'User Avatar'}
                 width={24}
                 height={24}
                 className="rounded-full"
@@ -83,42 +80,36 @@ export function HeaderUserNav({ className }: HeaderUserNavProps) {
             )}
             {!isMobile && (
               <span className="max-w-[100px] truncate">
-                {isGuest ? "Guest" : user?.email}
+                {isGuest ? 'Guest' : user?.email}
               </span>
             )}
             {!isMobile && <ChevronDownIcon />}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="w-[200px]"
-        >
+        <DropdownMenuContent align="end" className="w-[200px]">
           {isMobile && (
             <>
-              <DropdownMenuItem
-                disabled
-                className="opacity-50"
-              >
-                {isGuest ? "Guest" : user?.email}
+              <DropdownMenuItem disabled className="opacity-50">
+                {isGuest ? 'Guest' : user?.email}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
           )}
           <DropdownMenuItem
             className="cursor-pointer"
-            onSelect={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
-            {`Toggle ${theme === "light" ? "dark" : "light"} mode`}
+            {`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="cursor-pointer"
             onSelect={() => {
-              if (status !== "authenticated") {
+              if (status !== 'authenticated') {
                 toast({
-                  type: "error",
+                  type: 'error',
                   description:
-                    "Проверка статуса аутентификации, попробуйте еще раз!",
+                    'Checking authentication status, please try again!',
                 });
                 return;
               }
@@ -126,17 +117,17 @@ export function HeaderUserNav({ className }: HeaderUserNavProps) {
               if (isGuest) {
                 // Redirect to auto-login with force_logout parameter
                 // This will force logout from guest session in auto-login
-                router.push("/auto-login?force_logout=true");
+                router.push('/auto-login?force_logout=true');
               } else {
                 // Logout and redirect to guest mode instead of auto-login
                 signOut({
                   redirect: true,
-                  callbackUrl: "/api/auth/guest?redirectUrl=/",
+                  callbackUrl: '/api/auth/guest?redirectUrl=/',
                 });
               }
             }}
           >
-            {isGuest ? "Войти в аккаунт" : "Выйти"}
+            {isGuest ? 'Log in' : 'Log out'}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

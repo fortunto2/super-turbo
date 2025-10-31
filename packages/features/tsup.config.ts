@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["cjs", "esm"],
-  dts: true, // Отключаем DTS сборку из-за проблем с React типами
+  dts: true,
   splitting: false,
   sourcemap: true,
   clean: true,

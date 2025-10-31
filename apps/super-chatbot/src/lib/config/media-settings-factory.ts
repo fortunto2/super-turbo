@@ -146,7 +146,7 @@ export async function getImageGenerationConfig(): Promise<ImageGenerationConfig>
       configureSuperduperAI();
       const stylesResponse = await getStyles();
       if ("error" in stylesResponse) {
-        console.error("Failed to load styles:", stylesResponse.error);
+        // Suppress non-critical API errors - using fallback hardcoded styles
         // Fallback to hardcoded styles
         availableStyles = [
           {
@@ -184,7 +184,7 @@ export async function getImageGenerationConfig(): Promise<ImageGenerationConfig>
       }
     }
   } catch (error) {
-    console.error("Failed to load styles:", error);
+    // Suppress non-critical API errors - using fallback hardcoded styles
     // Fallback to hardcoded styles
     availableStyles = [
       {
@@ -374,7 +374,7 @@ export async function getVideoGenerationConfig(): Promise<VideoGenerationConfig>
       configureSuperduperAI();
       const stylesResponse = await getStyles();
       if ("error" in stylesResponse) {
-        console.error("Failed to load styles:", stylesResponse.error);
+        // Suppress non-critical API errors - using fallback hardcoded styles
         // Fallback to hardcoded styles
         availableStyles = [
           {
@@ -408,7 +408,7 @@ export async function getVideoGenerationConfig(): Promise<VideoGenerationConfig>
       }
     }
   } catch (error) {
-    console.error("Failed to load styles:", error);
+    // Suppress non-critical API errors - using fallback hardcoded styles
     // Fallback to hardcoded styles
     availableStyles = [
       { id: "cinematic", label: "Cinematic", description: "Movie-like style" },

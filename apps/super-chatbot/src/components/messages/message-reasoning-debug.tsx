@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { ChevronDownIcon } from "../common/icons";
-import { motion, AnimatePresence } from "framer-motion";
-import { Markdown } from "../";
+import { useState } from 'react';
+import { ChevronDownIcon } from '../common/icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Markdown } from '../';
 
 interface MessageReasoningDebugProps {
   isLoading: boolean;
@@ -19,22 +19,22 @@ export function MessageReasoningDebug({
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Подготавливаем текст рассуждений
-  let reasoningText = "";
+  let reasoningText = '';
 
   // Попытка извлечь рассуждения из разных форматов
-  if (typeof reasoning === "string") {
+  if (typeof reasoning === 'string') {
     reasoningText = reasoning;
 
     // Для случая, когда think tags находятся в тексте
-    const thinkMatch = reasoning.match(/<think>(.*?)<\/think>/s);
+    const thinkMatch = reasoning?.match(/<think>(.*?)<\/think>/s);
     if (thinkMatch?.[1]) {
       reasoningText = thinkMatch[1].trim();
     }
-  } else if (reasoning && typeof reasoning === "object") {
+  } else if (reasoning && typeof reasoning === 'object') {
     try {
       reasoningText = JSON.stringify(reasoning, null, 2);
     } catch (e) {
-      reasoningText = "Unable to convert reasoning to string";
+      reasoningText = 'Unable to convert reasoning to string';
     }
   }
 
@@ -43,13 +43,13 @@ export function MessageReasoningDebug({
     if (!reasoningText && message.parts) {
       // Ищем в parts
       for (const part of message.parts) {
-        if (part.type === "reasoning" && part.reasoning) {
+        if (part.type === 'reasoning' && part.reasoning) {
           reasoningText = part.reasoning;
           break;
-        } else if (part.type === "reasoning" && part.text) {
+        } else if (part.type === 'reasoning' && part.text) {
           reasoningText = part.text;
           break;
-        } else if (part.type === "reasoning" && part.textDelta) {
+        } else if (part.type === 'reasoning' && part.textDelta) {
           reasoningText = part.textDelta;
           break;
         }
@@ -59,7 +59,7 @@ export function MessageReasoningDebug({
     // Проверяем, есть ли рассуждения в свойстве reasoning
     if (!reasoningText && message.reasoning) {
       reasoningText =
-        typeof message.reasoning === "string"
+        typeof message.reasoning === 'string'
           ? message.reasoning
           : JSON.stringify(message.reasoning, null, 2);
     }
@@ -68,9 +68,9 @@ export function MessageReasoningDebug({
     if (
       !reasoningText &&
       message.content &&
-      typeof message.content === "string"
+      typeof message.content === 'string'
     ) {
-      const thinkMatch = message.content.match(/<think>(.*?)<\/think>/s);
+      const thinkMatch = message.content?.match(/<think>(.*?)<\/think>/s);
       if (thinkMatch?.[1]) {
         reasoningText = thinkMatch[1].trim();
       }
@@ -85,15 +85,15 @@ export function MessageReasoningDebug({
       marginBottom: 0,
     },
     expanded: {
-      height: "auto",
+      height: 'auto',
       opacity: 1,
-      marginTop: "1rem",
-      marginBottom: "0.5rem",
+      marginTop: '1rem',
+      marginBottom: '0.5rem',
     },
   };
 
   // Проверяем, есть ли содержимое в рассуждениях
-  if (!reasoningText || reasoningText.trim() === "") {
+  if (!reasoningText || reasoningText.trim() === '') {
     return (
       <div className="flex flex-col">
         <div className="text-xs p-2 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 rounded">
@@ -133,8 +133,8 @@ export function MessageReasoningDebug({
             animate="expanded"
             exit="collapsed"
             variants={variants}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            style={{ overflow: "hidden" }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
             <div className="bg-zinc-100 dark:bg-zinc-800 p-2 rounded text-xs">
@@ -145,19 +145,19 @@ export function MessageReasoningDebug({
                     {
                       sourceType: typeof reasoning,
                       sourceKeys:
-                        reasoning && typeof reasoning === "object"
+                        reasoning && typeof reasoning === 'object'
                           ? Object.keys(reasoning)
-                          : "not an object",
+                          : 'not an object',
                       messageInfo: message
                         ? {
                             keys: Object.keys(message),
                             hasReasoning: !!message.reasoning,
                             parts: message.parts ? message.parts.length : 0,
                           }
-                        : "no message",
+                        : 'no message',
                     },
                     null,
-                    2
+                    2,
                   )}
                 </pre>
               </details>

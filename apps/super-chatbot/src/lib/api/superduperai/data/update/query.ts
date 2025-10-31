@@ -1,6 +1,6 @@
-import { type IDataUpdate, DataService } from "@turbo-super/api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectKeys } from "../../project/query";
+import { type IDataUpdate, DataService } from '@turbo-super/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { projectKeys } from '../../project/query';
 
 export const useDataUpdate = (updateKeys = true) => {
   const queryClient = useQueryClient();

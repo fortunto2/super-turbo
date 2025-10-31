@@ -1,7 +1,7 @@
-import { Artifact } from "@/components/artifacts/create-artifact";
-import { DiffView, DocumentSkeleton } from "@/components";
-import { Editor } from "@/components/editors/text-editor";
-import { Markdown } from "@/components/common/markdown";
+import { Artifact } from '@/components/artifacts/create-artifact';
+import { DiffView, DocumentSkeleton } from '@/components';
+import { Editor } from '@/components/editors/text-editor';
+import { Markdown } from '@/components/common/markdown';
 import {
   ClockRewind,
   CopyIcon,
@@ -10,25 +10,25 @@ import {
   RedoIcon,
   UndoIcon,
   ShareIcon,
-} from "@/components/common/icons";
-import type { Suggestion } from "@/lib/db/schema";
-import { toast } from "sonner";
-import { getSuggestions } from "../actions";
-import type { TextArtifactMetadata } from "@/types/artifact-types";
+} from '@/components/common/icons';
+import type { Suggestion } from '@/lib/db/schema';
+import { toast } from 'sonner';
+import { getSuggestions } from '../actions';
+import type { TextArtifactMetadata } from '@/types/artifact-types';
 
-export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
-  kind: "text",
-  description: "Useful for text content, like drafting essays and emails.",
+export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
+  kind: 'text',
+  description: 'Useful for text content, like drafting essays and emails.',
   onCreateDocument: ({ setArtifact }) => {
     // Устанавливаем статус streaming при создании артефакта
     setArtifact((draft) => ({
       ...draft,
-      status: "streaming",
+      status: 'streaming',
       isVisible: true,
     }));
   },
   initialize: async ({ documentId, setMetadata }) => {
-    if (documentId && documentId !== "init") {
+    if (documentId && documentId !== 'init') {
       const suggestions = await getSuggestions({ documentId });
       setMetadata({
         suggestions,
@@ -36,7 +36,7 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
     }
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === "suggestion") {
+    if (streamPart.type === 'suggestion') {
       setMetadata((metadata) => {
         return {
           suggestions: [
@@ -47,24 +47,24 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
       });
     }
 
-    if (streamPart.type === "text-delta") {
+    if (streamPart.type === 'text-delta') {
       setArtifact((draftArtifact) => {
         return {
           ...draftArtifact,
           content: draftArtifact.content + (streamPart.content as string),
           isVisible:
-            draftArtifact.status === "streaming" &&
+            draftArtifact.status === 'streaming' &&
             draftArtifact.content.length > 400 &&
             draftArtifact.content.length < 450
               ? true
               : draftArtifact.isVisible,
-          status: "streaming",
+          status: 'streaming',
         };
       });
     }
 
-    if (streamPart.type === "finish") {
-      setArtifact((draft) => ({ ...draft, status: "completed" }));
+    if (streamPart.type === 'finish') {
+      setArtifact((draft) => ({ ...draft, status: 'completed' }));
     }
   },
   content: ({
@@ -82,16 +82,11 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
       return <DocumentSkeleton artifactKind="text" />;
     }
 
-    if (mode === "diff") {
+    if (mode === 'diff') {
       const oldContent = getDocumentContentById(currentVersionIndex - 1);
       const newContent = getDocumentContentById(currentVersionIndex);
 
-      return (
-        <DiffView
-          oldContent={oldContent}
-          newContent={newContent}
-        />
-      );
+      return <DiffView oldContent={oldContent} newContent={newContent} />;
     }
 
     return (
@@ -116,9 +111,9 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   actions: [
     {
       icon: <ClockRewind size={18} />,
-      description: "View changes",
+      description: 'View changes',
       onClick: ({ handleVersionChange }) => {
-        handleVersionChange("toggle");
+        handleVersionChange('toggle');
       },
       isDisabled: ({ currentVersionIndex, setMetadata }) => {
         if (currentVersionIndex === 0) {
@@ -130,9 +125,9 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
     },
     {
       icon: <UndoIcon size={18} />,
-      description: "View Previous version",
+      description: 'View Previous version',
       onClick: ({ handleVersionChange }) => {
-        handleVersionChange("prev");
+        handleVersionChange('prev');
       },
       isDisabled: ({ currentVersionIndex }) => {
         if (currentVersionIndex === 0) {
@@ -144,9 +139,9 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
     },
     {
       icon: <RedoIcon size={18} />,
-      description: "View Next version",
+      description: 'View Next version',
       onClick: ({ handleVersionChange }) => {
-        handleVersionChange("next");
+        handleVersionChange('next');
       },
       isDisabled: ({ isCurrentVersion }) => {
         if (isCurrentVersion) {
@@ -158,23 +153,23 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
     },
     {
       icon: <CopyIcon size={18} />,
-      description: "Copy to clipboard",
+      description: 'Copy to clipboard',
       onClick: ({ content }) => {
         navigator.clipboard.writeText(content);
-        toast.success("Copied to clipboard!");
+        toast.success('Copied to clipboard!');
       },
     },
     {
       icon: <ShareIcon size={18} />,
-      description: "Copy artifact link",
+      description: 'Copy artifact link',
       onClick: (context) => {
         const documentId = (context as any).documentId;
-        if (documentId && documentId !== "init") {
+        if (documentId && documentId !== 'init') {
           const shareUrl = `${window.location.origin}/artifact/${documentId}`;
           navigator.clipboard.writeText(shareUrl);
-          toast.success("Artifact link copied to clipboard!");
+          toast.success('Artifact link copied to clipboard!');
         } else {
-          toast.error("Unable to generate share link - artifact not saved yet");
+          toast.error('Unable to generate share link - artifact not saved yet');
         }
       },
     },
@@ -182,23 +177,23 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   toolbar: [
     {
       icon: <PenIcon />,
-      description: "Add final polish",
+      description: 'Add final polish',
       onClick: ({ appendMessage }) => {
-        appendMessage({
-          role: "user",
+        appendMessage?.({
+          role: 'user',
           content:
-            "Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.",
+            'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
         });
       },
     },
     {
       icon: <MessageIcon />,
-      description: "Request suggestions",
+      description: 'Request suggestions',
       onClick: ({ appendMessage }) => {
-        appendMessage({
-          role: "user",
+        appendMessage?.({
+          role: 'user',
           content:
-            "Please add suggestions you have that could improve the writing.",
+            'Please add suggestions you have that could improve the writing.',
         });
       },
     },

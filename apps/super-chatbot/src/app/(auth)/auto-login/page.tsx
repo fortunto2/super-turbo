@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { Suspense, useEffect, useState } from "react";
-import { signIn, useSession, signOut } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { LoaderIcon } from "@/components/common/icons";
-import { Button } from "@turbo-super/ui";
+import { Suspense, useEffect, useState } from 'react';
+import { signIn, useSession, signOut } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { LoaderIcon } from '@/components/common/icons';
+import { Button } from '@turbo-super/ui';
 
 function AutoLoginContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fromRedirect = searchParams.has("from_redirect");
-  const forceLogout = searchParams.has("force_logout");
-  const guestMode = searchParams.has("guest_mode");
+  const fromRedirect = searchParams.has('from_redirect');
+  const forceLogout = searchParams.has('force_logout');
+  const guestMode = searchParams.has('guest_mode');
   const [loginAttempted, setLoginAttempted] = useState(false);
   const [logoutAttempted, setLogoutAttempted] = useState(false);
 
   useEffect(() => {
     // If force_logout parameter is present and we're authenticated (guest mode)
     // Force logout first before attempting Auth0 login
-    if (forceLogout && status === "authenticated" && !logoutAttempted) {
+    if (forceLogout && status === 'authenticated' && !logoutAttempted) {
       setLogoutAttempted(true);
       signOut({
         redirect: false,
       }).then(() => {
         // Clear the force_logout parameter and retry
         const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("force_logout");
-        window.history.replaceState({}, "", newUrl.toString());
+        newUrl.searchParams.delete('force_logout');
+        window.history.replaceState({}, '', newUrl.toString());
         setLogoutAttempted(false);
       });
       return;
@@ -35,21 +35,21 @@ function AutoLoginContent() {
 
     // Если пользователь уже аутентифицирован, перенаправляем на главную страницу
     // BUT only if we're not in force logout mode
-    if (status === "authenticated" && !forceLogout) {
-      router.push("/");
+    if (status === 'authenticated' && !forceLogout) {
+      router.push('/');
       return;
     }
 
     // Если пользователь не аутентифицирован и статус загрузки завершен,
     // начинаем процесс входа через Auth0 только один раз
     // НО если указан параметр guest_mode, переходим в гостевой режим
-    if (status === "unauthenticated" && !loginAttempted) {
+    if (status === 'unauthenticated' && !loginAttempted) {
       setLoginAttempted(true);
       if (guestMode) {
         // Переход в гостевой режим
-        router.push("/api/auth/guest?redirectUrl=/");
+        router.push('/api/auth/guest?redirectUrl=/');
       } else {
-        signIn("auth0", { callbackUrl: "/" });
+        signIn('auth0', { callbackUrl: '/' });
       }
     }
   }, [status, router, loginAttempted, forceLogout, logoutAttempted, guestMode]);
@@ -58,7 +58,7 @@ function AutoLoginContent() {
   // показываем ссылку на гостевой вход
   if (
     fromRedirect &&
-    status === "unauthenticated" &&
+    status === 'unauthenticated' &&
     loginAttempted &&
     !guestMode
   ) {
@@ -69,7 +69,7 @@ function AutoLoginContent() {
             Не удалось выполнить вход через Auth0.
           </p>
           <Button
-            onClick={() => router.push("/api/auth/guest?redirectUrl=/")}
+            onClick={() => router.push('/api/auth/guest?redirectUrl=/')}
             className="mt-4"
           >
             Войти как гость
@@ -86,7 +86,7 @@ function AutoLoginContent() {
           <LoaderIcon size={48} />
         </div>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
-          Перенаправление на Auth0...
+          Redirecting to Auth0...
         </p>
       </div>
     </div>

@@ -3,53 +3,87 @@ import { z } from 'zod';
 import { myProvider } from '../providers';
 
 export const enhancePrompt = tool({
-  description: 'Enhance and improve user prompts for better AI generation results using LLM. Automatically translates text, applies prompt engineering best practices, and optimizes for specific media types (image, video) and AI models.',
-  parameters: z.object({
-    originalPrompt: z.string().describe('The original prompt text that needs enhancement. Can be in any language, simple or complex.'),
-    mediaType: z.enum(['image', 'video', 'text', 'general']).optional().describe('The type of content being generated. Helps optimize the prompt for specific AI models.'),
-    enhancementLevel: z.enum(['basic', 'detailed', 'creative']).optional().describe('Level of enhancement: basic (translation + cleanup), detailed (add structure + quality terms), creative (add artistic style + composition details)'),
-    targetAudience: z.string().optional().describe('Target audience or use case (e.g., "professional presentation", "social media", "artistic portfolio")'),
-    includeNegativePrompt: z.boolean().optional().describe('Whether to generate a negative prompt for what to avoid (useful for image/video generation)'),
-    modelHint: z.string().optional().describe('Specific AI model being used (e.g., "FLUX", "Sora", "VEO2") to optimize prompt for that model'),
+  description:
+    'Enhance and improve user prompts for better AI generation results using LLM. Automatically translates text, applies prompt engineering best practices, and optimizes for specific media types (image, video) and AI models.',
+  inputSchema: z.object({
+    originalPrompt: z
+      .string()
+      .describe(
+        'The original prompt text that needs enhancement. Can be in any language, simple or complex.',
+      ),
+    mediaType: z
+      .enum(['image', 'video', 'text', 'general'])
+      .optional()
+      .describe(
+        'The type of content being generated. Helps optimize the prompt for specific AI models.',
+      ),
+    enhancementLevel: z
+      .enum(['basic', 'detailed', 'creative'])
+      .optional()
+      .describe(
+        'Level of enhancement: basic (translation + cleanup), detailed (add structure + quality terms), creative (add artistic style + composition details)',
+      ),
+    targetAudience: z
+      .string()
+      .optional()
+      .describe(
+        'Target audience or use case (e.g., "professional presentation", "social media", "artistic portfolio")',
+      ),
+    includeNegativePrompt: z
+      .boolean()
+      .optional()
+      .describe(
+        'Whether to generate a negative prompt for what to avoid (useful for image/video generation)',
+      ),
+    modelHint: z
+      .string()
+      .optional()
+      .describe(
+        'Specific AI model being used (e.g., "FLUX", "Sora", "VEO2") to optimize prompt for that model',
+      ),
   }),
-  execute: async ({ 
-    originalPrompt, 
-    mediaType = 'general', 
-    enhancementLevel = 'detailed', 
-    targetAudience, 
+  execute: async ({
+    originalPrompt,
+    mediaType = 'general',
+    enhancementLevel = 'detailed',
+    targetAudience,
     includeNegativePrompt = false,
-    modelHint 
+    modelHint,
   }) => {
-    console.log('🚀 enhancePrompt called with:', { 
-      originalPrompt, 
-      mediaType, 
-      enhancementLevel, 
-      targetAudience, 
+    console.log('🚀 enhancePrompt called with:', {
+      originalPrompt,
+      mediaType,
+      enhancementLevel,
+      targetAudience,
       includeNegativePrompt,
-      modelHint 
+      modelHint,
     });
-    
+
     try {
       // Build system prompt based on media type and enhancement level
-      const systemPrompt = buildSystemPrompt(mediaType, enhancementLevel, modelHint);
-      
+      const systemPrompt = buildSystemPrompt(
+        mediaType,
+        enhancementLevel,
+        modelHint,
+      );
+
       // Build user prompt with context
       const userPrompt = buildUserPrompt(
-        originalPrompt, 
-        mediaType, 
-        enhancementLevel, 
-        targetAudience, 
-        includeNegativePrompt
+        originalPrompt,
+        mediaType,
+        enhancementLevel,
+        targetAudience,
+        includeNegativePrompt,
       );
 
       console.log('🔄 Calling LLM for prompt enhancement...');
-      
+
       const result = await generateText({
         model: myProvider.languageModel('artifact-model'),
         system: systemPrompt,
         prompt: userPrompt,
         temperature: 0.7,
-        maxTokens: 1000,
+        maxOutputTokens: 1000,
       });
 
       console.log('✅ LLM response received:', result.text);
@@ -67,27 +101,33 @@ export const enhancePrompt = tool({
         improvements: parsedResult.improvements,
         reasoning: parsedResult.reasoning,
         usage: {
-          copyPrompt: 'Copy the enhanced prompt to use in image/video generation tools',
-          negativePrompt: parsedResult.negativePrompt ? 'Use the negative prompt to avoid unwanted elements' : undefined
-        }
+          copyPrompt:
+            'Copy the enhanced prompt to use in image/video generation tools',
+          negativePrompt: parsedResult.negativePrompt
+            ? 'Use the negative prompt to avoid unwanted elements'
+            : undefined,
+        },
       };
 
       console.log('✅ Prompt enhancement completed:', finalResult);
       return finalResult;
-
     } catch (error) {
       console.error('❌ Error enhancing prompt:', error);
       return {
         error: `Failed to enhance prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
         originalPrompt,
         enhancedPrompt: originalPrompt, // Return original as fallback
-        fallback: true
+        fallback: true,
       };
     }
   },
 });
 
-function buildSystemPrompt(mediaType: string, enhancementLevel: string, modelHint?: string): string {
+function buildSystemPrompt(
+  mediaType: string,
+  enhancementLevel: string,
+  modelHint?: string,
+): string {
   const basePrompt = `You are a professional prompt engineering expert specializing in improving prompts for AI generation. Your task is to enhance user prompts to achieve the best possible results.
 
 CORE RESPONSIBILITIES:
@@ -125,13 +165,16 @@ GENERAL ENHANCEMENT FOCUS:
 - Improve clarity and specificity
 - Add professional quality terms
 - Enhance structure and flow
-- Remove ambiguity while preserving creativity`
+- Remove ambiguity while preserving creativity`,
   };
 
   const levelGuidance = {
-    basic: 'Apply minimal enhancements - focus on translation, basic cleanup, and essential quality terms.',
-    detailed: 'Apply comprehensive enhancements - add professional terminology, improve structure, include quality descriptors.',
-    creative: 'Apply maximum enhancements - add artistic language, advanced composition terms, creative direction guidance.'
+    basic:
+      'Apply minimal enhancements - focus on translation, basic cleanup, and essential quality terms.',
+    detailed:
+      'Apply comprehensive enhancements - add professional terminology, improve structure, include quality descriptors.',
+    creative:
+      'Apply maximum enhancements - add artistic language, advanced composition terms, creative direction guidance.',
   };
 
   let modelOptimization = '';
@@ -160,11 +203,11 @@ Provide your response as a JSON object with these fields:
 }
 
 function buildUserPrompt(
-  originalPrompt: string, 
-  mediaType: string, 
-  enhancementLevel: string, 
-  targetAudience?: string, 
-  includeNegativePrompt?: boolean
+  originalPrompt: string,
+  mediaType: string,
+  enhancementLevel: string,
+  targetAudience?: string,
+  includeNegativePrompt?: boolean,
 ): string {
   let prompt = `Please enhance this prompt for ${mediaType} generation:
 
@@ -197,19 +240,21 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
         enhancedPrompt: parsed.enhancedPrompt || originalPrompt,
         negativePrompt: parsed.negativePrompt || undefined,
         improvements: parsed.improvements || ['LLM enhancement applied'],
-        reasoning: parsed.reasoning || 'Enhanced using AI prompt engineering'
+        reasoning: parsed.reasoning || 'Enhanced using AI prompt engineering',
       };
     }
-    
+
     // Fallback: extract enhanced prompt from text
-    const lines = llmResponse.split('\n').filter(line => line.trim());
+    const lines = llmResponse.split('\n').filter((line) => line.trim());
     let enhancedPrompt = originalPrompt;
-    
+
     // Look for enhanced prompt indicators
     for (const line of lines) {
-      if (line.toLowerCase().includes('enhanced') || 
-          line.toLowerCase().includes('improved') ||
-          line.toLowerCase().includes('prompt:')) {
+      if (
+        line.toLowerCase().includes('enhanced') ||
+        line.toLowerCase().includes('improved') ||
+        line.toLowerCase().includes('prompt:')
+      ) {
         const promptText = line.replace(/^[^:]*:?\s*/, '').trim();
         if (promptText.length > 10) {
           enhancedPrompt = promptText;
@@ -217,21 +262,20 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
         }
       }
     }
-    
+
     return {
       enhancedPrompt,
       negativePrompt: undefined,
       improvements: ['LLM enhancement applied'],
-      reasoning: 'Enhanced using AI prompt engineering'
+      reasoning: 'Enhanced using AI prompt engineering',
     };
-    
   } catch (error) {
     console.error('Failed to parse LLM response:', error);
     return {
       enhancedPrompt: originalPrompt,
       negativePrompt: undefined,
       improvements: ['Enhancement failed, returned original'],
-      reasoning: 'Error in processing enhancement'
+      reasoning: 'Error in processing enhancement',
     };
   }
-} 
+}

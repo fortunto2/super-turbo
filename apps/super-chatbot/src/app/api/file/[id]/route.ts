@@ -1,10 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { configureSuperduperAI } from "@/lib/config/superduperai";
-import { FileService, type IFileRead } from "@turbo-super/api";
+import { type NextRequest, NextResponse } from 'next/server';
+import { configureSuperduperAI } from '@/lib/config/superduperai';
+import { FileService, type IFileRead } from '@turbo-super/api';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: fileId } = await params;
 
@@ -12,22 +12,22 @@ export async function GET(
     // Configure OpenAPI client for server-side usage
     configureSuperduperAI();
 
-    console.log("📁 File proxy: Getting file status for ID:", fileId);
+    console.log('📁 File proxy: Getting file status for ID:', fileId);
 
     // Use OpenAPI client instead of manual fetch
     const fileData: IFileRead = await FileService.fileGetById({ id: fileId });
 
-    console.log("✅ File status response:", fileData);
+    console.log('✅ File status response:', fileData);
 
     return NextResponse.json(fileData);
   } catch (error) {
-    console.error("💥 File proxy error:", error);
+    console.error('💥 File proxy error:', error);
     return NextResponse.json(
       {
-        error: "Failed to get file status",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to get file status',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

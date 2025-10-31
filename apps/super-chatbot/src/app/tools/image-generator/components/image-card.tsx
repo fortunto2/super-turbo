@@ -1,8 +1,8 @@
-import { Button, Card, CardContent } from "@turbo-super/ui";
-import type { GeneratedImage } from "../hooks/use-image-generator";
-import { Clock, Download, Copy, Trash2, Settings, ZoomIn } from "lucide-react";
-import NextImage from "next/image";
-import { formatTimestamp } from "@/lib/utils/format";
+import { Button, Card, CardContent } from '@turbo-super/ui';
+import type { GeneratedImage } from '../hooks/use-image-generator';
+import { Clock, Download, Copy, Trash2, Settings, ZoomIn } from 'lucide-react';
+import NextImage from 'next/image';
+import { formatTimestamp } from '@/lib/utils/format';
 
 type ImageCardProps = {
   image: GeneratedImage;
@@ -47,7 +47,7 @@ export const ImageCard = ({
 
   return (
     <Card
-      className={`group relative overflow-hidden ${isCurrent ? "ring-2 ring-blue-500" : ""}`}
+      className={`group relative overflow-hidden ${isCurrent ? 'ring-2 ring-blue-500' : ''}`}
     >
       <div className="aspect-square relative">
         {hasError ? (

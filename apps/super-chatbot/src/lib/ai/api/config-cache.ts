@@ -1,7 +1,7 @@
 import {
   type GenerationConfig,
   getGenerationConfigs,
-} from "./get-generation-configs";
+} from './get-generation-configs';
 
 interface CachedConfig {
   data: GenerationConfig[];
@@ -19,22 +19,22 @@ let configCache: CachedConfig | null = null;
  * Get cached generation configurations or fetch from API
  */
 export const getCachedGenerationConfigs = async (
-  forceRefresh = false
+  forceRefresh = false,
 ): Promise<GenerationConfig[]> => {
   const now = Date.now();
 
   // Check if cache is valid and not expired
   if (!forceRefresh && configCache && now < configCache.expiresAt) {
-    console.log("🔧 📋 Using cached generation configs");
+    console.log('🔧 📋 Using cached generation configs');
     return configCache.data;
   }
 
-  console.log("🔧 🔄 Fetching fresh generation configs from API");
+  console.log('🔧 🔄 Fetching fresh generation configs from API');
 
   try {
     const response = await getGenerationConfigs({
-      order_by: "name",
-      order: "ascendent",
+      order_by: 'name',
+      order: 'ascendent',
       limit: 100, // Get more configs for comprehensive cache
     });
 
@@ -46,7 +46,7 @@ export const getCachedGenerationConfigs = async (
         expiresAt: now + CACHE_DURATION,
       };
 
-      console.log("🔧 ✅ Cached generation configs:", {
+      console.log('🔧 ✅ Cached generation configs:', {
         total: response.data.length,
         types: [...new Set(response.data.map((c) => c.type))],
         expiresIn: `${CACHE_DURATION / 1000 / 60} minutes`,
@@ -54,14 +54,14 @@ export const getCachedGenerationConfigs = async (
 
       return response.data;
     } else {
-      throw new Error(response.error || "Failed to fetch configs");
+      throw new Error(response.error || 'Failed to fetch configs');
     }
   } catch (error) {
-    console.error("🔧 ❌ Failed to fetch generation configs:", error);
+    console.error('🔧 ❌ Failed to fetch generation configs:', error);
 
     // Return stale cache if available
     if (configCache) {
-      console.log("🔧 ⚠️ Using stale cache due to API error");
+      console.log('🔧 ⚠️ Using stale cache due to API error');
       return configCache.data;
     }
 
@@ -77,7 +77,7 @@ export const getModelsForAgent = async (): Promise<string> => {
   const configs = await getCachedGenerationConfigs();
 
   if (configs.length === 0) {
-    return "No generation models available. Please check API connection.";
+    return 'No generation models available. Please check API connection.';
   }
 
   // Group by type
@@ -89,13 +89,13 @@ export const getModelsForAgent = async (): Promise<string> => {
       acc[config.type]?.push(config);
       return acc;
     },
-    {} as Record<string, GenerationConfig[]>
+    {} as Record<string, GenerationConfig[]>,
   );
 
-  let result = "# Available Generation Models\n\n";
+  let result = '# Available Generation Models\n\n';
 
   for (const [type, typeConfigs] of Object.entries(groupedConfigs)) {
-    result += `## ${type.replace(/_/g, " ").toUpperCase()}\n\n`;
+    result += `## ${type.replace(/_/g, ' ').toUpperCase()}\n\n`;
 
     for (const config of typeConfigs) {
       result += `### ${config.label || config.name}\n`;
@@ -112,7 +112,7 @@ export const getModelsForAgent = async (): Promise<string> => {
       }
 
       if (config.params.available_durations) {
-        result += `- **Available durations**: ${config.params.available_durations.join(", ")}s\n`;
+        result += `- **Available durations**: ${config.params.available_durations.join(', ')}s\n`;
       }
 
       if (config.vip_required) {
@@ -137,14 +137,14 @@ export const getVideoModelsForAgent = async (): Promise<string> => {
 
   // Include ALL video model types
   const videoConfigs = configs.filter(
-    (c) => c.type === "image_to_video" || c.type === "text_to_video"
+    (c) => c.type === 'image_to_video' || c.type === 'text_to_video',
   );
 
   if (videoConfigs.length === 0) {
-    return "No video generation models available.";
+    return 'No video generation models available.';
   }
 
-  let result = "# Available Video Generation Models\n\n";
+  let result = '# Available Video Generation Models\n\n';
 
   for (const config of videoConfigs) {
     result += `## ${config.label || config.name}\n`;
@@ -153,7 +153,7 @@ export const getVideoModelsForAgent = async (): Promise<string> => {
     result += `- **Price per second**: $${config.params.price_per_second || config.price}\n`;
 
     if (config.params.available_durations) {
-      result += `- **Available durations**: ${config.params.available_durations.join(", ")} seconds\n`;
+      result += `- **Available durations**: ${config.params.available_durations.join(', ')} seconds\n`;
     }
 
     if (config.vip_required) {
@@ -180,15 +180,15 @@ export const getBestVideoModel = async (preferences?: {
 
   // AICODE-FIX: If requireTextToVideo is true, only consider text_to_video models
   let videoConfigs = configs.filter(
-    (c) => c.type === "image_to_video" || c.type === "text_to_video"
+    (c) => c.type === 'image_to_video' || c.type === 'text_to_video',
   );
 
   // If specifically requesting text-to-video only, filter out image_to_video
   if (preferences?.requireTextToVideo) {
-    videoConfigs = videoConfigs.filter((c) => c.type === "text_to_video");
+    videoConfigs = videoConfigs.filter((c) => c.type === 'text_to_video');
     console.log(
-      "🎯 Filtering for text_to_video models only:",
-      videoConfigs.map((c) => c.name)
+      '🎯 Filtering for text_to_video models only:',
+      videoConfigs.map((c) => c.name),
     );
   }
 
@@ -203,7 +203,7 @@ export const getBestVideoModel = async (preferences?: {
   if (preferences?.maxPrice != null) {
     const maxPrice = preferences.maxPrice;
     filtered = filtered.filter(
-      (c) => (c.params.price_per_second || c.price) <= maxPrice
+      (c) => (c.params.price_per_second || c.price) <= maxPrice,
     );
   }
 
@@ -213,26 +213,26 @@ export const getBestVideoModel = async (preferences?: {
     filtered = filtered.filter(
       (c) =>
         c.params.available_durations?.includes(preferredDuration) ||
-        !c.params.available_durations // If no duration limits specified
+        !c.params.available_durations, // If no duration limits specified
     );
   }
 
   // AICODE-FIX: Enhanced sorting - strongly prioritize Sora for text_to_video
   filtered.sort((a, b) => {
     // First: Sora gets highest priority for text_to_video
-    if (a.type === "text_to_video" && a.name === "azure-openai/sora") return -1;
-    if (b.type === "text_to_video" && b.name === "azure-openai/sora") return 1;
+    if (a.type === 'text_to_video' && a.name === 'azure-openai/sora') return -1;
+    if (b.type === 'text_to_video' && b.name === 'azure-openai/sora') return 1;
 
     // Second: prioritize text_to_video over image_to_video
-    if (a.type === "text_to_video" && b.type === "image_to_video") return -1;
-    if (a.type === "image_to_video" && b.type === "text_to_video") return 1;
+    if (a.type === 'text_to_video' && b.type === 'image_to_video') return -1;
+    if (a.type === 'image_to_video' && b.type === 'text_to_video') return 1;
 
     // Third: within same type, prioritize specific models (Sora > VEO > others)
     const modelPriority = {
-      "azure-openai/sora": 1,
-      "google-cloud/veo2-text2video": 2,
-      "google-cloud/veo3-text2video": 3,
-      "comfyui/ltx": 9, // Lower priority for LTX
+      'azure-openai/sora': 1,
+      'google-cloud/veo2-text2video': 2,
+      'google-cloud/veo3-text2video': 3,
+      'comfyui/ltx': 9, // Lower priority for LTX
     };
 
     const aPriority =
@@ -252,16 +252,16 @@ export const getBestVideoModel = async (preferences?: {
   const selectedModel = filtered[0] || null;
   if (selectedModel) {
     console.log(
-      "🎯 getBestVideoModel selected:",
+      '🎯 getBestVideoModel selected:',
       selectedModel.name,
-      "(type:",
+      '(type:',
       selectedModel.type,
-      `, price: $${selectedModel.params.price_per_second || selectedModel.price}/sec)`
+      `, price: $${selectedModel.params.price_per_second || selectedModel.price}/sec)`,
     );
   } else {
     console.warn(
-      "⚠️ getBestVideoModel: No suitable model found with preferences:",
-      preferences
+      '⚠️ getBestVideoModel: No suitable model found with preferences:',
+      preferences,
     );
   }
 

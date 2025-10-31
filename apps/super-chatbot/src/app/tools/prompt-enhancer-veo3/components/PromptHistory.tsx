@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@turbo-super/ui';
 import { Button } from '@turbo-super/ui';
 import { Badge } from '@turbo-super/ui';
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from 'lucide-react';
 
 interface PromptHistoryProps {
   promptHistory: any[];
@@ -25,10 +25,7 @@ export function PromptHistory({
               <CardTitle className="flex items-center gap-2">
                 <Copy className="w-5 h-5" />
                 Recent Prompts History
-                <Badge
-                  variant="outline"
-                  className="ml-2"
-                >
+                <Badge variant="outline" className="ml-2">
                   {promptHistory.length}/10
                 </Badge>
               </CardTitle>
@@ -52,24 +49,18 @@ export function PromptHistory({
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs text-muted-foreground">
                       {historyItem.timestamp &&
-                      typeof historyItem.timestamp === "object" &&
-                      "toLocaleString" in historyItem.timestamp
+                      typeof historyItem.timestamp === 'object' &&
+                      'toLocaleString' in historyItem.timestamp
                         ? historyItem.timestamp.toLocaleString()
                         : String(historyItem.timestamp)}
                     </p>
                     <div className="flex gap-1">
                       {historyItem.model && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs"
-                        >
+                        <Badge variant="outline" className="text-xs">
                           {historyItem.model}
                         </Badge>
                       )}
-                      <Badge
-                        variant="secondary"
-                        className="text-xs"
-                      >
+                      <Badge variant="secondary" className="text-xs">
                         {historyItem.length}
                       </Badge>
                     </div>
@@ -100,10 +91,7 @@ export function PromptHistory({
           <p className="text-muted-foreground text-center mb-4">
             Generate and enhance prompts to see them here
           </p>
-          <Button
-            variant="outline"
-            onClick={() => setActiveTab("builder")}
-          >
+          <Button variant="outline" onClick={() => setActiveTab('builder')}>
             Start Building
           </Button>
         </CardContent>

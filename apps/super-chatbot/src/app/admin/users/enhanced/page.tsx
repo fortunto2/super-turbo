@@ -1,18 +1,14 @@
-import { Suspense } from "react";
+import { Suspense } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import {
-  TrendingUp,
-  TrendingDown,
-  BarChart3,
-} from "lucide-react";
-import { getUserStats } from "@/lib/db/admin-queries";
-import { EnhancedUsersTable, UserStatsCards } from "@/components";
+} from '@turbo-super/ui';
+import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { getUserStats } from '@/lib/db/admin-queries';
+import { EnhancedUsersTable, UserStatsCards } from '@/components';
 
 export default async function EnhancedUsersPage() {
   // Get user statistics

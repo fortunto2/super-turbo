@@ -30,14 +30,14 @@ describe('Monitoring System', () => {
           memory: {
             used: 92,
             total: 98,
-            unit: 'MB'
-          }
+            unit: 'MB',
+          },
         },
         services: {
           database: 'healthy',
           api: 'healthy',
-          monitoring: 'healthy'
-        }
+          monitoring: 'healthy',
+        },
       };
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -79,10 +79,10 @@ describe('Monitoring System', () => {
               rss: 125829120,
               heapTotal: 67108864,
               heapUsed: 41943040,
-              external: 1048576
+              external: 1048576,
             },
             platform: 'win32',
-            nodeVersion: 'v22.17.1'
+            nodeVersion: 'v22.17.1',
           },
           api: {
             endpoints: [
@@ -91,18 +91,18 @@ describe('Monitoring System', () => {
                 requests: 45,
                 errors: 0,
                 averageTime: 23.5,
-                errorRate: 0
-              }
+                errorRate: 0,
+              },
             ],
             totalRequests: 45,
-            totalErrors: 0
+            totalErrors: 0,
           },
           summary: {
             uptime: 86.6456162,
             memoryUsage: 62.5,
-            totalEndpoints: 1
-          }
-        }
+            totalEndpoints: 1,
+          },
+        },
       };
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -137,28 +137,34 @@ describe('Monitoring System', () => {
   describe('Simple Monitor Functions', () => {
     it('should track API requests', async () => {
       // Импортируем функции из simple-monitor
-      const { trackApiRequest, getMetrics } = await import('@/lib/monitoring/simple-monitor');
+      const { trackApiRequest, getMetrics } = await import(
+        '@/lib/monitoring/simple-monitor'
+      );
 
       // Тестируем отслеживание запроса
       trackApiRequest('/api/test', 100, 200);
-      
+
       const metrics = getMetrics();
       expect(metrics.totalRequests).toBeGreaterThan(0);
       expect(metrics.totalErrors).toBe(0);
     });
 
     it('should track API errors', async () => {
-      const { trackApiRequest, getMetrics } = await import('@/lib/monitoring/simple-monitor');
+      const { trackApiRequest, getMetrics } = await import(
+        '@/lib/monitoring/simple-monitor'
+      );
 
       // Тестируем отслеживание ошибки
       trackApiRequest('/api/test', 100, 500);
-      
+
       const metrics = getMetrics();
       expect(metrics.totalErrors).toBeGreaterThan(0);
     });
 
     it('should get health status', async () => {
-      const { getHealthStatus } = await import('@/lib/monitoring/simple-monitor');
+      const { getHealthStatus } = await import(
+        '@/lib/monitoring/simple-monitor'
+      );
 
       const health = getHealthStatus();
       expect(health.status).toBe('healthy');

@@ -45,10 +45,12 @@ interface Veo3PromptGeneratorProps {
     targetCharacters?: number;
     metadata?: any;
   }>;
-  MoodboardUploader?: React.ComponentType<{
-    images: MoodboardImage[];
-    setImages: (images: MoodboardImage[]) => void;
-  }>;
+  MoodboardUploader?:
+    | React.ComponentType<{
+        images: MoodboardImage[];
+        setImages: (images: MoodboardImage[]) => void;
+      }>
+    | undefined;
   showInfoBanner?: boolean;
   className?: string;
   locale?: Locale;
@@ -236,7 +238,7 @@ export function Veo3PromptGenerator({
     setGeneratedPrompt(historyItem.basicPrompt);
     setEnhancedPrompt(historyItem.enhancedPrompt);
     if (historyItem.length) {
-      const match = historyItem.length.match(/(\d+)/);
+      const match = historyItem.length?.match(/(\d+)/);
       if (match) {
         const charLimit = parseInt(match[1]);
         if (charLimit >= 200 && charLimit <= 10000) {

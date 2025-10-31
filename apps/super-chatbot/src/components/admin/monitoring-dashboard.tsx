@@ -3,16 +3,16 @@
  * Отображает метрики производительности, алерты и состояние здоровья
  */
 
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 import {
   AlertTriangle,
   CheckCircle,
@@ -21,7 +21,7 @@ import {
   Server,
   Activity,
   AlertCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface MonitoringData {
   health: {
@@ -77,12 +77,12 @@ export function MonitoringDashboard() {
       setError(null);
 
       const [healthResponse, metricsResponse] = await Promise.all([
-        fetch("/api/health"),
-        fetch("/api/metrics"),
+        fetch('/api/health'),
+        fetch('/api/metrics'),
       ]);
 
       if (!healthResponse.ok || !metricsResponse.ok) {
-        throw new Error("Failed to fetch monitoring data");
+        throw new Error('Failed to fetch monitoring data');
       }
 
       const healthData = await healthResponse.json();
@@ -94,28 +94,28 @@ export function MonitoringDashboard() {
           uptime: healthData.uptime,
           checks: [
             {
-              name: "Database",
-              status: healthData.services?.database || "healthy",
-              message: "Database connection status",
+              name: 'Database',
+              status: healthData.services?.database || 'healthy',
+              message: 'Database connection status',
               duration: 0,
             },
             {
-              name: "API",
-              status: healthData.services?.api || "healthy",
-              message: "API service status",
+              name: 'API',
+              status: healthData.services?.api || 'healthy',
+              message: 'API service status',
               duration: 0,
             },
             {
-              name: "Monitoring",
-              status: healthData.services?.monitoring || "healthy",
-              message: "Monitoring system status",
+              name: 'Monitoring',
+              status: healthData.services?.monitoring || 'healthy',
+              message: 'Monitoring system status',
               duration: 0,
             },
           ],
           summary: {
-            healthy: healthData.status === "healthy" ? 3 : 0,
+            healthy: healthData.status === 'healthy' ? 3 : 0,
             degraded: 0,
-            unhealthy: healthData.status === "healthy" ? 0 : 3,
+            unhealthy: healthData.status === 'healthy' ? 0 : 3,
             unknown: 0,
           },
         },
@@ -145,7 +145,7 @@ export function MonitoringDashboard() {
 
       setLastUpdated(new Date());
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -162,7 +162,7 @@ export function MonitoringDashboard() {
   const formatUptime = (uptime: number) => {
     const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
     const hours = Math.floor(
-      (uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      (uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
     );
     const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
 
@@ -174,25 +174,25 @@ export function MonitoringDashboard() {
   // Получение цвета статуса
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "healthy":
-        return "text-green-600";
-      case "degraded":
-        return "text-yellow-600";
-      case "unhealthy":
-        return "text-red-600";
+      case 'healthy':
+        return 'text-green-600';
+      case 'degraded':
+        return 'text-yellow-600';
+      case 'unhealthy':
+        return 'text-red-600';
       default:
-        return "text-gray-600";
+        return 'text-gray-600';
     }
   };
 
   // Получение иконки статуса
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "healthy":
+      case 'healthy':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case "degraded":
+      case 'degraded':
         return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
-      case "unhealthy":
+      case 'unhealthy':
         return <AlertCircle className="h-5 w-5 text-red-600" />;
       default:
         return <Clock className="h-5 w-5 text-gray-600" />;
@@ -244,7 +244,7 @@ export function MonitoringDashboard() {
           disabled={loading}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Refreshing..." : "Refresh"}
+          {loading ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 

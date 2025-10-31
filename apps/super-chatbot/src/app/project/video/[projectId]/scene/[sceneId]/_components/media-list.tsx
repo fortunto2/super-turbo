@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { FileTypeEnum } from "@turbo-super/api";
+import { FileTypeEnum } from '@turbo-super/api';
 
-import { MediaFile } from "./media-file";
-import { useFileList, useSceneGetById } from "@/lib/api/superduperai";
-import { QueryState } from "@/components/ui/query-state";
-import { Skeleton } from "@turbo-super/ui";
-import { ScrollArea } from "@/components/ui";
+import { MediaFile } from './media-file';
+import { useFileList, useSceneGetById } from '@/lib/api/superduperai';
+import { QueryState } from '@/components/ui/query-state';
+import { Skeleton } from '@turbo-super/ui';
+import { ScrollArea } from '@/components/ui';
 
 export function MediaList({
   projectId,
@@ -40,10 +40,7 @@ export function MediaList({
         hideDelay={400}
         className="w-full h-full scroll-horizontal"
       >
-        <div
-          className="flex gap-3"
-          style={{ minWidth: "max-content" }}
-        >
+        <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
           <QueryState
             isLoading={isLoading}
             isError={isError}

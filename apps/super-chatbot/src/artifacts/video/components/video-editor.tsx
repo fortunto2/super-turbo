@@ -1,12 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { CopyIcon } from "@/components/common/icons";
-import { DebugParameters } from "@/components/debug/debug-parameters";
-import { VideoErrorDisplay } from "@/components/chat/error-display";
-import { toast } from "sonner";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { CopyIcon } from '@/components/common/icons';
+import { DebugParameters } from '@/components/debug/debug-parameters';
+import { VideoErrorDisplay } from '@/components/chat/error-display';
+import { toast } from 'sonner';
 
 // Temporary type definitions until we create the proper utils
 interface VideoState {
@@ -24,16 +23,16 @@ interface VideoState {
 const copyVideoUrlToClipboard = async (url: string) => {
   try {
     await navigator.clipboard.writeText(url);
-    toast.success("Video URL copied to clipboard");
+    toast.success('Video URL copied to clipboard');
   } catch (error) {
-    toast.error("Failed to copy video URL");
+    toast.error('Failed to copy video URL');
   }
 };
 
 interface VideoEditorProps {
   chatId?: string;
-  append?: UseChatHelpers["append"];
-  setMessages?: UseChatHelpers["setMessages"];
+  append?: any; // AI SDK v5: append type changed;
+  setMessages?: any; // AI SDK v5: setMessages type changed;
   initialState?: VideoState;
   setArtifact?: (fn: (prev: any) => any) => void;
   availableResolutions?: any[];
@@ -136,7 +135,7 @@ function VideoDisplay({
           src={videoUrl}
           controls
           className="w-full h-auto rounded-lg border object-contain"
-          style={{ maxHeight: "70vh" }}
+          style={{ maxHeight: '70vh' }}
         />
         <div className="absolute top-2 right-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
           ✅ Complete
@@ -158,9 +157,9 @@ function VideoDisplay({
 function ConnectionStatus({ isConnected }: { isConnected: boolean }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span>{isConnected ? "🟢" : "🔴"}</span>
+      <span>{isConnected ? '🟢' : '🔴'}</span>
       <span className="text-muted-foreground">
-        {isConnected ? "Connected" : "Disconnected"}
+        {isConnected ? 'Connected' : 'Disconnected'}
       </span>
     </div>
   );
@@ -186,9 +185,9 @@ export function VideoEditor({
   // For now, just show a placeholder until we implement the full video generation hooks
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | undefined>(
-    initialState?.videoUrl
+    initialState?.videoUrl,
   );
-  const [prompt, setPrompt] = useState(initialState?.prompt || "");
+  const [prompt, setPrompt] = useState(initialState?.prompt || '');
   const [error, setError] = useState<string | undefined>(initialState?.error);
   const [hasInitialized, setHasInitialized] = useState(false);
 
@@ -211,12 +210,12 @@ export function VideoEditor({
 
   // Temporary implementation - we'll implement proper video generation hooks later
   const status = error
-    ? "error"
+    ? 'error'
     : isGenerating
-      ? "processing"
+      ? 'processing'
       : videoUrl
-        ? "completed"
-        : "pending";
+        ? 'completed'
+        : 'pending';
 
   const handleCopyUrl = () => {
     if (videoUrl) {
@@ -237,17 +236,17 @@ export function VideoEditor({
       // For now, we don't have video generation hooks implemented
       // This is a placeholder implementation
       if (!prompt) {
-        toast.error("Нет промпта для повтора генерации");
+        toast.error('Нет промпта для повтора генерации');
         setIsGenerating(false);
         return;
       }
 
       // TODO: Implement proper video generation retry logic
       // This would typically call a video generation hook or API
-      toast.info("Функция повтора видео будет реализована в следующей версии");
+      toast.info('Функция повтора видео будет реализована в следующей версии');
     } catch (error) {
-      console.error("Error during retry:", error);
-      toast.error("Ошибка при повторе генерации");
+      console.error('Error during retry:', error);
+      toast.error('Ошибка при повторе генерации');
     } finally {
       setIsGenerating(false);
     }
@@ -255,7 +254,7 @@ export function VideoEditor({
 
   // Get global WebSocket connection status
   const getGlobalConnectionStatus = (): boolean => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       const globalWindow = window as any;
       const chatInstance = globalWindow.chatWebSocketInstance;
       if (chatInstance) {
@@ -272,21 +271,17 @@ export function VideoEditor({
   const isConnected = getGlobalConnectionStatus();
 
   // Render based on status
-  if (status === "error" && error) {
+  if (status === 'error' && error) {
     return (
-      <VideoErrorDisplay
-        error={error}
-        prompt={prompt}
-        onRetry={handleRetry}
-      />
+      <VideoErrorDisplay error={error} prompt={prompt} onRetry={handleRetry} />
     );
   }
 
-  if (status === "processing" || (status === "pending" && prompt)) {
+  if (status === 'processing' || (status === 'pending' && prompt)) {
     return <GenerationSkeleton prompt={prompt} />;
   }
 
-  if (status === "completed" && videoUrl) {
+  if (status === 'completed' && videoUrl) {
     return (
       <VideoDisplay
         videoUrl={videoUrl}

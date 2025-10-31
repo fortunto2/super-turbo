@@ -1,6 +1,6 @@
-"use client";
-import { MarkdownEditor } from "@/components/editors/markdown-editor";
-import type { MDXEditorMethods } from "@mdxeditor/editor";
+'use client';
+import { MarkdownEditor } from '@/components/editors/markdown-editor';
+import type { MDXEditorMethods } from '@mdxeditor/editor';
 // Динамические импорты будут в useEffect
 import {
   CopyIcon,
@@ -8,20 +8,20 @@ import {
   TrashIcon,
   InfoIcon,
   FileIcon,
-} from "@/components/common/icons";
+} from '@/components/common/icons';
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 
 interface ScriptGenerationResultProps {
   script: string;
@@ -42,8 +42,8 @@ export default function ScriptGenerationResult({
   };
 
   const handleClear = () => {
-    setScript("");
-    if (editorRef.current) editorRef.current.setMarkdown("");
+    setScript('');
+    if (editorRef.current) editorRef.current.setMarkdown('');
   };
 
   const handleCopyHtml = async () => {
@@ -161,34 +161,34 @@ export default function ScriptGenerationResult({
   const actions = [
     {
       icon: <CopyIcon size={18} />,
-      bg: "bg-blue-600 hover:bg-blue-700",
+      bg: 'bg-blue-600 hover:bg-blue-700',
       onClick: handleCopy,
-      tooltip: "Copy Markdown",
+      tooltip: 'Copy Markdown',
     },
     {
       icon: <DownloadIcon size={18} />,
-      bg: "bg-green-600 hover:bg-green-700",
+      bg: 'bg-green-600 hover:bg-green-700',
       onClick: () => handleDownload(script),
-      tooltip: "Download .md",
+      tooltip: 'Download .md',
     },
 
     {
       icon: <InfoIcon size={18} />,
-      bg: "bg-purple-600 hover:bg-purple-700",
+      bg: 'bg-purple-600 hover:bg-purple-700',
       onClick: handleCopyHtml,
-      tooltip: "Copy as HTML",
+      tooltip: 'Copy as HTML',
     },
     {
       icon: <FileIcon size={18} />,
-      bg: "bg-red-600 hover:bg-red-700",
+      bg: 'bg-red-600 hover:bg-red-700',
       onClick: () => handleExportPdf(script).catch(console.error),
-      tooltip: "Export to PDF",
+      tooltip: 'Export to PDF',
     },
     {
       icon: <TrashIcon size={18} />,
-      bg: "bg-gray-400 hover:bg-gray-500",
+      bg: 'bg-gray-400 hover:bg-gray-500',
       onClick: handleClear,
-      tooltip: "Clear",
+      tooltip: 'Clear',
     },
   ];
 
@@ -224,22 +224,22 @@ export default function ScriptGenerationResult({
 
 function markdownToHtml(markdown: string): string {
   return markdown
-    .replace(/^### (.*$)/gim, "<h3>$1</h3>")
-    .replace(/^## (.*$)/gim, "<h2>$1</h2>")
-    .replace(/^# (.*$)/gim, "<h1>$1</h1>")
-    .replace(/^\> (.*$)/gim, "<blockquote>$1</blockquote>")
-    .replace(/\*\*(.*)\*\*/gim, "<b>$1</b>")
-    .replace(/\*(.*)\*/gim, "<i>$1</i>")
-    .replace(/\n$/gim, "<br />")
-    .replace(/\n/g, "<br />");
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+    .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
+    .replace(/\*(.*)\*/gim, '<i>$1</i>')
+    .replace(/\n$/gim, '<br />')
+    .replace(/\n/g, '<br />');
 }
 
 const handleDownload = (script: string) => {
-  const blob = new Blob([script], { type: "text/markdown" });
+  const blob = new Blob([script], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
-  a.download = "script.md";
+  a.download = 'script.md';
   a.click();
   URL.revokeObjectURL(url);
 };
@@ -247,133 +247,133 @@ const handleDownload = (script: string) => {
 // Export to PDF с максимально приближённым к сценарию оформлением
 const handleExportPdf = async (script: string) => {
   // Проверяем, что мы на клиенте
-  if (typeof window === "undefined") {
-    console.warn("PDF export is only available on the client side");
+  if (typeof window === 'undefined') {
+    console.warn('PDF export is only available on the client side');
     return;
   }
 
-  const { jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const margin = 32;
   const maxWidth = 540;
   let y = margin + 12;
 
   // Устанавливаем правильную кодировку для русского текста
-  doc.setFont("helvetica", "normal");
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(12);
 
   // Обрабатываем текст для правильного отображения
   const processedScript = script.replace(/[^\u0000-\u007F]/g, (char) => {
     // Заменяем проблемные символы на ASCII эквиваленты
     const replacements: { [key: string]: string } = {
-      а: "a",
-      б: "b",
-      в: "v",
-      г: "g",
-      д: "d",
-      е: "e",
-      ё: "e",
-      ж: "zh",
-      з: "z",
-      и: "i",
-      й: "y",
-      к: "k",
-      л: "l",
-      м: "m",
-      н: "n",
-      о: "o",
-      п: "p",
-      р: "r",
-      с: "s",
-      т: "t",
-      у: "u",
-      ф: "f",
-      х: "h",
-      ц: "ts",
-      ч: "ch",
-      ш: "sh",
-      щ: "sch",
-      ъ: "",
-      ы: "y",
-      ь: "",
-      э: "e",
-      ю: "yu",
-      я: "ya",
-      А: "A",
-      Б: "B",
-      В: "V",
-      Г: "G",
-      Д: "D",
-      Е: "E",
-      Ё: "E",
-      Ж: "ZH",
-      З: "Z",
-      И: "I",
-      Й: "Y",
-      К: "K",
-      Л: "L",
-      М: "M",
-      Н: "N",
-      О: "O",
-      П: "P",
-      Р: "R",
-      С: "S",
-      Т: "T",
-      У: "U",
-      Ф: "F",
-      Х: "H",
-      Ц: "TS",
-      Ч: "CH",
-      Ш: "SH",
-      Щ: "SCH",
-      Ъ: "",
-      Ы: "Y",
-      Ь: "",
-      Э: "E",
-      Ю: "YU",
-      Я: "YA",
+      а: 'a',
+      б: 'b',
+      в: 'v',
+      г: 'g',
+      д: 'd',
+      е: 'e',
+      ё: 'e',
+      ж: 'zh',
+      з: 'z',
+      и: 'i',
+      й: 'y',
+      к: 'k',
+      л: 'l',
+      м: 'm',
+      н: 'n',
+      о: 'o',
+      п: 'p',
+      р: 'r',
+      с: 's',
+      т: 't',
+      у: 'u',
+      ф: 'f',
+      х: 'h',
+      ц: 'ts',
+      ч: 'ch',
+      ш: 'sh',
+      щ: 'sch',
+      ъ: '',
+      ы: 'y',
+      ь: '',
+      э: 'e',
+      ю: 'yu',
+      я: 'ya',
+      А: 'A',
+      Б: 'B',
+      В: 'V',
+      Г: 'G',
+      Д: 'D',
+      Е: 'E',
+      Ё: 'E',
+      Ж: 'ZH',
+      З: 'Z',
+      И: 'I',
+      Й: 'Y',
+      К: 'K',
+      Л: 'L',
+      М: 'M',
+      Н: 'N',
+      О: 'O',
+      П: 'P',
+      Р: 'R',
+      С: 'S',
+      Т: 'T',
+      У: 'U',
+      Ф: 'F',
+      Х: 'H',
+      Ц: 'TS',
+      Ч: 'CH',
+      Ш: 'SH',
+      Щ: 'SCH',
+      Ъ: '',
+      Ы: 'Y',
+      Ь: '',
+      Э: 'E',
+      Ю: 'YU',
+      Я: 'YA',
     };
     return replacements[char] || char;
   });
 
   // Парсим markdown в tokens
-  const { marked } = await import("marked");
+  const { marked } = await import('marked');
   const tokens = marked.lexer(processedScript);
-  let prevType = "";
+  let prevType = '';
   tokens.forEach((token) => {
     // Перенос между блоками
-    if (prevType && token.type !== "space" && token.type !== "hr") {
+    if (prevType && token.type !== 'space' && token.type !== 'hr') {
       y += 6;
     }
     prevType = token.type;
-    if (token.type === "heading" && token.text) {
+    if (token.type === 'heading' && token.text) {
       const size = token.depth === 1 ? 22 : token.depth === 2 ? 18 : 16;
       doc.setFontSize(size);
-      doc.setFont("helvetica", "bold");
-      doc.text(String(token.text ?? ""), margin, y);
+      doc.setFont('helvetica', 'bold');
+      doc.text(String(token.text ?? ''), margin, y);
       y += size + 4;
       doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-    } else if (token.type === "paragraph" && token.text) {
+      doc.setFont('helvetica', 'normal');
+    } else if (token.type === 'paragraph' && token.text) {
       // Горизонтальная линия (*** или ---)
-      if (/^\*\*\*$|^---$/.test(String(token.text ?? "").trim())) {
+      if (/^\*\*\*$|^---$/.test(String(token.text ?? '').trim())) {
         doc.setDrawColor(180);
         doc.setLineWidth(1);
         doc.line(margin, y, margin + maxWidth, y);
         y += 12;
       } else {
         // Диалоги Name: "..."
-        const dialogueMatch = String(token.text ?? "").match(
-          /^([A-Za-z0-9\- ]+):\s*"([^"]+)"$/
+        const dialogueMatch = String(token.text ?? '').match(
+          /^([A-Za-z0-9\- ]+):\s*"([^"]+)"$/,
         );
         if (dialogueMatch) {
-          doc.setFont("helvetica", "bold");
-          doc.text(`${String(dialogueMatch[1] ?? "")}:`, margin, y);
-          doc.setFont("helvetica", "normal");
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${String(dialogueMatch[1] ?? '')}:`, margin, y);
+          doc.setFont('helvetica', 'normal');
           doc.text(
-            ` "${String(dialogueMatch[2] ?? "")}"`,
-            margin + doc.getTextWidth(`${String(dialogueMatch[1] ?? "")}:`),
-            y
+            ` "${String(dialogueMatch[2] ?? '')}"`,
+            margin + doc.getTextWidth(`${String(dialogueMatch[1] ?? '')}:`),
+            y,
           );
           y += 16;
         } else {
@@ -383,47 +383,47 @@ const handleExportPdf = async (script: string) => {
           let match: RegExpExecArray | null;
           let x = margin;
           const localY = y;
-          const text = String(token.text ?? "");
+          const text = String(token.text ?? '');
           match = strongRegex.exec(text);
           while (match !== null) {
             const before = text.slice(lastIndex, match.index);
             if (before) {
-              doc.setFont("helvetica", "normal");
-              doc.text(String(before ?? ""), x, localY);
-              x += doc.getTextWidth(String(before ?? ""));
+              doc.setFont('helvetica', 'normal');
+              doc.text(String(before ?? ''), x, localY);
+              x += doc.getTextWidth(String(before ?? ''));
             }
-            doc.setFont("helvetica", "bold");
-            doc.text(String(match[1] ?? ""), x, localY);
-            x += doc.getTextWidth(String(match[1] ?? ""));
-            doc.setFont("helvetica", "normal");
+            doc.setFont('helvetica', 'bold');
+            doc.text(String(match[1] ?? ''), x, localY);
+            x += doc.getTextWidth(String(match[1] ?? ''));
+            doc.setFont('helvetica', 'normal');
             lastIndex = match.index + match[0].length;
             match = strongRegex.exec(text);
           }
           const after = text.slice(lastIndex);
           if (after) {
-            doc.setFont("helvetica", "normal");
-            doc.text(String(after ?? ""), x, localY);
+            doc.setFont('helvetica', 'normal');
+            doc.text(String(after ?? ''), x, localY);
           }
           y += 18;
         }
       }
-    } else if (token.type === "list" && Array.isArray(token.items)) {
+    } else if (token.type === 'list' && Array.isArray(token.items)) {
       (token.items as { text?: string }[]).forEach((item) => {
-        const itemText = String(item.text ?? "");
+        const itemText = String(item.text ?? '');
         // Диалог в списке
-        const dialogueMatch = itemText.match(
-          /^([A-Za-z0-9\- ]+):\s*"([^"]+)"$/
+        const dialogueMatch = itemText?.match(
+          /^([A-Za-z0-9\- ]+):\s*"([^"]+)"$/,
         );
         if (dialogueMatch) {
-          doc.setFont("helvetica", "bold");
-          doc.text(`${String(dialogueMatch[1] ?? "")}:`, margin + 18, y);
-          doc.setFont("helvetica", "normal");
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${String(dialogueMatch[1] ?? '')}:`, margin + 18, y);
+          doc.setFont('helvetica', 'normal');
           doc.text(
-            ` "${String(dialogueMatch[2] ?? "")}"`,
+            ` "${String(dialogueMatch[2] ?? '')}"`,
             margin +
               18 +
-              doc.getTextWidth(`${String(dialogueMatch[1] ?? "")}:`),
-            y
+              doc.getTextWidth(`${String(dialogueMatch[1] ?? '')}:`),
+            y,
           );
           y += 16;
         } else {
@@ -431,70 +431,70 @@ const handleExportPdf = async (script: string) => {
           y += 16;
         }
       });
-    } else if (token.type === "hr") {
+    } else if (token.type === 'hr') {
       doc.setDrawColor(180);
       doc.setLineWidth(1);
       doc.line(margin, y, margin + maxWidth, y);
       y += 12;
-    } else if (token.type === "blockquote" && token.text) {
+    } else if (token.type === 'blockquote' && token.text) {
       doc.setFontSize(12);
       doc.setTextColor(100);
       let lines =
-        doc.splitTextToSize(String(token.text ?? ""), maxWidth - 24) || [];
+        doc.splitTextToSize(String(token.text ?? ''), maxWidth - 24) || [];
       lines =
         Array.isArray(lines) && lines.length > 0
           ? lines
-              .map((l) => (typeof l === "string" ? l : ""))
-              .map((l) => l ?? "")
-              .filter((l) => typeof l === "string")
-          : [""];
+              .map((l) => (typeof l === 'string' ? l : ''))
+              .map((l) => l ?? '')
+              .filter((l) => typeof l === 'string')
+          : [''];
       doc.text(lines, margin + 24, y);
       y += (lines.length || 1) * 16;
       doc.setTextColor(0);
-    } else if (token.type === "code" && token.text) {
-      doc.setFont("courier", "normal");
+    } else if (token.type === 'code' && token.text) {
+      doc.setFont('courier', 'normal');
       doc.setFillColor(240, 240, 240);
       let lines =
-        doc.splitTextToSize(String(token.text ?? ""), maxWidth - 24) || [];
+        doc.splitTextToSize(String(token.text ?? ''), maxWidth - 24) || [];
       lines =
         Array.isArray(lines) && lines.length > 0
           ? lines
-              .map((l) => (typeof l === "string" ? l : ""))
-              .map((l) => l ?? "")
-              .filter((l) => typeof l === "string")
-          : [""];
+              .map((l) => (typeof l === 'string' ? l : ''))
+              .map((l) => l ?? '')
+              .filter((l) => typeof l === 'string')
+          : [''];
       doc.rect(
         margin + 12,
         y - 12,
         maxWidth - 24,
         (lines.length || 1) * 16 + 12,
-        "F"
+        'F',
       );
       doc.text(lines, margin + 18, y);
       y += (lines.length || 1) * 16 + 16;
-      doc.setFont("helvetica", "normal");
-    } else if (token.type === "space") {
+      doc.setFont('helvetica', 'normal');
+    } else if (token.type === 'space') {
       y += 8;
     }
     // Обработка строк, начинающихся с * (но не markdown-список)
     else if (token.raw && /^\* /.test(token.raw)) {
-      const itemText = String(token.raw ?? "").replace(/^\* /, "• ");
+      const itemText = String(token.raw ?? '').replace(/^\* /, '• ');
       doc.text(itemText, margin + 18, y);
       y += 16;
     }
     // Обычный текст (fallback)
     else if (token.raw) {
-      let lines = doc.splitTextToSize(String(token.raw ?? ""), maxWidth) || [];
+      let lines = doc.splitTextToSize(String(token.raw ?? ''), maxWidth) || [];
       lines =
         Array.isArray(lines) && lines.length > 0
           ? lines
-              .map((l) => (typeof l === "string" ? l : ""))
-              .map((l) => l ?? "")
-              .filter((l) => typeof l === "string")
-          : [""];
+              .map((l) => (typeof l === 'string' ? l : ''))
+              .map((l) => l ?? '')
+              .filter((l) => typeof l === 'string')
+          : [''];
       doc.text(lines, margin, y);
       y += (lines.length || 1) * 16;
     }
   });
-  doc.save("script.pdf");
+  doc.save('script.pdf');
 };

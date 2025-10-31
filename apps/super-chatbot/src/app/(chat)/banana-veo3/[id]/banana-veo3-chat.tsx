@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { UIMessage } from "ai";
-import { useEffect, useState, useRef } from "react";
-import type { Session } from "next-auth";
-import type { VisibilityType } from "@/components/shared/visibility-selector";
+import type { UIMessage } from 'ai';
+import { useEffect, useState, useRef } from 'react';
+import type { Session } from 'next-auth';
+import type { VisibilityType } from '@/components/shared/visibility-selector';
 import {
   Banana,
   Video,
@@ -16,14 +16,14 @@ import {
   MessageSquare,
   Clock,
   ArrowLeft,
-} from "lucide-react";
-import { generateUUID } from "@/lib/utils";
-import { Button } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
-import { Card } from "@turbo-super/ui";
-import { useRouter } from "next/navigation";
-import useSWR from "swr";
-import { fetcher } from "@/lib/utils";
+} from 'lucide-react';
+import { generateUUID } from '@/lib/utils';
+import { Button } from '@turbo-super/ui';
+import { Textarea } from '@turbo-super/ui';
+import { Card } from '@turbo-super/ui';
+import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import { fetcher } from '@/lib/utils';
 
 export interface BananaVeo3ChatProps {
   id: string;
@@ -48,7 +48,7 @@ export function BananaVeo3Chat({
 }: BananaVeo3ChatProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<UIMessage[]>(initialMessages);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -62,14 +62,14 @@ export function BananaVeo3Chat({
 
   // Логирование инициализации
   useEffect(() => {
-    console.log("🍌 BananaVeo3Chat initialized with messages:", {
+    console.log('🍌 BananaVeo3Chat initialized with messages:', {
       count: initialMessages.length,
       messages: initialMessages.map((m) => ({
         id: m.id,
         role: m.role,
-        content: m.content?.substring(0, 50),
+        content: (m as any).content?.substring(0, 50),
         partsLength: m.parts?.length,
-        hasContent: !!m.content,
+        hasContent: !!(m as any).content,
         hasParts: !!m.parts,
       })),
     });
@@ -81,12 +81,12 @@ export function BananaVeo3Chat({
   };
 
   const handleBackToMain = () => {
-    router.push("/");
+    router.push('/');
   };
 
   // Автоскролл к последнему сообщению
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,22 +95,21 @@ export function BananaVeo3Chat({
 
     const userMessage: UIMessage = {
       id: generateUUID(),
-      role: "user",
-      content: input,
-      parts: [{ type: "text", text: input }],
+      role: 'user',
+      parts: [{ type: 'text', text: input }],
       createdAt: new Date(),
-    };
+    } as any;
 
     // Добавляем сообщение пользователя
     setMessages((prev) => [...prev, userMessage]);
-    setInput("");
+    setInput('');
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/banana-veo3", {
-        method: "POST",
+      const response = await fetch('/api/banana-veo3', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           id,
@@ -124,31 +123,29 @@ export function BananaVeo3Chat({
       if (data.success && data.response) {
         const assistantMessage: UIMessage = {
           id: data.messageId || generateUUID(),
-          role: "assistant",
-          content: data.response,
-          parts: [{ type: "text", text: data.response }],
+          role: 'assistant',
+          parts: [{ type: 'text', text: data.response }],
           createdAt: new Date(),
-        };
+        } as any;
 
         setMessages((prev) => [...prev, assistantMessage]);
       } else {
-        throw new Error(data.error || "Failed to get response");
+        throw new Error(data.error || 'Failed to get response');
       }
     } catch (error) {
-      console.error("🍌🎬 Banana+VEO3 Chat error:", error);
+      console.error('🍌🎬 Banana+VEO3 Chat error:', error);
 
       const errorMessage: UIMessage = {
         id: generateUUID(),
-        role: "assistant",
-        content: `Ошибка: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`,
+        role: 'assistant',
         parts: [
           {
-            type: "text",
-            text: `Ошибка: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`,
+            type: 'text',
+            text: `Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
           },
         ],
         createdAt: new Date(),
-      };
+      } as any;
 
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -157,7 +154,7 @@ export function BananaVeo3Chat({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e as any);
     }
@@ -168,7 +165,7 @@ export function BananaVeo3Chat({
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-80 bg-zinc-950 border-r border-zinc-800 transform transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
@@ -219,8 +216,8 @@ export function BananaVeo3Chat({
                   onClick={() => router.push(`/banana-veo3/${chat.id}`)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     chat.id === id
-                      ? "bg-zinc-800 text-white"
-                      : "text-gray-400 hover:bg-zinc-900 hover:text-white"
+                      ? 'bg-zinc-800 text-white'
+                      : 'text-gray-400 hover:bg-zinc-900 hover:text-white'
                   }`}
                 >
                   <div className="flex items-start gap-2">
@@ -231,7 +228,7 @@ export function BananaVeo3Chat({
                       </p>
                       <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {new Date(chat.createdAt).toLocaleDateString("ru-RU")}
+                        {new Date(chat.createdAt).toLocaleDateString('ru-RU')}
                       </p>
                     </div>
                   </div>
@@ -308,7 +305,7 @@ export function BananaVeo3Chat({
                   Welcome to Banana + VEO3!
                 </h2>
                 <p className="text-gray-400 text-base">
-                  Specialized AI for GPU inference and video generation
+                  Specialized AI for image and video generation
                 </p>
               </div>
 
@@ -320,7 +317,7 @@ export function BananaVeo3Chat({
                       <Banana className="w-5 h-5 text-yellow-500" />
                     </div>
                     <h4 className="font-bold text-yellow-500 text-base">
-                      Banana GPU Inference
+                      Banana
                     </h4>
                   </div>
                   <ul className="text-xs text-gray-300 space-y-1">
@@ -370,12 +367,12 @@ export function BananaVeo3Chat({
               {messages.map((message, index) => {
                 // Логирование для отладки
                 if (index === 0) {
-                  console.log("🍌 Rendering message:", {
+                  console.log('🍌 Rendering message:', {
                     id: message.id,
                     role: message.role,
-                    content: message.content,
+                    content: (message as any).content,
                     parts: message.parts,
-                    hasContent: !!message.content,
+                    hasContent: !!(message as any).content,
                     hasParts: !!message.parts,
                   });
                 }
@@ -384,10 +381,10 @@ export function BananaVeo3Chat({
                   <div
                     key={message.id}
                     className={`flex gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
-                    {message.role === "assistant" && (
+                    {message.role === 'assistant' && (
                       <div className="w-10 h-10 mt-1 flex-shrink-0 rounded-full bg-gradient-to-br from-yellow-500 via-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
                         🍌
                       </div>
@@ -395,16 +392,16 @@ export function BananaVeo3Chat({
 
                     <div
                       className={`max-w-[80%] ${
-                        message.role === "user"
-                          ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl px-5 py-3.5 shadow-lg shadow-blue-500/20"
-                          : "bg-zinc-900 text-gray-100 rounded-2xl px-5 py-3.5 border border-zinc-800 hover:border-zinc-700 transition-all"
+                        message.role === 'user'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl px-5 py-3.5 shadow-lg shadow-blue-500/20'
+                          : 'bg-zinc-900 text-gray-100 rounded-2xl px-5 py-3.5 border border-zinc-800 hover:border-zinc-700 transition-all'
                       }`}
                     >
                       <div className="whitespace-pre-wrap break-words leading-relaxed text-sm">
-                        {message.content ||
+                        {(message as any).content ||
                           message.parts?.map((part: any, i: number) => {
                             // Поддержка разных форматов parts
-                            if (part.type === "text" || part.text) {
+                            if (part.type === 'text' || part.text) {
                               return <span key={i}>{part.text}</span>;
                             }
                             return null;
@@ -412,9 +409,9 @@ export function BananaVeo3Chat({
                       </div>
                     </div>
 
-                    {message.role === "user" && (
+                    {message.role === 'user' && (
                       <div className="w-10 h-10 mt-1 flex-shrink-0 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-white text-sm font-semibold shadow-lg border border-zinc-700">
-                        {session?.user?.email?.[0]?.toUpperCase() || "U"}
+                        {session?.user?.email?.[0]?.toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
@@ -444,10 +441,7 @@ export function BananaVeo3Chat({
       {/* Input Area */}
       <div className="flex-shrink-0  bg-zinc-950">
         <div className="w-full px-6 py-4">
-          <form
-            onSubmit={handleSubmit}
-            className="relative"
-          >
+          <form onSubmit={handleSubmit} className="relative">
             <div className="relative">
               <Textarea
                 value={input}
@@ -455,8 +449,8 @@ export function BananaVeo3Chat({
                 onKeyDown={handleKeyDown}
                 placeholder={
                   isReadonly
-                    ? "This chat is read-only"
-                    : "Ask about Banana GPU inference or VEO3 video generation..."
+                    ? 'This chat is read-only'
+                    : 'Ask about Banana or VEO3 video generation...'
                 }
                 disabled={isLoading || isReadonly}
                 className="min-h-[70px] pr-16 resize-none bg-zinc-900 border-2 border-zinc-800 focus:border-blue-500 rounded-2xl shadow-sm transition-all placeholder:text-gray-500 text-gray-100"
@@ -482,11 +476,11 @@ export function BananaVeo3Chat({
             <p className="text-xs text-gray-500">
               <kbd className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-xs text-gray-400">
                 Enter
-              </kbd>{" "}
-              to send,{" "}
+              </kbd>{' '}
+              to send,{' '}
               <kbd className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-xs text-gray-400">
                 Shift+Enter
-              </kbd>{" "}
+              </kbd>{' '}
               for new line
             </p>
             <div className="flex items-center gap-1 text-xs text-gray-500">

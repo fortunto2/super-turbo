@@ -52,7 +52,7 @@ export interface GeminiImageResult {
     creativeMode: boolean;
   };
   nanoBananaInfo: {
-    model: "gemini-2.5-flash-image";
+    model: 'gemini-2.5-flash-image';
     capabilities: string[];
     style: {
       id: string;
@@ -90,7 +90,7 @@ export interface GeminiEditResult {
     preserveShadows: boolean;
   };
   nanoBananaEditInfo: {
-    model: "gemini-2.5-flash-image";
+    model: 'gemini-2.5-flash-image';
     editType: {
       id: string;
       label: string;
@@ -118,7 +118,7 @@ export interface GeminiConfig {
 }
 
 export interface GeminiGenerationConfig {
-  responseModalities: ("Text" | "Image")[];
+  responseModalities: ('Text' | 'Image')[];
   temperature?: number;
   maxOutputTokens?: number;
   topP?: number;

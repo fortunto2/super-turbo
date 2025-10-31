@@ -30,7 +30,7 @@ export interface UseVideoGeneratorReturn {
 
   // Connection state
   isConnected: boolean;
-  connectionStatus: "disconnected" | "connecting" | "connected";
+  connectionStatus: 'disconnected' | 'connecting' | 'connected';
 
   // Actions
   generateVideo: (formData: VideoGenerationFormData) => Promise<void>;
@@ -62,12 +62,12 @@ export interface VideoGenerationFormData {
 }
 
 export type GenerationStatus =
-  | "idle"
-  | "preparing"
-  | "generating"
-  | "processing"
-  | "completed"
-  | "error";
+  | 'idle'
+  | 'preparing'
+  | 'generating'
+  | 'processing'
+  | 'completed'
+  | 'error';
 
 export interface VideoGenerationState {
   status: GenerationStatus;

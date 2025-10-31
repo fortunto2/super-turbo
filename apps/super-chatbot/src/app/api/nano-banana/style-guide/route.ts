@@ -1,30 +1,30 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { nanoBananaStyleGuide } from "@/lib/ai/tools/nano-banana-style-guide";
-import { z } from "zod";
+import { type NextRequest, NextResponse } from 'next/server';
+import { nanoBananaStyleGuide } from '@/lib/ai/tools/nano-banana-style-guide';
+import { z } from 'zod';
 
 // Схема валидации для запроса руководства по стилям
 const styleGuideRequestSchema = z.object({
   category: z
     .enum([
-      "realistic",
-      "cinematic",
-      "artistic",
-      "fantasy",
-      "sci-fi",
-      "portrait",
-      "landscape",
-      "macro",
+      'realistic',
+      'cinematic',
+      'artistic',
+      'fantasy',
+      'sci-fi',
+      'portrait',
+      'landscape',
+      'macro',
     ])
     .optional(),
   technique: z
     .enum([
-      "context-aware-editing",
-      "surgical-precision",
-      "lighting-mastery",
-      "physical-logic",
+      'context-aware-editing',
+      'surgical-precision',
+      'lighting-mastery',
+      'physical-logic',
     ])
     .optional(),
-  difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   tags: z.array(z.string()).optional(),
   searchQuery: z.string().optional(),
   includeTips: z.boolean().optional().default(true),
@@ -34,30 +34,34 @@ const styleGuideRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("🍌 Nano Banana style guide API called");
+    console.log('🍌 Nano Banana style guide API called');
 
     // Парсим и валидируем запрос
     const body = await request.json();
     const validatedData = styleGuideRequestSchema.parse(body);
 
-    console.log("🍌 Validated style guide request data:", validatedData);
+    console.log('🍌 Validated style guide request data:', validatedData);
 
     // Вызываем инструмент руководства по стилям
+    if (!nanoBananaStyleGuide?.execute) {
+      throw new Error('nanoBananaStyleGuide tool is not properly initialized');
+    }
+
     const result = await nanoBananaStyleGuide.execute(validatedData, {
-      toolCallId: "nano-banana-style-guide",
+      toolCallId: 'nano-banana-style-guide',
       messages: [],
     });
 
-    console.log("🍌 Style guide result:", result);
+    console.log('🍌 Style guide result:', result);
 
     // Проверяем на ошибки
-    if (result.error) {
+    if ('error' in result && result.error) {
       return NextResponse.json(
         {
           error: result.error,
-          fallback: result.fallback,
+          fallback: (result as any).fallback,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -65,27 +69,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result,
-      message: "Руководство по стилям Nano Banana получено",
+      message: 'Руководство по стилям Nano Banana получено',
     });
   } catch (error) {
-    console.error("🍌 Error in Nano Banana style guide API:", error);
+    console.error('🍌 Error in Nano Banana style guide API:', error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
-          error: "Ошибка валидации данных",
+          error: 'Ошибка валидации данных',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       {
-        error: "Внутренняя ошибка сервера",
-        details: error instanceof Error ? error.message : "Неизвестная ошибка",
+        error: 'Внутренняя ошибка сервера',
+        details: error instanceof Error ? error.message : 'Неизвестная ошибка',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -93,9 +97,13 @@ export async function POST(request: NextRequest) {
 // GET запрос для получения полного руководства по стилям
 export async function GET(request: NextRequest) {
   try {
-    console.log("🍌 Nano Banana style guide info API called");
+    console.log('🍌 Nano Banana style guide info API called');
 
     // Получаем полное руководство по стилям
+    if (!nanoBananaStyleGuide?.execute) {
+      throw new Error('nanoBananaStyleGuide tool is not properly initialized');
+    }
+
     const result = await nanoBananaStyleGuide.execute(
       {
         includeTips: true,
@@ -103,25 +111,25 @@ export async function GET(request: NextRequest) {
         limit: 20,
       },
       {
-        toolCallId: "nano-banana-style-guide",
+        toolCallId: 'nano-banana-style-guide',
         messages: [],
-      }
+      },
     );
 
     return NextResponse.json({
       success: true,
       data: result,
-      message: "Полное руководство по стилям Nano Banana получено",
+      message: 'Полное руководство по стилям Nano Banana получено',
     });
   } catch (error) {
-    console.error("🍌 Error in Nano Banana style guide info API:", error);
+    console.error('🍌 Error in Nano Banana style guide info API:', error);
 
     return NextResponse.json(
       {
-        error: "Ошибка получения руководства по стилям",
-        details: error instanceof Error ? error.message : "Неизвестная ошибка",
+        error: 'Ошибка получения руководства по стилям',
+        details: error instanceof Error ? error.message : 'Неизвестная ошибка',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

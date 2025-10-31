@@ -4,7 +4,7 @@
 
 export interface SavedArtifactData {
   documentId: string;
-  status: "streaming" | "idle" | "error" | "completed" | "pending";
+  status: 'streaming' | 'idle' | 'error' | 'completed' | 'pending';
   kind: string;
   title: string;
   content: string;
@@ -17,18 +17,24 @@ export interface SavedArtifactData {
  * Сохраняет артефакт в localStorage
  */
 export function saveArtifactToStorage(chatId: string, artifact: any): void {
-  console.log("🔍 saveArtifactToStorage called:", {
+  console.log('🔍 saveArtifactToStorage called:', {
     chatId,
     artifact,
-    hasWindow: typeof window !== "undefined",
+    hasWindow: typeof window !== 'undefined',
   });
 
-  if (typeof window === "undefined" || !chatId || !artifact) {
-    console.log("⚠️ saveArtifactToStorage skipped:", {
-      hasWindow: typeof window !== "undefined",
+  if (typeof window === 'undefined' || !chatId || !artifact) {
+    console.log('⚠️ saveArtifactToStorage skipped:', {
+      hasWindow: typeof window !== 'undefined',
       chatId: !!chatId,
       artifact: !!artifact,
     });
+    return;
+  }
+
+  // Don't save artifacts with init documentId (temporary/placeholder artifacts)
+  if (artifact.documentId === 'init') {
+    console.log('⚠️ saveArtifactToStorage skipped: init documentId');
     return;
   }
 
@@ -36,48 +42,52 @@ export function saveArtifactToStorage(chatId: string, artifact: any): void {
     documentId: artifact.documentId,
     status: artifact.status,
     kind: artifact.kind,
-    title: artifact.title || "",
-    content: artifact.content || "",
+    title: artifact.title || '',
+    content: artifact.content || '',
     isVisible: artifact.isVisible,
     timestamp: Date.now(),
-    version: "2.0",
+    version: '2.0',
   };
 
-  const key = `artifact-${chatId}`;
-  const value = JSON.stringify(artifactData);
+  try {
+    const key = `artifact-${chatId}`;
+    const value = JSON.stringify(artifactData);
 
-  console.log("🔍 Saving to localStorage:", { key, value: artifactData });
-  localStorage.setItem(key, value);
+    console.log('🔍 Saving to localStorage:', { key, value: artifactData });
+    localStorage.setItem(key, value);
 
-  // Проверяем, что данные действительно сохранились
-  const saved = localStorage.getItem(key);
-  console.log(
-    "🔍 Verification - saved data:",
-    saved ? "✅ Success" : "❌ Failed"
-  );
+    // Проверяем, что данные действительно сохранились
+    const saved = localStorage.getItem(key);
+    console.log(
+      '🔍 Verification - saved data:',
+      saved ? '✅ Success' : '❌ Failed',
+    );
 
-  console.log("💾 Artifact saved to storage:", {
-    chatId,
-    documentId: artifactData.documentId,
-    status: artifactData.status,
-    isVisible: artifactData.isVisible,
-  });
+    console.log('💾 Artifact saved to storage:', {
+      chatId,
+      documentId: artifactData.documentId,
+      status: artifactData.status,
+      isVisible: artifactData.isVisible,
+    });
+  } catch (error) {
+    console.warn('⚠️ Error saving artifact to storage:', error);
+  }
 }
 
 /**
  * Загружает артефакт из localStorage
  */
 export function loadArtifactFromStorage(
-  chatId: string
+  chatId: string,
 ): SavedArtifactData | null {
-  console.log("🔍 loadArtifactFromStorage called:", {
+  console.log('🔍 loadArtifactFromStorage called:', {
     chatId,
-    hasWindow: typeof window !== "undefined",
+    hasWindow: typeof window !== 'undefined',
   });
 
-  if (typeof window === "undefined" || !chatId) {
-    console.log("⚠️ loadArtifactFromStorage skipped:", {
-      hasWindow: typeof window !== "undefined",
+  if (typeof window === 'undefined' || !chatId) {
+    console.log('⚠️ loadArtifactFromStorage skipped:', {
+      hasWindow: typeof window !== 'undefined',
       chatId: !!chatId,
     });
     return null;
@@ -86,34 +96,34 @@ export function loadArtifactFromStorage(
   try {
     const key = `artifact-${chatId}`;
     const saved = localStorage.getItem(key);
-    console.log("🔍 Retrieved from localStorage:", {
+    console.log('🔍 Retrieved from localStorage:', {
       key,
-      saved: saved ? "Found" : "Not found",
+      saved: saved ? 'Found' : 'Not found',
     });
 
     if (!saved) {
-      console.log("🔍 No data found for key:", key);
+      console.log('🔍 No data found for key:', key);
       return null;
     }
 
     const data = JSON.parse(saved) as SavedArtifactData;
-    console.log("🔍 Parsed data:", data);
+    console.log('🔍 Parsed data:', data);
 
     // Проверяем актуальность данных (не старше 24 часов)
     const maxAge = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
     const age = Date.now() - data.timestamp;
-    console.log("🔍 Data age check:", { age, maxAge, isExpired: age > maxAge });
+    console.log('🔍 Data age check:', { age, maxAge, isExpired: age > maxAge });
 
     if (age > maxAge) {
-      console.log("🗑️ Artifact data expired, removing:", chatId);
+      console.log('🗑️ Artifact data expired, removing:', chatId);
       localStorage.removeItem(key);
       return null;
     }
 
-    console.log("✅ Data is valid and not expired");
+    console.log('✅ Data is valid and not expired');
     return data;
   } catch (error) {
-    console.error("❌ Failed to load artifact from storage:", error);
+    console.error('❌ Failed to load artifact from storage:', error);
     localStorage.removeItem(`artifact-${chatId}`);
     return null;
   }
@@ -123,17 +133,17 @@ export function loadArtifactFromStorage(
  * Очищает артефакт из localStorage
  */
 export function clearArtifactFromStorage(chatId: string): void {
-  if (typeof window === "undefined" || !chatId) return;
+  if (typeof window === 'undefined' || !chatId) return;
 
   localStorage.removeItem(`artifact-${chatId}`);
-  console.log("🗑️ Artifact cleared from storage:", chatId);
+  console.log('🗑️ Artifact cleared from storage:', chatId);
 }
 
 /**
  * Проверяет, есть ли сохраненный артефакт для чата
  */
 export function hasSavedArtifact(chatId: string): boolean {
-  if (typeof window === "undefined" || !chatId) return false;
+  if (typeof window === 'undefined' || !chatId) return false;
 
   return localStorage.getItem(`artifact-${chatId}`) !== null;
 }
@@ -145,14 +155,14 @@ export function getAllSavedArtifacts(): Array<{
   chatId: string;
   data: SavedArtifactData;
 }> {
-  if (typeof window === "undefined") return [];
+  if (typeof window === 'undefined') return [];
 
   const artifacts: Array<{ chatId: string; data: SavedArtifactData }> = [];
 
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key?.startsWith("artifact-")) {
-      const chatId = key.replace("artifact-", "");
+    if (key?.startsWith('artifact-')) {
+      const chatId = key.replace('artifact-', '');
       const data = loadArtifactFromStorage(chatId);
       if (data) {
         artifacts.push({ chatId, data });

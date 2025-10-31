@@ -35,7 +35,7 @@ export function useStripePrices(apiEndpoint = "/api/stripe-prices") {
       }
     };
 
-    fetchPrices();
+    void fetchPrices();
   }, [apiEndpoint]);
 
   return { prices, mode, loading, error };

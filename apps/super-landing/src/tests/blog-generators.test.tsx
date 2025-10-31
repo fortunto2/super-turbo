@@ -158,13 +158,7 @@ describe("Blog Generators", () => {
       // Проверяем отображение информации о модели
       expect(screen.getByText("dall_e_3")).toBeInTheDocument();
       expect(screen.getByText("Test image model")).toBeInTheDocument();
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1024 x 1024";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1024x1024")).toBeInTheDocument();
       expect(screen.getByText("1:1")).toBeInTheDocument();
       expect(screen.getByText("photorealistic")).toBeInTheDocument();
     });
@@ -210,13 +204,7 @@ describe("Blog Generators", () => {
       render(<ModelImageGenerator {...defaultProps} />);
 
       // Проверяем наличие всех бейджей
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1024 x 1024";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1024x1024")).toBeInTheDocument();
       expect(screen.getByText("1:1")).toBeInTheDocument();
       expect(screen.getByText("photorealistic")).toBeInTheDocument();
     });
@@ -256,13 +244,7 @@ describe("Blog Generators", () => {
       // Проверяем отображение информации о модели
       expect(screen.getByText("veo_3")).toBeInTheDocument();
       expect(screen.getByText("Test video model")).toBeInTheDocument();
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1280 x 720";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1280x720")).toBeInTheDocument();
       expect(screen.getByText("16:9")).toBeInTheDocument();
       expect(screen.getByText("8s")).toBeInTheDocument();
     });
@@ -299,13 +281,7 @@ describe("Blog Generators", () => {
 
       expect(screen.getByText("minimal_video_model")).toBeInTheDocument();
       // Должны отображаться значения по умолчанию
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1280 x 720";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1280x720")).toBeInTheDocument();
       expect(screen.getByText("16:9")).toBeInTheDocument();
       expect(screen.getByText("8s")).toBeInTheDocument();
     });

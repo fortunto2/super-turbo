@@ -3,9 +3,9 @@
  * Объединяет валидацию, rate limiting и мониторинг
  */
 
-import { type NextRequest, NextResponse } from "next/server";
-import { createAPIRateLimiter } from "./rate-limiting";
-import { securityMonitor } from "./security-monitor";
+import { type NextRequest, NextResponse } from 'next/server';
+import { createAPIRateLimiter } from './rate-limiting';
+import { securityMonitor } from './security-monitor';
 
 // TODO: Implement RateLimiterFactory
 const RateLimiterFactory = {
@@ -15,62 +15,62 @@ const RateLimiterFactory = {
 
 // Конфигурация безопасности для разных типов запросов
 const SECURITY_CONFIGS = {
-  "/api/chat": {
+  '/api/chat': {
     rateLimit: createAPIRateLimiter().createMiddleware(),
     validation: {
-      body: "ChatMessageSchema",
+      body: 'ChatMessageSchema',
       maxBodySize: 10000,
     },
-    sanitization: ["content"],
+    sanitization: ['content'],
   },
-  "/api/generate/image": {
+  '/api/generate/image': {
     rateLimit: createAPIRateLimiter().createMiddleware(),
     validation: {
-      body: "ImageGenerationSchema",
+      body: 'ImageGenerationSchema',
       maxBodySize: 5000,
     },
-    sanitization: ["prompt", "negativePrompt"],
+    sanitization: ['prompt', 'negativePrompt'],
   },
-  "/api/generate/video": {
+  '/api/generate/video': {
     rateLimit: createAPIRateLimiter().createMiddleware(),
     validation: {
-      body: "VideoGenerationSchema",
+      body: 'VideoGenerationSchema',
       maxBodySize: 5000,
     },
-    sanitization: ["prompt", "negativePrompt"],
+    sanitization: ['prompt', 'negativePrompt'],
   },
-  "/api/enhance-prompt": {
+  '/api/enhance-prompt': {
     rateLimit: createAPIRateLimiter().createMiddleware(),
     validation: {
-      body: "PromptEnhancementSchema",
+      body: 'PromptEnhancementSchema',
       maxBodySize: 2000,
     },
-    sanitization: ["prompt"],
+    sanitization: ['prompt'],
   },
-  "/api/admin": {
+  '/api/admin': {
     rateLimit: createAPIRateLimiter().createMiddleware(),
     validation: {
-      body: "AdminActionSchema",
+      body: 'AdminActionSchema',
       maxBodySize: 10000,
     },
     sanitization: [],
     requireAuth: true,
   } as const,
-  "/api/auth": {
+  '/api/auth': {
     rateLimit: RateLimiterFactory.createAuth(),
     validation: {
-      body: "UserInputSchema",
+      body: 'UserInputSchema',
       maxBodySize: 1000,
     },
-    sanitization: ["email", "name"],
+    sanitization: ['email', 'name'],
   },
-  "/api/upload": {
+  '/api/upload': {
     rateLimit: RateLimiterFactory.createUpload(),
     validation: {
-      body: "FileUploadSchema",
+      body: 'FileUploadSchema',
       maxBodySize: 50 * 1024 * 1024, // 50MB
     },
-    sanitization: ["fileName"],
+    sanitization: ['fileName'],
   },
 } as const;
 
@@ -83,7 +83,7 @@ import {
   AdminActionSchema,
   // InputValidator,
   // InputSanitizer,
-} from "./input-validation";
+} from './input-validation';
 
 const VALIDATION_SCHEMAS = {
   UserInputSchema,
@@ -111,12 +111,12 @@ export function createSecurityMiddleware() {
       // 2. Проверяем IP на блокировку
       const clientIP = getClientIP(req);
       if (securityMonitor.isIPBlocked(clientIP)) {
-        securityMonitor.logUnauthorizedAccess(req, path, "IP blocked");
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        securityMonitor.logUnauthorizedAccess(req, path, 'IP blocked');
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
       }
 
       // 3. Применяем rate limiting
-      if (typeof config.rateLimit === "function") {
+      if (typeof config.rateLimit === 'function') {
         const rateLimitResponse = config.rateLimit(req);
         if (rateLimitResponse instanceof NextResponse) {
           return rateLimitResponse;
@@ -130,52 +130,52 @@ export function createSecurityMiddleware() {
           securityMonitor.logRateLimitExceeded(
             req,
             rateLimitResult.remaining + 1,
-            rateLimitResult.remaining
+            rateLimitResult.remaining,
           );
           return NextResponse.json(
             {
-              error: "Too Many Requests",
-              message: "Превышен лимит запросов. Попробуйте позже.",
+              error: 'Too Many Requests',
+              message: 'Превышен лимит запросов. Попробуйте позже.',
               retryAfter: rateLimitResult.retryAfter,
             },
             {
               status: 429,
               headers: {
-                "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
+                'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
               },
-            }
+            },
           );
         }
       }
 
       // 4. Проверяем аутентификацию для защищенных маршрутов
-      if ("requireAuth" in config && config.requireAuth) {
+      if ('requireAuth' in config && config.requireAuth) {
         const authResult = await checkAuthentication(req);
         if (!authResult.authenticated) {
           securityMonitor.logUnauthorizedAccess(
             req,
             path,
-            authResult.reason || "Authentication failed"
+            authResult.reason || 'Authentication failed',
           );
           return NextResponse.json(
-            { error: "Unauthorized", message: authResult.reason },
-            { status: 401 }
+            { error: 'Unauthorized', message: authResult.reason },
+            { status: 401 },
           );
         }
       }
 
       // 5. Валидируем и санитизируем тело запроса
-      if (method === "POST" || method === "PUT" || method === "PATCH") {
+      if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
         const bodyResult = await validateAndSanitizeBody(req, config);
         if (!bodyResult.valid) {
           securityMonitor.logMaliciousInput(
             req,
-            bodyResult.input || "",
-            bodyResult.pattern || ""
+            bodyResult.input || '',
+            bodyResult.pattern || '',
           );
           return NextResponse.json(
-            { error: "Invalid input", message: bodyResult.message },
-            { status: 400 }
+            { error: 'Invalid input', message: bodyResult.message },
+            { status: 400 },
           );
         }
       }
@@ -185,20 +185,20 @@ export function createSecurityMiddleware() {
       if (!headerCheck.safe) {
         securityMonitor.logSuspiciousActivity(
           req,
-          "Suspicious headers",
-          headerCheck.details
+          'Suspicious headers',
+          headerCheck.details,
         );
       }
 
       // 7. Логируем успешный запрос
       securityMonitor.logEvent({
-        type: "SUSPICIOUS_ACTIVITY",
-        severity: "LOW",
-        source: "security_middleware",
+        type: 'SUSPICIOUS_ACTIVITY',
+        severity: 'LOW',
+        source: 'security_middleware',
         details: {
           path,
           method,
-          userAgent: req.headers.get("user-agent"),
+          userAgent: req.headers.get('user-agent'),
         },
         ip: clientIP,
       });
@@ -209,13 +209,13 @@ export function createSecurityMiddleware() {
 
       return response;
     } catch (error) {
-      console.error("Security middleware error:", error);
+      console.error('Security middleware error:', error);
       securityMonitor.logEvent({
-        type: "API_ABUSE",
-        severity: "HIGH",
-        source: "security_middleware",
+        type: 'API_ABUSE',
+        severity: 'HIGH',
+        source: 'security_middleware',
         details: {
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : 'Unknown error',
           path,
           method,
         },
@@ -223,8 +223,8 @@ export function createSecurityMiddleware() {
       });
 
       return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
+        { error: 'Internal server error' },
+        { status: 500 },
       );
     }
   };
@@ -243,9 +243,9 @@ function findSecurityConfig(path: string) {
 function getClientIP(req: NextRequest): string {
   return (
     (req as any).ip ||
-    req.headers.get("x-forwarded-for")?.split(",")[0] ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
+    req.headers.get('x-forwarded-for')?.split(',')[0] ||
+    req.headers.get('x-real-ip') ||
+    'unknown'
   );
 }
 
@@ -254,18 +254,18 @@ async function checkAuthentication(req: NextRequest): Promise<{
   reason?: string;
 }> {
   // Проверяем наличие токена аутентификации
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return {
       authenticated: false,
-      reason: "Missing or invalid authorization header",
+      reason: 'Missing or invalid authorization header',
     };
   }
 
   // В реальном приложении здесь была бы проверка JWT токена
   const token = authHeader.substring(7);
   if (!token || token.length < 10) {
-    return { authenticated: false, reason: "Invalid token format" };
+    return { authenticated: false, reason: 'Invalid token format' };
   }
 
   // Проверяем, не истек ли токен (упрощенная проверка)
@@ -273,13 +273,13 @@ async function checkAuthentication(req: NextRequest): Promise<{
     // Здесь была бы проверка JWT
     return { authenticated: true };
   } catch {
-    return { authenticated: false, reason: "Token expired or invalid" };
+    return { authenticated: false, reason: 'Token expired or invalid' };
   }
 }
 
 async function validateAndSanitizeBody(
   req: NextRequest,
-  config: any
+  config: any,
 ): Promise<{
   valid: boolean;
   message?: string;
@@ -295,7 +295,7 @@ async function validateAndSanitizeBody(
     if (bodyString.length > config.validation.maxBodySize) {
       return {
         valid: false,
-        message: "Request body too large",
+        message: 'Request body too large',
         input: bodyString.substring(0, 100),
       };
     }
@@ -320,7 +320,7 @@ async function validateAndSanitizeBody(
       if (!validationResult.success) {
         return {
           valid: false,
-          message: validationResult.errors?.join(", ") || "Validation failed",
+          message: validationResult.errors?.join(', ') || 'Validation failed',
           input: bodyString.substring(0, 100),
         };
       }
@@ -329,7 +329,7 @@ async function validateAndSanitizeBody(
     // Санитизируем поля
     if (config.sanitization && config.sanitization.length > 0) {
       for (const field of config.sanitization) {
-        if (body[field] && typeof body[field] === "string") {
+        if (body[field] && typeof body[field] === 'string') {
           // TODO: Implement text sanitization
           // body[field] = InputSanitizer?.sanitizeText(body[field]) || body[field];
         }
@@ -340,8 +340,8 @@ async function validateAndSanitizeBody(
   } catch (error) {
     return {
       valid: false,
-      message: "Invalid JSON in request body",
-      input: "invalid_json",
+      message: 'Invalid JSON in request body',
+      input: 'invalid_json',
     };
   }
 }
@@ -354,7 +354,7 @@ function checkSuspiciousHeaders(req: NextRequest): {
   let isSafe = true;
 
   // Проверяем User-Agent
-  const userAgent = req.headers.get("user-agent");
+  const userAgent = req.headers.get('user-agent');
   if (userAgent) {
     const suspiciousUAPatterns = [
       /bot/i,
@@ -374,7 +374,7 @@ function checkSuspiciousHeaders(req: NextRequest): {
   }
 
   // Проверяем Referer
-  const referer = req.headers.get("referer");
+  const referer = req.headers.get('referer');
   if (referer) {
     try {
       const refererUrl = new URL(referer);
@@ -389,8 +389,8 @@ function checkSuspiciousHeaders(req: NextRequest): {
   }
 
   // Проверяем X-Forwarded-For на множественные IP
-  const xForwardedFor = req.headers.get("x-forwarded-for");
-  if (xForwardedFor && xForwardedFor.split(",").length > 3) {
+  const xForwardedFor = req.headers.get('x-forwarded-for');
+  if (xForwardedFor && xForwardedFor.split(',').length > 3) {
     suspiciousHeaders.xForwardedFor = xForwardedFor;
     isSafe = false;
   }
@@ -403,19 +403,19 @@ function checkSuspiciousHeaders(req: NextRequest): {
 
 function addSecurityHeaders(response: NextResponse): void {
   // Заголовки безопасности
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=()"
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=()',
   );
 
   // CSP заголовок
   response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss: https:;"
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss: https:;",
   );
 }
 

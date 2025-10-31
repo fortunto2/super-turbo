@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { useFileGenerateAudio, useSceneGetById } from "@/lib/api";
+import { useMemo, useState } from 'react';
+import { useFileGenerateAudio, useSceneGetById } from '@/lib/api';
 
-import { AudioTypeEnum, type IFileRead } from "@turbo-super/api";
+import { AudioTypeEnum, type IFileRead } from '@turbo-super/api';
 import {
   Button,
   Card,
@@ -11,16 +11,16 @@ import {
   CardHeader,
   CardTitle,
   Label,
-} from "@turbo-super/ui";
-import { EnhancedTextarea } from "@/components/ui/enhanced-textarea";
-import { VoiceSelect } from "./voice-select";
+} from '@turbo-super/ui';
+import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
+import { VoiceSelect } from './voice-select';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 export const FileAudioGenerate = ({
   sceneId,
@@ -40,12 +40,12 @@ export const FileAudioGenerate = ({
     return scene?.voiceover?.audio_generation ?? undefined;
   }, [scene]);
 
-  const [prompt, setPrompt] = useState<string>(initialValue?.prompt ?? "");
+  const [prompt, setPrompt] = useState<string>(initialValue?.prompt ?? '');
   const [voiceName, setVoiceName] = useState<string>(
-    initialValue?.voice_name ?? ""
+    initialValue?.voice_name ?? '',
   );
   const [duration, setDuration] = useState<number>(
-    initialValue?.duration ?? 10
+    initialValue?.duration ?? 10,
   );
 
   const handleGenerate = async (params: {
@@ -61,7 +61,7 @@ export const FileAudioGenerate = ({
           config: {
             ...initialValue,
             type,
-            prompt: params.prompt ?? initialValue?.prompt ?? "",
+            prompt: params.prompt ?? initialValue?.prompt ?? '',
             voice_name: params.voice_name ?? initialValue?.voice_name ?? null,
             duration: params.duration ?? initialValue?.duration ?? 10,
           },
@@ -98,7 +98,7 @@ export const FileAudioGenerate = ({
             {type === AudioTypeEnum.VOICEOVER && (
               <VoiceSelect
                 value={voiceName || null}
-                onChange={(v) => setVoiceName(v ?? "")}
+                onChange={(v) => setVoiceName(v ?? '')}
               />
             )}
             {type === AudioTypeEnum.SOUND_EFFECT && (
@@ -113,10 +113,7 @@ export const FileAudioGenerate = ({
                   </SelectTrigger>
                   <SelectContent>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
-                      <SelectItem
-                        key={v}
-                        value={String(v)}
-                      >
+                      <SelectItem key={v} value={String(v)}>
                         <div className="flex items-center justify-between w-full">
                           <span className="text-xs">{v}</span>
                         </div>
@@ -139,7 +136,7 @@ export const FileAudioGenerate = ({
               }
               disabled={isPending}
             >
-              {isPending ? "Generating..." : "Generate Audio"}
+              {isPending ? 'Generating...' : 'Generate Audio'}
             </Button>
           </div>
         </CardContent>

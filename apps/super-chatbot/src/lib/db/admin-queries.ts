@@ -1,13 +1,13 @@
-import "server-only";
+import 'server-only';
 
-import { count, desc, eq, gte, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { user, document } from "./schema";
+import { count, desc, eq, gte, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { user, document } from './schema';
 
 // Create database connection
-const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
-const client = postgres(databaseUrl, { ssl: "require" });
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+const client = postgres(databaseUrl, { ssl: 'require' });
 const db = drizzle(client);
 
 export async function getAdminOverviewStats() {
@@ -43,14 +43,14 @@ export async function getAdminOverviewStats() {
     const imagesResult = await db
       .select({ count: count() })
       .from(document)
-      .where(eq(document.kind, "image"));
+      .where(eq(document.kind, 'image'));
     const imagesCount = imagesResult[0]?.count || 0;
 
     // Get videos count
     const videosResult = await db
       .select({ count: count() })
       .from(document)
-      .where(eq(document.kind, "video"));
+      .where(eq(document.kind, 'video'));
     const videosCount = videosResult[0]?.count || 0;
 
     // Get recent activity (documents created in last 24h as proxy for transactions)
@@ -78,7 +78,7 @@ export async function getAdminOverviewStats() {
     // Add user type detection
     const recentUsers = recentUsersResult.map((u) => ({
       ...u,
-      type: u.email.includes("guest") ? "guest" : "regular",
+      type: u.email.includes('guest') ? 'guest' : 'regular',
     }));
 
     return {
@@ -94,7 +94,7 @@ export async function getAdminOverviewStats() {
       recentUsers,
     };
   } catch (error) {
-    console.error("Error fetching admin overview stats:", error);
+    console.error('Error fetching admin overview stats:', error);
     // Return default stats on error
     return {
       totalUsers: 0,
@@ -111,7 +111,7 @@ export async function getAdminOverviewStats() {
   }
 }
 
-export async function getAllUsers(page = 1, limit = 20, search = "") {
+export async function getAllUsers(page = 1, limit = 20, search = '') {
   try {
     const offset = (page - 1) * limit;
 
@@ -145,7 +145,7 @@ export async function getAllUsers(page = 1, limit = 20, search = "") {
     // Add user type detection
     const usersWithType = users.map((u) => ({
       ...u,
-      type: u.email.includes("guest") ? "guest" : "regular",
+      type: u.email.includes('guest') ? 'guest' : 'regular',
     }));
 
     return {
@@ -160,7 +160,7 @@ export async function getAllUsers(page = 1, limit = 20, search = "") {
       },
     };
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error('Error fetching users:', error);
     throw error;
   }
 }
@@ -184,10 +184,10 @@ export async function getUserById(userId: string) {
     const userData = users[0];
     return {
       ...userData,
-      type: userData?.email?.includes("guest") ? "guest" : "regular",
+      type: userData?.email?.includes('guest') ? 'guest' : 'regular',
     };
   } catch (error) {
-    console.error("Error fetching user by ID:", error);
+    console.error('Error fetching user by ID:', error);
     throw error;
   }
 }
@@ -201,7 +201,7 @@ export async function updateUserBalance(userId: string, newBalance: number) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating user balance:", error);
+    console.error('Error updating user balance:', error);
     throw error;
   }
 }
@@ -212,7 +212,7 @@ export async function deleteUser(userId: string) {
     await db.delete(user).where(eq(user.id, userId));
     return { success: true };
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error('Error deleting user:', error);
     throw error;
   }
 }
@@ -271,18 +271,18 @@ export async function getUserStats() {
       },
     };
   } catch (error) {
-    console.error("Error fetching user stats:", error);
+    console.error('Error fetching user stats:', error);
     throw error;
   }
 }
 
-export async function getUsersByType(userType: "guest" | "regular" | null) {
+export async function getUsersByType(userType: 'guest' | 'regular' | null) {
   try {
     let condition = sql`1=1`;
 
-    if (userType === "guest") {
+    if (userType === 'guest') {
       condition = sql`${user.email} LIKE '%guest%'`;
-    } else if (userType === "regular") {
+    } else if (userType === 'regular') {
       condition = sql`${user.email} NOT LIKE '%guest%'`;
     }
 
@@ -298,10 +298,10 @@ export async function getUsersByType(userType: "guest" | "regular" | null) {
 
     return users.map((u) => ({
       ...u,
-      type: u.email.includes("guest") ? "guest" : "regular",
+      type: u.email.includes('guest') ? 'guest' : 'regular',
     }));
   } catch (error) {
-    console.error("Error fetching users by type:", error);
+    console.error('Error fetching users by type:', error);
     throw error;
   }
 }
@@ -320,10 +320,10 @@ export async function getRecentUsers(limit = 10) {
 
     return users.map((u) => ({
       ...u,
-      type: u.email.includes("guest") ? "guest" : "regular",
+      type: u.email.includes('guest') ? 'guest' : 'regular',
     }));
   } catch (error) {
-    console.error("Error fetching recent users:", error);
+    console.error('Error fetching recent users:', error);
     throw error;
   }
 }

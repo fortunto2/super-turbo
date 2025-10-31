@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Textarea } from '@turbo-super/ui';
+import { Label } from '@turbo-super/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@turbo-super/ui";
+} from '@/components/ui/select';
+import { Input } from '@turbo-super/ui';
 
 import {
   Card,
@@ -19,9 +19,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { Wand2, Sparkles } from "lucide-react";
-import type { EnhancementParams } from "../hooks/use-prompt-enhancer";
+} from '@turbo-super/ui';
+import { Wand2, Sparkles } from 'lucide-react';
+import type { EnhancementParams } from '../hooks/use-prompt-enhancer';
 
 interface PromptEnhancerFormProps {
   onEnhance: (params: EnhancementParams) => void;
@@ -32,16 +32,16 @@ export function PromptEnhancerForm({
   onEnhance,
   isEnhancing,
 }: PromptEnhancerFormProps) {
-  const [originalPrompt, setOriginalPrompt] = useState("");
+  const [originalPrompt, setOriginalPrompt] = useState('');
   const [mediaType, setMediaType] = useState<
-    "image" | "video" | "text" | "general"
-  >("image");
+    'image' | 'video' | 'text' | 'general'
+  >('image');
   const [enhancementLevel, setEnhancementLevel] = useState<
-    "basic" | "detailed" | "creative"
-  >("detailed");
-  const [targetAudience, setTargetAudience] = useState("");
+    'basic' | 'detailed' | 'creative'
+  >('detailed');
+  const [targetAudience, setTargetAudience] = useState('');
   const [includeNegativePrompt, setIncludeNegativePrompt] = useState(false);
-  const [modelHint, setModelHint] = useState("");
+  const [modelHint, setModelHint] = useState('');
 
   const handleSubmit = () => {
     if (!originalPrompt.trim()) return;
@@ -50,7 +50,7 @@ export function PromptEnhancerForm({
       originalPrompt: originalPrompt.trim(),
       mediaType,
       enhancementLevel,
-      targetAudience: targetAudience.trim() || "",
+      targetAudience: targetAudience.trim() || '',
       includeNegativePrompt,
       ...(modelHint && { modelHint: modelHint.trim() }),
     };
@@ -64,16 +64,16 @@ export function PromptEnhancerForm({
 
   const examplePrompts = {
     image: [
-      "мальчик с мячиком",
-      "портрет девочки",
-      "beautiful landscape",
-      "cat playing piano",
+      'мальчик с мячиком',
+      'портрет девочки',
+      'beautiful landscape',
+      'cat playing piano',
     ],
     video: [
-      "fast car racing",
-      "человек идёт по дороге",
-      "bird flying in sky",
-      "ocean waves crashing",
+      'fast car racing',
+      'человек идёт по дороге',
+      'bird flying in sky',
+      'ocean waves crashing',
     ],
   };
 
@@ -108,8 +108,8 @@ export function PromptEnhancerForm({
               Examples:
             </span>
             {examplePrompts[
-              mediaType === "text" || mediaType === "general"
-                ? "image"
+              mediaType === 'text' || mediaType === 'general'
+                ? 'image'
                 : mediaType
             ].map((example) => (
               <button

@@ -1,16 +1,16 @@
-import "server-only";
+import 'server-only';
 
-import { eq, } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { userProject } from "./schema";
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { userProject } from './schema';
 
 // Create database connection
-const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
-const client = postgres(databaseUrl, { ssl: "require" });
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+const client = postgres(databaseUrl, { ssl: 'require' });
 const db = drizzle(client);
 
-export type ProjectStatus = "pending" | "processing" | "completed" | "failed";
+export type ProjectStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface ProjectData {
   id: string;
@@ -29,7 +29,7 @@ export interface ProjectData {
 export async function createUserProject(
   userId: string,
   projectId: string,
-  creditsUsed = 0
+  creditsUsed = 0,
 ): Promise<ProjectData> {
   try {
     // Временно создаем проект без новых колонок до применения миграции
@@ -44,16 +44,16 @@ export async function createUserProject(
       .returning();
 
     if (newProject.length === 0) {
-      throw new Error("Failed to create project in database");
+      throw new Error('Failed to create project in database');
     }
 
     console.log(
-      `💾 Project ${projectId} created in database for user ${userId} with status: pending`
+      `💾 Project ${projectId} created in database for user ${userId} with status: pending`,
     );
 
     return newProject[0] as ProjectData;
   } catch (error) {
-    console.error("Error creating user project:", error);
+    console.error('Error creating user project:', error);
     throw error;
   }
 }
@@ -64,25 +64,25 @@ export async function createUserProject(
 export async function updateProjectStatus(
   projectId: string,
   status: ProjectStatus,
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<ProjectData | null> {
   try {
     // AICODE-NOTE: Временно отключено до применения миграции БД
     // Поля status, errorMessage, updatedAt будут доступны после миграции
     console.log(
-      `⚠️ Project status update temporarily disabled - migration needed for fields: status, errorMessage, updatedAt`
+      `⚠️ Project status update temporarily disabled - migration needed for fields: status, errorMessage, updatedAt`,
     );
     console.log(
       `📊 Project ${projectId} would be updated to: ${status}${
-        errorMessage ? ` (Error: ${errorMessage})` : ""
-      }`
+        errorMessage ? ` (Error: ${errorMessage})` : ''
+      }`,
     );
 
     // Возвращаем существующий проект без обновления
     const existingProject = await getProjectByProjectId(projectId);
     return existingProject;
   } catch (error) {
-    console.error("Error updating project status:", error);
+    console.error('Error updating project status:', error);
     throw error;
   }
 }
@@ -91,7 +91,7 @@ export async function updateProjectStatus(
  * Получает проект по ID
  */
 export async function getProjectByProjectId(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectData | null> {
   try {
     const projects = await db
@@ -102,7 +102,7 @@ export async function getProjectByProjectId(
 
     return projects.length > 0 ? (projects[0] as ProjectData) : null;
   } catch (error) {
-    console.error("Error fetching project by project ID:", error);
+    console.error('Error fetching project by project ID:', error);
     throw error;
   }
 }
@@ -112,13 +112,13 @@ export async function getProjectByProjectId(
  */
 export async function getUserProjects(
   userId: string,
-  status?: ProjectStatus
+  status?: ProjectStatus,
 ): Promise<ProjectData[]> {
   try {
     // AICODE-NOTE: Фильтрация по статусу временно отключена до миграции БД
     if (status) {
       console.warn(
-        `⚠️ Status filtering temporarily disabled - migration needed for status field. Requested status: ${status}`
+        `⚠️ Status filtering temporarily disabled - migration needed for status field. Requested status: ${status}`,
       );
     }
 
@@ -130,7 +130,7 @@ export async function getUserProjects(
 
     return projects as ProjectData[];
   } catch (error) {
-    console.error("Error fetching user projects:", error);
+    console.error('Error fetching user projects:', error);
     throw error;
   }
 }
@@ -155,7 +155,7 @@ export async function deleteUserProject(projectId: string): Promise<boolean> {
 
     return deleted;
   } catch (error) {
-    console.error("Error deleting user project:", error);
+    console.error('Error deleting user project:', error);
     throw error;
   }
 }
@@ -186,12 +186,12 @@ export async function getUserProjectStats(userId: string): Promise<{
     };
 
     console.log(
-      `⚠️ Project stats temporarily simplified - migration needed for status and creditsUsed fields`
+      `⚠️ Project stats temporarily simplified - migration needed for status and creditsUsed fields`,
     );
 
     return stats;
   } catch (error) {
-    console.error("Error fetching user project stats:", error);
+    console.error('Error fetching user project stats:', error);
     throw error;
   }
 }

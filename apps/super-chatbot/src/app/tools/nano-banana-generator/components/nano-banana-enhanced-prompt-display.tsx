@@ -1,24 +1,23 @@
 // AICODE-NOTE: Component for displaying enhanced prompts
 // Shows original and enhanced prompts with improvements and technical details
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Copy,
   Trash2,
   Lightbulb,
   Sparkles,
-  Wand2,
   CheckCircle,
   ArrowRight,
   Tag,
   Star,
-} from "lucide-react";
-import type { NanoBananaEnhancedPrompt } from "../api/nano-banana-api";
+} from 'lucide-react';
+import type { NanoBananaEnhancedPrompt } from '../api/nano-banana-api';
 
 interface NanoBananaEnhancedPromptDisplayProps {
   enhancedPrompts: NanoBananaEnhancedPrompt[];
@@ -42,16 +41,16 @@ export function NanoBananaEnhancedPromptDisplay({
 
   const getTechniqueBadgeColor = (technique: string) => {
     const colors: Record<string, string> = {
-      context_awareness: "bg-blue-100 text-blue-800",
-      surgical_precision: "bg-green-100 text-green-800",
-      physical_logic: "bg-purple-100 text-purple-800",
-      technical_enhancement: "bg-orange-100 text-orange-800",
-      artistic_enhancement: "bg-pink-100 text-pink-800",
-      composition_optimization: "bg-cyan-100 text-cyan-800",
-      lighting_enhancement: "bg-yellow-100 text-yellow-800",
-      style_consistency: "bg-indigo-100 text-indigo-800",
+      context_awareness: 'bg-blue-100 text-blue-800',
+      surgical_precision: 'bg-green-100 text-green-800',
+      physical_logic: 'bg-purple-100 text-purple-800',
+      technical_enhancement: 'bg-orange-100 text-orange-800',
+      artistic_enhancement: 'bg-pink-100 text-pink-800',
+      composition_optimization: 'bg-cyan-100 text-cyan-800',
+      lighting_enhancement: 'bg-yellow-100 text-yellow-800',
+      style_consistency: 'bg-indigo-100 text-indigo-800',
     };
-    return colors[technique] || "bg-gray-100 text-gray-800";
+    return colors[technique] || 'bg-gray-100 text-gray-800';
   };
 
   if (enhancedPrompts.length === 0 && !currentEnhancement) {
@@ -80,54 +79,17 @@ export function NanoBananaEnhancedPromptDisplay({
           <Badge variant="secondary">{enhancedPrompts.length}</Badge>
         </div>
         {enhancedPrompts.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClearAll}
-          >
+          <Button variant="outline" size="sm" onClick={onClearAll}>
             <Trash2 className="size-4 mr-2" />
             Clear All
           </Button>
         )}
       </div>
 
-      {/* Current Enhancement */}
-      {currentEnhancement && (
-        <Card className="border-purple-200 bg-purple-50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-sm">
-              <Wand2 className="size-4 text-purple-600" />
-              <span>Currently Enhancing</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Badge
-                    className={getTechniqueBadgeColor(
-                      currentEnhancement.technique
-                    )}
-                  >
-                    {currentEnhancement.technique.replace(/_/g, " ")}
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-700 line-clamp-2">
-                  {currentEnhancement.originalPrompt}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Enhanced Prompts List */}
       <div className="space-y-4">
         {enhancedPrompts.map((enhancedPrompt, index) => (
-          <Card
-            key={index}
-            className="group hover:shadow-lg transition-shadow"
-          >
+          <Card key={index} className="group hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2 text-sm">
@@ -156,9 +118,9 @@ export function NanoBananaEnhancedPromptDisplay({
               {/* Technique Badge */}
               <div className="flex items-center space-x-2">
                 <Badge
-                  className={getTechniqueBadgeColor(enhancedPrompt.technique)}
+                  className={getTechniqueBadgeColor(enhancedPrompt?.technique)}
                 >
-                  {enhancedPrompt.technique.replace(/_/g, " ")}
+                  {enhancedPrompt?.technique?.replace(/_/g, ' ')}
                 </Badge>
               </div>
 
@@ -170,7 +132,7 @@ export function NanoBananaEnhancedPromptDisplay({
                   </h4>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-sm text-gray-600">
-                      {enhancedPrompt.originalPrompt}
+                      {enhancedPrompt?.originalPrompt}
                     </p>
                   </div>
                 </div>
@@ -192,18 +154,15 @@ export function NanoBananaEnhancedPromptDisplay({
               </div>
 
               {/* Improvements */}
-              {enhancedPrompt.improvements.length > 0 && (
+              {enhancedPrompt.improvements?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Star className="size-4 mr-1" />
                     Improvements:
                   </h4>
                   <div className="space-y-1">
-                    {enhancedPrompt.improvements.map((improvement, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start space-x-2"
-                      >
+                    {enhancedPrompt.improvements?.map((improvement, idx) => (
+                      <div key={idx} className="flex items-start space-x-2">
                         <CheckCircle className="size-3 text-green-600 mt-0.5 flex-shrink-0" />
                         <span className="text-xs text-gray-600">
                           {improvement}
@@ -215,7 +174,7 @@ export function NanoBananaEnhancedPromptDisplay({
               )}
 
               {/* Technical Terms */}
-              {enhancedPrompt.technicalTerms.length > 0 && (
+              {enhancedPrompt.technicalTerms?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Tag className="size-4 mr-1" />
@@ -223,11 +182,7 @@ export function NanoBananaEnhancedPromptDisplay({
                   </h4>
                   <div className="flex flex-wrap gap-1">
                     {enhancedPrompt.technicalTerms.map((term, idx) => (
-                      <Badge
-                        key={idx}
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge key={idx} variant="outline" className="text-xs">
                         {term}
                       </Badge>
                     ))}
@@ -236,7 +191,7 @@ export function NanoBananaEnhancedPromptDisplay({
               )}
 
               {/* Quality Descriptors */}
-              {enhancedPrompt.qualityDescriptors.length > 0 && (
+              {enhancedPrompt.qualityDescriptors?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Sparkles className="size-4 mr-1" />
@@ -252,7 +207,7 @@ export function NanoBananaEnhancedPromptDisplay({
                         >
                           {descriptor}
                         </Badge>
-                      )
+                      ),
                     )}
                   </div>
                 </div>
@@ -265,7 +220,7 @@ export function NanoBananaEnhancedPromptDisplay({
       {/* Enhancement Preview Modal */}
       {selectedEnhancement && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="bg-zinc-950 rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">Enhanced Prompt Details</h3>
               <Button
@@ -280,22 +235,22 @@ export function NanoBananaEnhancedPromptDisplay({
               <div className="space-y-6">
                 {/* Technique */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  <h4 className="text-sm font-medium  mb-2">
                     Enhancement Technique:
                   </h4>
                   <Badge
                     className={getTechniqueBadgeColor(
-                      selectedEnhancement.technique
+                      selectedEnhancement.technique,
                     )}
                   >
-                    {selectedEnhancement.technique.replace(/_/g, " ")}
+                    {selectedEnhancement.technique?.replace(/_/g, ' ')}
                   </Badge>
                 </div>
 
                 {/* Original vs Enhanced */}
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    <h4 className="text-sm font-medium mb-2">
                       Original Prompt:
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
@@ -306,7 +261,7 @@ export function NanoBananaEnhancedPromptDisplay({
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    <h4 className="text-sm font-medium  mb-2">
                       Enhanced Prompt:
                     </h4>
                     <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -318,7 +273,7 @@ export function NanoBananaEnhancedPromptDisplay({
                 </div>
 
                 {/* Improvements */}
-                {selectedEnhancement.improvements.length > 0 && (
+                {selectedEnhancement.improvements?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
                       Improvements:
@@ -326,33 +281,27 @@ export function NanoBananaEnhancedPromptDisplay({
                     <div className="space-y-2">
                       {selectedEnhancement.improvements.map(
                         (improvement, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-start space-x-2"
-                          >
+                          <div key={idx} className="flex items-start space-x-2">
                             <CheckCircle className="size-4 text-green-600 mt-0.5 flex-shrink-0" />
                             <span className="text-sm text-gray-600">
                               {improvement}
                             </span>
                           </div>
-                        )
+                        ),
                       )}
                     </div>
                   </div>
                 )}
 
                 {/* Technical Terms */}
-                {selectedEnhancement.technicalTerms.length > 0 && (
+                {selectedEnhancement.technicalTerms?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
                       Technical Terms:
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedEnhancement.technicalTerms.map((term, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="outline"
-                        >
+                        <Badge key={idx} variant="outline">
                           {term}
                         </Badge>
                       ))}
@@ -361,7 +310,7 @@ export function NanoBananaEnhancedPromptDisplay({
                 )}
 
                 {/* Quality Descriptors */}
-                {selectedEnhancement.qualityDescriptors.length > 0 && (
+                {selectedEnhancement.qualityDescriptors?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2">
                       Quality Descriptors:
@@ -369,13 +318,10 @@ export function NanoBananaEnhancedPromptDisplay({
                     <div className="flex flex-wrap gap-2">
                       {selectedEnhancement.qualityDescriptors.map(
                         (descriptor, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="secondary"
-                          >
+                          <Badge key={idx} variant="secondary">
                             {descriptor}
                           </Badge>
-                        )
+                        ),
                       )}
                     </div>
                   </div>

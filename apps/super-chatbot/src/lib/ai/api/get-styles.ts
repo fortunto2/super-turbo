@@ -49,7 +49,7 @@ export const getStyles = async () => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("🎨 ❌ API Error Response:", errorText);
+      // Suppress non-critical API errors (e.g., timeouts) - fallback values are used
 
       if (response.status === 401) {
         return {
@@ -81,7 +81,7 @@ export const getStyles = async () => {
 
     return result;
   } catch (error: any) {
-    console.error("🎨 ❌ Style getting error:", error);
+    // Suppress non-critical API errors (e.g., timeouts) - fallback values are used
     return {
       success: false,
       error: error?.message || "Unknown error occurred during style",

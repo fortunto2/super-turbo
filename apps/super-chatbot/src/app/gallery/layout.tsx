@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@turbo-super/ui';
 
 /**
@@ -19,15 +19,8 @@ export default function GalleryLayout({
     <div className="h-[calc(100vh-60px)] p-4">
       {/* Navigation – Back to Chat */}
       <div className="mb-4">
-        <Link
-          href="/"
-          className="inline-block"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
+        <Link href="/" className="inline-block">
+          <Button variant="outline" size="sm" className="gap-2">
             <ArrowLeft className="size-4" />
             Back to Chat
           </Button>

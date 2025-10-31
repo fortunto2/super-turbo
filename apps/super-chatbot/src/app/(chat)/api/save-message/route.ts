@@ -1,21 +1,21 @@
-import { auth } from "@/app/(auth)/auth";
+import { auth } from '@/app/(auth)/auth';
 import {
   saveMessages,
   getMessageById,
   getChatById,
   saveChat,
-} from "@/lib/db/queries";
-import { type NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { message } from "@/lib/db/schema";
-import { generateTitleFromUserMessage } from "../../actions";
+} from '@/lib/db/queries';
+import { type NextRequest, NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { message } from '@/lib/db/schema';
+import { generateTitleFromUserMessage } from '../../actions';
 
 // Initialize database connection
 const client = postgres(
-  process.env.POSTGRES_URL || process.env.DATABASE_URL || "",
-  { ssl: "require" }
+  process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
+  { ssl: 'require' },
 );
 const db = drizzle(client);
 
@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const { chatId, message: messageData } = body;
 
-    console.log("💾 API save-message received:", {
+    console.log('💾 API save-message received:', {
       chatId,
       messageId: messageData?.id,
       role: messageData?.role,
@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!chatId || !messageData) {
-      console.error("💾 API save-message error: Missing required data");
+      console.error('💾 API save-message error: Missing required data');
       return NextResponse.json(
-        { error: "Missing chatId or message" },
-        { status: 400 }
+        { error: 'Missing chatId or message' },
+        { status: 400 },
       );
     }
 
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
         // which is used for title generation. We construct it from 'parts'.
         if (!messageData.content && Array.isArray(messageData.parts)) {
           messageData.content = messageData.parts
-            .map((part: any) => (part.text ? part.text : ""))
-            .join("\n");
+            .map((part: any) => (part.text ? part.text : ''))
+            .join('\n');
         }
 
         const title = await generateTitleFromUserMessage({
@@ -68,20 +68,20 @@ export async function POST(request: NextRequest) {
           id: chatId,
           userId: session.user.id,
           title,
-          visibility: "private", // Default to private for saved messages
+          visibility: 'private', // Default to private for saved messages
         });
         console.log(`💾 ✅ Chat ${chatId} created successfully.`);
       } catch (createError) {
         console.error(`💾 ❌ Failed to create chat ${chatId}:`, createError);
         return NextResponse.json(
           {
-            error: "Failed to create chat for message",
+            error: 'Failed to create chat for message',
             details:
               createError instanceof Error
                 ? createError.message
                 : String(createError),
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: "Message updated successfully",
+        message: 'Message updated successfully',
       });
     }
 
@@ -124,16 +124,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(
-      "Save message API error:",
-      error instanceof Error ? error.message : String(error)
+      'Save message API error:',
+      error instanceof Error ? error.message : String(error),
     );
 
     return NextResponse.json(
       {
-        error: "Failed to save message",
+        error: 'Failed to save message',
         details: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -22,10 +22,10 @@ export function getSuperduperToken(): string {
 
   // Читаем токен из env
   const token =
-    process.env.SUPERDUPERAI_TOKEN || process.env.SUPERDUPERAI_API_KEY || "";
+    process.env.SUPERDUPERAI_TOKEN || process.env.SUPERDUPERAI_API_KEY || '';
 
   if (!token) {
-    throw new Error("SUPERDUPERAI_TOKEN environment variable is required");
+    throw new Error('SUPERDUPERAI_TOKEN environment variable is required');
   }
 
   // Кэшируем токен

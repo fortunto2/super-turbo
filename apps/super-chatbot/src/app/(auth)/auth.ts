@@ -1,22 +1,22 @@
-import { compare } from "bcrypt-ts";
-import NextAuth, { type DefaultSession } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import Auth0Provider from "next-auth/providers/auth0";
+import { compare } from 'bcrypt-ts';
+import NextAuth, { type DefaultSession } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import Auth0Provider from 'next-auth/providers/auth0';
 
-import { authConfig } from "./auth.config";
-import { DUMMY_PASSWORD } from "@/lib/constants";
-import type { DefaultJWT } from "next-auth/jwt";
-import { nanoid } from "nanoid";
-import * as Sentry from "@sentry/nextjs";
+import { authConfig } from './auth.config';
+import { DUMMY_PASSWORD } from '@/lib/constants';
+import type { DefaultJWT } from 'next-auth/jwt';
+import { nanoid } from 'nanoid';
+// import * as Sentry from "@sentry/nextjs";
 
-export type UserType = "guest" | "regular";
+export type UserType = 'guest' | 'regular';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
       type: UserType;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 
   interface User {
@@ -26,7 +26,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
@@ -44,7 +44,7 @@ async function syncAuth0User(userId: string, email: string | null) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (email) {
-        const { getOrCreateOAuthUser } = await import("@/lib/db/queries");
+        const { getOrCreateOAuthUser } = await import('@/lib/db/queries');
         const user = await getOrCreateOAuthUser(userId, email);
         return user;
       }
@@ -52,28 +52,27 @@ async function syncAuth0User(userId: string, email: string | null) {
     } catch (error) {
       console.error(
         `Failed to sync Auth0 user (attempt ${attempt + 1}):`,
-        error
+        error,
       );
       lastError = error;
 
       // Ждем перед следующей попыткой (нарастающее время ожидания)
       if (attempt < maxRetries - 1) {
         await new Promise((resolve) =>
-          setTimeout(resolve, 100 * Math.pow(2, attempt))
+          setTimeout(resolve, 100 * Math.pow(2, attempt)),
         );
       }
     }
   }
 
-  // Логируем ошибку в Sentry, если все попытки неудачны
-  Sentry.captureException(lastError, {
-    tags: { error_type: "auth0_sync_failure" },
-    extra: {
-      userId,
-      email,
-      attempts: maxRetries,
-    },
-  });
+  // Sentry.captureException(lastError, {
+  //   tags: { error_type: "auth0_sync_failure" },
+  //   extra: {
+  //     userId,
+  //     email,
+  //     attempts: maxRetries,
+  //   },
+  // });
 
   return null;
 }
@@ -82,16 +81,16 @@ async function syncAuth0User(userId: string, email: string | null) {
 const auth0Enabled = Boolean(
   process.env.AUTH_AUTH0_ID &&
     process.env.AUTH_AUTH0_SECRET &&
-    process.env.AUTH_AUTH0_ISSUER
+    process.env.AUTH_AUTH0_ISSUER,
 );
 
 // Resolve NextAuth secret with safe dev fallback
 const resolvedAuthSecret =
   process.env.AUTH_SECRET ||
   process.env.NEXTAUTH_SECRET ||
-  (process.env.NODE_ENV !== "production"
-    ? "dev-secret-change-me"
-    : "fallback-secret");
+  (process.env.NODE_ENV !== 'production'
+    ? 'dev-secret-change-me'
+    : 'fallback-secret');
 
 export const {
   handlers: { GET, POST },
@@ -119,7 +118,7 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
-        const { getUser } = await import("@/lib/db/queries");
+        const { getUser } = await import('@/lib/db/queries');
         const users = await getUser(email);
 
         if (users.length === 0) {
@@ -138,25 +137,25 @@ export const {
 
         if (!passwordsMatch) return null;
 
-        return { ...user, type: "regular" };
+        return { ...user, type: 'regular' };
       },
     }),
     Credentials({
-      id: "guest",
+      id: 'guest',
       credentials: {},
       async authorize() {
         // Получаем заголовки для генерации fingerprint
-        const { headers } = await import("next/headers");
+        const { headers } = await import('next/headers');
         const headersList = await headers();
 
         // Генерируем fingerprint на основе самых стабильных заголовков браузера
-        const userAgent = headersList.get("user-agent") || "";
-        const secChUaPlatform = headersList.get("sec-ch-ua-platform") || "";
+        const userAgent = headersList.get('user-agent') || '';
+        const secChUaPlatform = headersList.get('sec-ch-ua-platform') || '';
 
         // Получаем IP адрес для стабильности
-        const forwardedFor = headersList.get("x-forwarded-for") || "";
-        const realIp = headersList.get("x-real-ip") || "";
-        const ip = forwardedFor.split(",")[0] || realIp || "unknown";
+        const forwardedFor = headersList.get('x-forwarded-for') || '';
+        const realIp = headersList.get('x-real-ip') || '';
+        const ip = forwardedFor.split(',')[0] || realIp || 'unknown';
 
         // Используем только IP адрес для максимальной стабильности
         const fingerprint = ip;
@@ -180,24 +179,24 @@ export const {
 
         try {
           // Пытаемся найти существующего гостя по browserId
-          const { getGuestUserBySessionId } = await import("@/lib/db/queries");
+          const { getGuestUserBySessionId } = await import('@/lib/db/queries');
           const existingGuest = await getGuestUserBySessionId(browserId);
           if (existingGuest) {
             console.log(
-              `Found existing guest user with browser ID: ${browserId}`
+              `Found existing guest user with browser ID: ${browserId}`,
             );
-            return { ...existingGuest, type: "guest" };
+            return { ...existingGuest, type: 'guest' };
           }
         } catch (error) {
-          console.warn("Failed to find guest user by browser ID:", error);
+          console.warn('Failed to find guest user by browser ID:', error);
         }
 
         // Если гость не найден — создаем нового с постоянным browserId
         console.log(`Creating new guest user with browser ID: ${browserId}`);
 
-        const { createGuestUser } = await import("@/lib/db/queries");
+        const { createGuestUser } = await import('@/lib/db/queries');
         const [guestUser] = await createGuestUser(browserId);
-        return { ...guestUser, type: "guest" };
+        return { ...guestUser, type: 'guest' };
       },
     }),
   ],
@@ -212,21 +211,21 @@ export const {
         }
       }
 
-      if (account && account.provider === "auth0") {
-        token.type = "regular";
+      if (account && account.provider === 'auth0') {
+        token.type = 'regular';
 
         // DEBUGGING: Log all available tokens from Auth0
-        console.log("🔍 AUTH0 DEBUG: Available tokens and account data:", {
+        console.log('🔍 AUTH0 DEBUG: Available tokens and account data:', {
           // Account tokens
           access_token: account.access_token
             ? `${account.access_token.substring(0, 20)}...`
-            : "none",
+            : 'none',
           id_token: account.id_token
             ? `${account.id_token.substring(0, 20)}...`
-            : "none",
+            : 'none',
           refresh_token: account.refresh_token
             ? `${account.refresh_token.substring(0, 20)}...`
-            : "none",
+            : 'none',
           scope: account.scope,
           token_type: account.token_type,
           // User info
@@ -234,7 +233,7 @@ export const {
           userEmail: token.email,
           // Full account keys (without sensitive data)
           accountKeys: Object.keys(account).filter(
-            (key) => !key.includes("token") && !key.includes("secret")
+            (key) => !key.includes('token') && !key.includes('secret'),
           ),
         });
 
@@ -246,7 +245,7 @@ export const {
         // Try to use Auth0 access_token for SuperDuperAI
         if (account.access_token) {
           console.log(
-            "🔧 AUTH0: Using Auth0 access_token as SuperDuperAI token"
+            '🔧 AUTH0: Using Auth0 access_token as SuperDuperAI token',
           );
           token.superduperaiToken = account.access_token;
         }
@@ -255,30 +254,30 @@ export const {
         if (account.id_token) {
           try {
             // Decode JWT to extract custom claims (without verification for simplicity)
-            const base64Url = account.id_token.split(".")[1];
-            const base64 = base64Url?.replace(/-/g, "+").replace(/_/g, "/");
+            const base64Url = account.id_token.split('.')[1];
+            const base64 = base64Url?.replace(/-/g, '+').replace(/_/g, '/');
             const jsonPayload = decodeURIComponent(
-              atob(base64 ?? "")
-                .split("")
+              atob(base64 ?? '')
+                .split('')
                 .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
-                .join("")
+                .join(''),
             );
 
             const payload = JSON.parse(jsonPayload);
 
             // Check for custom SuperDuperAI claim
             if (
-              payload["https://superduperai.co/token"] ||
+              payload['https://superduperai.co/token'] ||
               payload.superduperai_token
             ) {
               const customToken =
-                payload["https://superduperai.co/token"] ||
+                payload['https://superduperai.co/token'] ||
                 payload.superduperai_token;
-              console.log("🔧 AUTH0: Found SuperDuperAI token in JWT claims");
+              console.log('🔧 AUTH0: Found SuperDuperAI token in JWT claims');
               token.superduperaiToken = customToken;
             }
           } catch (error) {
-            console.warn("Failed to decode Auth0 id_token:", error);
+            console.warn('Failed to decode Auth0 id_token:', error);
           }
         }
 
@@ -288,38 +287,37 @@ export const {
         }
 
         // Логируем информацию для отладки
-        Sentry.addBreadcrumb({
-          category: "auth",
-          message: "Processing Auth0 account",
-          level: "info",
-          data: {
-            tokenId: token.id,
-            tokenEmail: token.email,
-            tokenName: token.name,
-            provider: account.provider,
-          },
-        });
+        // Sentry.addBreadcrumb({
+        //   category: "auth",
+        //   message: "Processing Auth0 account",
+        //   level: "info",
+        //   data: {
+        //     tokenId: token.id,
+        //     tokenEmail: token.email,
+        //     tokenName: token.name,
+        //     provider: account.provider,
+        //   },
+        // });
 
         try {
           if (token.email) {
             // Используем улучшенную версию с повторными попытками
-            const { getOrCreateOAuthUser } = await import("@/lib/db/queries");
+            const { getOrCreateOAuthUser } = await import('@/lib/db/queries');
             // keep behavior through sync function wrapper
             await syncAuth0User(token.id, token.email);
           }
         } catch (error) {
-          console.error("Error syncing Auth0 user with database:", error);
-          // Логируем ошибку в Sentry
-          Sentry.captureException(error, {
-            tags: {
-              error_type: "auth0_db_sync",
-              phase: "jwt_callback",
-            },
-            extra: {
-              tokenId: token.id,
-              tokenEmail: token.email,
-            },
-          });
+          console.error('Error syncing Auth0 user with database:', error);
+          // Sentry.captureException(error, {
+          //   tags: {
+          //     error_type: "auth0_db_sync",
+          //     phase: "jwt_callback",
+          //   },
+          //   extra: {
+          //     tokenId: token.id,
+          //     tokenEmail: token.email,
+          //   },
+          // });
         }
       }
 
@@ -335,10 +333,10 @@ export const {
         }
 
         // Дополнительная синхронизация пользователя OAuth с каждым запросом сессии
-        if (token.email && token.type === "regular") {
+        if (token.email && token.type === 'regular') {
           try {
             // Проверяем, существует ли пользователь с этим email
-            const { getUser } = await import("@/lib/db/queries");
+            const { getUser } = await import('@/lib/db/queries');
             const users = await getUser(token.email);
 
             if (users.length > 0) {
@@ -347,7 +345,7 @@ export const {
               const existingUser = users[0];
               if (existingUser?.id !== token.id) {
                 console.log(
-                  `Found user with email ${token.email} in database with different ID. Using database ID: ${existingUser?.id}`
+                  `Found user with email ${token.email} in database with different ID. Using database ID: ${existingUser?.id}`,
                 );
                 if (existingUser?.id) {
                   session.user.id = existingUser?.id;
@@ -361,36 +359,36 @@ export const {
                 await syncAuth0User(token.id, token.email);
               } catch (syncError) {
                 console.error(
-                  "Error syncing Auth0 user during session check:",
-                  syncError
+                  'Error syncing Auth0 user during session check:',
+                  syncError,
                 );
-                Sentry.captureException(syncError, {
-                  tags: {
-                    error_type: "auth0_db_sync",
-                    phase: "session_callback",
-                  },
-                  extra: {
-                    tokenId: token.id,
-                    tokenEmail: token.email,
-                  },
-                });
+                // Sentry.captureException(syncError, {
+                //   tags: {
+                //     error_type: "auth0_db_sync",
+                //     phase: "session_callback",
+                //   },
+                //   extra: {
+                //     tokenId: token.id,
+                //     tokenEmail: token.email,
+                //   },
+                // });
               }
             }
           } catch (error) {
             console.error(
-              "Error during user check in session callback:",
-              error
+              'Error during user check in session callback:',
+              error,
             );
-            Sentry.captureException(error, {
-              tags: {
-                error_type: "session_user_check",
-                phase: "session_callback",
-              },
-              extra: {
-                tokenId: token.id,
-                tokenEmail: token.email,
-              },
-            });
+            // Sentry.captureException(error, {
+            //   tags: {
+            //     error_type: "session_user_check",
+            //     phase: "session_callback",
+            //   },
+            //   extra: {
+            //     tokenId: token.id,
+            //     tokenEmail: token.email,
+            //   },
+            // });
           }
         }
       }

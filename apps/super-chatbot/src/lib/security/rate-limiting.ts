@@ -3,7 +3,7 @@
  * Защищает от DDoS атак и злоупотреблений
  */
 
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 
 // Интерфейсы для конфигурации rate limiting
 export interface RateLimitConfig {
@@ -32,7 +32,7 @@ class RateLimitStore {
       () => {
         this.cleanup();
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     );
   }
 
@@ -109,7 +109,7 @@ export const RATE_LIMIT_CONFIGS = {
  * Генерирует ключ на основе IP адреса
  */
 export function generateKeyByIP(req: NextRequest): string {
-  const ip = (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
+  const ip = (req as any).ip || req.headers.get('x-forwarded-for') || 'unknown';
   return `ip:${ip}`;
 }
 
@@ -117,8 +117,8 @@ export function generateKeyByIP(req: NextRequest): string {
  * Генерирует ключ на основе IP и User-Agent
  */
 export function generateKeyByIPAndUserAgent(req: NextRequest): string {
-  const ip = (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
-  const userAgent = req.headers.get("user-agent") || "unknown";
+  const ip = (req as any).ip || req.headers.get('x-forwarded-for') || 'unknown';
+  const userAgent = req.headers.get('user-agent') || 'unknown';
   return `ip_ua:${ip}:${userAgent}`;
 }
 
@@ -126,7 +126,7 @@ export function generateKeyByIPAndUserAgent(req: NextRequest): string {
  * Генерирует ключ на основе IP и пути запроса
  */
 export function generateKeyByIPAndPath(req: NextRequest): string {
-  const ip = (req as any).ip || req.headers.get("x-forwarded-for") || "unknown";
+  const ip = (req as any).ip || req.headers.get('x-forwarded-for') || 'unknown';
   const path = req.nextUrl.pathname;
   return `ip_path:${ip}:${path}`;
 }
@@ -135,7 +135,7 @@ export function generateKeyByIPAndPath(req: NextRequest): string {
  * Генерирует ключ на основе пользователя (требует аутентификации)
  */
 export function generateKeyByUser(req: NextRequest): string {
-  const userId = req.headers.get("x-user-id") || "anonymous";
+  const userId = req.headers.get('x-user-id') || 'anonymous';
   return `user:${userId}`;
 }
 
@@ -143,8 +143,8 @@ export function generateKeyByUser(req: NextRequest): string {
  * Генерирует ключ на основе пользователя и действия
  */
 export function generateKeyByUserAndAction(req: NextRequest): string {
-  const userId = req.headers.get("x-user-id") || "anonymous";
-  const action = req.nextUrl.pathname.split("/").pop() || "unknown";
+  const userId = req.headers.get('x-user-id') || 'anonymous';
+  const action = req.nextUrl.pathname.split('/').pop() || 'unknown';
   return `user_action:${userId}:${action}`;
 }
 
@@ -216,27 +216,27 @@ export class RateLimiter {
       if (!result.allowed) {
         return NextResponse.json(
           {
-            error: "Too Many Requests",
-            message: "Превышен лимит запросов. Попробуйте позже.",
+            error: 'Too Many Requests',
+            message: 'Превышен лимит запросов. Попробуйте позже.',
             retryAfter: result.retryAfter,
           },
           {
             status: 429,
             headers: {
-              "Retry-After": result.retryAfter?.toString() || "60",
-              "X-RateLimit-Limit": this.config.maxRequests.toString(),
-              "X-RateLimit-Remaining": result.remaining.toString(),
-              "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
+              'Retry-After': result.retryAfter?.toString() || '60',
+              'X-RateLimit-Limit': this.config.maxRequests.toString(),
+              'X-RateLimit-Remaining': result.remaining.toString(),
+              'X-RateLimit-Reset': new Date(result.resetTime).toISOString(),
             },
-          }
+          },
         );
       }
 
       return NextResponse.next({
         headers: {
-          "X-RateLimit-Limit": this.config.maxRequests.toString(),
-          "X-RateLimit-Remaining": result.remaining.toString(),
-          "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
+          'X-RateLimit-Limit': this.config.maxRequests.toString(),
+          'X-RateLimit-Remaining': result.remaining.toString(),
+          'X-RateLimit-Reset': new Date(result.resetTime).toISOString(),
         },
       });
     };

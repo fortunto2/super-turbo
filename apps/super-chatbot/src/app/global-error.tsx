@@ -1,23 +1,16 @@
-"use client";
-
-import * as Sentry from "@sentry/nextjs";
-import { useEffect } from "react";
+'use client';
 
 export default function GlobalError({
   error,
 }: {
   error: Error & { digest?: string };
 }) {
-  useEffect(() => {
-    // Отправляем ошибку в Sentry
-    Sentry.captureException(error);
-  }, [error]);
+  // useEffect(() => {
+  //   Sentry.captureException(error);
+  // }, [error]);
 
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <div className="flex min-h-screen flex-col items-center justify-center bg-background">
           <div className="container flex max-w-md flex-col items-center gap-4 text-center">

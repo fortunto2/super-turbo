@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@turbo-super/ui";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@turbo-super/ui';
 import {
   Users,
   CreditCard,
@@ -14,62 +14,62 @@ import {
   FolderOpen,
   UserCog,
   Monitor,
-} from "lucide-react";
+} from 'lucide-react';
 
 const navigationItems = [
   {
-    title: "Overview",
-    href: "/admin",
+    title: 'Overview',
+    href: '/admin',
     icon: Home,
-    description: "Admin dashboard overview",
+    description: 'Admin dashboard overview',
   },
   {
-    title: "Users",
-    href: "/admin/users",
+    title: 'Users',
+    href: '/admin/users',
     icon: Users,
-    description: "Manage users and accounts",
+    description: 'Manage users and accounts',
   },
   {
-    title: "Enhanced Users",
-    href: "/admin/users/enhanced",
+    title: 'Enhanced Users',
+    href: '/admin/users/enhanced',
     icon: UserCog,
-    description: "Advanced user management",
+    description: 'Advanced user management',
   },
   {
-    title: "Projects",
-    href: "/admin/projects",
+    title: 'Projects',
+    href: '/admin/projects',
     icon: FolderOpen,
-    description: "Manage user projects",
+    description: 'Manage user projects',
   },
   {
-    title: "Balances",
-    href: "/admin/balances",
+    title: 'Balances',
+    href: '/admin/balances',
     icon: CreditCard,
-    description: "Manage user credits and balances",
+    description: 'Manage user credits and balances',
   },
   {
-    title: "Transactions",
-    href: "/admin/transactions",
+    title: 'Transactions',
+    href: '/admin/transactions',
     icon: Activity,
-    description: "View balance transactions",
+    description: 'View balance transactions',
   },
   {
-    title: "Analytics",
-    href: "/admin/analytics",
+    title: 'Analytics',
+    href: '/admin/analytics',
     icon: BarChart3,
-    description: "Usage statistics and reports",
+    description: 'Usage statistics and reports',
   },
   {
-    title: "Documents",
-    href: "/admin/documents",
+    title: 'Documents',
+    href: '/admin/documents',
     icon: FileText,
-    description: "Manage generated content",
+    description: 'Manage generated content',
   },
   {
-    title: "System Monitor",
-    href: "/admin/system",
+    title: 'System Monitor',
+    href: '/admin/system',
     icon: Monitor,
-    description: "System monitoring and health",
+    description: 'System monitoring and health',
   },
 ];
 
@@ -87,10 +87,10 @@ export function AdminNavigation() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
               isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
             )}
           >
             <Icon className="h-4 w-4" />

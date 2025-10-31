@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button, cn } from "@turbo-super/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { MessageIcon } from "../common/icons";
+import { useEffect, useState } from 'react';
+import { Button, cn } from '@turbo-super/ui';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { MessageIcon } from '../common/icons';
 
 interface MessageCountData {
   messageCount: number;
@@ -26,16 +26,16 @@ export function MessageCount({ className }: MessageCountProps) {
     async function fetchMessageCount() {
       try {
         setLoading(true);
-        const response = await fetch("/api/message-count");
+        const response = await fetch('/api/message-count');
 
         if (!response.ok) {
-          throw new Error("Failed to fetch message count");
+          throw new Error('Failed to fetch message count');
         }
 
         const data = await response.json();
         setData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
@@ -54,11 +54,7 @@ export function MessageCount({ className }: MessageCountProps) {
       <div className={className}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8"
-            >
+            <Button variant="outline" size="icon" className="size-8">
               <MessageIcon />
             </Button>
           </TooltipTrigger>
@@ -92,9 +88,9 @@ export function MessageCount({ className }: MessageCountProps) {
   const { remainingMessages, maxMessages, usedPercentage } = data;
 
   // Определяем цвет в зависимости от использования
-  let color = "text-green-500";
-  if (usedPercentage > 50) color = "text-yellow-500";
-  if (usedPercentage > 80) color = "text-red-500";
+  let color = 'text-green-500';
+  if (usedPercentage > 50) color = 'text-yellow-500';
+  if (usedPercentage > 80) color = 'text-red-500';
 
   return (
     <div className={className}>
@@ -111,17 +107,17 @@ export function MessageCount({ className }: MessageCountProps) {
         <TooltipContent>
           <div className="text-center">
             <p>
-              Осталось сообщений: <strong>{remainingMessages}</strong> из{" "}
+              Осталось сообщений: <strong>{remainingMessages}</strong> из{' '}
               {maxMessages}
             </p>
             <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
               <div
                 className={`h-2.5 rounded-full ${
                   usedPercentage > 80
-                    ? "bg-red-500"
+                    ? 'bg-red-500'
                     : usedPercentage > 50
-                      ? "bg-yellow-500"
-                      : "bg-green-500"
+                      ? 'bg-yellow-500'
+                      : 'bg-green-500'
                 }`}
                 style={{ width: `${usedPercentage}%` }}
               />

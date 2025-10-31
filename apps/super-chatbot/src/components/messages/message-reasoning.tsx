@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { ChevronDownIcon, LoaderIcon } from "../common/icons";
-import { motion, AnimatePresence } from "framer-motion";
-import { Markdown } from "../";
+import { useState, useEffect } from 'react';
+import { ChevronDownIcon, LoaderIcon } from '../common/icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Markdown } from '../';
 
 interface MessageReasoningProps {
   isLoading: boolean;
@@ -17,10 +17,10 @@ export function MessageReasoning({
   const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
-    console.log("MessageReasoning received:", {
+    console.log('MessageReasoning received:', {
       hasReasoning: !!reasoning,
       reasoningLength: reasoning?.length || 0,
-      reasoningSample: reasoning?.substring(0, 30) || "",
+      reasoningSample: reasoning?.substring(0, 30) || '',
     });
   }, [reasoning]);
 
@@ -32,15 +32,15 @@ export function MessageReasoning({
       marginBottom: 0,
     },
     expanded: {
-      height: "auto",
+      height: 'auto',
       opacity: 1,
-      marginTop: "1rem",
-      marginBottom: "0.5rem",
+      marginTop: '1rem',
+      marginBottom: '0.5rem',
     },
   };
 
   // Проверяем, есть ли содержимое в рассуждениях
-  if (!reasoning || reasoning.trim() === "") {
+  if (!reasoning || reasoning.trim() === '') {
     return null;
   }
 
@@ -80,8 +80,8 @@ export function MessageReasoning({
             animate="expanded"
             exit="collapsed"
             variants={variants}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            style={{ overflow: "hidden" }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
             <Markdown>{reasoning}</Markdown>

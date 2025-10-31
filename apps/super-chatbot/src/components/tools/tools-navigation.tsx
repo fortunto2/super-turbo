@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ArrowLeft, Home } from "lucide-react";
-import { Button, Separator } from "@turbo-super/ui";
-import { TOOLS_CONFIG } from "@/lib/config/tools-config";
-import { ToolIcon } from "@/lib/config/tools-icons";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ArrowLeft, Home } from 'lucide-react';
+import { Button, Separator } from '@turbo-super/ui';
+import { TOOLS_CONFIG } from '@/lib/config/tools-config';
+import { ToolIcon } from '@/lib/config/tools-icons';
 
 export function ToolsNavigation() {
   const pathname = usePathname();
@@ -17,11 +17,7 @@ export function ToolsNavigation() {
       {/* Back to main chat button */}
       <div className="flex items-center justify-between mb-4">
         <Link href="/">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" className="gap-2">
             <ArrowLeft className="size-4" />
             Back to Chat
           </Button>
@@ -33,7 +29,7 @@ export function ToolsNavigation() {
           <span>Tools</span>
           <span>/</span>
           <span className="font-medium">
-            {currentTool ? currentTool.name : "All Tools"}
+            {currentTool ? currentTool.name : 'All Tools'}
           </span>
         </div>
       </div>
@@ -56,12 +52,9 @@ export function ToolsNavigation() {
         {TOOLS_CONFIG.map((tool) => {
           const isActive = pathname === tool.href;
           return (
-            <Link
-              key={tool.id}
-              href={tool.href}
-            >
+            <Link key={tool.id} href={tool.href}>
               <Button
-                variant={isActive ? "default" : "outline"}
+                variant={isActive ? 'default' : 'outline'}
                 size="sm"
                 className="gap-2"
               >

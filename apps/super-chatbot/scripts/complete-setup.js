@@ -27,7 +27,10 @@ function showCompleteSetup() {
   console.log('');
 
   try {
-    const migrationPath = join(__dirname, '../src/lib/db/migrations/0011_add_project_status.sql');
+    const migrationPath = join(
+      __dirname,
+      '../src/lib/db/migrations/0011_add_project_status.sql',
+    );
     const migrationSQL = readFileSync(migrationPath, 'utf8');
     console.log(migrationSQL);
   } catch (error) {
@@ -78,9 +81,3 @@ function showCompleteSetup() {
 }
 
 showCompleteSetup();
-
-
-
-
-
-

@@ -8,4 +8,4 @@ export type DataStreamWriterProps = {
   write: DataStreamWriter['write'];
   end: DataStreamWriter['end'];
   error: DataStreamWriter['error'];
-}; 
+};

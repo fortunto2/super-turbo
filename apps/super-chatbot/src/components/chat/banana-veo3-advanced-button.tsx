@@ -1,12 +1,9 @@
-import Link from "next/link";
-import { Banana, Video, Zap, Star } from "lucide-react";
+import Link from 'next/link';
+import { Banana, Video, Zap, Star } from 'lucide-react';
 
 export function BananaVeo3AdvancedButton() {
   return (
-    <Link
-      href="/banana-veo3-advanced"
-      className="block"
-    >
+    <Link href="/banana-veo3-advanced" className="block">
       <div className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors cursor-pointer border border-yellow-200 dark:border-yellow-800">
         <div className="flex items-center gap-1">
           <Star className="size-3 text-yellow-500" />

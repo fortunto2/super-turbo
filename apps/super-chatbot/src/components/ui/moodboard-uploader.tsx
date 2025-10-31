@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useEffect } from "react";
-import { Tag, Eye, Sliders, X } from "lucide-react";
-import { ImageUploader } from "./image-uploader";
-import { Switch } from "./switch";
-import { Label } from "@turbo-super/ui";
-import { Input } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
+import React, { useState, useCallback, useEffect } from 'react';
+import { Tag, Eye, Sliders, X } from 'lucide-react';
+import { ImageUploader } from './image-uploader';
+import { Switch } from './switch';
+import { Label } from '@turbo-super/ui';
+import { Input } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
 
 interface MoodboardImage {
   id: string;
@@ -37,42 +37,42 @@ interface MoodboardUploaderProps {
 
 const AVAILABLE_TAGS = [
   {
-    id: "character",
-    label: "Character",
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    icon: "👤",
+    id: 'character',
+    label: 'Character',
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    icon: '👤',
   },
   {
-    id: "style",
-    label: "Style",
+    id: 'style',
+    label: 'Style',
     color:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-    icon: "🎨",
+      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    icon: '🎨',
   },
   {
-    id: "background",
-    label: "Background",
-    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-    icon: "🏞️",
+    id: 'background',
+    label: 'Background',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    icon: '🏞️',
   },
   {
-    id: "lighting",
-    label: "Lighting",
+    id: 'lighting',
+    label: 'Lighting',
     color:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-    icon: "💡",
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    icon: '💡',
   },
   {
-    id: "mood",
-    label: "Mood",
-    color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300",
-    icon: "🎭",
+    id: 'mood',
+    label: 'Mood',
+    color: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
+    icon: '🎭',
   },
   {
-    id: "action",
-    label: "Action",
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-    icon: "⚡",
+    id: 'action',
+    label: 'Action',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+    icon: '⚡',
   },
 ];
 
@@ -92,11 +92,11 @@ export function MoodboardUploader({
     setMoodboardImages(value);
     // Update uploadedImages to match the moodboard images
     const newUploadedImages: UploadedImage[] = value.map((img) => {
-      let preview = "";
+      let preview = '';
       if (img.url) {
         preview = img.url;
       } else if (img.base64) {
-        preview = img.base64.startsWith("data:")
+        preview = img.base64.startsWith('data:')
           ? img.base64
           : `data:image/jpeg;base64,${img.base64}`;
       } else if (img.file) {
@@ -119,7 +119,7 @@ export function MoodboardUploader({
       setMoodboardImages(newMoodboardImages);
       onImagesChange(newMoodboardImages);
     },
-    [onImagesChange]
+    [onImagesChange],
   );
 
   const handleUploadedImagesChange = useCallback(
@@ -129,7 +129,7 @@ export function MoodboardUploader({
       // Convert uploaded images to moodboard images, preserving existing data
       const newMoodboardImages = images.map((uploadedImg) => {
         const existingImg = moodboardImages.find(
-          (mb) => mb.id === uploadedImg.id
+          (mb) => mb.id === uploadedImg.id,
         );
         return (
           existingImg || {
@@ -138,7 +138,7 @@ export function MoodboardUploader({
             ...(uploadedImg.url && { url: uploadedImg.url }),
             ...(uploadedImg.base64 && { base64: uploadedImg.base64 }),
             tags: [],
-            description: "",
+            description: '',
             weight: 1.0,
           }
         );
@@ -146,36 +146,38 @@ export function MoodboardUploader({
 
       updateMoodboardImages(newMoodboardImages);
     },
-    [moodboardImages, updateMoodboardImages]
+    [moodboardImages, updateMoodboardImages],
   );
 
   const updateImageTags = useCallback(
     (id: string, tags: string[]) => {
       updateMoodboardImages(
-        moodboardImages.map((img) => (img.id === id ? { ...img, tags } : img))
+        moodboardImages.map((img) => (img.id === id ? { ...img, tags } : img)),
       );
     },
-    [moodboardImages, updateMoodboardImages]
+    [moodboardImages, updateMoodboardImages],
   );
 
   const updateImageDescription = useCallback(
     (id: string, description: string) => {
       updateMoodboardImages(
         moodboardImages.map((img) =>
-          img.id === id ? { ...img, description } : img
-        )
+          img.id === id ? { ...img, description } : img,
+        ),
       );
     },
-    [moodboardImages, updateMoodboardImages]
+    [moodboardImages, updateMoodboardImages],
   );
 
   const updateImageWeight = useCallback(
     (id: string, weight: number) => {
       updateMoodboardImages(
-        moodboardImages.map((img) => (img.id === id ? { ...img, weight } : img))
+        moodboardImages.map((img) =>
+          img.id === id ? { ...img, weight } : img,
+        ),
       );
     },
-    [moodboardImages, updateMoodboardImages]
+    [moodboardImages, updateMoodboardImages],
   );
 
   const toggleTag = useCallback(
@@ -189,23 +191,23 @@ export function MoodboardUploader({
 
       updateImageTags(imageId, newTags);
     },
-    [moodboardImages, updateImageTags]
+    [moodboardImages, updateImageTags],
   );
 
   const removeImage = useCallback(
     (imageId: string) => {
       const newMoodboardImages = moodboardImages.filter(
-        (img) => img.id !== imageId
+        (img) => img.id !== imageId,
       );
       const newUploadedImages = uploadedImages.filter(
-        (img) => img.id !== imageId
+        (img) => img.id !== imageId,
       );
 
       setMoodboardImages(newMoodboardImages);
       setUploadedImages(newUploadedImages);
       updateMoodboardImages(newMoodboardImages);
     },
-    [moodboardImages, uploadedImages, updateMoodboardImages]
+    [moodboardImages, uploadedImages, updateMoodboardImages],
   );
 
   return (
@@ -217,17 +219,11 @@ export function MoodboardUploader({
           onCheckedChange={onEnabledChange}
           id="moodboard-toggle"
         />
-        <Label
-          htmlFor="moodboard-toggle"
-          className="text-sm font-medium"
-        >
+        <Label htmlFor="moodboard-toggle" className="text-sm font-medium">
           Enable Moodboard References
         </Label>
         {enabled && (
-          <Badge
-            variant="outline"
-            className="text-xs"
-          >
+          <Badge variant="outline" className="text-xs">
             {uploadedImages.length}/{maxImages} images
           </Badge>
         )}
@@ -256,10 +252,7 @@ export function MoodboardUploader({
           {moodboardImages.length > 0 && (
             <div className="space-y-4">
               {moodboardImages.map((image) => (
-                <Card
-                  key={image.id}
-                  className="group relative"
-                >
+                <Card key={image.id} className="group relative">
                   <CardContent className="pt-6">
                     {/* Delete Button */}
                     <button
@@ -275,11 +268,11 @@ export function MoodboardUploader({
                       <div className="lg:col-span-1">
                         <div className="aspect-square relative rounded-lg overflow-hidden">
                           {(() => {
-                            let previewSrc = "";
+                            let previewSrc = '';
                             if (image.url) {
                               previewSrc = image.url;
                             } else if (image.base64) {
-                              previewSrc = image.base64.startsWith("data:")
+                              previewSrc = image.base64.startsWith('data:')
                                 ? image.base64
                                 : `data:image/jpeg;base64,${image.base64}`;
                             } else if (image.file) {
@@ -315,11 +308,11 @@ export function MoodboardUploader({
                                 key={tag.id}
                                 variant={
                                   image.tags.includes(tag.id)
-                                    ? "default"
-                                    : "outline"
+                                    ? 'default'
+                                    : 'outline'
                                 }
                                 className={`cursor-pointer transition-colors ${
-                                  image.tags.includes(tag.id) ? tag.color : ""
+                                  image.tags.includes(tag.id) ? tag.color : ''
                                 }`}
                                 onClick={() => toggleTag(image.id, tag.id)}
                               >
@@ -365,7 +358,7 @@ export function MoodboardUploader({
                               onChange={(e) =>
                                 updateImageWeight(
                                   image.id,
-                                  Number.parseFloat(e.target.value)
+                                  Number.parseFloat(e.target.value),
                                 )
                               }
                               className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"

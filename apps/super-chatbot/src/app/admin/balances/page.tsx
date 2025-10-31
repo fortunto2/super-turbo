@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { BalancesManagement } from "@/components/admin/balances-management";
+import { Suspense } from 'react';
+import { BalancesManagement } from '@/components/admin/balances-management';
 import {
   Card,
   CardContent,
@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@turbo-super/ui';
-import { CreditCard } from "lucide-react";
+import { CreditCard } from 'lucide-react';
 
 interface PageProps {
   searchParams: Promise<{
@@ -19,7 +19,7 @@ interface PageProps {
 export default async function BalancesPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
-  const search = params.search || "";
+  const search = params.search || '';
 
   return (
     <div className="space-y-6">
@@ -46,10 +46,7 @@ export default async function BalancesPage({ searchParams }: PageProps) {
               <div className="p-8 text-center">Loading balances...</div>
             }
           >
-            <BalancesManagement
-              page={page}
-              search={search}
-            />
+            <BalancesManagement page={page} search={search} />
           </Suspense>
         </CardContent>
       </Card>

@@ -1,18 +1,18 @@
-import { generateUUID } from "@/lib/utils";
+import { generateUUID } from '@/lib/utils';
 
 export const saveImageToChat = async (
   chatId: string,
   imageUrl: string,
   prompt: string,
   setMessages: (updater: (prev: any[]) => any[]) => void,
-  thumbnailUrl?: string
+  thumbnailUrl?: string,
 ) => {
   if (!setMessages || !chatId) return;
 
   let alreadyExists = false;
   setMessages((prev) => {
     alreadyExists = prev.some((msg) =>
-      msg.experimental_attachments?.some((att: any) => att.url === imageUrl)
+      msg.experimental_attachments?.some((att: any) => att.url === imageUrl),
     );
     return prev;
   });
@@ -21,13 +21,13 @@ export const saveImageToChat = async (
 
   const message = {
     id: generateUUID(),
-    role: "assistant" as const,
-    parts: [{ type: "text", text: "" }],
+    role: 'assistant' as const,
+    parts: [{ type: 'text', text: '' }],
     experimental_attachments: [
       {
         name: prompt.length > 50 ? `${prompt.slice(0, 50)}...` : prompt,
         url: imageUrl,
-        contentType: "image/webp",
+        contentType: 'image/webp',
         thumbnailUrl: thumbnailUrl,
       },
     ],
@@ -37,19 +37,19 @@ export const saveImageToChat = async (
   setMessages((prev) => [...prev, message]);
 
   try {
-    await fetch("/api/save-message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    await fetch('/api/save-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chatId, message }),
     });
   } catch (e) {
-    console.warn("❌ Failed to persist image to DB", e);
+    console.warn('❌ Failed to persist image to DB', e);
   }
 };
 
 const mediaType = {
-  image: "image/webp",
-  video: "video/mp4",
+  image: 'image/webp',
+  video: 'video/mp4',
 };
 // Function to save video to chat history
 export const saveMediaToChat = async (
@@ -57,9 +57,9 @@ export const saveMediaToChat = async (
   videoUrl: string,
   prompt: string,
   setMessages: any,
-  type: "image" | "video",
+  type: 'image' | 'video',
   thumbnailUrl?: string,
-  fileId?: string
+  fileId?: string,
 ) => {
   try {
     // Check for duplicates
@@ -67,14 +67,14 @@ export const saveMediaToChat = async (
     setMessages((prevMessages: any[]) => {
       videoExists = prevMessages.some((message) =>
         message.experimental_attachments?.some(
-          (attachment: any) => attachment.url === videoUrl
-        )
+          (attachment: any) => attachment.url === videoUrl,
+        ),
       );
       return prevMessages;
     });
 
     if (videoExists) {
-      console.log("🎬 Video already exists in chat, skipping duplicate save");
+      console.log('🎬 Video already exists in chat, skipping duplicate save');
       return;
     }
 
@@ -96,24 +96,24 @@ export const saveMediaToChat = async (
     };
 
     console.log(
-      "💾 saveMediaToChat: Saving attachment with fileId embedded in name:",
+      '💾 saveMediaToChat: Saving attachment with fileId embedded in name:',
       {
-        fileId: fileId || "none",
-        url: videoUrl ? `${videoUrl.substring(0, 50)}...` : "none",
+        fileId: fileId || 'none',
+        url: videoUrl ? `${videoUrl.substring(0, 50)}...` : 'none',
         type,
         attachmentName: videoAttachment.name,
-      }
+      },
     );
 
     // AICODE-DEBUG: Логирование стека вызовов
-    console.log("🔍 saveMediaToChat: Call stack:", new Error().stack);
+    console.log('🔍 saveMediaToChat: Call stack:', new Error().stack);
 
     // AICODE-DEBUG: Подробное логирование fileId в saveMediaToChat
-    console.log("🔍 saveMediaToChat: FileId details:", {
-      receivedFileId: fileId || "none",
-      receivedChatId: chatId || "none",
-      willEmbedFileId: fileId || "none",
-      fallbackReason: fileId ? "using received fileId" : "no fileId provided",
+    console.log('🔍 saveMediaToChat: FileId details:', {
+      receivedFileId: fileId || 'none',
+      receivedChatId: chatId || 'none',
+      willEmbedFileId: fileId || 'none',
+      fallbackReason: fileId ? 'using received fileId' : 'no fileId provided',
       fileIdType: typeof fileId,
       chatIdType: typeof chatId,
       attachmentNameWithFileId: attachmentNameWithFileId,
@@ -122,12 +122,12 @@ export const saveMediaToChat = async (
 
     const videoMessage = {
       id: generateUUID(),
-      role: "assistant" as const,
+      role: 'assistant' as const,
       // content: `Generated video: "${prompt}"`,
       content: ``,
       parts: [
         {
-          type: "text" as const,
+          type: 'text' as const,
           // text: `Generated video: "${prompt}"`,
           text: ``,
         },
@@ -137,13 +137,13 @@ export const saveMediaToChat = async (
     };
 
     setMessages((prevMessages: any[]) => [...prevMessages, videoMessage]);
-    console.log("🎬 ✅ Video added to chat history!");
+    console.log('🎬 ✅ Video added to chat history!');
 
     // Save to database
     try {
-      const response = await fetch("/api/save-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/save-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chatId,
           message: {
@@ -157,17 +157,17 @@ export const saveMediaToChat = async (
       });
 
       if (response.ok) {
-        console.log("🎬 ✅ Video saved to database!");
+        console.log('🎬 ✅ Video saved to database!');
       } else {
         console.warn(
-          "🎬 ⚠️ Failed to save to database, but video is in chat locally"
+          '🎬 ⚠️ Failed to save to database, but video is in chat locally',
         );
       }
     } catch (dbError) {
-      console.warn("🎬 ⚠️ Database save failed:", dbError);
+      console.warn('🎬 ⚠️ Database save failed:', dbError);
     }
   } catch (error) {
-    console.error("🎬 ❌ Failed to save video to chat:", error);
+    console.error('🎬 ❌ Failed to save video to chat:', error);
   }
 };
 
@@ -176,15 +176,15 @@ export const saveArtifactToDatabase = async (
   id: string | undefined,
   title: string,
   content: string,
-  type: "image" | "video",
-  thumbnailUrl?: string
+  type: 'image' | 'video',
+  thumbnailUrl?: string,
 ) => {
-  if (!id || id === "undefined") {
+  if (!id || id === 'undefined') {
     return;
   }
   try {
     let readableTitle = title;
-    if (title.startsWith("{") && title.endsWith("}")) {
+    if (title.startsWith('{') && title.endsWith('}')) {
       const titleParams = JSON.parse(title);
       const defaultTitle = titles[type];
       readableTitle = titleParams.prompt || defaultTitle;
@@ -197,16 +197,20 @@ export const saveArtifactToDatabase = async (
       payload.thumbnailUrl = thumbnailUrl;
     }
     await fetch(`/api/document?id=${encodeURIComponent(id)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
   } catch (error) {
-    console.error("💾 ❌ Failed to save artifact to database:", error);
+    console.error('💾 ❌ Failed to save artifact to database:', error);
   }
 };
 
 const titles = {
-  video: "AI Generated Video",
-  image: "AI Generated Image",
+  video: 'AI Generated Video',
+  image: 'AI Generated Image',
 };
+
+// REMOVED: saveScriptToChat function
+// Scripts are now automatically saved as part of the assistant's message through AI SDK
+// when configureScriptGeneration tool returns the document result

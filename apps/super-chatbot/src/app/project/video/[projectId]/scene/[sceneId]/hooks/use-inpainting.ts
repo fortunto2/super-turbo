@@ -1,7 +1,7 @@
-import { useState } from "react";
-import type { ISceneRead } from "@turbo-super/api";
-import type { ToolType } from "../_components/toolbar";
-import { useNextGenerateImage } from "@/lib/api";
+import { useState } from 'react';
+import type { ISceneRead } from '@turbo-super/api';
+import type { ToolType } from '../_components/toolbar';
+import { useNextGenerateImage } from '@/lib/api';
 
 interface UseInpaintingProps {
   scene?: ISceneRead | null;
@@ -30,28 +30,28 @@ export function useInpainting({
 
     try {
       const formData = new FormData();
-      formData.append("prompt", result.prompt);
-      formData.append("mask", result.mask);
-      formData.append("config", result.config);
-      formData.append("generationType", "image-to-image");
-      formData.append("mask", result.mask);
+      formData.append('prompt', result.prompt);
+      formData.append('mask', result.mask);
+      formData.append('config', result.config);
+      formData.append('generationType', 'image-to-image');
+      formData.append('mask', result.mask);
       if (scene.file.id) {
-        formData.append("sourceImageId", scene.file.id);
+        formData.append('sourceImageId', scene.file.id);
       }
       if (scene.file.url) {
-        formData.append("sourceImageUrl", scene.file.url);
+        formData.append('sourceImageUrl', scene.file.url);
       }
-      formData.append("model", "comfyui/flux/inpainting");
-      formData.append("projectId", projectId);
-      formData.append("sceneId", scene.id);
+      formData.append('model', 'comfyui/flux/inpainting');
+      formData.append('projectId', projectId);
+      formData.append('sceneId', scene.id);
       const data = await mutateAsync(formData);
 
       if (data.success) {
-        onActiveToolChange?.("mediaList");
+        onActiveToolChange?.('mediaList');
         if (data?.fileId) onStarted(data.fileId);
       }
     } catch (err) {
-      console.error("Error during inpainting:", err);
+      console.error('Error during inpainting:', err);
     } finally {
       setIsInpainting(false);
     }

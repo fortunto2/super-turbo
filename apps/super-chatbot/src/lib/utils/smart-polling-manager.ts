@@ -22,7 +22,7 @@ export interface PollingResult<T> {
   error?: string;
   attempts: number;
   duration: number;
-  method: "success" | "timeout" | "error" | "rate_limited";
+  method: 'success' | 'timeout' | 'error' | 'rate_limited';
 }
 
 export type PollingChecker<T> = () => Promise<{
@@ -49,7 +49,7 @@ class SmartPollingManager {
   async startPolling<T>(
     pollId: string,
     checker: PollingChecker<T>,
-    options: PollingOptions = {}
+    options: PollingOptions = {},
   ): Promise<PollingResult<T>> {
     // Set up options with defaults
     const opts = {
@@ -64,7 +64,7 @@ class SmartPollingManager {
     // Check if already polling this ID
     if (this.activePolls.has(pollId)) {
       console.warn(
-        `⚠️ Polling already active for ${pollId}, cancelling previous`
+        `⚠️ Polling already active for ${pollId}, cancelling previous`,
       );
       this.stopPolling(pollId);
     }
@@ -85,7 +85,7 @@ class SmartPollingManager {
     let attempts = 0;
 
     console.log(
-      `🔄 Starting smart polling for ${pollId} (max: ${opts.maxDuration / 1000}s)`
+      `🔄 Starting smart polling for ${pollId} (max: ${opts.maxDuration / 1000}s)`,
     );
 
     try {
@@ -96,14 +96,14 @@ class SmartPollingManager {
         // Check timeout
         if (elapsed >= opts.maxDuration) {
           console.error(
-            `⏰ Polling timeout for ${pollId} after ${elapsed / 1000}s (${attempts} attempts)`
+            `⏰ Polling timeout for ${pollId} after ${elapsed / 1000}s (${attempts} attempts)`,
           );
           return {
             success: false,
             error: `Polling timeout after ${Math.round(elapsed / 1000)} seconds (${attempts} attempts)`,
             attempts,
             duration: elapsed,
-            method: "timeout",
+            method: 'timeout',
           };
         }
 
@@ -119,7 +119,7 @@ class SmartPollingManager {
         }
 
         console.log(
-          `🔄 Poll attempt ${attempts} for ${pollId} (${Math.round(elapsed / 1000)}s elapsed)`
+          `🔄 Poll attempt ${attempts} for ${pollId} (${Math.round(elapsed / 1000)}s elapsed)`,
         );
 
         try {
@@ -129,20 +129,20 @@ class SmartPollingManager {
           // Reset consecutive errors on successful call
           consecutiveErrors = 0;
           if (stats) {
-            stats.lastError = "";
+            stats.lastError = '';
           }
 
           // Check if completed
           if (result.completed) {
             console.log(
-              `✅ Polling completed for ${pollId} after ${attempts} attempts (${Math.round(elapsed / 1000)}s)`
+              `✅ Polling completed for ${pollId} after ${attempts} attempts (${Math.round(elapsed / 1000)}s)`,
             );
             return {
               success: true,
               data: result.data || (null as any),
               attempts,
               duration: elapsed,
-              method: "success",
+              method: 'success',
             };
           }
 
@@ -151,17 +151,17 @@ class SmartPollingManager {
             console.log(`🛑 Polling stopped by checker for ${pollId}`);
             return {
               success: false,
-              error: result.error || "Polling stopped by checker",
+              error: result.error || 'Polling stopped by checker',
               attempts,
               duration: elapsed,
-              method: "error",
+              method: 'error',
             };
           }
 
           // If error provided but should continue, log it
           if (result.error) {
             console.warn(
-              `⚠️ Non-critical error in poll ${pollId}: ${result.error}`
+              `⚠️ Non-critical error in poll ${pollId}: ${result.error}`,
             );
             if (opts.onError) {
               opts.onError(new Error(result.error), attempts);
@@ -169,24 +169,24 @@ class SmartPollingManager {
           }
         } catch (error: any) {
           consecutiveErrors++;
-          const errorMessage = error?.message || "Unknown error";
+          const errorMessage = error?.message || 'Unknown error';
           if (stats) {
             stats.lastError = errorMessage;
           }
 
           console.error(
             `❌ Polling error ${consecutiveErrors}/${opts.maxConsecutiveErrors} for ${pollId}:`,
-            errorMessage
+            errorMessage,
           );
 
           // Handle rate limiting (HTTP 429)
           if (
             error?.status === 429 ||
-            errorMessage.includes("429") ||
-            errorMessage.includes("rate limit")
+            errorMessage.includes('429') ||
+            errorMessage.includes('rate limit')
           ) {
             console.warn(
-              `🚫 Rate limited for ${pollId}, using exponential backoff`
+              `🚫 Rate limited for ${pollId}, using exponential backoff`,
             );
 
             // Extract retry-after header if available
@@ -207,14 +207,14 @@ class SmartPollingManager {
             // Check if too many consecutive errors
             if (consecutiveErrors >= opts.maxConsecutiveErrors) {
               console.error(
-                `💥 Too many consecutive errors (${consecutiveErrors}) for ${pollId}, giving up`
+                `💥 Too many consecutive errors (${consecutiveErrors}) for ${pollId}, giving up`,
               );
               return {
                 success: false,
                 error: `Too many consecutive errors: ${errorMessage}`,
                 attempts,
                 duration: elapsed,
-                method: "error",
+                method: 'error',
               };
             }
           }
@@ -223,7 +223,7 @@ class SmartPollingManager {
         // Wait before next attempt (unless aborted)
         if (!abortController.signal.aborted) {
           console.log(
-            `⏱️ Waiting ${currentInterval}ms before next poll attempt for ${pollId}`
+            `⏱️ Waiting ${currentInterval}ms before next poll attempt for ${pollId}`,
           );
           await this.wait(currentInterval, abortController.signal);
 
@@ -241,7 +241,7 @@ class SmartPollingManager {
             // Exponential backoff on errors
             currentInterval = Math.min(
               currentInterval * opts.backoffMultiplier,
-              opts.maxInterval
+              opts.maxInterval,
             );
           }
         }
@@ -251,10 +251,10 @@ class SmartPollingManager {
       console.log(`🛑 Polling aborted for ${pollId}`);
       return {
         success: false,
-        error: "Polling was aborted",
+        error: 'Polling was aborted',
         attempts,
         duration: Date.now() - startTime,
-        method: "error",
+        method: 'error',
       };
     } finally {
       // Cleanup
@@ -322,9 +322,9 @@ class SmartPollingManager {
       const timeout = setTimeout(resolve, ms);
 
       if (signal) {
-        signal.addEventListener("abort", () => {
+        signal.addEventListener('abort', () => {
           clearTimeout(timeout);
-          reject(new Error("Aborted"));
+          reject(new Error('Aborted'));
         });
       }
     });
@@ -332,13 +332,13 @@ class SmartPollingManager {
 
   private extractRetryAfter(error: any): number | null {
     // Try to extract Retry-After header from various error formats
-    if (error?.headers?.["retry-after"]) {
-      return Number.parseInt(error.headers["retry-after"], 10);
+    if (error?.headers?.['retry-after']) {
+      return Number.parseInt(error.headers['retry-after'], 10);
     }
-    if (error?.response?.headers?.["retry-after"]) {
-      return Number.parseInt(error.response.headers["retry-after"], 10);
+    if (error?.response?.headers?.['retry-after']) {
+      return Number.parseInt(error.response.headers['retry-after'], 10);
     }
-    if (error?.message?.includes("retry-after")) {
+    if (error?.message?.includes('retry-after')) {
       const match = error.message.match(/retry-after[:\s]+(\d+)/i);
       if (match) {
         return Number.parseInt(match[1], 10);
@@ -354,7 +354,7 @@ export const smartPollingManager = new SmartPollingManager();
 // Helper function for file-based polling (commonly used pattern)
 export async function pollFileCompletion(
   fileId: string,
-  options: PollingOptions = {}
+  options: PollingOptions = {},
 ): Promise<PollingResult<any>> {
   const pollId = `file-${fileId}`;
 
@@ -365,7 +365,7 @@ export async function pollFileCompletion(
     if (!response.ok) {
       // Distinguish between different error types
       if (response.status === 429) {
-        throw { status: 429, message: "Rate limited" };
+        throw { status: 429, message: 'Rate limited' };
       }
       if (response.status >= 500) {
         throw new Error(`Server error: ${response.status}`);
@@ -373,7 +373,7 @@ export async function pollFileCompletion(
       if (response.status === 404) {
         return {
           completed: false,
-          error: "File not found - may still be processing",
+          error: 'File not found - may still be processing',
           shouldContinue: true,
         };
       }
@@ -393,10 +393,10 @@ export async function pollFileCompletion(
     // Check for error status in tasks
     if (fileData.tasks && fileData.tasks.length > 0) {
       const latestTask = fileData.tasks[fileData.tasks.length - 1];
-      if (latestTask.status === "error") {
+      if (latestTask.status === 'error') {
         return {
           completed: false,
-          error: "File generation failed",
+          error: 'File generation failed',
           shouldContinue: false,
         };
       }
@@ -415,7 +415,7 @@ export async function pollFileCompletion(
 // Helper function for project-based polling (legacy compatibility)
 export async function pollProjectCompletion(
   projectId: string,
-  options: PollingOptions = {}
+  options: PollingOptions = {},
 ): Promise<PollingResult<any>> {
   const pollId = `project-${projectId}`;
 
@@ -424,7 +424,7 @@ export async function pollProjectCompletion(
 
     if (!response.ok) {
       if (response.status === 429) {
-        throw { status: 429, message: "Rate limited" };
+        throw { status: 429, message: 'Rate limited' };
       }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -434,19 +434,19 @@ export async function pollProjectCompletion(
     // Look for completed media in project data
     if (project.data && project.data.length > 0) {
       const mediaData = project.data.find((data: any) => {
-        if (data.value && typeof data.value === "object") {
+        if (data.value && typeof data.value === 'object') {
           const value = data.value as Record<string, any>;
           return (
             value.url &&
-            (value.contentType?.startsWith("image/") ||
-              value.contentType?.startsWith("video/") ||
+            (value.contentType?.startsWith('image/') ||
+              value.contentType?.startsWith('video/') ||
               value.url.match(/\.(jpg|jpeg|png|webp|gif|mp4|mov|webm|avi)$/i))
           );
         }
         return false;
       });
 
-      if (mediaData?.value && typeof mediaData.value === "object") {
+      if (mediaData?.value && typeof mediaData.value === 'object') {
         const url = (mediaData.value as Record<string, any>).url as string;
         return {
           completed: true,
@@ -457,19 +457,19 @@ export async function pollProjectCompletion(
 
     // Check for error tasks
     const hasErrorTask = project.tasks?.some(
-      (task: any) => task.status === "ERROR"
+      (task: any) => task.status === 'ERROR',
     );
     if (hasErrorTask) {
       return {
         completed: false,
-        error: "Project generation failed",
+        error: 'Project generation failed',
         shouldContinue: false,
       };
     }
 
     // Continue polling if tasks are still in progress
     const hasInProgress = project.tasks?.some(
-      (task: any) => task.status === "IN_PROGRESS"
+      (task: any) => task.status === 'IN_PROGRESS',
     );
     if (hasInProgress || project.tasks?.length === 0) {
       return {
@@ -481,7 +481,7 @@ export async function pollProjectCompletion(
     // No tasks in progress but not completed - might be stalled
     return {
       completed: false,
-      error: "Project generation may have stalled",
+      error: 'Project generation may have stalled',
       shouldContinue: true,
     };
   };

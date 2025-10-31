@@ -1,9 +1,9 @@
 import "@/app/globals.css";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import AnalyticsProviders from "@/components/ui/analytics-providers";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/react";
+// import AnalyticsProviders from "@/components/ui/analytics-providers";
+// import { SpeedInsights } from "@vercel/speed-insights/next";
+// import { Analytics } from "@vercel/analytics/react";
 import { siteConfig } from "@/config/site";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -63,9 +63,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
-        <AnalyticsProviders />
-        <SpeedInsights />
-        <Analytics />
+        {/* <AnalyticsProviders /> */}
+        {/* <SpeedInsights /> */}
+        {/* <Analytics /> */}
       </body>
     </html>
   );

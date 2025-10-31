@@ -1,13 +1,13 @@
-import "server-only";
+import 'server-only';
 
-import { count, desc, eq, sql, } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { userProject, user } from "./schema";
+import { count, desc, eq, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { userProject, user } from './schema';
 
 // Create database connection
-const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
-const client = postgres(databaseUrl, { ssl: "require" });
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+const client = postgres(databaseUrl, { ssl: 'require' });
 const db = drizzle(client);
 
 export interface AdminProjectData {
@@ -17,10 +17,10 @@ export interface AdminProjectData {
   createdAt: Date;
   userEmail: string;
   userBalance: number;
-  userType: "guest" | "regular";
+  userType: 'guest' | 'regular';
 }
 
-export async function getAllProjects(page = 1, limit = 20, search = "") {
+export async function getAllProjects(page = 1, limit = 20, search = '') {
   try {
     const offset = (page - 1) * limit;
 
@@ -59,7 +59,7 @@ export async function getAllProjects(page = 1, limit = 20, search = "") {
     // Add user type detection
     const projectsWithType: AdminProjectData[] = projects.map((p) => ({
       ...p,
-      userType: p.userEmail.includes("guest") ? "guest" : "regular",
+      userType: p.userEmail.includes('guest') ? 'guest' : 'regular',
     }));
 
     return {
@@ -74,7 +74,7 @@ export async function getAllProjects(page = 1, limit = 20, search = "") {
       },
     };
   } catch (error) {
-    console.error("Error fetching admin projects:", error);
+    console.error('Error fetching admin projects:', error);
     throw error;
   }
 }
@@ -88,7 +88,7 @@ export async function deleteProject(projectId: string) {
 
     return { success: true, deletedCount: 1 };
   } catch (error) {
-    console.error("Error deleting project:", error);
+    console.error('Error deleting project:', error);
     throw error;
   }
 }
@@ -141,7 +141,7 @@ export async function getProjectStats() {
       topUsers: topUsersResult,
     };
   } catch (error) {
-    console.error("Error fetching project stats:", error);
+    console.error('Error fetching project stats:', error);
     throw error;
   }
 }

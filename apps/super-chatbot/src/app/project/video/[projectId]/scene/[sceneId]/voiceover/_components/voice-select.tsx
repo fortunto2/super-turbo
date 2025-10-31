@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useVoiceList } from "@/lib/api";
-import type { IResponsePaginated_IVoiceRead_ } from "@turbo-super/api";
+import { useMemo } from 'react';
+import { useVoiceList } from '@/lib/api';
+import type { IResponsePaginated_IVoiceRead_ } from '@turbo-super/api';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { AudioPlayer } from ".";
+} from '@/components/ui/select';
+import { AudioPlayer } from '.';
 
 export function VoiceSelect({
   value,
@@ -30,37 +30,31 @@ export function VoiceSelect({
         value: item.name,
         label: item.name,
       })) || [];
-    items?.unshift({ value: null, label: "Default" });
+    items?.unshift({ value: null, label: 'Default' });
     return [...items];
   }, [data]);
 
   const activeVoice = useMemo(
     () =>
       (data as IResponsePaginated_IVoiceRead_)?.items.find(
-        (voice) => voice.name === value
+        (voice) => voice.name === value,
       ),
-    [data, value]
+    [data, value],
   );
 
   return (
     <div className="space-y-2 w-full">
-      <label
-        htmlFor="voice-select"
-        className="text-sm"
-      >
+      <label htmlFor="voice-select" className="text-sm">
         Voice
       </label>
       <div className="flex gap-2">
         <Select
-          value={value ?? ""}
+          value={value ?? ''}
           onValueChange={(v) => {
             onChange?.(v || null);
           }}
         >
-          <SelectTrigger
-            id="voice-select"
-            className="w-full "
-          >
+          <SelectTrigger id="voice-select" className="w-full ">
             <SelectValue placeholder="Select voice" />
           </SelectTrigger>
           <SelectContent>
@@ -68,12 +62,9 @@ export function VoiceSelect({
               <div>Loading...</div>
             ) : (
               options.map((v) => (
-                <SelectItem
-                  key={v.label}
-                  value={v.value || "null"}
-                >
+                <SelectItem key={v.label} value={v.value || 'null'}>
                   <div className="flex items-center justify-between w-full">
-                    <span className="text-xs">{v.label || "Default"}</span>
+                    <span className="text-xs">{v.label || 'Default'}</span>
                   </div>
                 </SelectItem>
               ))

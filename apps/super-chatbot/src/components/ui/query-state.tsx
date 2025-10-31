@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { AlertCircle, Eye } from "lucide-react";
-import { cn } from "@turbo-super/ui";
+import type { ReactNode } from 'react';
+import { AlertCircle, Eye } from 'lucide-react';
+import { cn } from '@turbo-super/ui';
 
 interface QueryStateProps {
   isLoading?: boolean;
@@ -24,8 +24,8 @@ export function QueryState({
   isError = false,
   error = null,
   isEmpty = false,
-  emptyMessage = "No data available",
-  loadingMessage = "Loading...",
+  emptyMessage = 'No data available',
+  loadingMessage = 'Loading...',
   errorMessage,
   children,
   className,
@@ -38,7 +38,7 @@ export function QueryState({
     if (loadingComponent) return <>{loadingComponent}</>;
 
     return (
-      <div className={cn("flex items-center justify-center py-8", className)}>
+      <div className={cn('flex items-center justify-center py-8', className)}>
         <div className="text-center space-y-4 flex flex-col items-center">
           <div className="relative">
             <div className="size-12 border-4 border-muted rounded-full animate-spin" />
@@ -57,17 +57,17 @@ export function QueryState({
     if (errorComponent) return <>{errorComponent}</>;
 
     return (
-      <div className={cn("flex items-center justify-center py-8", className)}>
+      <div className={cn('flex items-center justify-center py-8', className)}>
         <div className="text-center space-y-4">
           <div className="size-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="size-8 text-red-600 dark:text-red-400" />
           </div>
           <div className="space-y-2">
             <p className="text-xl font-medium text-red-600 dark:text-red-400">
-              {errorMessage || "Something went wrong"}
+              {errorMessage || 'Something went wrong'}
             </p>
             <p className="text-muted-foreground">
-              {error?.message || "Please try again later"}
+              {error?.message || 'Please try again later'}
             </p>
           </div>
         </div>
@@ -82,8 +82,8 @@ export function QueryState({
     return (
       <div
         className={cn(
-          "flex items-center justify-center py-8 size-full",
-          className
+          'flex items-center justify-center py-8 size-full',
+          className,
         )}
       >
         <div className="text-center space-y-4">
@@ -117,13 +117,13 @@ export function QueryCard({
   className,
 }: Omit<
   QueryStateProps,
-  "loadingComponent" | "errorComponent" | "emptyComponent"
+  'loadingComponent' | 'errorComponent' | 'emptyComponent'
 >) {
   return (
     <div
       className={cn(
-        "bg-card border border-border rounded-xl p-6 shadow-xl",
-        className
+        'bg-card border border-border rounded-xl p-6 shadow-xl',
+        className,
       )}
     >
       <QueryState
@@ -131,9 +131,9 @@ export function QueryCard({
         isError={isError || false}
         error={error || null}
         isEmpty={isEmpty || false}
-        emptyMessage={emptyMessage || ""}
-        loadingMessage={loadingMessage || ""}
-        errorMessage={errorMessage || ""}
+        emptyMessage={emptyMessage || ''}
+        loadingMessage={loadingMessage || ''}
+        errorMessage={errorMessage || ''}
       >
         {children}
       </QueryState>
@@ -152,7 +152,7 @@ export function useQueryState<T>(
   options?: {
     emptyCondition?: (data: T | undefined) => boolean;
     emptyMessage?: string;
-  }
+  },
 ) {
   const { data, isLoading, isError, error } = query;
   const isEmpty = options?.emptyCondition
@@ -168,15 +168,15 @@ export function useQueryState<T>(
     QueryState: (
       props: Omit<
         QueryStateProps,
-        "isLoading" | "isError" | "error" | "isEmpty"
-      >
+        'isLoading' | 'isError' | 'error' | 'isEmpty'
+      >,
     ) => (
       <QueryState
         isLoading={isLoading || false}
         isError={isError || false}
         error={error || null}
         isEmpty={isEmpty || false}
-        emptyMessage={options?.emptyMessage || ""}
+        emptyMessage={options?.emptyMessage || ''}
         {...props}
       />
     ),

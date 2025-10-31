@@ -1,19 +1,19 @@
 {
-  "buildCommand": "pnpm build",
-  "installCommand": "pnpm install",
-  "framework": null,
-  "functions": {
-    "apps/super-chatbot/src/app/api/**/*.ts": {
-      "maxDuration": 30
+    "buildCommand": "pnpm build",
+    "installCommand": "pnpm install",
+    "framework": null,
+    "functions": {
+      "apps/super-chatbot/src/app/api/**/*.ts": {
+        "maxDuration": 30
+      },
+      "apps/super-landing/src/app/api/**/*.ts": {
+        "maxDuration": 30
+      }
     },
-    "apps/super-landing/src/app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/llms.txt",
-      "destination": "/api/llms-txt"
-    }
-  ]
-} 
+    "rewrites": [
+      {
+        "source": "/llms.txt",
+        "destination": "/api/llms-txt"
+      }
+    ]
+  } 

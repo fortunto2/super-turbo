@@ -1,4 +1,4 @@
-import { TaskTypeEnum, TaskStatusEnum, type ITaskRead } from "@turbo-super/api";
+import { TaskTypeEnum, TaskStatusEnum, type ITaskRead } from '@turbo-super/api';
 
 // Основные задачи, которые определяют статус проекта
 const MAIN_TASKS = [
@@ -7,11 +7,11 @@ const MAIN_TASKS = [
   TaskTypeEnum.SCRIPT2STORYBOARD_FLOW, // storyboard
 ];
 
-export type ProjectStatus = "pending" | "processing" | "completed" | "failed";
+export type ProjectStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface ProjectStatusInfo {
   status: ProjectStatus;
-  errorStage?: "script" | "entities" | "storyboard";
+  errorStage?: 'script' | 'entities' | 'storyboard';
   errorMessage?: string;
   completedStages: string[];
   failedStages: string[];
@@ -26,7 +26,7 @@ export function getProjectStatus(tasks: ITaskRead[]): ProjectStatusInfo {
   const completedStages: string[] = [];
   const failedStages: string[] = [];
   let hasError = false;
-  let errorStage: "script" | "entities" | "storyboard" | undefined;
+  let errorStage: 'script' | 'entities' | 'storyboard' | undefined;
   let errorMessage: string | undefined;
 
   // Проверяем каждую основную задачу
@@ -41,11 +41,11 @@ export function getProjectStatus(tasks: ITaskRead[]): ProjectStatusInfo {
 
       // Определяем этап ошибки
       if (task.type === TaskTypeEnum.TXT2SCRIPT_FLOW) {
-        errorStage = "script";
+        errorStage = 'script';
       } else if (task.type === TaskTypeEnum.SCRIPT2ENTITIES_FLOW) {
-        errorStage = "entities";
+        errorStage = 'entities';
       } else if (task.type === TaskTypeEnum.SCRIPT2STORYBOARD_FLOW) {
-        errorStage = "storyboard";
+        errorStage = 'storyboard';
       }
 
       // TODO: Получить сообщение об ошибке из задачи
@@ -57,16 +57,16 @@ export function getProjectStatus(tasks: ITaskRead[]): ProjectStatusInfo {
   let status: ProjectStatus;
 
   if (hasError) {
-    status = "failed";
+    status = 'failed';
   } else if (completedStages.length === MAIN_TASKS.length) {
-    status = "completed";
+    status = 'completed';
   } else if (
     completedStages.length > 0 ||
     mainTasks.some((task) => task.status === TaskStatusEnum.IN_PROGRESS)
   ) {
-    status = "processing";
+    status = 'processing';
   } else {
-    status = "pending";
+    status = 'pending';
   }
 
   return {
@@ -84,11 +84,11 @@ export function getProjectStatus(tasks: ITaskRead[]): ProjectStatusInfo {
 function getStageName(taskType: TaskTypeEnum): string {
   switch (taskType) {
     case TaskTypeEnum.TXT2SCRIPT_FLOW:
-      return "script";
+      return 'script';
     case TaskTypeEnum.SCRIPT2ENTITIES_FLOW:
-      return "entities";
+      return 'entities';
     case TaskTypeEnum.SCRIPT2STORYBOARD_FLOW:
-      return "storyboard";
+      return 'storyboard';
     default:
       return taskType;
   }
@@ -99,14 +99,14 @@ function getStageName(taskType: TaskTypeEnum): string {
  */
 export function getStatusIcon(status: ProjectStatus) {
   switch (status) {
-    case "completed":
-      return "✅";
-    case "failed":
-      return "❌";
-    case "processing":
-      return "⏳";
+    case 'completed':
+      return '✅';
+    case 'failed':
+      return '❌';
+    case 'processing':
+      return '⏳';
     default:
-      return "⏸️";
+      return '⏸️';
   }
 }
 
@@ -115,14 +115,14 @@ export function getStatusIcon(status: ProjectStatus) {
  */
 export function getStatusColor(status: ProjectStatus): string {
   switch (status) {
-    case "completed":
-      return "text-green-600 dark:text-green-400";
-    case "failed":
-      return "text-red-600 dark:text-red-400";
-    case "processing":
-      return "text-blue-600 dark:text-blue-400";
+    case 'completed':
+      return 'text-green-600 dark:text-green-400';
+    case 'failed':
+      return 'text-red-600 dark:text-red-400';
+    case 'processing':
+      return 'text-blue-600 dark:text-blue-400';
     default:
-      return "text-muted-foreground";
+      return 'text-muted-foreground';
   }
 }
 
@@ -131,13 +131,13 @@ export function getStatusColor(status: ProjectStatus): string {
  */
 export function getStatusText(status: ProjectStatus): string {
   switch (status) {
-    case "completed":
-      return "Completed";
-    case "failed":
-      return "Failed";
-    case "processing":
-      return "Processing";
+    case 'completed':
+      return 'Completed';
+    case 'failed':
+      return 'Failed';
+    case 'processing':
+      return 'Processing';
     default:
-      return "Pending";
+      return 'Pending';
   }
 }

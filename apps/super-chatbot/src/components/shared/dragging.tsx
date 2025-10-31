@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import type {
   DraggableProvidedDragHandleProps,
   DropResult,
-} from "@hello-pangea/dnd";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import type { FC, PropsWithChildren, ReactNode } from "react";
+} from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import type { FC, PropsWithChildren, ReactNode } from 'react';
 
 type RootProps = {
   onDragEnd: (result: DropResult) => void;
@@ -36,16 +36,13 @@ const DraggingList: FC<PropsWithChildren> = ({ children }) => {
 type CardProps = {
   idx: number;
   children: (
-    dragHandleProps: DraggableProvidedDragHandleProps | null
+    dragHandleProps: DraggableProvidedDragHandleProps | null,
   ) => ReactNode;
 };
 
 const DraggingCard: FC<CardProps> = ({ idx, children }) => {
   return (
-    <Draggable
-      draggableId={`${idx}`}
-      index={idx}
-    >
+    <Draggable draggableId={`${idx}`} index={idx}>
       {(provided) => (
         <div
           className="flex flex-grow"

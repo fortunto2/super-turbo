@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense } from 'react';
 import {
   Card,
   CardContent,
@@ -6,10 +6,10 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-} from "@turbo-super/ui";
-import { Users, FileText, Calendar } from "lucide-react";
-import { getProjectStats } from "@/lib/db/admin-project-queries";
-import { ProjectsTable } from "@/components/admin/projects-table";
+} from '@turbo-super/ui';
+import { Users, FileText, Calendar } from 'lucide-react';
+import { getProjectStats } from '@/lib/db/admin-project-queries';
+import { ProjectsTable } from '@/components/admin/projects-table';
 
 interface PageProps {
   searchParams: Promise<{
@@ -20,33 +20,33 @@ interface PageProps {
 
 export default async function ProjectsPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
-  const page = Number.parseInt(resolvedSearchParams.page || "1");
-  const search = resolvedSearchParams.search || "";
+  const page = Number.parseInt(resolvedSearchParams.page || '1');
+  const search = resolvedSearchParams.search || '';
 
   // Get project statistics
   const stats = await getProjectStats();
 
   const statCards = [
     {
-      title: "Total Projects",
+      title: 'Total Projects',
       value: stats.totalProjects,
       description: `${stats.guestProjects} guest, ${stats.regularProjects} registered`,
       icon: FileText,
-      color: "text-blue-500",
+      color: 'text-blue-500',
     },
     {
-      title: "Recent Projects",
+      title: 'Recent Projects',
       value: stats.recentProjects,
-      description: "Created in last 24h",
+      description: 'Created in last 24h',
       icon: Calendar,
-      color: "text-green-500",
+      color: 'text-green-500',
     },
     {
-      title: "Top Users",
+      title: 'Top Users',
       value: stats.topUsers.length,
-      description: "Most active creators",
+      description: 'Most active creators',
       icon: Users,
-      color: "text-purple-500",
+      color: 'text-purple-500',
     },
   ];
 
@@ -107,9 +107,9 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
                   <div>
                     <p className="text-sm font-medium">{user.userEmail}</p>
                     <p className="text-xs text-muted-foreground">
-                      {user.userEmail.includes("guest")
-                        ? "Guest User"
-                        : "Registered User"}
+                      {user.userEmail.includes('guest')
+                        ? 'Guest User'
+                        : 'Registered User'}
                     </p>
                   </div>
                 </div>
@@ -132,10 +132,7 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
         </CardHeader>
         <CardContent>
           <Suspense fallback={<div>Loading projects...</div>}>
-            <ProjectsTable
-              page={page}
-              search={search}
-            />
+            <ProjectsTable page={page} search={search} />
           </Suspense>
         </CardContent>
       </Card>

@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { Trash2, Settings } from "lucide-react";
-import type { GeneratedImage } from "../hooks/use-image-generator";
-import { ImageCard } from "./image-card";
-import { ImagePreviewModal } from "./image-preview-modal";
+} from '@turbo-super/ui';
+import { Trash2, Settings } from 'lucide-react';
+import type { GeneratedImage } from '../hooks/use-image-generator';
+import { ImageCard } from './image-card';
+import { ImagePreviewModal } from './image-preview-modal';
 
 interface ImageGalleryProps {
   images: GeneratedImage[];
@@ -23,7 +23,7 @@ interface ImageGalleryProps {
   startInpaintingPolling: (
     projectId: string,
     prompt: string,
-    sourceImage: GeneratedImage
+    sourceImage: GeneratedImage,
   ) => Promise<void>;
   isGenerating: boolean;
 }
@@ -39,7 +39,7 @@ export function ImageGallery({
   isGenerating,
 }: ImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(
-    null
+    null,
   );
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 

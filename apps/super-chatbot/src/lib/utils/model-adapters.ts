@@ -2,7 +2,7 @@
  * Adapters for converting OpenAPI models to UI format
  */
 
-import type { IGenerationConfigRead } from "@turbo-super/core";
+import type { IGenerationConfigRead } from '@turbo-super/core';
 
 // UI adapted model type
 export interface AdaptedModel extends IGenerationConfigRead {
@@ -24,7 +24,7 @@ export function adaptOpenAPIModel(model: IGenerationConfigRead): AdaptedModel {
     label: model.name,
     description: `${model.type} - ${model.source}`,
     value: model.name,
-    workflowPath: model.params?.workflow_path || "",
+    workflowPath: model.params?.workflow_path || '',
     price: model.params?.price || 0,
   };
 }
@@ -33,7 +33,7 @@ export function adaptOpenAPIModel(model: IGenerationConfigRead): AdaptedModel {
  * Convert array of OpenAPI models to UI format
  */
 export function adaptOpenAPIModels(
-  models: IGenerationConfigRead[]
+  models: IGenerationConfigRead[],
 ): AdaptedModel[] {
   return models.map(adaptOpenAPIModel);
 }
@@ -43,7 +43,7 @@ export function adaptOpenAPIModels(
  */
 export function findAdaptedModel(
   models: AdaptedModel[],
-  name: string
+  name: string,
 ): AdaptedModel | undefined {
   return models.find((model) => model.name === name);
 }
@@ -53,7 +53,7 @@ export function findAdaptedModel(
  */
 export function getDefaultAdaptedModel(
   models: AdaptedModel[],
-  preferredNames: string[] = []
+  preferredNames: string[] = [],
 ): AdaptedModel | undefined {
   // Try preferred names first
   for (const name of preferredNames) {

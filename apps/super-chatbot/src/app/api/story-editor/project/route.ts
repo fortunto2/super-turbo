@@ -1,19 +1,19 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   getSuperduperAIConfig,
   OpenAPI,
   ProjectService,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get("projectId");
+    const projectId = searchParams.get('projectId');
 
     if (!projectId) {
       return NextResponse.json(
-        { success: false, error: "Project ID is required" },
-        { status: 400 }
+        { success: false, error: 'Project ID is required' },
+        { status: 400 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       project,
     });
   } catch (error) {
-    console.error("Error fetching scenes:", error);
+    console.error('Error fetching scenes:', error);
 
     // In case of error, return placeholder for demonstration
     return NextResponse.json({

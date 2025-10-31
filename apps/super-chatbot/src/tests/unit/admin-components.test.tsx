@@ -2,66 +2,48 @@
  * Тесты для компонентов админ панели
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 
 // Мокаем fetch для тестов
 global.fetch = vi.fn();
 
 // Мокаем компоненты UI
-vi.mock("@turbo-super/ui", () => ({
+vi.mock('@turbo-super/ui', () => ({
   Card: ({ children, ...props }: any) => (
-    <div
-      data-testid="card"
-      {...props}
-    >
+    <div data-testid="card" {...props}>
       {children}
     </div>
   ),
   CardContent: ({ children, ...props }: any) => (
-    <div
-      data-testid="card-content"
-      {...props}
-    >
+    <div data-testid="card-content" {...props}>
       {children}
     </div>
   ),
   CardDescription: ({ children, ...props }: any) => (
-    <div
-      data-testid="card-description"
-      {...props}
-    >
+    <div data-testid="card-description" {...props}>
       {children}
     </div>
   ),
   CardHeader: ({ children, ...props }: any) => (
-    <div
-      data-testid="card-header"
-      {...props}
-    >
+    <div data-testid="card-header" {...props}>
       {children}
     </div>
   ),
   CardTitle: ({ children, ...props }: any) => (
-    <div
-      data-testid="card-title"
-      {...props}
-    >
+    <div data-testid="card-title" {...props}>
       {children}
     </div>
   ),
   Badge: ({ children, ...props }: any) => (
-    <span
-      data-testid="badge"
-      {...props}
-    >
+    <span data-testid="badge" {...props}>
       {children}
     </span>
   ),
 }));
 
 // Мокаем иконки
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Database: () => <div data-testid="database-icon">Database</div>,
   HardDrive: () => <div data-testid="harddrive-icon">HardDrive</div>,
   Server: () => <div data-testid="server-icon">Server</div>,
@@ -77,7 +59,7 @@ vi.mock("lucide-react", () => ({
   Activity: () => <div data-testid="activity-icon">Activity</div>,
 }));
 
-describe("Admin Components", () => {
+describe('Admin Components', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -89,8 +71,8 @@ describe("Admin Components", () => {
     vi.restoreAllMocks();
   });
 
-  describe("DatabaseInfoCard", () => {
-    it("should render loading state", async () => {
+  describe('DatabaseInfoCard', () => {
+    it('should render loading state', async () => {
       // Мокаем медленный ответ
       (global.fetch as any).mockImplementationOnce(
         () =>
@@ -101,28 +83,28 @@ describe("Admin Components", () => {
                   ok: true,
                   json: async () => ({ stats: { system: {} } }),
                 }),
-              100
-            )
-          )
+              100,
+            ),
+          ),
       );
 
       const { DatabaseInfoCard } = await import(
-        "@/components/admin/database-info-card"
+        '@/components/admin/database-info-card'
       );
 
       render(<DatabaseInfoCard />);
 
-      expect(screen.getAllByText("Loading...")).toHaveLength(6); // 3 labels + 3 values
+      expect(screen.getAllByText('Loading...')).toHaveLength(6); // 3 labels + 3 values
     });
 
-    it("should render database information", async () => {
+    it('should render database information', async () => {
       const mockData = {
         stats: {
           system: {
-            databaseSize: "16 MB",
-            databaseName: "neondb",
+            databaseSize: '16 MB',
+            databaseName: 'neondb',
             postgresVersion:
-              "PostgreSQL 17.5 (84bec44) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+              'PostgreSQL 17.5 (84bec44) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit',
             uptime: 2925.088545,
           },
         },
@@ -134,36 +116,36 @@ describe("Admin Components", () => {
       });
 
       const { DatabaseInfoCard } = await import(
-        "@/components/admin/database-info-card"
+        '@/components/admin/database-info-card'
       );
 
       render(<DatabaseInfoCard />);
 
       await waitFor(() => {
-        expect(screen.getByText("16 MB")).toBeInTheDocument();
-        expect(screen.getByText("PostgreSQL")).toBeInTheDocument();
+        expect(screen.getByText('16 MB')).toBeInTheDocument();
+        expect(screen.getByText('PostgreSQL')).toBeInTheDocument();
       });
     });
 
-    it("should handle errors", async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
+    it('should handle errors', async () => {
+      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
 
       const { DatabaseInfoCard } = await import(
-        "@/components/admin/database-info-card"
+        '@/components/admin/database-info-card'
       );
 
       render(<DatabaseInfoCard />);
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Error loading database info/)
+          screen.getByText(/Error loading database info/),
         ).toBeInTheDocument();
       });
     });
   });
 
-  describe("PerformanceMetricsCard", () => {
-    it("should render performance metrics", async () => {
+  describe('PerformanceMetricsCard', () => {
+    it('should render performance metrics', async () => {
       const mockData = {
         data: {
           summary: {
@@ -178,17 +160,17 @@ describe("Admin Components", () => {
       });
 
       const { PerformanceMetricsCard } = await import(
-        "@/components/admin/performance-metrics-card"
+        '@/components/admin/performance-metrics-card'
       );
 
       render(<PerformanceMetricsCard />);
 
       await waitFor(() => {
-        expect(screen.getByText("92.73%")).toBeInTheDocument();
+        expect(screen.getByText('92.73%')).toBeInTheDocument();
       });
     });
 
-    it("should handle missing metrics", async () => {
+    it('should handle missing metrics', async () => {
       const mockData = {
         data: {
           summary: {},
@@ -201,25 +183,25 @@ describe("Admin Components", () => {
       });
 
       const { PerformanceMetricsCard } = await import(
-        "@/components/admin/performance-metrics-card"
+        '@/components/admin/performance-metrics-card'
       );
 
       render(<PerformanceMetricsCard />);
 
       await waitFor(() => {
-        expect(screen.getAllByText("N/A")).toHaveLength(4); // CPU, Memory, Disk, Network
+        expect(screen.getAllByText('N/A')).toHaveLength(4); // CPU, Memory, Disk, Network
       });
     });
   });
 
-  describe("UptimeStatusCard", () => {
-    it("should render uptime and status", async () => {
+  describe('UptimeStatusCard', () => {
+    it('should render uptime and status', async () => {
       const healthData = {
-        status: "healthy",
+        status: 'healthy',
         uptime: 2925.088545,
         services: {
-          database: "healthy",
-          api: "healthy",
+          database: 'healthy',
+          api: 'healthy',
         },
       };
 
@@ -242,24 +224,24 @@ describe("Admin Components", () => {
         });
 
       const { UptimeStatusCard } = await import(
-        "@/components/admin/uptime-status-card"
+        '@/components/admin/uptime-status-card'
       );
 
       render(<UptimeStatusCard />);
 
       await waitFor(() => {
         expect(screen.getByText(/0d 0h 48m/)).toBeInTheDocument(); // Форматированный uptime
-        expect(screen.getAllByText("Online")).toHaveLength(2); // API Status + Database Status
+        expect(screen.getAllByText('Online')).toHaveLength(2); // API Status + Database Status
       });
     });
 
-    it("should format uptime correctly", async () => {
+    it('should format uptime correctly', async () => {
       const healthData = {
-        status: "healthy",
+        status: 'healthy',
         uptime: 3661, // 1 час 1 минута 1 секунда
         services: {
-          database: "healthy",
-          api: "healthy",
+          database: 'healthy',
+          api: 'healthy',
         },
       };
 
@@ -282,7 +264,7 @@ describe("Admin Components", () => {
         });
 
       const { UptimeStatusCard } = await import(
-        "@/components/admin/uptime-status-card"
+        '@/components/admin/uptime-status-card'
       );
 
       render(<UptimeStatusCard />);
@@ -293,8 +275,8 @@ describe("Admin Components", () => {
     });
   });
 
-  describe("ActivityOverview", () => {
-    it("should render activity data", async () => {
+  describe('ActivityOverview', () => {
+    it('should render activity data', async () => {
       const mockData = {
         stats: {
           activity: {
@@ -313,15 +295,15 @@ describe("Admin Components", () => {
       });
 
       const { ActivityOverview } = await import(
-        "@/components/admin/activity-overview"
+        '@/components/admin/activity-overview'
       );
 
       render(<ActivityOverview />);
 
       await waitFor(() => {
-        expect(screen.getByText("5")).toBeInTheDocument(); // Recent Users
-        expect(screen.getByText("12")).toBeInTheDocument(); // Recent Documents
-        expect(screen.getByText("2")).toBeInTheDocument(); // Recent Projects
+        expect(screen.getByText('5')).toBeInTheDocument(); // Recent Users
+        expect(screen.getByText('12')).toBeInTheDocument(); // Recent Documents
+        expect(screen.getByText('2')).toBeInTheDocument(); // Recent Projects
       });
     });
   });

@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Upload,
   X,
   Image as ImageIcon,
   FileImage,
   Loader2,
-} from "lucide-react";
-import { cn } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+} from 'lucide-react';
+import { cn } from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 
 interface UploadedImage {
   id: string;
@@ -37,7 +37,7 @@ export function ImageUploader({
   onChange,
   maxFiles = 3,
   maxSize = 5,
-  accept = "image/*",
+  accept = 'image/*',
   className,
   disabled = false,
   showImageGrid = true,
@@ -59,12 +59,12 @@ export function ImageUploader({
         const file = files[i];
 
         // Check if file exists and validate file type
-        if (!file || !file.type || !file.type.startsWith("image/")) continue;
+        if (!file || !file.type || !file.type.startsWith('image/')) continue;
 
         // Validate file size
         if (file.size > maxSize * 1024 * 1024) {
           console.warn(
-            `File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB)`
+            `File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
           );
           continue;
         }
@@ -80,13 +80,13 @@ export function ImageUploader({
           const newImage: UploadedImage = {
             id: `img-${Date.now()}-${i}`,
             file,
-            base64: base64 ? base64.split(",")[1] || "" : "", // Remove data URL prefix
-            preview: base64 || "",
+            base64: base64 ? base64.split(',')[1] || '' : '', // Remove data URL prefix
+            preview: base64 || '',
           };
 
           newImages.push(newImage);
         } catch (error) {
-          console.error("Error reading file:", error);
+          console.error('Error reading file:', error);
         }
       }
 
@@ -96,7 +96,7 @@ export function ImageUploader({
 
       setIsUploading(false);
     },
-    [value, onChange, maxFiles, maxSize, disabled]
+    [value, onChange, maxFiles, maxSize, disabled],
   );
 
   const handleDrop = useCallback(
@@ -105,7 +105,7 @@ export function ImageUploader({
       setIsDragging(false);
       handleFiles(e.dataTransfer.files);
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const handleDragOver = useCallback(
@@ -113,7 +113,7 @@ export function ImageUploader({
       e.preventDefault();
       if (!disabled) setIsDragging(true);
     },
-    [disabled]
+    [disabled],
   );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
@@ -125,17 +125,17 @@ export function ImageUploader({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleFiles(e.target.files);
       if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        fileInputRef.current.value = '';
       }
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const removeImage = useCallback(
     (id: string) => {
       onChange(value.filter((img) => img.id !== id));
     },
-    [value, onChange]
+    [value, onChange],
   );
 
   const openFileDialog = useCallback(() => {
@@ -147,14 +147,14 @@ export function ImageUploader({
   const canUpload = value.length < maxFiles && !disabled;
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Upload Area */}
       {canUpload && (
         <Card
           className={cn(
-            "relative overflow-hidden transition-all duration-200 cursor-pointer",
-            isDragging && "border-primary bg-primary/5",
-            disabled && "opacity-50 cursor-not-allowed"
+            'relative overflow-hidden transition-all duration-200 cursor-pointer',
+            isDragging && 'border-primary bg-primary/5',
+            disabled && 'opacity-50 cursor-not-allowed',
           )}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -164,8 +164,8 @@ export function ImageUploader({
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
             <div
               className={cn(
-                "rounded-full p-4 mb-4 transition-colors",
-                isDragging ? "bg-primary text-primary-foreground" : "bg-muted"
+                'rounded-full p-4 mb-4 transition-colors',
+                isDragging ? 'bg-primary text-primary-foreground' : 'bg-muted',
               )}
             >
               {isUploading ? (
@@ -177,22 +177,16 @@ export function ImageUploader({
 
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">
-                {isUploading ? "Uploading..." : "Upload Images"}
+                {isUploading ? 'Uploading...' : 'Upload Images'}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Drag & drop images here, or click to browse
               </p>
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Badge
-                  variant="outline"
-                  className="text-xs"
-                >
+                <Badge variant="outline" className="text-xs">
                   {value.length}/{maxFiles} files
                 </Badge>
-                <Badge
-                  variant="outline"
-                  className="text-xs"
-                >
+                <Badge variant="outline" className="text-xs">
                   Max {maxSize}MB each
                 </Badge>
               </div>
@@ -215,10 +209,7 @@ export function ImageUploader({
       {showImageGrid && value.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {value.map((image) => (
-            <Card
-              key={image.id}
-              className="group relative overflow-hidden"
-            >
+            <Card key={image.id} className="group relative overflow-hidden">
               <div className="aspect-square relative">
                 <img
                   src={image.preview}
@@ -247,7 +238,7 @@ export function ImageUploader({
                   <div className="flex items-center gap-1 text-white text-xs">
                     <FileImage className="h-3 w-3" />
                     <span className="truncate">
-                      {image.file?.name || "Image"}
+                      {image.file?.name || 'Image'}
                     </span>
                   </div>
                   {image.file && (

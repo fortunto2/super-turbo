@@ -1,13 +1,12 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef } from "react";
-import { imageSSEStore } from "@/artifacts/image";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import { useCallback, useEffect, useRef } from 'react';
+import { imageSSEStore } from '@/artifacts/image';
 
 interface ChatImageSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: any; // AI SDK v5: setMessages type changed;
   enabled?: boolean;
 }
 
@@ -22,10 +21,10 @@ const saveMessageToDatabase = async (chatId: string, message: any) => {
       createdAt: message.createdAt,
     };
 
-    const response = await fetch("/api/save-message", {
-      method: "POST",
+    const response = await fetch('/api/save-message', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         chatId,
@@ -35,13 +34,13 @@ const saveMessageToDatabase = async (chatId: string, message: any) => {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("Failed to save image message:", errorData);
+      console.error('Failed to save image message:', errorData);
       throw new Error(
-        `Failed to save message: ${response.status} ${response.statusText}`
+        `Failed to save message: ${response.status} ${response.statusText}`,
       );
     }
   } catch (error) {
-    console.error("Failed to save image message:", error);
+    console.error('Failed to save image message:', error);
   }
 };
 
@@ -75,15 +74,15 @@ export const useChatImageSSE = ({
 
         // Only handle completed images that have URL
         if (
-          eventData.type === "file" &&
-          eventData.object?.type === "image" &&
+          eventData.type === 'file' &&
+          eventData.object?.type === 'image' &&
           eventData.object?.url
         ) {
           const imageUrl = eventData.object.url;
           const requestId = eventData.requestId;
 
           // Store the last image URL for debugging and try direct artifact update
-          if (typeof window !== "undefined") {
+          if (typeof window !== 'undefined') {
             const chatSSEInstance = (window as any).chatSSEInstance;
             if (chatSSEInstance) {
               chatSSEInstance.lastImageUrl = imageUrl;
@@ -93,37 +92,37 @@ export const useChatImageSSE = ({
             const artifactInstance = (window as any).artifactInstance;
             if (
               artifactInstance?.artifact &&
-              artifactInstance.artifact.kind === "image"
+              artifactInstance.artifact.kind === 'image'
             ) {
               try {
                 const currentContent = JSON.parse(
-                  artifactInstance.artifact.content || "{}"
+                  artifactInstance.artifact.content || '{}',
                 );
 
                 // Check if this update is for current artifact
                 if (
                   currentContent.projectId === targetProjectId ||
-                  currentContent.status === "pending" ||
-                  currentContent.status === "streaming"
+                  currentContent.status === 'pending' ||
+                  currentContent.status === 'streaming'
                 ) {
                   const updatedContent = {
                     ...currentContent,
-                    status: "completed",
+                    status: 'completed',
                     imageUrl: imageUrl,
                     projectId: targetProjectId,
                     requestId: requestId || currentContent.requestId,
                     timestamp: Date.now(),
-                    message: "Image generation completed!",
+                    message: 'Image generation completed!',
                   };
 
                   artifactInstance.setArtifact((current: any) => ({
                     ...current,
                     content: JSON.stringify(updatedContent),
-                    status: "idle" as const,
+                    status: 'idle' as const,
                   }));
                 }
               } catch (error) {
-                console.error("❌ Failed to update artifact:", error);
+                console.error('❌ Failed to update artifact:', error);
               }
             }
           }
@@ -135,7 +134,7 @@ export const useChatImageSSE = ({
 
           // Update messages with completed image
           setTimeout(() => {
-            setMessages((prevMessages) => {
+            setMessages((prevMessages: any) => {
               const updatedMessages = [...prevMessages];
               let foundArtifact = false;
 
@@ -143,61 +142,61 @@ export const useChatImageSSE = ({
               for (let i = updatedMessages.length - 1; i >= 0; i--) {
                 const message = updatedMessages[i];
 
-                if (message?.role === "assistant") {
+                if (message?.role === 'assistant') {
                   // Check if this message has image artifact content
                   const hasImageArtifact = message.parts?.some(
-                    (part) =>
-                      part.type === "text" &&
-                      "text" in part &&
+                    (part: any) =>
+                      part.type === 'text' &&
+                      'text' in part &&
                       part.text &&
                       (part.text.includes('"kind":"image"') ||
                         part.text.includes("'kind':'image'") ||
-                        part.text.includes("ImageArtifact"))
+                        part.text.includes('ImageArtifact')),
                   );
 
                   if (hasImageArtifact) {
                     // Try to find and parse image artifact content
                     for (const part of message.parts || []) {
-                      if (part.type === "text" && "text" in part && part.text) {
+                      if (part.type === 'text' && 'text' in part && part.text) {
                         try {
                           let artifactContent = null;
 
                           // Try different parsing methods
-                          if (part.text.includes("```json")) {
+                          if (part.text.includes('```json')) {
                             const jsonMatch = part.text.match(
-                              /```json\s*({[\s\S]*?})\s*```/
+                              /```json\s*({[\s\S]*?})\s*```/,
                             );
                             if (jsonMatch?.[1]) {
                               artifactContent = JSON.parse(jsonMatch[1]);
                             }
                           } else if (
-                            part.text.startsWith("{") &&
-                            part.text.endsWith("}")
+                            part.text.startsWith('{') &&
+                            part.text.endsWith('}')
                           ) {
                             artifactContent = JSON.parse(part.text);
                           }
 
                           if (
                             artifactContent?.projectId === targetProjectId ||
-                            artifactContent?.status === "pending" ||
-                            artifactContent?.status === "streaming"
+                            artifactContent?.status === 'pending' ||
+                            artifactContent?.status === 'streaming'
                           ) {
                             // Update the artifact content
                             const updatedContent = {
                               ...artifactContent,
-                              status: "completed",
+                              status: 'completed',
                               imageUrl: imageUrl,
                               projectId: targetProjectId,
                               requestId: requestId || artifactContent.requestId,
                               timestamp: Date.now(),
-                              message: "Image generation completed!",
+                              message: 'Image generation completed!',
                             };
 
                             // Update the part text
-                            const newText = part.text.includes("```json")
+                            const newText = part.text.includes('```json')
                               ? part.text.replace(
                                   /```json\s*{[\s\S]*?}\s*```/,
-                                  `\`\`\`json\n${JSON.stringify(updatedContent, null, 2)}\n\`\`\``
+                                  `\`\`\`json\n${JSON.stringify(updatedContent, null, 2)}\n\`\`\``,
                                 )
                               : JSON.stringify(updatedContent);
 
@@ -232,7 +231,7 @@ export const useChatImageSSE = ({
         }
       };
     },
-    [setMessages, chatId]
+    [setMessages, chatId],
   );
 
   // Connect to a specific project's SSE channel
@@ -242,7 +241,7 @@ export const useChatImageSSE = ({
         return;
       }
 
-      console.log("🔌 Chat SSE: Connecting to project:", projectId);
+      console.log('🔌 Chat SSE: Connecting to project:', projectId);
 
       const eventHandler = createEventHandler(projectId);
       handlersMapRef.current.set(projectId, eventHandler);
@@ -258,11 +257,11 @@ export const useChatImageSSE = ({
       connectedProjectsRef.current.add(projectId);
 
       // Expose global function for manual project notification
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         (window as any).notifyNewImageProject = (newProjectId: string) => {
           console.log(
-            "📢 Chat SSE: Manual project notification:",
-            newProjectId
+            '📢 Chat SSE: Manual project notification:',
+            newProjectId,
           );
           if (newProjectId && newProjectId !== projectId) {
             connectToProject(newProjectId);
@@ -278,7 +277,7 @@ export const useChatImageSSE = ({
         };
       }
     },
-    [createEventHandler]
+    [createEventHandler],
   );
 
   // Cleanup project connection
@@ -287,7 +286,7 @@ export const useChatImageSSE = ({
       return;
     }
 
-    console.log("🔌 Chat SSE: Disconnecting from project:", projectId);
+    console.log('🔌 Chat SSE: Disconnecting from project:', projectId);
 
     const handler = handlersMapRef.current.get(projectId);
     if (handler) {
@@ -304,25 +303,94 @@ export const useChatImageSSE = ({
       const ids = new Set<string>();
 
       for (const message of messages) {
-        if (message.role === "assistant" && message.parts) {
+        if (message.role === 'assistant' && message.parts) {
           for (const part of message.parts) {
-            if (part.type === "text" && "text" in part && part.text) {
+            // AI SDK v5: Check tool outputs for image artifacts
+            if (
+              (part.type === 'tool-configureImageGeneration' ||
+                part.type === 'tool-configureVideoGeneration') &&
+              part.state === 'output-available' &&
+              part.output
+            ) {
+              try {
+                // Extract artifact from nested structure
+                const artifactData = part.output?.parts?.[0] || part.output;
+
+                if (
+                  artifactData?.kind === 'image' ||
+                  artifactData?.kind === 'video'
+                ) {
+                  // Parse title which contains the configuration
+                  let config: any = null;
+                  try {
+                    config = JSON.parse(artifactData.title || '{}');
+                  } catch (e) {
+                    /* ignore parse errors */
+                  }
+
+                  // Parse content which contains the project/file ID
+                  console.log('🔍 Attempting to parse artifact content:', {
+                    hasContent: !!artifactData.content,
+                    contentPreview: artifactData.content
+                      ? artifactData.content.substring(0, 200)
+                      : 'none',
+                  });
+
+                  let content: any = null;
+                  try {
+                    content = JSON.parse(artifactData.content || '{}');
+                    console.log('✅ Parsed artifact content:', {
+                      hasProjectId: !!content?.projectId,
+                      hasFileId: !!content?.fileId,
+                      projectId: content?.projectId,
+                      fileId: content?.fileId,
+                      status: content?.status,
+                    });
+                  } catch (e) {
+                    console.error('❌ Failed to parse artifact content:', e);
+                  }
+
+                  if (content?.projectId) {
+                    ids.add(content.projectId);
+                    console.log(
+                      '🔍 Found projectId in AI SDK v5 artifact:',
+                      content.projectId,
+                    );
+                  }
+                  if (content?.fileId) {
+                    ids.add(`file.${content.fileId}`);
+                    console.log(
+                      '🔍 Found fileId in AI SDK v5 artifact:',
+                      content.fileId,
+                    );
+                  }
+                }
+              } catch (e) {
+                console.error(
+                  '❌ Failed to extract project ID from tool output:',
+                  e,
+                );
+              }
+            }
+
+            // Legacy: Check text parts for v4 compatibility
+            if (part.type === 'text' && 'text' in part && part.text) {
               try {
                 // Check for image artifacts before parsing
                 if (
                   part.text.includes('"kind":"image"') ||
                   part.text.includes("'kind':'image'") ||
-                  part.text.includes("ImageArtifact")
+                  part.text.includes('ImageArtifact')
                 ) {
                   let artifactContent: any = null;
-                  if (part.text.includes("```json")) {
+                  if (part.text.includes('```json')) {
                     const jsonMatch = part.text.match(
-                      /```json\s*({[\s\S]*?})\s*```/
+                      /```json\s*({[\s\S]*?})\s*```/,
                     );
                     if (jsonMatch) artifactContent = JSON.parse(jsonMatch[1]);
                   } else if (
-                    part.text.startsWith("{") &&
-                    part.text.endsWith("}")
+                    part.text.startsWith('{') &&
+                    part.text.endsWith('}')
                   ) {
                     artifactContent = JSON.parse(part.text);
                   }
@@ -343,7 +411,7 @@ export const useChatImageSSE = ({
       }
       return Array.from(ids);
     },
-    []
+    [],
   );
 
   // Monitor messages for project IDs and connect/disconnect as needed
@@ -368,7 +436,7 @@ export const useChatImageSSE = ({
     }
 
     // Store instance for debugging
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       (window as any).chatSSEInstance = {
         connectedProjects: connectedProjectsRef.current,
         lastImageUrl: null,
@@ -398,7 +466,7 @@ export const useChatImageSSE = ({
       // Force cleanup if needed
       const debugInfo = imageSSEStore.getDebugInfo();
       if (debugInfo.totalHandlers > 5) {
-        console.log("🧹 Chat SSE: Force cleanup due to handler accumulation");
+        console.log('🧹 Chat SSE: Force cleanup due to handler accumulation');
         imageSSEStore.forceCleanup();
       }
     };

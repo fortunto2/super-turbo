@@ -1,30 +1,30 @@
 "use client";
 
-import type { Attachment, UIMessage } from "ai";
-import { useChat } from "@ai-sdk/react";
-import { Suspense, useEffect, useState, useCallback, useRef } from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { ChatHeader } from "./chat-header";
-import type { Vote } from "@/lib/db/schema";
-import { fetcher, generateUUID } from "@/lib/utils";
-import { UIArtifact } from "../artifacts";
-import { MultimodalInput } from "./multimodal-input";
-import { Messages } from "../messages";
-import type { VisibilityType } from "../shared/visibility-selector";
 import { useArtifactContext } from "@/contexts/artifact-context";
-import { unstable_serialize } from "swr/infinite";
-import { getChatHistoryPaginationKey } from "../sidebar/sidebar-history";
-import { toast } from "../common/toast";
-import type { Session } from "next-auth";
-import { useSearchParams } from "next/navigation";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatImageSSE } from "@/hooks/use-chat-image-sse";
 import { useChatVideoSSE } from "@/hooks/use-chat-video-sse";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import type { Vote } from "@/lib/db/schema";
+import { fetcher, generateUUID } from "@/lib/utils";
 import { setActiveChat } from "@/lib/utils/chat-websocket-cleanup";
-import { LoaderIcon } from "../common/icons";
-import { ArtifactManager } from "../artifacts/artifact-manager";
+import { useChat } from "@ai-sdk/react";
+import type { UIMessage } from "ai";
+import type { Session } from "next-auth";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
+import { UIArtifact } from "../artifacts";
 import { ArtifactDebug } from "../artifacts/artifact-debug";
+import { ArtifactManager } from "../artifacts/artifact-manager";
+import { LoaderIcon } from "../common/icons";
+import { toast } from "../common/toast";
+import { Messages } from "../messages";
+import type { VisibilityType } from "../shared/visibility-selector";
+import { getChatHistoryPaginationKey } from "../sidebar/sidebar-history";
+import { ChatHeader } from "./chat-header";
+import { MultimodalInput } from "./multimodal-input";
 
 // --- UNIVERSAL SAVE SCRIPT ARTIFACT TO CHAT ---
 async function saveScriptArtifactToChat({
@@ -109,41 +109,254 @@ function ChatContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
-  const {
-    messages,
-    setMessages,
-    handleSubmit,
-    input,
-    setInput,
-    append,
-    status,
-    stop,
-    reload,
-    experimental_resume,
-    data,
-  } = useChat({
+  const { updateMessages, artifact } = useArtifactContext();
+
+  // AI SDK v5: Manual input management (useChat doesn't provide input/setInput in v5)
+  const [input, setInput] = useState("");
+
+  const chatHelpers = useChat({
     id,
-    initialMessages,
-    api: isGeminiChat ? "/api/gemini-chat" : "/api/chat",
+    messages: initialMessages as any, // AI SDK v5: messages instead of initialMessages
+    // AI SDK v5: api parameter might be different
+    ...(isGeminiChat ? { api: "/api/gemini-chat" } : {}),
+    // AI SDK v5: body parameter might be different
     body: {
       id,
       selectedChatModel: initialChatModel,
       selectedVisibilityType: visibilityType,
     },
-    experimental_throttle: 100,
-    sendExtraMessageFields: true,
-    generateId: generateUUID,
-    onFinish: () => {
-      console.log("🔍 useChat onFinish called - НЕ обновляем URL");
-      console.log("🔍 Chat ID in onFinish:", id);
+    // AI SDK v5: Use fetch function to intercept and modify the request
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      console.log("🔍 Custom fetch called");
+      console.log("🔍 Request URL:", input);
+
+      // Parse the request body to get messages
+      if (init?.body) {
+        try {
+          const body = JSON.parse(init.body as string);
+          console.log(
+            "🔍 CLIENT - Original messages count:",
+            body.messages?.length || 0
+          );
+          console.log(
+            "🔍 CLIENT - Original message roles:",
+            body.messages?.map((m: any) => m.role) || []
+          );
+          console.log(
+            "🔍 CLIENT - Body has experimental_attachments:",
+            !!body.experimental_attachments
+          );
+          console.log(
+            "🔍 CLIENT - experimental_attachments count:",
+            body.experimental_attachments?.length || 0
+          );
+          console.log("🔍 CLIENT - Body has files (AI SDK v5):", !!body.files);
+          console.log("🔍 CLIENT - files count:", body.files?.length || 0);
+
+          // CRITICAL FIX: Only send the last (new) message
+          // After page reload, useChat has all messages from DB
+          // We only need to send the new user message
+          if (body.messages && body.messages.length > 0) {
+            const lastMessage = body.messages[body.messages.length - 1];
+            console.log("🔍 CLIENT - Sending only last message:", {
+              id: lastMessage.id,
+              role: lastMessage.role,
+              content: lastMessage.content?.substring(0, 30),
+              hasAttachments: !!(lastMessage as any).experimental_attachments,
+              hasFiles: !!(lastMessage as any).files,
+              filesCount: (lastMessage as any).files?.length || 0,
+              parts: lastMessage.parts?.map((p: any) => ({
+                type: p.type,
+                hasText: !!p.text,
+                hasUrl: !!p.url,
+              })),
+            });
+
+            body.messages = [lastMessage];
+
+            // CRITICAL: AI SDK v5 stores files on the message itself, not as separate body.files
+            // Copy files from the message to the body level if they exist
+            if (!body.files && (lastMessage as any).files) {
+              body.files = (lastMessage as any).files;
+              console.log(
+                "🔍 CLIENT - Copied files from message to body:",
+                body.files?.length || 0
+              );
+            }
+
+            init.body = JSON.stringify(body);
+
+            console.log(
+              "🔍 CLIENT - Modified messages count:",
+              body.messages.length,
+              "files:",
+              body.files?.length || 0
+            );
+          }
+        } catch (e) {
+          console.error("Failed to parse request body:", e);
+        }
+      }
+
+      return fetch(input, init);
+    },
+    onFinish: (result: any) => {
+      console.log("🔍 Client onFinish - Chat ID:", id);
+
+      // IMPORTANT: result.messages contains the complete updated message list
+      let allMessages = result?.messages || [];
+      console.log("🔍 Messages received:", allMessages.length);
+
+      // CRITICAL FIX: Add attachments for script documents from tool results
+      // This ensures scripts appear immediately without page reload
+      if (allMessages.length > 0) {
+        const lastMessage = allMessages[allMessages.length - 1];
+        if (
+          lastMessage &&
+          lastMessage.role === "assistant" &&
+          lastMessage.parts
+        ) {
+          console.log("🔧 Checking for script tools in last message");
+
+          const scriptDocuments: Array<{
+            id: string;
+            title: string;
+            kind: string;
+          }> = [];
+
+          // Check each part for script-generating tools
+          for (const part of lastMessage.parts) {
+            if (
+              part.type &&
+              typeof part.type === "string" &&
+              part.type.startsWith("tool-") &&
+              ((part as any).state === "output-available" ||
+                (part as any).state === "result") &&
+              (part as any).output
+            ) {
+              const toolName = part.type.replace("tool-", "");
+              const toolResult = (part as any).output;
+
+              // Check for script documents
+              if (
+                (toolName === "configureScriptGeneration" ||
+                  (toolName === "createDocument" &&
+                    toolResult.kind === "script")) &&
+                toolResult.id &&
+                toolResult.kind === "script"
+              ) {
+                scriptDocuments.push({
+                  id: toolResult.id,
+                  title: toolResult.title || "Document",
+                  kind: toolResult.kind,
+                });
+                console.log("🔧 ✅ Found script document:", toolResult.id);
+              }
+            }
+          }
+
+          // Add attachments if we found script documents
+          if (scriptDocuments.length > 0) {
+            const attachments = lastMessage.experimental_attachments || [];
+            let hasNewAttachments = false;
+
+            for (const doc of scriptDocuments) {
+              // Check if attachment already exists
+              const exists = attachments.some(
+                (att: any) => att.documentId === doc.id
+              );
+              if (!exists) {
+                attachments.push({
+                  name:
+                    doc.title.length > 200
+                      ? `${doc.title.substring(0, 200)}...`
+                      : doc.title,
+                  url: `${window.location.origin}/api/document?id=${doc.id}`,
+                  contentType: "text/markdown" as const,
+                  documentId: doc.id,
+                });
+                hasNewAttachments = true;
+                console.log("🔧 ✅ Added script attachment on client:", doc.id);
+              }
+            }
+
+            if (hasNewAttachments) {
+              // Update the last message with new attachments
+              allMessages = [
+                ...allMessages.slice(0, -1),
+                {
+                  ...lastMessage,
+                  experimental_attachments: attachments,
+                },
+              ];
+              console.log(
+                "🔧 ✅ Updated messages with",
+                attachments.length,
+                "attachments"
+              );
+            }
+          }
+        }
+
+        console.log(
+          "🔍 Updating messages state with",
+          allMessages.length,
+          "messages"
+        );
+
+        // CRITICAL FIX: Remove image/video attachments to prevent token overflow
+        // Keep markdown attachments (scripts) as they don't cause token overflow
+        // Images/videos are displayed via SSE hooks, not via attachments in messages
+        const messagesWithoutImageAttachments = allMessages.map((msg: any) => {
+          if (!msg.experimental_attachments) return msg;
+
+          // Keep only markdown attachments (scripts), remove image/video attachments
+          const filteredAttachments = msg.experimental_attachments.filter(
+            (att: any) => att.contentType === "text/markdown"
+          );
+
+          return {
+            ...msg,
+            experimental_attachments:
+              filteredAttachments.length > 0 ? filteredAttachments : undefined,
+          };
+        });
+        console.log(
+          "🔍 Filtered image/video attachments from",
+          allMessages.length,
+          "messages to prevent client-side token overflow"
+        );
+
+        // CRITICAL FIX: Explicitly update React state with new messages
+        // AI SDK v5 requires explicit state update in onFinish callback
+        setMessages(messagesWithoutImageAttachments);
+        console.log(
+          "✅ setMessages (React state) called with",
+          messagesWithoutImageAttachments.length,
+          "messages"
+        );
+
+        // Update artifact context for artifact detection
+        if (updateMessages) {
+          updateMessages(messagesWithoutImageAttachments);
+          console.log("✅ updateMessages (artifact context) called");
+        }
+      }
+
       // Сбрасываем состояние блокировки
       isSubmittingRef.current = false;
       setIsSubmitting(false);
-      // НЕ обновляем URL здесь - ждем команду от сервера
-      // URL будет обновлен только после успешного создания чата
+
+      // Обновляем URL после успешного завершения чата
+      if (id && typeof window !== "undefined") {
+        const newUrl = `/chat/${id}`;
+        if (window.location.pathname !== newUrl) {
+          window.history.pushState(null, "", newUrl);
+        }
+      }
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       // При ошибке не обновляем URL, чтобы избежать 404
       console.error("Chat error:", error);
 
@@ -161,7 +374,19 @@ function ChatContent({
         description: error.message,
       });
     },
-  });
+  } as any);
+
+  // Extract properties from chatHelpers
+  const { messages, setMessages, status, stop } = chatHelpers;
+  const sendMessage = (chatHelpers as any).sendMessage;
+  const regenerate = (chatHelpers as any).regenerate;
+
+  // AI SDK v5: reload is now regenerate
+  const reload = useCallback(() => {
+    if (regenerate) {
+      return regenerate();
+    }
+  }, [regenerate]);
 
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
@@ -171,12 +396,19 @@ function ChatContent({
     "idle"
   );
 
+  // AI SDK v5: Append function using sendMessage
   const handleAppend = useCallback(
-    (message: any, options?: any) => {
+    async (message: any, options?: any): Promise<string | null | undefined> => {
       // НЕ обновляем URL здесь - ждем команду от сервера
-      append(message, options);
+      if (message.content) {
+        const result = await sendMessage({
+          text: message.content,
+        });
+        return result;
+      }
+      return null;
     },
-    [append, id]
+    [sendMessage]
   );
 
   useEffect(() => {
@@ -196,38 +428,21 @@ function ChatContent({
     fetcher
   );
 
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const { setArtifact, updateMessages, artifact } = useArtifactContext();
+  const [attachments, setAttachments] = useState<Array<any>>([]);
+
   const isArtifactVisible = artifact.isVisible;
 
-  // Notify parent about dataStream changes for artifacts
+  // AI SDK v5: No more data stream - tool invocations are in message.parts
+  // This hook is kept for compatibility but data is always undefined in v5
   useEffect(() => {
-    if (data && onDataStream) {
-      // Notifying parent about dataStream changes
-      onDataStream(data);
-    }
-
-    // Обрабатываем команды перенаправления от сервера
-    if (data) {
-      console.log("🔍 Data received from server:", data);
-      data.forEach((item: any) => {
-        console.log("🔍 Processing data item:", item);
-        if (item.type === "redirect" && item.url) {
-          console.log("🔍 Received redirect command:", item.url);
-          // Перенаправляем на страницу чата только после успешного создания
-          console.log("🔍 Executing redirect to:", item.url);
-          window.history.replaceState({}, "", item.url);
-          console.log("🔍 Redirect executed successfully");
-        }
-      });
-    }
-  }, [data, onDataStream]);
+    // onDataStream callback removed - not applicable in v5
+    // Tool results are now in message.parts, not in separate data stream
+  }, [onDataStream]);
 
   useAutoResume({
     autoResume,
     initialMessages,
-    experimental_resume,
-    data,
+    data: undefined, // AI SDK v5: No data stream
     setMessages,
   });
 
@@ -238,13 +453,30 @@ function ChatContent({
 
   // Обновляем сообщения в контексте артефактов для детекции
   useEffect(() => {
-    if (updateMessages && messages) {
-      console.log("🔄 Updating messages in artifact context:", {
-        chatId: id,
-        messagesCount: messages.length,
-      });
-      updateMessages(messages);
+    if (!updateMessages || !messages) {
+      return;
     }
+
+    console.log("🔄 Updating messages in artifact context:", {
+      chatId: id,
+      messagesCount: messages.length,
+      lastMessage: messages[messages.length - 1]
+        ? {
+            id: messages[messages.length - 1]?.id,
+            role: messages[messages.length - 1]?.role,
+            partsCount: messages[messages.length - 1]?.parts?.length || 0,
+            hasContent: !!(messages[messages.length - 1] as any)?.content,
+          }
+        : null,
+    });
+
+    // Add a small delay to ensure the messages are fully processed
+    const timeoutId = setTimeout(() => {
+      console.log("🔄 Calling updateMessages after timeout");
+      updateMessages(messages);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [messages, updateMessages, id]);
 
   // Global SSE connections for media generation
@@ -294,6 +526,7 @@ function ChatContent({
     }
   }, [chatImageSSE, chatVideoSSE, messages, setMessages, id]);
 
+  // AI SDK v5: Manual submit handler using sendMessage
   const handleFormSubmit = useCallback(
     (
       event?: { preventDefault?: () => void } | undefined,
@@ -304,8 +537,15 @@ function ChatContent({
       }
 
       // Проверяем и устанавливаем блокировку
-      if (isSubmittingRef.current || status !== "ready" || isSubmitting) {
-        console.log("🔍 handleFormSubmit blocked - already submitting");
+      if (
+        isSubmittingRef.current ||
+        status !== "ready" ||
+        isSubmitting ||
+        !input.trim()
+      ) {
+        console.log(
+          "🔍 handleFormSubmit blocked - already submitting or empty input"
+        );
         return;
       }
 
@@ -315,14 +555,41 @@ function ChatContent({
 
       console.log("🔍 handleFormSubmit called - НЕ обновляем URL");
       console.log("🔍 Chat ID:", id);
+      console.log("🔍 Input:", input);
+      console.log("🔍 Attachments:", attachments);
       console.log("🔍 Chat request options:", chatRequestOptions);
 
       // НЕ обновляем URL сразу - ждем успешного создания чата
-      // URL будет обновлен в onFinish callback API route
+      // URL будет обновлен в onFinish callback
 
-      handleSubmit(event, chatRequestOptions);
+      // AI SDK v5: Use sendMessage to send the message
+      // Convert attachments to FileUIPart format for AI SDK v5
+      const files = attachments.map((att) => ({
+        type: "file" as const,
+        filename: att.name || "attachment",
+        mediaType: att.contentType || "image/png",
+        url: att.url,
+      }));
+
+      const messagePayload: any = {
+        text: input,
+        ...(files.length > 0 && { files }),
+        ...(chatRequestOptions || {}),
+      };
+
+      console.log("🔍 Sending message with payload:", {
+        text: input,
+        filesCount: files.length,
+        files,
+      });
+
+      sendMessage(messagePayload);
+
+      // Clear input and attachments after sending
+      setInput("");
+      setAttachments([]);
     },
-    [handleSubmit, id, status, isSubmitting]
+    [input, attachments, sendMessage, id, status, isSubmitting]
   );
 
   return (
@@ -347,7 +614,7 @@ function ChatContent({
           isArtifactVisible={isArtifactVisible}
           selectedChatModel={initialChatModel}
           selectedVisibilityType={visibilityType}
-          append={append}
+          append={handleAppend}
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -365,7 +632,7 @@ function ChatContent({
               setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
-              append={append}
+              append={handleAppend}
               selectedVisibilityType={visibilityType}
             />
           )}
@@ -386,15 +653,15 @@ function ChatContent({
         chatId={id}
         input={input}
         setInput={setInput}
-        handleSubmit={handleSubmit}
+        handleSubmit={handleFormSubmit}
         status={status}
         stop={stop}
+        reload={reload}
         attachments={attachments}
         setAttachments={setAttachments}
-        append={append}
+        append={handleAppend}
         messages={messages}
         setMessages={setMessages}
-        reload={reload}
         votes={votes}
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
@@ -425,7 +692,7 @@ export function Chat(props: {
                 <LoaderIcon size={48} />
               </div>
               <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                Загрузка чата...
+                Loading chat...
               </p>
             </div>
           </div>

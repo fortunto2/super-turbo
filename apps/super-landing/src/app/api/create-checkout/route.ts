@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
       // Получаем файл изображения
       const file = formData.get("imageFile") as File;
       imageFile = file;
-      console.log("📁 Received image file:", file.name, file.size, file.type);
     } else {
       // Обрабатываем JSON (для обратной совместимости)
       const body = await request.json();
@@ -95,7 +94,6 @@ export async function POST(request: NextRequest) {
       modelName = body.modelName;
       imageFile = body.imageFile;
     }
-
     // Get the app URL with proper fallback
     const getAppUrl = () => {
       // First try NEXT_PUBLIC_APP_URL (manually set)
@@ -185,7 +183,6 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl ?? `${appUrl}/en/tool/veo3-prompt-generator`,
       metadata,
     });
-
     // Store complete session data in Redis
     try {
       await storeSessionData(session.id, sessionData);
@@ -195,7 +192,6 @@ export async function POST(request: NextRequest) {
       // This is critical - if we can't store session data, webhook will fail
       throw new Error("Failed to store session data");
     }
-
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,

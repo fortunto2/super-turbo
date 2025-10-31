@@ -1,10 +1,10 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps } from 'react';
 
-import { type SidebarTrigger, useSidebar } from "../ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { type SidebarTrigger, useSidebar } from '../ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
-import { SidebarLeftIcon } from "../common/icons";
-import { Button } from "@turbo-super/ui";
+import { SidebarLeftIcon } from '../common/icons';
+import { Button } from '@turbo-super/ui';
 
 export function SidebarToggle({
   className,

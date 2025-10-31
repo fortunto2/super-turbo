@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import type { Attachment, UIMessage } from "ai";
-import { formatDistance } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import type { UIMessage } from 'ai';
+import type { Attachment } from '@/lib/types/attachment';
+import { formatDistance } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
-  memo,
   type SetStateAction,
   useCallback,
   useEffect,
   useState,
   useRef,
-} from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { useDebounceCallback, useWindowSize } from "usehooks-ts";
-import type { Document, Vote } from "@/lib/db/schema";
-import { fetcher } from "@/lib/utils";
-import { ArtifactActions } from "./artifact-actions";
-import { ArtifactCloseButton } from "./artifact-close-button";
-import { ArtifactMessages } from "./artifact-messages";
-import { useArtifactContext } from "@/contexts/artifact-context";
-import { imageArtifact } from "@/artifacts/image/client";
+} from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
+import type { Document, Vote } from '@/lib/db/schema';
+import { fetcher } from '@/lib/utils';
+import { ArtifactActions } from './artifact-actions';
+import { ArtifactCloseButton } from './artifact-close-button';
+import { ArtifactMessages } from './artifact-messages';
+import { useArtifactContext } from '@/contexts/artifact-context';
+import { imageArtifact } from '@/artifacts/image/client';
 
-import { sheetArtifact } from "@/artifacts/sheet/client";
-import { textArtifact } from "@/artifacts/text/client";
-import { videoArtifact } from "@/artifacts/video/client";
-import { scriptArtifact } from "@/artifacts/script/client";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import { useSidebar, MultimodalInput, Toolbar, VersionFooter } from "../";
-import type { VisibilityType } from "../shared/visibility-selector";
+import { sheetArtifact } from '@/artifacts/sheet/client';
+import { textArtifact } from '@/artifacts/text/client';
+import { videoArtifact } from '@/artifacts/video/client';
+import { scriptArtifact } from '@/artifacts/script/client';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import { useSidebar, MultimodalInput, Toolbar, VersionFooter } from '../';
+import type { VisibilityType } from '../shared/visibility-selector';
 
 export const artifactDefinitions = [
   textArtifact,
@@ -37,7 +37,7 @@ export const artifactDefinitions = [
   videoArtifact,
   scriptArtifact,
 ] as const;
-export type ArtifactKind = (typeof artifactDefinitions)[number]["kind"];
+export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
 export interface UIArtifact {
   title: string;
@@ -45,7 +45,7 @@ export interface UIArtifact {
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
-  status: "streaming" | "idle" | "error" | "completed" | "pending";
+  status: 'streaming' | 'idle' | 'error' | 'completed' | 'pending';
   boundingBox: {
     top: number;
     left: number;
@@ -57,11 +57,11 @@ export interface UIArtifact {
 
 // Function to convert JSON title to human-readable format
 function getDisplayTitle(title: string, kind: ArtifactKind): string {
-  if (kind === "image") {
+  if (kind === 'image') {
     try {
       const params = JSON.parse(title);
       if (params.prompt) {
-        return `AI Image: ${params.prompt.substring(0, 60)}${params.prompt.length > 60 ? "..." : ""}`;
+        return `AI Image: ${params.prompt.substring(0, 60)}${params.prompt.length > 60 ? '...' : ''}`;
       }
     } catch {
       // If not JSON, return as is
@@ -69,11 +69,11 @@ function getDisplayTitle(title: string, kind: ArtifactKind): string {
     }
   }
 
-  if (kind === "video") {
+  if (kind === 'video') {
     // Check if title starts with "Video:" (new readable format)
-    if (title.startsWith("Video:")) {
+    if (title.startsWith('Video:')) {
       // Extract readable part before JSON
-      const jsonMatch = title.match(/\{.*\}$/);
+      const jsonMatch = title?.match(/\{.*\}$/);
       if (jsonMatch) {
         return title.substring(0, title.length - jsonMatch[0].length).trim();
       }
@@ -84,7 +84,7 @@ function getDisplayTitle(title: string, kind: ArtifactKind): string {
     try {
       const params = JSON.parse(title);
       if (params.prompt) {
-        return `AI Video: ${params.prompt.substring(0, 60)}${params.prompt.length > 60 ? "..." : ""}`;
+        return `AI Video: ${params.prompt.substring(0, 60)}${params.prompt.length > 60 ? '...' : ''}`;
       }
     } catch {
       // If not JSON, return as is
@@ -115,17 +115,19 @@ function PureArtifact({
 }: {
   chatId: string;
   input: string;
-  setInput: UseChatHelpers["setInput"];
-  status: UseChatHelpers["status"];
-  stop: UseChatHelpers["stop"];
+  setInput: (value: string) => void; // AI SDK v5: manually managed
+  status: UseChatHelpers<any>['status'];
+  stop: UseChatHelpers<any>['stop'];
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: (
+    messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[]),
+  ) => void; // AI SDK v5: setMessages accepts value or updater function
   votes: Array<Vote> | undefined;
-  append: UseChatHelpers["append"];
-  handleSubmit: UseChatHelpers["handleSubmit"];
-  reload: UseChatHelpers["reload"];
+  append: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
+  handleSubmit: (event?: any, options?: any) => void; // AI SDK v5: handleSubmit type
+  reload: () => void; // AI SDK v5: reload type
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   selectedChatModel: string;
@@ -137,7 +139,7 @@ function PureArtifact({
   const lastLogTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       const now = Date.now();
       if (now - lastLogTimeRef.current > 1000) {
         // Throttle to once per second
@@ -147,18 +149,27 @@ function PureArtifact({
     }
   });
 
+  // Check if documentId is valid UUID (not empty, not 'init', not nano-banana ID)
+  const isValidDocumentId = (id: string) => {
+    if (!id || id === 'init' || id.startsWith('nano-banana-')) return false;
+    // Check if it's a valid UUID format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
+  };
+
   const {
     data: documents,
     isLoading: isDocumentsFetching,
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
-    artifact.documentId !== "init" && artifact.status !== "streaming"
+    isValidDocumentId(artifact.documentId) && artifact.status !== 'streaming'
       ? `/api/document?id=${artifact.documentId}`
       : null,
-    fetcher
+    fetcher,
   );
 
-  const [mode, setMode] = useState<"edit" | "diff">("edit");
+  const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
@@ -169,7 +180,7 @@ function PureArtifact({
     isSidebarOpen = sidebarContext.open;
   } catch (error) {
     // SidebarProvider недоступен, используем значение по умолчанию
-    console.warn("SidebarProvider not available, using default sidebar state");
+    console.warn('SidebarProvider not available, using default sidebar state');
   }
 
   // Memoize effect dependencies to prevent unnecessary reruns
@@ -185,7 +196,7 @@ function PureArtifact({
         setCurrentVersionIndex(documents.length - 1);
         setArtifact((currentArtifact) => ({
           ...currentArtifact,
-          content: mostRecentDocument.content ?? "",
+          content: mostRecentDocument.content ?? '',
         }));
       }
     }
@@ -221,10 +232,10 @@ function PureArtifact({
 
           if (
             currentDocument.content !== updatedContent &&
-            artifact.documentId !== "init"
+            isValidDocumentId(artifact.documentId)
           ) {
             await fetch(`/api/document?id=${artifact.documentId}`, {
-              method: "POST",
+              method: 'POST',
               body: JSON.stringify({
                 title: artifact.title,
                 content: updatedContent,
@@ -244,15 +255,15 @@ function PureArtifact({
           }
           return currentDocuments;
         },
-        { revalidate: false }
+        { revalidate: false },
       );
     },
-    [artifact, mutate]
+    [artifact, mutate],
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
     handleContentChange,
-    2000
+    2000,
   );
 
   const saveContent = useCallback(
@@ -267,32 +278,32 @@ function PureArtifact({
         }
       }
     },
-    [document, debouncedHandleContentChange, handleContentChange]
+    [document, debouncedHandleContentChange, handleContentChange],
   );
 
   function getDocumentContentById(index: number) {
-    if (!documents) return "";
-    if (!documents[index]) return "";
-    return documents[index].content ?? "";
+    if (!documents) return '';
+    if (!documents[index]) return '';
+    return documents[index].content ?? '';
   }
 
-  const handleVersionChange = (type: "next" | "prev" | "toggle" | "latest") => {
+  const handleVersionChange = (type: 'next' | 'prev' | 'toggle' | 'latest') => {
     if (!documents) return;
 
-    if (type === "latest") {
+    if (type === 'latest') {
       setCurrentVersionIndex(documents.length - 1);
-      setMode("edit");
+      setMode('edit');
     }
 
-    if (type === "toggle") {
-      setMode((mode) => (mode === "edit" ? "diff" : "edit"));
+    if (type === 'toggle') {
+      setMode((mode) => (mode === 'edit' ? 'diff' : 'edit'));
     }
 
-    if (type === "prev") {
+    if (type === 'prev') {
       if (currentVersionIndex > 0) {
         setCurrentVersionIndex((index) => index - 1);
       }
-    } else if (type === "next") {
+    } else if (type === 'next') {
       if (currentVersionIndex < documents.length - 1) {
         setCurrentVersionIndex((index) => index + 1);
       }
@@ -316,15 +327,15 @@ function PureArtifact({
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
   const artifactDefinition = artifactDefinitions.find(
-    (definition) => definition.kind === artifact.kind
+    (definition) => definition.kind === artifact.kind,
   );
 
   if (!artifactDefinition) {
-    throw new Error("Artifact definition not found!");
+    throw new Error('Artifact definition not found!');
   }
 
   useEffect(() => {
-    if (artifact.documentId !== "init") {
+    if (isValidDocumentId(artifact.documentId)) {
       if (artifactDefinition.initialize) {
         artifactDefinition.initialize({
           documentId: artifact.documentId,
@@ -369,7 +380,7 @@ function PureArtifact({
                 scale: 1,
                 transition: {
                   delay: 0.2,
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 200,
                   damping: 30,
                 },
@@ -453,11 +464,11 @@ function PureArtifact({
                     x: 0,
                     y: 0,
                     height: windowHeight,
-                    width: windowWidth ? windowWidth : "calc(100dvw)",
+                    width: windowWidth ? windowWidth : 'calc(100dvw)',
                     borderRadius: 0,
                     transition: {
                       delay: 0,
-                      type: "spring",
+                      type: 'spring',
                       stiffness: 200,
                       damping: 30,
                       duration: 5000,
@@ -470,11 +481,11 @@ function PureArtifact({
                     height: windowHeight,
                     width: windowWidth
                       ? windowWidth - 400
-                      : "calc(100dvw-400px)",
+                      : 'calc(100dvw-400px)',
                     borderRadius: 0,
                     transition: {
                       delay: 0,
-                      type: "spring",
+                      type: 'spring',
                       stiffness: 200,
                       damping: 30,
                       duration: 5000,
@@ -486,7 +497,7 @@ function PureArtifact({
               scale: 0.5,
               transition: {
                 delay: 0.1,
-                type: "spring",
+                type: 'spring',
                 stiffness: 600,
                 damping: 30,
               },
@@ -512,7 +523,7 @@ function PureArtifact({
                         new Date(),
                         {
                           addSuffix: true,
-                        }
+                        },
                       )}`}
                     </div>
                   ) : (
@@ -544,9 +555,9 @@ function PureArtifact({
                     }
                     mode={mode}
                     status={
-                      artifact.status === "completed" ||
-                      artifact.status === "pending"
-                        ? "idle"
+                      artifact.status === 'completed' ||
+                      artifact.status === 'pending'
+                        ? 'idle'
                         : artifact.status
                     }
                     currentVersionIndex={currentVersionIndex}
@@ -598,26 +609,7 @@ function PureArtifact({
   );
 }
 
-export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
-  // Only re-render if critical props change
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.input !== nextProps.input) return false;
-  if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-    return false;
-  if (prevProps.chatId !== nextProps.chatId) return false;
-
-  // Check votes length instead of deep equality for performance
-  const prevVotesLength = prevProps.votes?.length || 0;
-  const nextVotesLength = nextProps.votes?.length || 0;
-  if (prevVotesLength !== nextVotesLength) return false;
-
-  // Check messages length instead of deep equality for performance
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-
-  // Check if the last message ID changed (more efficient than deep comparison)
-  const prevLastMessage = prevProps.messages.at(-1);
-  const nextLastMessage = nextProps.messages.at(-1);
-  if (prevLastMessage?.id !== nextLastMessage?.id) return false;
-
-  return true;
-});
+// IMPORTANT: Don't use memo with custom comparison for components that use context
+// The component relies on ArtifactContext which is not part of props
+// Memo with custom comparison will block re-renders when context changes
+export const Artifact = PureArtifact;

@@ -1,14 +1,14 @@
-import { FileTypeEnum } from "@turbo-super/api";
-import { AudioFile } from "./audio-file";
-import { EmptyAudioFile } from "./empty-audio-file";
+import { FileTypeEnum } from '@turbo-super/api';
+import { AudioFile } from './audio-file';
+import { EmptyAudioFile } from './empty-audio-file';
 import {
   useFileList,
   useSceneGetById,
   useSceneUpdate,
-} from "@/lib/api/superduperai";
-import { QueryState } from "@/components/ui/query-state";
-import { Skeleton } from "@turbo-super/ui";
-import { ScrollArea } from "@/components/ui";
+} from '@/lib/api/superduperai';
+import { QueryState } from '@/components/ui/query-state';
+import { Skeleton } from '@turbo-super/ui';
+import { ScrollArea } from '@/components/ui';
 
 export function VoiceoverList({
   projectId,
@@ -45,7 +45,7 @@ export function VoiceoverList({
         },
       });
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.error('Error selecting file:', error);
     }
   };
 

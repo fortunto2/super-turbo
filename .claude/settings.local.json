@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm exec vitest run:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm biome check:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(cat:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm view:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pkill:*)",
+      "Bash(mkdir:*)",
+      "Read(//d/**)",
+      "Bash(git --no-pager diff HEAD)",
+      "WebSearch",
+      "WebFetch(domain:ai-sdk.dev)",
+      "Bash(dir:*)",
+      "Bash(pnpm exec vitest:*)",
+      "Bash(node:*)",
+      "Bash(wc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell:*)",
+      "Bash(grep:*)",
+      "Bash(git --no-pager log --oneline -10)",
+      "Bash(git --no-pager diff HEAD~3)",
+      "Bash(pnpm lint:fix)",
+      "Bash(pnpm exec biome check:*)",
+      "Bash(git rm:*)",
+      "Bash(npx vitest:*)",
+      "Bash(pnpm vitest run:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
+}

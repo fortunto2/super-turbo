@@ -1,4 +1,4 @@
-import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
+import { imageWebsocketStore } from '@/artifacts/image/stores/image-websocket-store';
 
 /**
  * Utility to clean up WebSocket connections when switching between chats
@@ -11,10 +11,10 @@ let currentChatId: string | null = null;
 export function setActiveChat(chatId: string) {
   if (currentChatId && currentChatId !== chatId) {
     console.log(
-      "🧹 ChatWebSocketCleanup: Switching from",
+      '🧹 ChatWebSocketCleanup: Switching from',
       currentChatId,
-      "to",
-      chatId
+      'to',
+      chatId,
     );
 
     // Clean up previous chat connections
@@ -24,7 +24,7 @@ export function setActiveChat(chatId: string) {
     const debugInfo = imageWebsocketStore.getDebugInfo();
     if (debugInfo.totalHandlers > 3) {
       console.log(
-        "🧹 ChatWebSocketCleanup: Force cleanup due to handler accumulation"
+        '🧹 ChatWebSocketCleanup: Force cleanup due to handler accumulation',
       );
       imageWebsocketStore.forceCleanup();
     }
@@ -44,7 +44,7 @@ export function getCurrentChatId(): string | null {
  * Cleanup all connections (useful on app unmount)
  */
 export function cleanupAll() {
-  console.log("🧹 ChatWebSocketCleanup: Cleaning up all connections");
+  console.log('🧹 ChatWebSocketCleanup: Cleaning up all connections');
   imageWebsocketStore.forceCleanup();
   currentChatId = null;
 }
@@ -60,7 +60,7 @@ export function getDebugInfo() {
 }
 
 // Expose to window for debugging
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   (window as any).chatWebSocketCleanup = {
     setActiveChat,
     getCurrentChatId,

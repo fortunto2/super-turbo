@@ -1,9 +1,9 @@
-import { CopyIcon } from "@/components/common/icons";
-import { VideoEditor } from "./video-editor";
-import { useArtifactSSE } from "@/hooks/use-artifact-sse";
-import { saveArtifactToDatabase, saveMediaToChat } from "@/lib/ai/chat/media";
-import { memo, useCallback, useEffect, useMemo } from "react";
-import { toast } from "sonner";
+import { CopyIcon } from '@/components/common/icons';
+import { VideoEditor } from './video-editor';
+import { useArtifactSSE } from '@/hooks/use-artifact-sse';
+import { saveArtifactToDatabase, saveMediaToChat } from '@/lib/ai/chat/media';
+import { memo, useCallback, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 
 export const VideoArtifactWrapper = memo(
   function VideoArtifactWrapper(props: any) {
@@ -11,7 +11,7 @@ export const VideoArtifactWrapper = memo(
 
     // Memoize parsed content to avoid re-parsing on every render
     const parsedContent = useMemo(() => {
-      if (!content || typeof content !== "string") {
+      if (!content || typeof content !== 'string') {
         return null;
       }
 
@@ -42,18 +42,18 @@ export const VideoArtifactWrapper = memo(
     // Set up smart polling fallback for artifacts in case SSE doesn't work
     useEffect(() => {
       const fileId = parsedContent?.fileId;
-      if (!fileId || parsedContent?.status === "completed") return;
+      if (!fileId || parsedContent?.status === 'completed') return;
 
       // Start smart polling after 30 seconds if video still not completed
       const pollTimeout = setTimeout(async () => {
         console.log(
-          "🔄 Starting artifact smart polling for video fileId:",
-          fileId
+          '🔄 Starting artifact smart polling for video fileId:',
+          fileId,
         );
 
         try {
           const { pollFileCompletion } = await import(
-            "@/lib/utils/smart-polling-manager"
+            '@/lib/utils/smart-polling-manager'
           );
 
           const result = await pollFileCompletion(fileId, {
@@ -61,19 +61,19 @@ export const VideoArtifactWrapper = memo(
             initialInterval: 5000,
             onProgress: (attempt, elapsed, nextInterval) => {
               console.log(
-                `🔄 Video poll attempt ${attempt} (${Math.round(elapsed / 1000)}s elapsed, next: ${nextInterval}ms)`
+                `🔄 Video poll attempt ${attempt} (${Math.round(elapsed / 1000)}s elapsed, next: ${nextInterval}ms)`,
               );
             },
             onError: (error, attempt) => {
               console.warn(
                 `⚠️ Video polling non-critical error at attempt ${attempt}:`,
-                error.message
+                error.message,
               );
             },
           });
 
           if (result.success && result.data?.url) {
-            console.log("✅ Video smart polling completed:", result.data.url);
+            console.log('✅ Video smart polling completed:', result.data.url);
 
             const videoUrl = result.data.url;
             const thumbnailUrl = result.data.thumbnail_url;
@@ -81,10 +81,10 @@ export const VideoArtifactWrapper = memo(
             // Update artifact content
             setArtifact((prev: any) => {
               try {
-                const currentContent = JSON.parse(prev.content || "{}");
+                const currentContent = JSON.parse(prev.content || '{}');
                 const updatedContent = {
                   ...currentContent,
-                  status: "completed",
+                  status: 'completed',
                   videoUrl: videoUrl,
                   thumbnailUrl: thumbnailUrl,
                   progress: 100,
@@ -94,17 +94,17 @@ export const VideoArtifactWrapper = memo(
                   prev.documentId || prev.id,
                   prev.title,
                   JSON.stringify(updatedContent),
-                  "video",
-                  thumbnailUrl
+                  'video',
+                  thumbnailUrl,
                 );
 
                 // AICODE-FIX: Update thumbnail in database when video completes via polling
                 if ((prev.documentId || prev.id) && thumbnailUrl) {
                   const docId = prev.documentId || prev.id;
-                  if (docId !== "undefined") {
+                  if (docId !== 'undefined') {
                     fetch(`/api/document?id=${encodeURIComponent(docId)}`, {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         thumbnailUrl,
                         metadata: {
@@ -119,9 +119,9 @@ export const VideoArtifactWrapper = memo(
                       }),
                     }).catch((err) =>
                       console.error(
-                        "Failed to update video thumbnail via polling",
-                        err
-                      )
+                        'Failed to update video thumbnail via polling',
+                        err,
+                      ),
                     );
                   }
                 }
@@ -132,8 +132,8 @@ export const VideoArtifactWrapper = memo(
                 };
               } catch (error) {
                 console.error(
-                  "Failed to update artifact via smart polling:",
-                  error
+                  'Failed to update artifact via smart polling:',
+                  error,
                 );
                 return prev;
               }
@@ -142,22 +142,22 @@ export const VideoArtifactWrapper = memo(
             // Auto-save video to chat history if we have required data
             if (props.setMessages && props.chatId && parsedContent?.prompt) {
               console.log(
-                "🎬 Video completed via polling, auto-saving to chat..."
+                '🎬 Video completed via polling, auto-saving to chat...',
               );
               saveMediaToChat(
                 props.chatId,
                 videoUrl,
                 parsedContent.prompt,
                 props.setMessages,
-                "video",
-                thumbnailUrl
+                'video',
+                thumbnailUrl,
               );
             }
           } else {
-            console.error("❌ Video smart polling failed:", result.error);
+            console.error('❌ Video smart polling failed:', result.error);
           }
         } catch (error) {
-          console.error("❌ Video smart polling system error:", error);
+          console.error('❌ Video smart polling system error:', error);
         }
       }, 30000); // 30 second delay before starting polling
 
@@ -175,84 +175,84 @@ export const VideoArtifactWrapper = memo(
 
     const handleSSEMessage = useCallback(
       (message: any) => {
-        console.log("🎬 Artifact SSE message:", message);
+        console.log('🎬 Artifact SSE message:', message);
 
         // Handle error events
-        if (message.type === "error") {
-          console.error("🎬 ❌ Video generation error via SSE:", message);
+        if (message.type === 'error') {
+          console.error('🎬 ❌ Video generation error via SSE:', message);
 
           if (setArtifact) {
             setArtifact((current: any) => {
               const currentContent =
-                typeof current.content === "string"
-                  ? JSON.parse(current.content || "{}")
+                typeof current.content === 'string'
+                  ? JSON.parse(current.content || '{}')
                   : current.content;
 
               const updatedContent = {
                 ...currentContent,
-                status: "error",
+                status: 'error',
                 error:
-                  message.error || message.message || "Video generation failed",
+                  message.error || message.message || 'Video generation failed',
                 timestamp: Date.now(),
               };
 
               return {
                 ...current,
                 content: JSON.stringify(updatedContent),
-                status: "idle" as const,
+                status: 'idle' as const,
               };
             });
           }
 
           // Show error toast
           toast.error(
-            `Video generation error: ${message.error || message.message || "Unknown error"}`
+            `Video generation error: ${message.error || message.message || 'Unknown error'}`,
           );
           return;
         }
 
         // Handle video completion events
         if (
-          message.type === "file" &&
+          message.type === 'file' &&
           message.object?.url &&
-          message.object?.type === "video"
+          message.object?.type === 'video'
         ) {
           const videoUrl = message.object.url;
           const thumbnailUrl = message.object.thumbnail_url;
 
           console.log(
-            "🎬 Video completed via SSE:",
-            `${videoUrl.substring(0, 50)}...`
+            '🎬 Video completed via SSE:',
+            `${videoUrl.substring(0, 50)}...`,
           );
 
           // Update artifact with completed video
           if (setArtifact) {
             setArtifact((current: any) => {
               const currentContent =
-                typeof current.content === "string"
-                  ? JSON.parse(current.content || "{}")
+                typeof current.content === 'string'
+                  ? JSON.parse(current.content || '{}')
                   : current.content;
 
               const updatedContent = {
                 ...currentContent,
-                status: "completed",
+                status: 'completed',
                 videoUrl: videoUrl,
                 thumbnailUrl: thumbnailUrl,
                 timestamp: Date.now(),
-                message: "Video generation completed",
+                message: 'Video generation completed',
               };
 
               // AICODE-FIX: Update thumbnail in database when video completes
               if (
                 current.documentId &&
-                current.documentId !== "undefined" &&
+                current.documentId !== 'undefined' &&
                 thumbnailUrl
               ) {
                 fetch(
                   `/api/document?id=${encodeURIComponent(current.documentId)}`,
                   {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       thumbnailUrl,
                       metadata: {
@@ -265,16 +265,16 @@ export const VideoArtifactWrapper = memo(
                         resolution: currentContent.resolution,
                       },
                     }),
-                  }
+                  },
                 ).catch((err) =>
-                  console.error("Failed to update video thumbnail", err)
+                  console.error('Failed to update video thumbnail', err),
                 );
               }
 
               return {
                 ...current,
                 content: JSON.stringify(updatedContent),
-                status: "idle" as const,
+                status: 'idle' as const,
               };
             });
           }
@@ -284,20 +284,20 @@ export const VideoArtifactWrapper = memo(
           // This prevents double saving to chat history
           if (props.setMessages && props.chatId && parsedContent?.prompt) {
             console.log(
-              "🎬 Video completed via SSE, skipping auto-save to chat (handled by wrapper)"
+              '🎬 Video completed via SSE, skipping auto-save to chat (handled by wrapper)',
             );
           }
         }
       },
-      [setArtifact, props.setMessages, props.chatId, parsedContent?.prompt]
+      [setArtifact, props.setMessages, props.chatId, parsedContent?.prompt],
     );
 
     // Connect to SSE for real-time updates (using fileId)
     const artifactSSE = useArtifactSSE({
-      channel: parsedContent?.fileId ? `file.${parsedContent.fileId}` : "",
+      channel: parsedContent?.fileId ? `file.${parsedContent.fileId}` : '',
       eventHandlers: useMemo(
         () => (parsedContent?.fileId ? [handleSSEMessage] : []),
-        [parsedContent?.fileId, handleSSEMessage]
+        [parsedContent?.fileId, handleSSEMessage],
       ),
       enabled: !!parsedContent?.fileId && !!parsedContent?.requestId,
     });
@@ -306,8 +306,8 @@ export const VideoArtifactWrapper = memo(
     useEffect(() => {
       if (parsedContent?.fileId && artifactSSE.isConnected) {
         console.log(
-          "🔌 SSE connected for video artifact file:",
-          parsedContent.fileId
+          '🔌 SSE connected for video artifact file:',
+          parsedContent.fileId,
         );
       }
     }, [artifactSSE.isConnected, parsedContent?.fileId]);
@@ -358,7 +358,7 @@ export const VideoArtifactWrapper = memo(
         initialState,
         setArtifact,
         parsedContent,
-      ]
+      ],
     );
 
     // Handle different content types
@@ -373,19 +373,19 @@ export const VideoArtifactWrapper = memo(
 
     // Handle legacy video format
     let videoUrl: string;
-    if (content.startsWith("http://") || content.startsWith("https://")) {
+    if (content.startsWith('http://') || content.startsWith('https://')) {
       videoUrl = content;
     } else {
       try {
         // Try to extract URL from various formats
-        const urlMatch = content.match(/https?:\/\/[^\s"]+/);
+        const urlMatch = content?.match(/https?:\/\/[^\s"]+/);
         if (urlMatch) {
           videoUrl = urlMatch[0];
         } else {
           return <div>Invalid video content</div>;
         }
       } catch (error) {
-        console.error("🎬 Error processing video content:", error);
+        console.error('🎬 Error processing video content:', error);
         return <div>Error loading video</div>;
       }
     }
@@ -399,9 +399,9 @@ export const VideoArtifactWrapper = memo(
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(videoUrl);
-                toast.success("Video URL copied to clipboard");
+                toast.success('Video URL copied to clipboard');
               } catch (error) {
-                toast.error("Failed to copy video URL");
+                toast.error('Failed to copy video URL');
               }
             }}
             className="p-1 hover:bg-gray-100 rounded"
@@ -415,9 +415,9 @@ export const VideoArtifactWrapper = memo(
             src={videoUrl}
             controls
             className="w-full h-auto rounded-lg border"
-            style={{ maxHeight: "70vh" }}
+            style={{ maxHeight: '70vh' }}
             onError={(e) => {
-              console.error("🎬 Video load error:", videoUrl.substring(0, 100));
+              console.error('🎬 Video load error:', videoUrl.substring(0, 100));
             }}
           />
         </div>
@@ -474,5 +474,5 @@ export const VideoArtifactWrapper = memo(
     const shouldUpdate = Object.values(changes).some(Boolean) || contentChanged;
 
     return !shouldUpdate; // Return true to prevent re-render, false to allow it
-  }
+  },
 );

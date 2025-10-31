@@ -1,24 +1,24 @@
 // AICODE-NOTE: New Video Generator Hook using framework architecture
 // Maintains exact same API for backward compatibility but uses new architecture under the hood
 
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { toast } from "sonner";
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { toast } from 'sonner';
 import {
   saveVideo,
   getStoredVideos,
   deleteStoredVideo,
   clearStoredVideos,
-} from "@/lib/utils/local-storage";
-import { useVideoSSE } from "@/artifacts/video";
+} from '@/lib/utils/local-storage';
+import { useVideoSSE } from '@/artifacts/video';
 import {
   generationPersistence,
   type GenerationState,
-} from "@/lib/websocket/generation-persistence";
-import type { VideoGenerationFormData } from "../components/video-generator-form";
-import type { GenerationStatus } from "../components/video-generation-progress";
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
+} from '@/lib/websocket/generation-persistence';
+import type { VideoGenerationFormData } from '../components/video-generator-form';
+import type { GenerationStatus } from '../components/video-generation-progress';
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
 
 export interface GeneratedVideo {
   id: string;
@@ -47,7 +47,7 @@ export interface UseVideoGeneratorReturn {
 
   // Connection state
   isConnected: boolean;
-  connectionStatus: "disconnected" | "connecting" | "connected";
+  connectionStatus: 'disconnected' | 'connecting' | 'connected';
 
   // Actions
   generateVideo: (formData: VideoGenerationFormData) => Promise<void>;
@@ -69,71 +69,71 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
     useState<GeneratedVideo | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>({
-    status: "idle",
+    status: 'idle',
     progress: 0,
-    message: "",
+    message: '',
     estimatedTime: 0,
-    projectId: "",
-    requestId: "",
-    fileId: "",
+    projectId: '',
+    requestId: '',
+    fileId: '',
   });
   const [connectionStatus, setConnectionStatus] = useState<
-    "disconnected" | "connecting" | "connected"
-  >("disconnected");
+    'disconnected' | 'connecting' | 'connected'
+  >('disconnected');
 
   // SSE state
-  const [currentFileId, setCurrentFileId] = useState<string>("");
-  const requestIdRef = useRef<string>("");
+  const [currentFileId, setCurrentFileId] = useState<string>('');
+  const requestIdRef = useRef<string>('');
 
   // AICODE-NOTE: SSE event handlers for real-time updates (прогресс + готовое видео для совместимости с чатом)
   const handleSseEvent = useCallback(
     (event: any) => {
-      console.log("🎬 📡 Video SSE event received:", event);
+      console.log('🎬 📡 Video SSE event received:', event);
 
-      if (event.type === "render_progress") {
+      if (event.type === 'render_progress') {
         setGenerationStatus((prev) => ({
           ...prev,
-          status: "processing",
+          status: 'processing',
           progress: Math.round((event.progress || 0) * 100),
-          message: event.data?.message || "Processing video...",
+          message: event.data?.message || 'Processing video...',
         }));
 
         // Update persistence
         if (currentFileId) {
           generationPersistence.updateState(currentFileId, {
-            status: "processing",
+            status: 'processing',
             progress: Math.round((event.progress || 0) * 100),
-            message: event.data?.message || "Processing video...",
+            message: event.data?.message || 'Processing video...',
           });
         }
       }
 
       // AICODE-NOTE: Handle video completion events (for chat compatibility)
-      if (event.type === "file" && event.object?.url) {
-        console.log("🎬 ✅ Video generation completed via SSE:", event);
+      if (event.type === 'file' && event.object?.url) {
+        console.log('🎬 ✅ Video generation completed via SSE:', event);
 
         const videoUrl = event.object.url;
 
         setGenerationStatus((prev) => ({
           ...prev,
-          status: "completed",
+          status: 'completed',
           progress: 100,
-          message: "Video generation completed!",
+          message: 'Video generation completed!',
         }));
 
         // Create completed video
         const completedVideo: GeneratedVideo = {
           id: currentFileId || event.object.id || Date.now().toString(),
           url: videoUrl,
-          prompt: generationStatus.message || "Generated video",
+          prompt: generationStatus.message || 'Generated video',
           timestamp: Date.now(),
           projectId: currentFileId,
           requestId: requestIdRef.current,
           settings: {
-            model: "Unknown",
-            style: "base",
-            resolution: "1280x720",
-            shotSize: "medium_shot",
+            model: 'Unknown',
+            style: 'base',
+            resolution: '1280x720',
+            shotSize: 'medium_shot',
             duration: 5,
             frameRate: 30,
           },
@@ -146,40 +146,40 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         // Update persistence to completed
         if (currentFileId) {
           generationPersistence.updateState(currentFileId, {
-            status: "completed",
+            status: 'completed',
             progress: 100,
-            message: "Video generation completed!",
+            message: 'Video generation completed!',
             url: videoUrl,
           });
         }
 
-        toast.success("Video generated successfully via SSE!");
+        toast.success('Video generated successfully via SSE!');
         setIsGenerating(false);
-        setConnectionStatus("disconnected");
+        setConnectionStatus('disconnected');
       }
 
-      if (event.type === "error") {
-        console.error("🎬 ❌ Video generation error:", event);
+      if (event.type === 'error') {
+        console.error('🎬 ❌ Video generation error:', event);
 
         setGenerationStatus((prev) => ({
           ...prev,
-          status: "error",
-          message: event.error || "Video generation failed",
+          status: 'error',
+          message: event.error || 'Video generation failed',
         }));
 
         // Update persistence to error
         if (currentFileId) {
           generationPersistence.updateState(currentFileId, {
-            status: "error",
-            message: event.error || "Video generation failed",
+            status: 'error',
+            message: event.error || 'Video generation failed',
           });
         }
 
-        toast.error(event.error || "Video generation failed");
+        toast.error(event.error || 'Video generation failed');
         setIsGenerating(false);
       }
     },
-    [currentFileId, generationStatus.message]
+    [currentFileId, generationStatus.message],
   );
 
   const eventHandlers = useMemo(() => [handleSseEvent], [handleSseEvent]);
@@ -195,9 +195,9 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
   // Update connection status based on SSE state
   useEffect(() => {
     if (isGenerating && currentFileId) {
-      setConnectionStatus(isConnected ? "connected" : "connecting");
+      setConnectionStatus(isConnected ? 'connected' : 'connecting');
     } else {
-      setConnectionStatus("disconnected");
+      setConnectionStatus('disconnected');
     }
   }, [isConnected, isGenerating, currentFileId]);
 
@@ -210,47 +210,47 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
       url: stored.url,
       prompt: stored.prompt,
       timestamp: stored.timestamp,
-      projectId: stored.projectId || stored.fileId || "",
-      requestId: stored.requestId ?? "",
+      projectId: stored.projectId || stored.fileId || '',
+      requestId: stored.requestId ?? '',
       settings: stored.settings,
     }));
     setGeneratedVideos(convertedVideos);
     console.log(
-      "🎬 📂 Loaded",
+      '🎬 📂 Loaded',
       convertedVideos.length,
-      "stored videos from localStorage"
+      'stored videos from localStorage',
     );
 
     // Check for active generations to recover
     const activeStates = generationPersistence.getActiveStates();
-    const videoStates = activeStates.filter((state) => state.type === "video");
+    const videoStates = activeStates.filter((state) => state.type === 'video');
 
     if (videoStates.length > 0) {
       const mostRecent = videoStates.sort(
-        (a, b) => b.lastUpdate - a.lastUpdate
+        (a, b) => b.lastUpdate - a.lastUpdate,
       )[0];
 
       console.log(
-        "🎬 🔄 Found active video generation to recover:",
-        mostRecent
+        '🎬 🔄 Found active video generation to recover:',
+        mostRecent,
       );
 
       if (mostRecent) {
         setCurrentFileId(mostRecent.fileId);
-        requestIdRef.current = mostRecent.requestId || "";
+        requestIdRef.current = mostRecent.requestId || '';
         setIsGenerating(true);
         setGenerationStatus({
-          status: "processing",
+          status: 'processing',
           progress: mostRecent.progress || 10,
-          message: "Checking video generation status...",
+          message: 'Checking video generation status...',
           estimatedTime: mostRecent.estimatedTime || 60000,
-          projectId: mostRecent.projectId || "",
-          requestId: mostRecent.requestId || "",
+          projectId: mostRecent.projectId || '',
+          requestId: mostRecent.requestId || '',
           fileId: mostRecent.fileId,
         });
       }
 
-      toast.info("Recovering video generation...");
+      toast.info('Recovering video generation...');
 
       // AICODE-NOTE: Immediately check file status on recovery
       setTimeout(async () => {
@@ -258,12 +258,12 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
           if (!mostRecent) return;
 
           const { pollFileCompletion } = await import(
-            "@/lib/utils/smart-polling-manager"
+            '@/lib/utils/smart-polling-manager'
           );
 
           console.log(
-            "🔍 Checking recovered video status for file:",
-            mostRecent.fileId
+            '🔍 Checking recovered video status for file:',
+            mostRecent.fileId,
           );
 
           const result = await pollFileCompletion(mostRecent.fileId, {
@@ -271,30 +271,30 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
             initialInterval: 1000,
             onProgress: (attempt, elapsed, nextInterval) => {
               console.log(
-                `🔄 Recovery check attempt ${attempt} (${Math.round(elapsed / 1000)}s elapsed)`
+                `🔄 Recovery check attempt ${attempt} (${Math.round(elapsed / 1000)}s elapsed)`,
               );
             },
           });
 
           if (result.success && result.data?.url) {
             console.log(
-              "🎬 ✅ Recovered video is already complete!",
-              result.data.url
+              '🎬 ✅ Recovered video is already complete!',
+              result.data.url,
             );
 
             // Create video object and add to results immediately
             const newVideo: GeneratedVideo = {
               id: mostRecent.fileId,
               url: result.data.url,
-              prompt: mostRecent.prompt || "Recovered Video",
+              prompt: mostRecent.prompt || 'Recovered Video',
               timestamp: Date.now(),
-              projectId: mostRecent.projectId ?? "",
-              requestId: mostRecent.requestId ?? "",
+              projectId: mostRecent.projectId ?? '',
+              requestId: mostRecent.requestId ?? '',
               settings: mostRecent.settings || {
-                model: "unknown",
-                style: "base",
-                resolution: "1280x720",
-                shotSize: "medium_shot",
+                model: 'unknown',
+                style: 'base',
+                resolution: '1280x720',
+                shotSize: 'medium_shot',
                 duration: 5,
                 frameRate: 30,
               },
@@ -306,9 +306,9 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
             // Update status to completed
             setGenerationStatus((prev) => ({
               ...prev,
-              status: "completed",
+              status: 'completed',
               progress: 100,
-              message: "Video generation completed!",
+              message: 'Video generation completed!',
             }));
 
             // Save to localStorage
@@ -318,43 +318,43 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
               prompt: newVideo.prompt,
               timestamp: newVideo.timestamp,
               fileId: mostRecent.fileId,
-              requestId: newVideo.requestId ?? "",
+              requestId: newVideo.requestId ?? '',
               settings: newVideo.settings,
             };
             saveVideo(storedVideo);
 
             // Clean up persistence state
             generationPersistence.updateState(mostRecent.fileId, {
-              status: "completed",
+              status: 'completed',
               progress: 100,
               url: result.data.url,
             });
 
             setIsGenerating(false);
-            setConnectionStatus("disconnected");
-            toast.success("Video was already completed!");
+            setConnectionStatus('disconnected');
+            toast.success('Video was already completed!');
           } else {
             console.log(
-              "🔄 Video still processing, starting SSE monitoring..."
+              '🔄 Video still processing, starting SSE monitoring...',
             );
             setGenerationStatus((prev) => ({
               ...prev,
-              message: "Video still processing... monitoring progress",
+              message: 'Video still processing... monitoring progress',
             }));
             toast.info(
-              "Video is still being generated. Monitoring progress..."
+              'Video is still being generated. Monitoring progress...',
             );
 
             // SSE will be connected by the useVideoSSE hook automatically
           }
         } catch (error) {
-          console.error("❌ Recovery check failed:", error);
+          console.error('❌ Recovery check failed:', error);
           setGenerationStatus((prev) => ({
             ...prev,
-            message: "Recovery check failed, monitoring via SSE...",
+            message: 'Recovery check failed, monitoring via SSE...',
           }));
           toast.warning(
-            "Could not check status, monitoring via real-time updates..."
+            'Could not check status, monitoring via real-time updates...',
           );
 
           // Continue with SSE as fallback
@@ -368,69 +368,69 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
     async (formData: VideoGenerationFormData) => {
       try {
         setIsGenerating(true);
-        setConnectionStatus("connecting");
+        setConnectionStatus('connecting');
 
         const requestId = `video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         requestIdRef.current = requestId;
 
         setGenerationStatus({
-          status: "pending",
+          status: 'pending',
           progress: 0,
-          message: "Starting video generation...",
+          message: 'Starting video generation...',
           estimatedTime: 60000,
-          projectId: "",
+          projectId: '',
           requestId,
-          fileId: "",
+          fileId: '',
         });
 
         // Call API with appropriate content type based on generation type
         let response: Response;
 
-        if (formData.generationType === "image-to-video" && formData.file) {
+        if (formData.generationType === 'image-to-video' && formData.file) {
           try {
             const formDataToSend = new FormData();
 
-            formDataToSend.append("prompt", formData.prompt);
-            formDataToSend.append("model", formData.model || "");
-            formDataToSend.append("resolution", formData.resolution || "");
-            formDataToSend.append("style", formData.style || "");
-            formDataToSend.append("shotSize", formData.shotSize || "");
-            formDataToSend.append("duration", String(formData.duration || 5));
+            formDataToSend.append('prompt', formData.prompt);
+            formDataToSend.append('model', formData.model || '');
+            formDataToSend.append('resolution', formData.resolution || '');
+            formDataToSend.append('style', formData.style || '');
+            formDataToSend.append('shotSize', formData.shotSize || '');
+            formDataToSend.append('duration', String(formData.duration || 5));
             formDataToSend.append(
-              "frameRate",
-              String(formData.frameRate || 30)
+              'frameRate',
+              String(formData.frameRate || 30),
             );
             formDataToSend.append(
-              "negativePrompt",
-              formData.negativePrompt || ""
+              'negativePrompt',
+              formData.negativePrompt || '',
             );
-            formDataToSend.append("generationType", formData.generationType);
-            formDataToSend.append("chatId", "video-generator-tool");
-            formDataToSend.append("seed", String(formData.seed ?? ""));
+            formDataToSend.append('generationType', formData.generationType);
+            formDataToSend.append('chatId', 'video-generator-tool');
+            formDataToSend.append('seed', String(formData.seed ?? ''));
             if (formData.file) {
-              formDataToSend.append("file", formData.file);
+              formDataToSend.append('file', formData.file);
             }
 
             console.log(
-              "🎬 Sending image-to-video request with FormData (multipart/form-data)"
+              '🎬 Sending image-to-video request with FormData (multipart/form-data)',
             );
 
             response = await fetch(API_NEXT_ROUTES.GENERATE_VIDEO, {
-              method: "POST",
+              method: 'POST',
               body: formDataToSend,
             });
           } catch (err) {
-            console.error("❌ Client-side request failed:", err);
-            throw new Error("Failed to send form data.");
+            console.error('❌ Client-side request failed:', err);
+            throw new Error('Failed to send form data.');
           }
         } else {
           // Use JSON for text-to-video
-          console.log("🎬 Sending text-to-video request with JSON");
+          console.log('🎬 Sending text-to-video request with JSON');
 
           response = await fetch(API_NEXT_ROUTES.GENERATE_VIDEO, {
-            method: "POST",
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               prompt: formData.prompt,
@@ -443,7 +443,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
               negativePrompt: formData.negativePrompt,
               generationType: formData.generationType,
               seed: formData.seed,
-              chatId: "video-generator-tool",
+              chatId: 'video-generator-tool',
             }),
           });
         }
@@ -455,33 +455,33 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         const result = await response.json();
 
         if (!result.success) {
-          throw new Error(result.error || "Generation failed");
+          throw new Error(result.error || 'Generation failed');
         }
 
-        const fileId = result.fileId || result.projectId || "";
+        const fileId = result.fileId || result.projectId || '';
         setCurrentFileId(fileId);
 
         // Update status with file ID
         setGenerationStatus((prev) => ({
           ...prev,
-          status: "processing",
+          status: 'processing',
           progress: 10,
-          message: "Video generation started...",
-          projectId: result.projectId || "",
+          message: 'Video generation started...',
+          projectId: result.projectId || '',
           fileId,
         }));
 
         // AICODE-NOTE: Save to persistence system for recovery
         const persistenceState: GenerationState = {
           id: fileId,
-          type: "video",
-          status: "processing",
+          type: 'video',
+          status: 'processing',
           fileId,
           projectId: result.projectId,
           requestId,
           prompt: formData.prompt,
           progress: 10,
-          message: "Video generation started...",
+          message: 'Video generation started...',
           estimatedTime: 60000,
           startTime: Date.now(),
           lastUpdate: Date.now(),
@@ -490,13 +490,13 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
 
         generationPersistence.saveState(persistenceState);
 
-        console.log("🎬 ✅ Video generation started:", { fileId, requestId });
+        console.log('🎬 ✅ Video generation started:', { fileId, requestId });
 
         // Start polling for result (like image-generator)
         const checkResult = async (attempts = 0): Promise<void> => {
           if (attempts > 18) {
             // 3 minutes max (18 * 10s)
-            throw new Error("Video generation timeout");
+            throw new Error('Video generation timeout');
           }
 
           await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
@@ -509,7 +509,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
               const fileData = await checkResponse.json();
               if (fileData.url) {
                 // Success!
-                console.log("🎬 ✅ Video ready via polling!", fileData.url);
+                console.log('🎬 ✅ Video ready via polling!', fileData.url);
 
                 const generatedVideo: GeneratedVideo = {
                   id: fileId,
@@ -517,12 +517,12 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
                   prompt: formData.prompt,
                   timestamp: Date.now(),
                   projectId: fileId,
-                  requestId: requestId ?? "",
+                  requestId: requestId ?? '',
                   settings: {
-                    model: formData.model || "unknown",
-                    style: formData.style || "base",
-                    resolution: formData.resolution || "1280x720",
-                    shotSize: formData.shotSize || "medium_shot",
+                    model: formData.model || 'unknown',
+                    style: formData.style || 'base',
+                    resolution: formData.resolution || '1280x720',
+                    shotSize: formData.shotSize || 'medium_shot',
                     duration: formData.duration || 5,
                     frameRate: formData.frameRate || 30,
                     ...(formData.negativePrompt && {
@@ -546,9 +546,9 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
                 });
 
                 setGenerationStatus({
-                  status: "completed",
+                  status: 'completed',
                   progress: 100,
-                  message: "Video generation completed!",
+                  message: 'Video generation completed!',
                   estimatedTime: 0,
                   projectId: fileId,
                   requestId,
@@ -557,19 +557,19 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
 
                 // Clean up persistence state
                 generationPersistence.updateState(fileId, {
-                  status: "completed",
+                  status: 'completed',
                   progress: 100,
                   url: fileData.url,
                 });
 
                 setIsGenerating(false);
-                setConnectionStatus("disconnected");
-                toast.success("Video generated successfully!");
+                setConnectionStatus('disconnected');
+                toast.success('Video generated successfully!');
                 return;
               }
             }
           } catch (error) {
-            console.log("Polling attempt", attempts + 1, "failed, retrying...");
+            console.log('Polling attempt', attempts + 1, 'failed, retrying...');
           }
 
           // Update progress based on polling attempts
@@ -586,78 +586,78 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
 
         await checkResult();
       } catch (error) {
-        console.error("🎬 ❌ Video generation error:", error);
+        console.error('🎬 ❌ Video generation error:', error);
         toast.error(
           error instanceof Error
             ? error.message
-            : "Failed to start video generation"
+            : 'Failed to start video generation',
         );
         setIsGenerating(false);
-        setConnectionStatus("disconnected");
+        setConnectionStatus('disconnected');
       }
     },
-    []
+    [],
   );
 
   const clearCurrentGeneration = useCallback(() => {
     setCurrentGeneration(null);
     setGenerationStatus({
-      status: "idle",
+      status: 'idle',
       progress: 0,
-      message: "",
+      message: '',
       estimatedTime: 0,
-      projectId: "",
-      requestId: "",
-      fileId: "",
+      projectId: '',
+      requestId: '',
+      fileId: '',
     });
   }, []);
 
   const stopGeneration = useCallback(async () => {
     try {
       console.log(
-        "🛑 Stopping generation (UI only - backend cannot be cancelled)"
+        '🛑 Stopping generation (UI only - backend cannot be cancelled)',
       );
 
       // Clean up current state
       setIsGenerating(false);
-      setConnectionStatus("disconnected");
-      setCurrentFileId("");
-      requestIdRef.current = "";
+      setConnectionStatus('disconnected');
+      setCurrentFileId('');
+      requestIdRef.current = '';
 
       // Update status to cancelled
       setGenerationStatus({
-        status: "error",
+        status: 'error',
         progress: 0,
-        message: "Generation cancelled by user",
+        message: 'Generation cancelled by user',
         estimatedTime: 0,
-        projectId: "",
-        requestId: "",
-        fileId: "",
+        projectId: '',
+        requestId: '',
+        fileId: '',
       });
 
       // Clean up persistence if there's an active generation
       if (currentFileId) {
         generationPersistence.updateState(currentFileId, {
-          status: "error",
-          message: "Cancelled by user",
+          status: 'error',
+          message: 'Cancelled by user',
         });
       }
 
       toast.success(
-        "Generation stopped (UI only - backend may continue processing)"
+        'Generation stopped (UI only - backend may continue processing)',
       );
 
       // Auto-clear the error status after 3 seconds
       setTimeout(() => {
         setGenerationStatus((prev) =>
-          prev.status === "error" && prev.message?.includes("cancelled")
-            ? { ...prev, status: "idle", message: "" }
-            : prev
+          prev.status === 'error' && prev.message?.includes('cancelled')
+            ? { ...prev, status: 'idle', message: '' }
+            : prev,
         );
       }, 3000);
     } catch (error) {
-      console.error("❌ Error stopping generation:", error);
-      toast.error("Failed to stop generation");
+      console.error('❌ Error stopping generation:', error);
+      toast.error('Failed to stop generation');
     }
   }, [
     currentFileId,
@@ -671,27 +671,27 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
   const deleteVideo = useCallback((videoId: string) => {
     setGeneratedVideos((prev) => prev.filter((video) => video.id !== videoId));
     deleteStoredVideo(videoId);
-    toast.success("Video deleted");
+    toast.success('Video deleted');
   }, []);
 
   const clearAllVideos = useCallback(() => {
     setGeneratedVideos([]);
     clearStoredVideos();
-    toast.success("All videos cleared");
+    toast.success('All videos cleared');
   }, []);
 
   const forceCheckResults = useCallback(async () => {
     if (!currentFileId) {
-      toast.error("No active generation to check");
+      toast.error('No active generation to check');
       return;
     }
 
     try {
-      toast.info("Checking video results...");
+      toast.info('Checking video results...');
 
       // Import polling function
       const { pollFileCompletion } = await import(
-        "@/lib/utils/smart-polling-manager"
+        '@/lib/utils/smart-polling-manager'
       );
 
       const result = await pollFileCompletion(currentFileId, {
@@ -699,20 +699,20 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         initialInterval: 1000,
         onProgress: (attempt, elapsed, nextInterval) => {
           console.log(
-            `🔄 Video status check attempt ${attempt} (${Math.round(elapsed / 1000)}s elapsed)`
+            `🔄 Video status check attempt ${attempt} (${Math.round(elapsed / 1000)}s elapsed)`,
           );
         },
       });
 
       if (result.success && result.data?.url) {
-        console.log("✅ Video ready!", result.data.url);
+        console.log('✅ Video ready!', result.data.url);
 
         // Update status to completed
         setGenerationStatus((prev) => ({
           ...prev,
-          status: "completed",
+          status: 'completed',
           progress: 100,
-          message: "Video generation completed!",
+          message: 'Video generation completed!',
         }));
 
         // Create video object and add to results
@@ -721,16 +721,16 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
           url: result.data.url,
           prompt: generationStatus.fileId
             ? generationPersistence.getState(generationStatus.fileId)?.prompt ||
-              "Video"
-            : "Video",
+              'Video'
+            : 'Video',
           timestamp: Date.now(),
-          projectId: generationStatus.projectId ?? "",
-          requestId: generationStatus.requestId ?? "",
+          projectId: generationStatus.projectId ?? '',
+          requestId: generationStatus.requestId ?? '',
           settings: {
-            model: "unknown",
-            style: "base",
-            resolution: "1280x720",
-            shotSize: "medium_shot",
+            model: 'unknown',
+            style: 'base',
+            resolution: '1280x720',
+            shotSize: 'medium_shot',
             duration: 5,
             frameRate: 30,
           },
@@ -746,7 +746,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
           prompt: newVideo.prompt,
           timestamp: newVideo.timestamp,
           fileId: currentFileId,
-          requestId: newVideo.requestId ?? "",
+          requestId: newVideo.requestId ?? '',
           settings: newVideo.settings,
         };
         saveVideo(storedVideo);
@@ -754,27 +754,27 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         // Clean up persistence state
         if (generationStatus.fileId) {
           generationPersistence.updateState(generationStatus.fileId, {
-            status: "completed",
+            status: 'completed',
             progress: 100,
             url: result.data.url,
           });
         }
 
         setIsGenerating(false);
-        setConnectionStatus("disconnected");
-        toast.success("Video is ready!");
+        setConnectionStatus('disconnected');
+        toast.success('Video is ready!');
       } else {
         console.log(
-          "⏳ Video still processing, status:",
-          result.error || "In progress"
+          '⏳ Video still processing, status:',
+          result.error || 'In progress',
         );
         toast.info(
-          "Video is still being generated. SSE connection will continue monitoring."
+          'Video is still being generated. SSE connection will continue monitoring.',
         );
       }
     } catch (error) {
-      console.error("❌ Failed to check video status:", error);
-      toast.error("Failed to check video status");
+      console.error('❌ Failed to check video status:', error);
+      toast.error('Failed to check video status');
     }
   }, [
     currentFileId,
@@ -793,25 +793,25 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
       const response = await fetch(video.url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = `video-${video.id}.mp4`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      toast.success("Video downloaded");
+      toast.success('Video downloaded');
     } catch (error) {
-      toast.error("Failed to download video");
+      toast.error('Failed to download video');
     }
   }, []);
 
   const copyVideoUrl = useCallback(async (video: GeneratedVideo) => {
     try {
       await navigator.clipboard.writeText(video.url);
-      toast.success("Video URL copied to clipboard");
+      toast.success('Video URL copied to clipboard');
     } catch (error) {
-      toast.error("Failed to copy video URL");
+      toast.error('Failed to copy video URL');
     }
   }, []);
 

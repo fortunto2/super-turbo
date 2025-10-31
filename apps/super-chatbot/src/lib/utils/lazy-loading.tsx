@@ -3,10 +3,10 @@
  * Уменьшают initial bundle size за счет загрузки компонентов по требованию
  */
 
-"use client";
+'use client';
 
-import { lazy, type ComponentType, Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import { lazy, type ComponentType, Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
 // Компонент загрузки
 export function LoadingSpinner() {
@@ -21,7 +21,7 @@ export function LoadingSpinner() {
 // HOC для lazy loading с fallback
 export function withLazyLoading<T extends ComponentType<any>>(
   importFunc: () => Promise<any>,
-  fallback?: ComponentType
+  fallback?: ComponentType,
 ) {
   const LazyComponent = lazy(importFunc);
 
@@ -38,20 +38,20 @@ export function withLazyLoading<T extends ComponentType<any>>(
 
 // Предустановленные lazy компоненты для часто используемых модулей
 export const LazyImageGenerator = withLazyLoading(
-  () => import("@/app/tools/image-generator/components/image-generator-form")
+  () => import('@/app/tools/image-generator/components/image-generator-form'),
 );
 
 export const LazyVideoGenerator = withLazyLoading(
-  () => import("@/app/tools/video-generator/components/video-generator-form")
+  () => import('@/app/tools/video-generator/components/video-generator-form'),
 );
 
 export const LazyPromptEnhancer = withLazyLoading(
-  () => import("@/app/tools/prompt-enhancer/components/prompt-enhancer-form")
+  () => import('@/app/tools/prompt-enhancer/components/prompt-enhancer-form'),
 );
 
-export const LazyAdminPanel = withLazyLoading(() => import("@/app/admin/page"));
+export const LazyAdminPanel = withLazyLoading(() => import('@/app/admin/page'));
 
-export const LazyGallery = withLazyLoading(() => import("@/app/gallery/page"));
+export const LazyGallery = withLazyLoading(() => import('@/app/gallery/page'));
 
 // Утилита для предзагрузки компонентов
 export function preloadComponent(importFunc: () => Promise<any>) {
@@ -63,23 +63,23 @@ export function preloadComponent(importFunc: () => Promise<any>) {
 // Предзагрузка критических компонентов
 export const preloadCriticalComponents = () => {
   // Предзагружаем только критические компоненты
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     // Предзагружаем при первом взаимодействии пользователя
     const preloadOnInteraction = () => {
       preloadComponent(
         () =>
-          import("@/app/tools/image-generator/components/image-generator-form")
+          import('@/app/tools/image-generator/components/image-generator-form'),
       )();
       preloadComponent(
         () =>
-          import("@/app/tools/video-generator/components/video-generator-form")
+          import('@/app/tools/video-generator/components/video-generator-form'),
       )();
     };
 
     // Предзагружаем при hover или focus
-    document.addEventListener("mouseover", preloadOnInteraction, {
+    document.addEventListener('mouseover', preloadOnInteraction, {
       once: true,
     });
-    document.addEventListener("focus", preloadOnInteraction, { once: true });
+    document.addEventListener('focus', preloadOnInteraction, { once: true });
   }
 };

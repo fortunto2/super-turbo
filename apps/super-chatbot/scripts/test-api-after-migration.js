@@ -27,16 +27,12 @@ async function testAPI() {
   console.log('');
 
   console.log('📊 Check database after test:');
-  console.log('SELECT "projectId", "status", "creditsUsed", "errorMessage" FROM "UserProject" ORDER BY "createdAt" DESC LIMIT 5;');
+  console.log(
+    'SELECT "projectId", "status", "creditsUsed", "errorMessage" FROM "UserProject" ORDER BY "createdAt" DESC LIMIT 5;',
+  );
   console.log('');
 
   console.log('✅ If migration is applied, API should work perfectly!');
 }
 
 testAPI();
-
-
-
-
-
-

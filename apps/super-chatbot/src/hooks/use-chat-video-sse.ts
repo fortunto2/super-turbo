@@ -1,16 +1,15 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from 'react';
 import {
   videoSSEStore,
   type VideoEventHandler as VideoSSEEventHandler,
-} from "@/artifacts/video";
-import type { UseChatHelpers } from "@ai-sdk/react";
+} from '@/artifacts/video';
 
 interface ChatVideoSSEOptions {
   chatId: string;
   messages: any[];
-  setMessages: UseChatHelpers["setMessages"];
+  setMessages: any; // AI SDK v5: setMessages type changed;
   enabled?: boolean;
 }
 
@@ -25,10 +24,10 @@ const saveMessageToDatabase = async (chatId: string, message: any) => {
       createdAt: message.createdAt,
     };
 
-    const response = await fetch("/api/save-message", {
-      method: "POST",
+    const response = await fetch('/api/save-message', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         chatId,
@@ -38,13 +37,13 @@ const saveMessageToDatabase = async (chatId: string, message: any) => {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("Failed to save video message:", errorData);
+      console.error('Failed to save video message:', errorData);
       throw new Error(
-        `Failed to save message: ${response.status} ${response.statusText}`
+        `Failed to save message: ${response.status} ${response.statusText}`,
       );
     }
   } catch (error) {
-    console.error("Failed to save video message:", error);
+    console.error('Failed to save video message:', error);
   }
 };
 
@@ -77,7 +76,7 @@ export const useChatVideoSSE = ({
         }
 
         // Only handle completed videos that have URL
-        if (eventData.type === "file" && eventData.object?.url) {
+        if (eventData.type === 'file' && eventData.object?.url) {
           const videoUrl = eventData.object.url;
           const thumbnailUrl = (eventData.object as any)?.thumbnail_url;
           const requestId = eventData.requestId;
@@ -85,35 +84,35 @@ export const useChatVideoSSE = ({
           // Check if it's a video file
           if (
             videoUrl.match(/\.(mp4|mov|webm|avi|mkv)$/i) ||
-            eventData.object.contentType?.startsWith("video/")
+            eventData.object.contentType?.startsWith('video/')
           ) {
             console.log(
-              "🎬 Chat SSE: Received video completion for project:",
+              '🎬 Chat SSE: Received video completion for project:',
               targetProjectId,
-              "URL:",
-              videoUrl
+              'URL:',
+              videoUrl,
             );
             if (thumbnailUrl) {
               console.log(
-                "🎬 Chat SSE: Video thumbnail available:",
-                thumbnailUrl
+                '🎬 Chat SSE: Video thumbnail available:',
+                thumbnailUrl,
               );
             }
 
             // Store the last video URL for debugging and try direct artifact update
-            if (typeof window !== "undefined") {
+            if (typeof window !== 'undefined') {
               const chatSSEInstance = (window as any).chatSSEInstance;
               if (chatSSEInstance) {
                 chatSSEInstance.lastVideoUrl = videoUrl;
                 chatSSEInstance.lastThumbnailUrl = thumbnailUrl;
                 console.log(
-                  "🎬 💾 Stored last video URL for debugging:",
-                  videoUrl
+                  '🎬 💾 Stored last video URL for debugging:',
+                  videoUrl,
                 );
                 if (thumbnailUrl) {
                   console.log(
-                    "🎬 💾 Stored last thumbnail URL for debugging:",
-                    thumbnailUrl
+                    '🎬 💾 Stored last thumbnail URL for debugging:',
+                    thumbnailUrl,
                   );
                 }
               }
@@ -122,40 +121,40 @@ export const useChatVideoSSE = ({
               const artifactInstance = (window as any).artifactInstance;
               if (
                 artifactInstance?.artifact &&
-                artifactInstance.artifact.kind === "video"
+                artifactInstance.artifact.kind === 'video'
               ) {
                 try {
                   const currentContent = JSON.parse(
-                    artifactInstance.artifact.content || "{}"
+                    artifactInstance.artifact.content || '{}',
                   );
 
                   // Check if this update is for current artifact
                   if (
                     currentContent.projectId === targetProjectId ||
-                    currentContent.status === "pending" ||
-                    currentContent.status === "streaming"
+                    currentContent.status === 'pending' ||
+                    currentContent.status === 'streaming'
                   ) {
                     const updatedContent = {
                       ...currentContent,
-                      status: "completed",
+                      status: 'completed',
                       videoUrl: videoUrl,
                       projectId: targetProjectId,
                       requestId: requestId || currentContent.requestId,
                       timestamp: Date.now(),
-                      message: "Video generation completed!",
+                      message: 'Video generation completed!',
                     };
 
                     console.log(
-                      "🎬 Chat SSE: Updating artifact with video URL"
+                      '🎬 Chat SSE: Updating artifact with video URL',
                     );
                     artifactInstance.setArtifact((current: any) => ({
                       ...current,
                       content: JSON.stringify(updatedContent),
-                      status: "idle" as const,
+                      status: 'idle' as const,
                     }));
                   }
                 } catch (error) {
-                  console.error("❌ Failed to update video artifact:", error);
+                  console.error('❌ Failed to update video artifact:', error);
                 }
               }
             }
@@ -167,7 +166,7 @@ export const useChatVideoSSE = ({
 
             // Update messages with completed video
             setTimeout(() => {
-              setMessages((prevMessages) => {
+              setMessages((prevMessages: any) => {
                 const updatedMessages = [...prevMessages];
                 let foundArtifact = false;
 
@@ -175,68 +174,68 @@ export const useChatVideoSSE = ({
                 for (let i = updatedMessages.length - 1; i >= 0; i--) {
                   const message = updatedMessages[i];
 
-                  if (message?.role === "assistant") {
+                  if (message?.role === 'assistant') {
                     // Check if this message has video artifact content
                     const hasVideoArtifact = message.parts?.some(
-                      (part) =>
-                        part.type === "text" &&
-                        "text" in part &&
+                      (part: any) =>
+                        part.type === 'text' &&
+                        'text' in part &&
                         part.text &&
                         (part.text.includes('"kind":"video"') ||
                           part.text.includes("'kind':'video'") ||
-                          part.text.includes("VideoArtifact"))
+                          part.text.includes('VideoArtifact')),
                     );
 
                     if (hasVideoArtifact) {
                       // Try to find and parse video artifact content
                       for (const part of message?.parts || []) {
                         if (
-                          part.type === "text" &&
-                          "text" in part &&
+                          part.type === 'text' &&
+                          'text' in part &&
                           part.text
                         ) {
                           try {
                             let artifactContent = null;
 
                             // Try different parsing methods
-                            if (part.text.includes("```json")) {
+                            if (part.text.includes('```json')) {
                               const jsonMatch = part.text.match(
-                                /```json\\s*({[\\s\\S]*?})\\s*```/
+                                /```json\\s*({[\\s\\S]*?})\\s*```/,
                               );
                               if (jsonMatch) {
                                 artifactContent = JSON.parse(
-                                  jsonMatch[1] || ""
+                                  jsonMatch[1] || '',
                                 );
                               }
                             } else if (
-                              part.text.startsWith("{") &&
-                              part.text.endsWith("}")
+                              part.text.startsWith('{') &&
+                              part.text.endsWith('}')
                             ) {
                               artifactContent = JSON.parse(part.text);
                             }
 
                             if (
                               artifactContent?.projectId === targetProjectId ||
-                              artifactContent?.status === "pending" ||
-                              artifactContent?.status === "streaming"
+                              artifactContent?.status === 'pending' ||
+                              artifactContent?.status === 'streaming'
                             ) {
                               // Update the artifact content
                               const updatedContent = {
                                 ...artifactContent,
-                                status: "completed",
+                                status: 'completed',
                                 videoUrl: videoUrl,
                                 projectId: targetProjectId,
                                 requestId:
                                   requestId || artifactContent.requestId,
                                 timestamp: Date.now(),
-                                message: "Video generation completed!",
+                                message: 'Video generation completed!',
                               };
 
                               // Update the part text
-                              const newText = part.text.includes("```json")
+                              const newText = part.text.includes('```json')
                                 ? part.text.replace(
                                     /```json\\s*{[\\s\\S]*?}\\s*```/,
-                                    `\`\`\`json\n${JSON.stringify(updatedContent, null, 2)}\n\`\`\``
+                                    `\`\`\`json\n${JSON.stringify(updatedContent, null, 2)}\n\`\`\``,
                                   )
                                 : JSON.stringify(updatedContent);
 
@@ -244,7 +243,7 @@ export const useChatVideoSSE = ({
                               foundArtifact = true;
 
                               console.log(
-                                "🎬 Chat SSE: Updated message artifact with video URL"
+                                '🎬 Chat SSE: Updated message artifact with video URL',
                               );
                               break;
                             }
@@ -271,7 +270,7 @@ export const useChatVideoSSE = ({
                 // Auto-save video to chat as separate attachment message
                 if (!foundArtifact) {
                   console.log(
-                    "🎬 Chat SSE: No artifact found, creating new video message in chat"
+                    '🎬 Chat SSE: No artifact found, creating new video message in chat',
                   );
 
                   // Extract prompt from SSE message using the actual structure
@@ -279,7 +278,7 @@ export const useChatVideoSSE = ({
                     (eventData.object as any)?.video_generation?.prompt ||
                     (eventData.object as any)?.prompt ||
                     (eventData as any)?.video_generation?.prompt ||
-                    "Generated video";
+                    'Generated video';
 
                   // Create video attachment message
                   const videoAttachment = {
@@ -288,17 +287,17 @@ export const useChatVideoSSE = ({
                         ? `${prompt.substring(0, 50)}...`
                         : prompt,
                     url: videoUrl,
-                    contentType: "video/mp4",
+                    contentType: 'video/mp4',
                     thumbnailUrl: thumbnailUrl,
                   };
 
                   const newVideoMessage = {
                     id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                    role: "assistant" as const,
+                    role: 'assistant' as const,
                     content: `Generated video: "${prompt}"`,
                     parts: [
                       {
-                        type: "text" as const,
+                        type: 'text' as const,
                         text: `Generated video: "${prompt}"`,
                       },
                     ],
@@ -308,7 +307,7 @@ export const useChatVideoSSE = ({
 
                   updatedMessages.push(newVideoMessage);
                   console.log(
-                    "🎬 Chat SSE: Added new video message to chat history"
+                    '🎬 Chat SSE: Added new video message to chat history',
                   );
 
                   // Save to database
@@ -324,7 +323,7 @@ export const useChatVideoSSE = ({
         }
       };
     },
-    [setMessages, chatId]
+    [setMessages, chatId],
   );
 
   const connectToProject = useCallback(
@@ -333,7 +332,7 @@ export const useChatVideoSSE = ({
         return;
       }
 
-      console.log("🔌 Chat Video SSE: Connecting to:", projectId);
+      console.log('🔌 Chat Video SSE: Connecting to:', projectId);
 
       const eventHandler = createEventHandler(projectId);
       handlersMapRef.current.set(projectId, eventHandler);
@@ -346,7 +345,7 @@ export const useChatVideoSSE = ({
 
       // AICODE-NOTE: Support both file.{fileId} and project.{projectId} formats
       // Always use Next.js proxy for SSE connections
-      if (projectId.startsWith("file.")) {
+      if (projectId.startsWith('file.')) {
         // Direct file-based SSE (like video generator tool) using Next.js proxy
         sseUrl = `/api/events/${projectId}`;
       } else {
@@ -354,12 +353,12 @@ export const useChatVideoSSE = ({
         sseUrl = `/api/events/project.${projectId}`;
       }
 
-      console.log("🔌 Video SSE URL:", sseUrl);
+      console.log('🔌 Video SSE URL:', sseUrl);
       videoSSEStore.initConnection(sseUrl, [eventHandler]);
 
       connectedProjectsRef.current.add(projectId);
     },
-    [createEventHandler, chatId]
+    [createEventHandler, chatId],
   );
 
   // Cleanup project connection
@@ -368,7 +367,7 @@ export const useChatVideoSSE = ({
       return;
     }
 
-    console.log("🔌 Chat Video SSE: Disconnecting from project:", projectId);
+    console.log('🔌 Chat Video SSE: Disconnecting from project:', projectId);
 
     const handler = handlersMapRef.current.get(projectId);
     if (handler) {
@@ -385,29 +384,29 @@ export const useChatVideoSSE = ({
       const ids = new Set<string>();
 
       for (const message of messages) {
-        if (message.role === "assistant" && message.parts) {
+        if (message.role === 'assistant' && message.parts) {
           for (const part of message.parts) {
-            if (part.type === "text" && "text" in part && part.text) {
+            if (part.type === 'text' && 'text' in part && part.text) {
               try {
                 // Check for video artifacts
                 if (
                   part.text.includes('"kind":"video"') ||
                   part.text.includes("'kind':'video'") ||
-                  part.text.includes("VideoArtifact")
+                  part.text.includes('VideoArtifact')
                 ) {
                   let artifactContent = null;
 
                   // Try different parsing methods
-                  if (part.text.includes("```json")) {
+                  if (part.text.includes('```json')) {
                     const jsonMatch = part.text.match(
-                      /```json\s*({[\s\S]*?})\s*```/
+                      /```json\s*({[\s\S]*?})\s*```/,
                     );
                     if (jsonMatch) {
                       artifactContent = JSON.parse(jsonMatch[1]);
                     }
                   } else if (
-                    part.text.startsWith("{") &&
-                    part.text.endsWith("}")
+                    part.text.startsWith('{') &&
+                    part.text.endsWith('}')
                   ) {
                     artifactContent = JSON.parse(part.text);
                   }
@@ -430,7 +429,7 @@ export const useChatVideoSSE = ({
 
       return Array.from(ids);
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -456,7 +455,7 @@ export const useChatVideoSSE = ({
     }
 
     // Store instance for debugging
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       (window as any).chatVideoSSEInstance = {
         connectedProjects: connectedProjectsRef.current,
         lastVideoUrl: null,
@@ -487,7 +486,7 @@ export const useChatVideoSSE = ({
       const debugInfo = videoSSEStore.getDebugInfo();
       if (debugInfo.totalHandlers > 5) {
         console.log(
-          "🧹 Chat Video SSE: Force cleanup due to handler accumulation"
+          '🧹 Chat Video SSE: Force cleanup due to handler accumulation',
         );
         videoSSEStore.forceCleanup();
       }

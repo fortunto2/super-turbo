@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { generateText } from "ai";
-import { myProvider } from "@/lib/ai/providers";
+import { type NextRequest, NextResponse } from 'next/server';
+import { generateText } from 'ai';
+import { myProvider } from '@/lib/ai/providers';
 
 interface EnhancementRequest {
   originalPrompt: string;
-  mediaType?: "image" | "video" | "text" | "general";
-  enhancementLevel?: "basic" | "detailed" | "creative";
+  mediaType?: 'image' | 'video' | 'text' | 'general';
+  enhancementLevel?: 'basic' | 'detailed' | 'creative';
   targetAudience?: string;
   includeNegativePrompt?: boolean;
   modelHint?: string;
@@ -15,20 +15,20 @@ export async function POST(request: NextRequest) {
   try {
     const body: EnhancementRequest = await request.json();
 
-    console.log("🚀 API: enhance-prompt called with:", body);
+    console.log('🚀 API: enhance-prompt called with:', body);
 
     if (!body.originalPrompt) {
       return NextResponse.json(
-        { error: "originalPrompt is required" },
-        { status: 400 }
+        { error: 'originalPrompt is required' },
+        { status: 400 },
       );
     }
 
     // Set defaults
     const {
       originalPrompt,
-      mediaType = "general",
-      enhancementLevel = "detailed",
+      mediaType = 'general',
+      enhancementLevel = 'detailed',
       targetAudience,
       includeNegativePrompt = false,
       modelHint,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const systemPrompt = buildSystemPrompt(
       mediaType,
       enhancementLevel,
-      modelHint
+      modelHint,
     );
 
     // Build user prompt with context
@@ -47,20 +47,20 @@ export async function POST(request: NextRequest) {
       mediaType,
       enhancementLevel,
       targetAudience,
-      includeNegativePrompt
+      includeNegativePrompt,
     );
 
-    console.log("🔄 Calling LLM for prompt enhancement...");
+    console.log('🔄 Calling LLM for prompt enhancement...');
 
     const result = await generateText({
-      model: myProvider.languageModel("artifact-model"),
+      model: myProvider.languageModel('artifact-model'),
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     });
 
-    console.log("✅ LLM response received:", result.text);
+    console.log('✅ LLM response received:', result.text);
 
     // Parse the enhanced prompt from LLM response
     const parsedResult = parseEnhancementResult(result.text, originalPrompt);
@@ -76,23 +76,23 @@ export async function POST(request: NextRequest) {
       reasoning: parsedResult.reasoning,
       usage: {
         copyPrompt:
-          "Copy the enhanced prompt to use in image/video generation tools",
+          'Copy the enhanced prompt to use in image/video generation tools',
         negativePrompt: parsedResult.negativePrompt
-          ? "Use the negative prompt to avoid unwanted elements"
+          ? 'Use the negative prompt to avoid unwanted elements'
           : undefined,
       },
     };
 
-    console.log("✅ API: Prompt enhancement completed:", finalResult);
+    console.log('✅ API: Prompt enhancement completed:', finalResult);
     return NextResponse.json(finalResult);
   } catch (error) {
-    console.error("❌ API: Error enhancing prompt:", error);
+    console.error('❌ API: Error enhancing prompt:', error);
     return NextResponse.json(
       {
-        error: `Failed to enhance prompt: ${error instanceof Error ? error.message : "Unknown error"}`,
+        error: `Failed to enhance prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
         fallback: true,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 function buildSystemPrompt(
   mediaType: string,
   enhancementLevel: string,
-  modelHint?: string
+  modelHint?: string,
 ): string {
   const basePrompt = `You are a professional prompt engineering expert specializing in improving prompts for AI generation. Your task is to enhance user prompts to achieve the best possible results.
 
@@ -144,14 +144,14 @@ GENERAL ENHANCEMENT FOCUS:
 
   const levelGuidance = {
     basic:
-      "Apply minimal enhancements - focus on translation, basic cleanup, and essential quality terms.",
+      'Apply minimal enhancements - focus on translation, basic cleanup, and essential quality terms.',
     detailed:
-      "Apply comprehensive enhancements - add professional terminology, improve structure, include quality descriptors.",
+      'Apply comprehensive enhancements - add professional terminology, improve structure, include quality descriptors.',
     creative:
-      "Apply maximum enhancements - add artistic language, advanced composition terms, creative direction guidance.",
+      'Apply maximum enhancements - add artistic language, advanced composition terms, creative direction guidance.',
   };
 
-  let modelOptimization = "";
+  let modelOptimization = '';
   if (modelHint) {
     modelOptimization = `
 MODEL OPTIMIZATION for ${modelHint}:
@@ -181,7 +181,7 @@ function buildUserPrompt(
   mediaType: string,
   enhancementLevel: string,
   targetAudience?: string,
-  includeNegativePrompt?: boolean
+  includeNegativePrompt?: boolean,
 ): string {
   let prompt = `Please enhance this prompt for ${mediaType} generation:
 
@@ -207,29 +207,29 @@ REQUIREMENTS:
 function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
   try {
     // Try to parse as JSON first
-    const jsonMatch = llmResponse.match(/\{[\s\S]*\}/);
+    const jsonMatch = llmResponse?.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       return {
         enhancedPrompt: parsed.enhancedPrompt || originalPrompt,
         negativePrompt: parsed.negativePrompt || undefined,
-        improvements: parsed.improvements || ["LLM enhancement applied"],
-        reasoning: parsed.reasoning || "Enhanced using AI prompt engineering",
+        improvements: parsed.improvements || ['LLM enhancement applied'],
+        reasoning: parsed.reasoning || 'Enhanced using AI prompt engineering',
       };
     }
 
     // Fallback: extract enhanced prompt from text
-    const lines = llmResponse.split("\n").filter((line) => line.trim());
+    const lines = llmResponse.split('\n').filter((line) => line.trim());
     let enhancedPrompt = originalPrompt;
 
     // Look for enhanced prompt indicators
     for (const line of lines) {
       if (
-        line.toLowerCase().includes("enhanced") ||
-        line.toLowerCase().includes("improved") ||
-        line.toLowerCase().includes("prompt:")
+        line.toLowerCase().includes('enhanced') ||
+        line.toLowerCase().includes('improved') ||
+        line.toLowerCase().includes('prompt:')
       ) {
-        const promptText = line.replace(/^[^:]*:?\s*/, "").trim();
+        const promptText = line.replace(/^[^:]*:?\s*/, '').trim();
         if (promptText.length > 10) {
           enhancedPrompt = promptText;
           break;
@@ -240,16 +240,16 @@ function parseEnhancementResult(llmResponse: string, originalPrompt: string) {
     return {
       enhancedPrompt,
       negativePrompt: undefined,
-      improvements: ["LLM enhancement applied"],
-      reasoning: "Enhanced using AI prompt engineering",
+      improvements: ['LLM enhancement applied'],
+      reasoning: 'Enhanced using AI prompt engineering',
     };
   } catch (error) {
-    console.error("Failed to parse LLM response:", error);
+    console.error('Failed to parse LLM response:', error);
     return {
       enhancedPrompt: originalPrompt,
       negativePrompt: undefined,
-      improvements: ["Enhancement failed, returned original"],
-      reasoning: "Error in processing enhancement",
+      improvements: ['Enhancement failed, returned original'],
+      reasoning: 'Error in processing enhancement',
     };
   }
 }

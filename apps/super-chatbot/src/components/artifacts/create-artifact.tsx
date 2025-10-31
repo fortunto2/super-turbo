@@ -1,17 +1,18 @@
-import type { Suggestion } from "@/lib/db/schema";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import type { ComponentType, Dispatch, ReactNode, SetStateAction } from "react";
-import type { DataStreamDelta } from "../shared/data-stream-handler";
-import type { UIArtifact } from "./artifact";
+import type { Suggestion } from '@/lib/db/schema';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
+import type { DataStreamDelta } from '../shared/data-stream-handler';
+import type { UIArtifact } from './artifact';
 
 export type ArtifactActionContext<M = any> = {
   content: string;
-  handleVersionChange: (type: "next" | "prev" | "toggle" | "latest") => void;
+  handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
-  mode: "edit" | "diff";
+  mode: 'edit' | 'diff';
   metadata: M;
   setMetadata: Dispatch<SetStateAction<M>>;
+  title?: string;
 };
 
 type ArtifactAction<M = any> = {
@@ -23,7 +24,10 @@ type ArtifactAction<M = any> = {
 };
 
 export type ArtifactToolbarContext = {
-  appendMessage: UseChatHelpers["append"];
+  appendMessage?: (
+    message: any,
+    options?: any,
+  ) => Promise<string | null | undefined>; // AI SDK v5: append type
 };
 
 export type ArtifactToolbarItem = {
@@ -35,10 +39,10 @@ export type ArtifactToolbarItem = {
 interface ArtifactContent<M = any> {
   title: string;
   content: string;
-  mode: "edit" | "diff";
+  mode: 'edit' | 'diff';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  status: "streaming" | "idle" | "error";
+  status: 'streaming' | 'idle' | 'error';
   suggestions: Array<Suggestion>;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
   isInline: boolean;
@@ -46,8 +50,8 @@ interface ArtifactContent<M = any> {
   isLoading: boolean;
   metadata: M;
   setMetadata: Dispatch<SetStateAction<M>>;
-  append?: UseChatHelpers["append"];
-  setMessages?: UseChatHelpers["setMessages"];
+  append?: (message: any, options?: any) => Promise<string | null | undefined>; // AI SDK v5: append type
+  setMessages?: UseChatHelpers<any>['setMessages'];
   setArtifact?: Dispatch<SetStateAction<UIArtifact>>;
   chatId?: string;
   documentId?: string;

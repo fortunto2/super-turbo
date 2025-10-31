@@ -1,14 +1,14 @@
-import { createQueryKeys } from "@lukemorales/query-key-factory";
+import { createQueryKeys } from '@lukemorales/query-key-factory';
 
-import { useQuery } from "@tanstack/react-query";
-import type { UseQueryOptions } from "../../../types/query";
+import { useQuery } from '@tanstack/react-query';
+import type { UseQueryOptions } from '../../../types/query';
 import {
   type IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__,
   type ISceneDetailedRead,
   type ISceneRead,
   SceneService,
-} from "@turbo-super/api";
-import { cancelableRequest } from "@/lib/utils/cancelable-request";
+} from '@turbo-super/api';
+import { cancelableRequest } from '@/lib/utils/cancelable-request';
 
 export type ISceneListParams = Parameters<typeof SceneService.sceneGetList>[0];
 export type ISceneByIdParams = Parameters<typeof SceneService.sceneGetById>[0];
@@ -16,7 +16,7 @@ export type ISceneListByIdsParams = Parameters<
   typeof SceneService.sceneGetListByIds
 >[0];
 
-export const sceneKeys = createQueryKeys("scene", {
+export const sceneKeys = createQueryKeys('scene', {
   list: (params: ISceneListParams) => ({
     queryKey: [params],
     queryFn: cancelableRequest(() => SceneService.sceneGetList(params)),
@@ -33,7 +33,7 @@ export const sceneKeys = createQueryKeys("scene", {
 
 export const useSceneList = (
   params?: ISceneListParams,
-  options?: UseQueryOptions<IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__>
+  options?: UseQueryOptions<IResponsePaginated_Union_ISceneRead__ISceneMinimalRead__>,
 ) => {
   return useQuery({
     ...sceneKeys.list(params ?? {}),
@@ -43,7 +43,7 @@ export const useSceneList = (
 
 export const useSceneListByIds = (
   params: ISceneListByIdsParams,
-  options?: UseQueryOptions<ISceneRead[]>
+  options?: UseQueryOptions<ISceneRead[]>,
 ) => {
   return useQuery({
     ...sceneKeys.getByIds(params),
@@ -53,7 +53,7 @@ export const useSceneListByIds = (
 
 export const useSceneGetById = (
   params: ISceneByIdParams,
-  options?: UseQueryOptions<ISceneDetailedRead>
+  options?: UseQueryOptions<ISceneDetailedRead>,
 ) => {
   return useQuery({
     ...sceneKeys.getById(params),

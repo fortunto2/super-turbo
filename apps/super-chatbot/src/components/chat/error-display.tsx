@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import {
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { toast } from "sonner";
+} from '@turbo-super/ui';
+import { toast } from 'sonner';
 
 interface ErrorDisplayProps {
   error: string;
@@ -20,16 +20,16 @@ interface ErrorDisplayProps {
 
 export function ErrorDisplay({
   error,
-  title = "An error occurred",
+  title = 'An error occurred',
   onRetry,
   showRetry = true,
-  className = "",
+  className = '',
 }: ErrorDisplayProps) {
   const handleRetry = () => {
     if (onRetry) {
       onRetry();
     } else {
-      toast.info("Retry function is not available");
+      toast.info('Retry function is not available');
     }
   };
 
@@ -84,36 +84,36 @@ interface VideoErrorDisplayProps {
 // Function to filter and clean error messages for user display
 function getUserFriendlyError(error: string): string {
   // Check for 521 Cloudflare error
-  if (error.includes("521") && error.includes("Web server is down")) {
-    return "Server is down. Please try again later.";
+  if (error.includes('521') && error.includes('Web server is down')) {
+    return 'Server is down. Please try again later.';
   }
 
   // Check for API errors with HTML content
-  if (error.includes("<!DOCTYPE html>") || error.includes("API Error:")) {
-    return "An error occurred while generating video. Please try again.";
+  if (error.includes('<!DOCTYPE html>') || error.includes('API Error:')) {
+    return 'An error occurred while generating video. Please try again.';
   }
 
   // Check for network errors
   if (
-    error.includes("fetch") ||
-    error.includes("network") ||
-    error.includes("timeout")
+    error.includes('fetch') ||
+    error.includes('network') ||
+    error.includes('timeout')
   ) {
-    return "Connection error. Please check your internet connection and try again.";
+    return 'Connection error. Please check your internet connection and try again.';
   }
 
   // Check for server errors
   if (
-    error.includes("500") ||
-    error.includes("502") ||
-    error.includes("503") ||
-    error.includes("504")
+    error.includes('500') ||
+    error.includes('502') ||
+    error.includes('503') ||
+    error.includes('504')
   ) {
-    return "Server error. Please try again later.";
+    return 'Server error. Please try again later.';
   }
 
   // For other errors, return a generic message
-  return "An error occurred while generating video. Please try again.";
+  return 'An error occurred while generating video. Please try again.';
 }
 
 export function VideoErrorDisplay({

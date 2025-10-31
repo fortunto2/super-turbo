@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from 'next/navigation';
 
-import { AudioTypeEnum, type IFileRead } from "@turbo-super/api";
+import { AudioTypeEnum, type IFileRead } from '@turbo-super/api';
 
-import { ArrowLeft } from "lucide-react";
-import { FileAudioGenerate } from "./_components/file-audio-generate";
-import { useSceneGetById, useSceneUpdate } from "@/lib/api";
+import { ArrowLeft } from 'lucide-react';
+import { FileAudioGenerate } from './_components/file-audio-generate';
+import { useSceneGetById, useSceneUpdate } from '@/lib/api';
 
 const SceneVoiceoverGenerationPage = () => {
   const params = useParams();
@@ -21,7 +21,7 @@ const SceneVoiceoverGenerationPage = () => {
   const handleComplete = async (file?: IFileRead) => {
     router.push(`/project/video/${projectId}/scene/${sceneId}`);
     if (!scene || !scene.file_id) return;
-    console.log("file", file);
+    console.log('file', file);
     mutate({
       id: scene.id,
       requestBody: {

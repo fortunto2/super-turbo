@@ -17,8 +17,12 @@ const packageJsonPath = path.join(projectRoot, 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 console.log('📦 Зависимости проекта:');
-const workspaceDeps = Object.keys(packageJson.dependencies || {}).filter(dep => dep.startsWith('@turbo-super/'));
-const workspaceDevDeps = Object.keys(packageJson.devDependencies || {}).filter(dep => dep.startsWith('@turbo-super/'));
+const workspaceDeps = Object.keys(packageJson.dependencies || {}).filter(
+  (dep) => dep.startsWith('@turbo-super/'),
+);
+const workspaceDevDeps = Object.keys(packageJson.devDependencies || {}).filter(
+  (dep) => dep.startsWith('@turbo-super/'),
+);
 
 console.log('   Workspace зависимости:', workspaceDeps);
 console.log('   Workspace dev зависимости:', workspaceDevDeps);
@@ -28,17 +32,18 @@ console.log('\n📁 Проверка наличия пакетов:');
 const packagesDir = path.join(workspaceRoot, 'packages');
 
 if (fs.existsSync(packagesDir)) {
-  const packages = fs.readdirSync(packagesDir, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name);
-  
+  const packages = fs
+    .readdirSync(packagesDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
+
   console.log('   Найденные пакеты:', packages);
-  
+
   // Проверяем каждый workspace пакет
   for (const dep of [...workspaceDeps, ...workspaceDevDeps]) {
     const packageName = dep.replace('@turbo-super/', '');
     const packagePath = path.join(packagesDir, packageName);
-    
+
     if (fs.existsSync(packagePath)) {
       const packageJsonPath = path.join(packagePath, 'package.json');
       if (fs.existsSync(packageJsonPath)) {
@@ -92,4 +97,4 @@ console.log('4. Убедитесь, что версии пакетов совм�
 console.log('\n🚀 Команды для исправления:');
 console.log('   cd ../../');
 console.log('   pnpm install');
-console.log('   pnpm build'); 
+console.log('   pnpm build');

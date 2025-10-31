@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from "react";
+import { startTransition, useMemo, useOptimistic, useState } from 'react';
 
-import { saveChatModelAsCookie } from "@/app/(chat)/actions";
-import { Button } from "@turbo-super/ui";
+import { saveChatModelAsCookie } from '@/app/(chat)/actions';
+import { Button } from '@turbo-super/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { chatModels } from "@/lib/ai/models";
-import { cn } from "@turbo-super/ui";
+} from '../ui/dropdown-menu';
+import { chatModels } from '@/lib/ai/models';
+import { cn } from '@turbo-super/ui';
 
-import { CheckCircleFillIcon, ChevronDownIcon } from "./icons";
-import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import type { Session } from "next-auth";
+import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import type { Session } from 'next-auth';
 
 export function ModelSelector({
   session,
@@ -29,31 +29,28 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
-  const userType = session.user.type || "regular";
+  const userType = session.user.type || 'regular';
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
   const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id)
+    availableChatModelIds.includes(chatModel.id),
   );
 
   const selectedChatModel = useMemo(
     () =>
       availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId
+        (chatModel) => chatModel.id === optimisticModelId,
       ),
-    [optimisticModelId, availableChatModels]
+    [optimisticModelId, availableChatModels],
   );
 
   return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={setOpen}
-    >
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         asChild
         className={cn(
-          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-          className
+          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+          className,
         )}
       >
         <Button
@@ -65,10 +62,7 @@ export function ModelSelector({
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="min-w-[300px]"
-      >
+      <DropdownMenuContent align="start" className="min-w-[300px]">
         {availableChatModels.map((chatModel) => {
           const { id } = chatModel;
 

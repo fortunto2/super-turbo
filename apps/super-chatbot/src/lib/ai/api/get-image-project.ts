@@ -2,7 +2,7 @@ import {
   getSuperduperAIConfig,
   createAPIURL,
   createAuthHeaders,
-} from "@/lib/config/superduperai";
+} from '@/lib/config/superduperai';
 
 export interface ImageGenerationResult {
   success: boolean;
@@ -11,14 +11,14 @@ export interface ImageGenerationResult {
 }
 
 export const getProject = async (
-  chatId: string
+  chatId: string,
 ): Promise<ImageGenerationResult> => {
   try {
     const config = getSuperduperAIConfig();
-    const url = createAPIURL("/api/v1/project");
+    const url = createAPIURL('/api/v1/project');
     const headers = createAuthHeaders();
     const response = await fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers,
       body: JSON.stringify({
         projectId: chatId,
@@ -27,13 +27,13 @@ export const getProject = async (
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("API Error Response:", errorText);
+      console.error('API Error Response:', errorText);
 
       if (response.status === 401) {
         return {
           success: false,
           error:
-            "Authentication failed. The API token may be invalid or expired.",
+            'Authentication failed. The API token may be invalid or expired.',
         };
       }
 
@@ -41,7 +41,7 @@ export const getProject = async (
         return {
           success: false,
           error:
-            "Server error occurred. Please try again later or contact support.",
+            'Server error occurred. Please try again later or contact support.',
         };
       }
 
@@ -55,10 +55,10 @@ export const getProject = async (
       project: result,
     };
   } catch (error: any) {
-    console.error("Image generation error:", error);
+    console.error('Image generation error:', error);
     return {
       success: false,
-      error: error?.message || "Unknown error occurred during image generation",
+      error: error?.message || 'Unknown error occurred during image generation',
     };
   }
 };

@@ -1,19 +1,15 @@
-import {
-  useMediaPrefetch,
-  TextToolbar,
-  type FabricControllerType,
-} from "@turbo-super/features";
-import type { ToolType } from "./toolbar";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FileTypeEnum } from "@turbo-super/api";
-import { EmptyPreview } from "./helper";
-import { CanvasContainer } from "./canvas-container";
-import { InpaintingPanel } from "./inpainting-panel";
-import { ScenePreviewSkeleton } from "./scene-preview-skeleton";
-import { useCanvasSize } from "../hooks/use-canvas-size";
-import { useInpainting } from "../hooks/use-inpainting";
-import { useToolbarStore } from "@/lib/store";
-import { useSceneGetById } from "@/lib/api";
+import { useMediaPrefetch, TextToolbar } from '@turbo-super/features';
+import type { ToolType } from './toolbar';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FileTypeEnum } from '@turbo-super/api';
+import { EmptyPreview } from './helper';
+import { CanvasContainer } from './canvas-container';
+import { InpaintingPanel } from './inpainting-panel';
+import { ScenePreviewSkeleton } from './scene-preview-skeleton';
+import { useCanvasSize } from '../hooks/use-canvas-size';
+import { useInpainting } from '../hooks/use-inpainting';
+import { useToolbarStore } from '@/lib/store';
+import { useSceneGetById } from '@/lib/api';
 
 interface ScenePreviewProps {
   activeTool: string | null;
@@ -58,7 +54,7 @@ export const ScenePreview = ({
   });
 
   const updateToolbarAnchorFromTarget = useCallback(
-    (target?: FabricControllerType) => {
+    (target?: any) => {
       if (!controller) return;
       const textbox = target ?? controller.getActiveText();
       if (!textbox) {
@@ -67,7 +63,7 @@ export const ScenePreview = ({
       }
       setToolbarVisible(true);
     },
-    [controller]
+    [controller],
   );
 
   // Scroll listener for toolbar positioning
@@ -76,8 +72,8 @@ export const ScenePreview = ({
       if (!toolbarVisible) return;
       updateToolbarAnchorFromTarget();
     };
-    window.addEventListener("scroll", onScroll, true);
-    return () => window.removeEventListener("scroll", onScroll, true);
+    window.addEventListener('scroll', onScroll, true);
+    return () => window.removeEventListener('scroll', onScroll, true);
   }, [toolbarVisible, updateToolbarAnchorFromTarget]);
 
   const filesScene: any = useMemo(() => {
@@ -94,7 +90,7 @@ export const ScenePreview = ({
   const { loaded: isReady } = useMediaPrefetch({ files: filesScene });
 
   const containerHeight = useMemo(() => {
-    return activeTool === null || activeTool === "inpainting" ? "100%" : "60%";
+    return activeTool === null || activeTool === 'inpainting' ? '100%' : '60%';
   }, [activeTool]);
 
   return (

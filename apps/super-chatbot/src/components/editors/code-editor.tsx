@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { memo, useEffect, useRef, useState } from "react";
-import type { Suggestion } from "@/lib/db/schema";
+import { memo, useEffect, useRef, useState } from 'react';
+import type { Suggestion } from '@/lib/db/schema';
 
 type EditorProps = {
   content: string;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
-  status: "streaming" | "idle" | "error";
+  status: 'streaming' | 'idle' | 'error';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
@@ -29,11 +29,11 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
             { oneDark },
             { basicSetup },
           ] = await Promise.all([
-            import("@codemirror/view"),
-            import("@codemirror/state"),
-            import("@codemirror/lang-python"),
-            import("@codemirror/theme-one-dark"),
-            import("codemirror"),
+            import('@codemirror/view'),
+            import('@codemirror/state'),
+            import('@codemirror/lang-python'),
+            import('@codemirror/theme-one-dark'),
+            import('codemirror'),
           ]);
 
           const startState = EditorState.create({
@@ -48,7 +48,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
 
           setIsLoaded(true);
         } catch (error) {
-          console.error("Failed to load CodeMirror:", error);
+          console.error('Failed to load CodeMirror:', error);
         }
       }
     };
@@ -72,7 +72,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
         .updateListener?.of((update: any) => {
           if (update.docChanged) {
             const transaction = update.transactions.find(
-              (tr: any) => !tr.annotation(tr.annotation.define?.remote)
+              (tr: any) => !tr.annotation(tr.annotation.define?.remote),
             );
 
             if (transaction) {
@@ -97,7 +97,7 @@ function PureCodeEditor({ content, onSaveContent, status }: EditorProps) {
     if (editorRef.current && content && isLoaded) {
       const currentContent = editorRef.current.state.doc.toString();
 
-      if (status === "streaming" || currentContent !== content) {
+      if (status === 'streaming' || currentContent !== content) {
         const transaction = editorRef.current.state.update({
           changes: {
             from: 0,
@@ -127,7 +127,7 @@ function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
     return false;
   if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
-  if (prevProps.status === "streaming" && nextProps.status === "streaming")
+  if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
     return false;
   if (prevProps.content !== nextProps.content) return false;
 

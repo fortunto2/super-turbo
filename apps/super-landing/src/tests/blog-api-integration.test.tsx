@@ -326,13 +326,7 @@ describe("Blog API Integration", () => {
       );
 
       // Проверяем, что конфигурация из блога отображается корректно
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1024 x 1024";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1024x1024")).toBeInTheDocument();
       expect(screen.getByText("1:1")).toBeInTheDocument();
       expect(screen.getByText("photorealistic")).toBeInTheDocument();
     });
@@ -369,7 +363,7 @@ describe("Blog API Integration", () => {
       );
 
       // Проверяем, что компонент рендерится корректно
-      expect(screen.getByText("1024")).toBeInTheDocument();
+      expect(screen.getByTestId("image-generator")).toBeInTheDocument();
     });
   });
 

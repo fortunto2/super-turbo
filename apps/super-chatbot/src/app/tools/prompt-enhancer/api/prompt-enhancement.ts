@@ -1,9 +1,9 @@
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
 
 export interface EnhancementParams {
   originalPrompt: string;
-  mediaType?: "image" | "video" | "text" | "general";
-  enhancementLevel?: "basic" | "detailed" | "creative";
+  mediaType?: 'image' | 'video' | 'text' | 'general';
+  enhancementLevel?: 'basic' | 'detailed' | 'creative';
   targetAudience?: string;
   includeNegativePrompt?: boolean;
   modelHint?: string;
@@ -28,21 +28,21 @@ export interface EnhancementResult {
 }
 
 export async function enhancePromptApi(
-  params: EnhancementParams
+  params: EnhancementParams,
 ): Promise<EnhancementResult> {
   try {
     const payload = {
       originalPrompt: params.originalPrompt,
-      mediaType: params.mediaType || "general",
-      enhancementLevel: params.enhancementLevel || "detailed",
-      targetAudience: params.targetAudience || "general audience",
+      mediaType: params.mediaType || 'general',
+      enhancementLevel: params.enhancementLevel || 'detailed',
+      targetAudience: params.targetAudience || 'general audience',
       includeNegativePrompt: params.includeNegativePrompt || false,
-      modelHint: params.modelHint || "",
+      modelHint: params.modelHint || '',
     };
 
     const response = await fetch(API_NEXT_ROUTES.ENHANCE_PROMPT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
@@ -60,7 +60,7 @@ export async function enhancePromptApi(
     if (!result.success) {
       return {
         success: false,
-        error: result.error || "Enhancement failed",
+        error: result.error || 'Enhancement failed',
       };
     }
 
@@ -78,10 +78,10 @@ export async function enhancePromptApi(
       fallback: result.fallback,
     };
   } catch (error) {
-    console.error("Prompt enhancement API error:", error);
+    console.error('Prompt enhancement API error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
 }

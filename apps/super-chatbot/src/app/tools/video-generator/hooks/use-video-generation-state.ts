@@ -3,12 +3,12 @@
  * Вынесен в отдельный файл для лучшей организации кода
  */
 
-import { useState, useCallback, useMemo } from "react";
-import type { VideoGenerationState, GenerationStatus } from "./types";
+import { useState, useCallback, useMemo } from 'react';
+import type { VideoGenerationState, GenerationStatus } from './types';
 
 export function useVideoGenerationState() {
   const [state, setState] = useState<VideoGenerationState>({
-    status: "idle",
+    status: 'idle',
     progress: 0,
   });
 
@@ -25,7 +25,7 @@ export function useVideoGenerationState() {
   }, []);
 
   const updateError = useCallback((error: string) => {
-    setState((prev) => ({ ...prev, error, status: "error" }));
+    setState((prev) => ({ ...prev, error, status: 'error' }));
   }, []);
 
   const updateRequestId = useCallback((requestId: string) => {
@@ -33,7 +33,7 @@ export function useVideoGenerationState() {
   }, []);
 
   const updateVideoUrl = useCallback((videoUrl: string) => {
-    setState((prev) => ({ ...prev, videoUrl, status: "completed" }));
+    setState((prev) => ({ ...prev, videoUrl, status: 'completed' }));
   }, []);
 
   const updateProjectId = useCallback((projectId: string) => {
@@ -42,25 +42,25 @@ export function useVideoGenerationState() {
 
   const resetState = useCallback(() => {
     setState({
-      status: "idle",
+      status: 'idle',
       progress: 0,
     });
   }, []);
 
   const isGenerating = useMemo(
     () =>
-      state.status === "preparing" ||
-      state.status === "generating" ||
-      state.status === "processing",
-    [state.status]
+      state.status === 'preparing' ||
+      state.status === 'generating' ||
+      state.status === 'processing',
+    [state.status],
   );
 
   const isCompleted = useMemo(
-    () => state.status === "completed",
-    [state.status]
+    () => state.status === 'completed',
+    [state.status],
   );
 
-  const hasError = useMemo(() => state.status === "error", [state.status]);
+  const hasError = useMemo(() => state.status === 'error', [state.status]);
 
   return {
     state,

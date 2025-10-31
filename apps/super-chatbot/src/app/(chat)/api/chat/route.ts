@@ -1,1129 +1,834 @@
-import {
-  appendClientMessage,
-  appendResponseMessages,
-  createDataStream,
-  smoothStream,
-  streamText,
-} from "ai";
-import { auth, type UserType } from "@/app/(auth)/auth";
-import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
-import { withMonitoring } from "@/lib/monitoring/simple-monitor";
-import {
-  createStreamId,
-  deleteChatById,
-  getChatById,
-  getMessageCountByUserId,
-  getMessagesByChatId,
-  getStreamIdsByChatId,
-  saveChat,
-  saveMessages,
-  getOrCreateOAuthUser,
-  getUser,
-} from "@/lib/db/queries";
-import { generateUUID, getTrailingMessageId } from "@/lib/utils";
-import { generateTitleFromUserMessage } from "../../actions";
-import { createDocument } from "@/lib/ai/tools/create-document";
-import { updateDocument } from "@/lib/ai/tools/update-document";
-import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-
+import { auth } from "@/app/(auth)/auth";
+import { systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
-import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import { postRequestBodySchema, type PostRequestBody } from "./schema";
-import { geolocation } from "@vercel/functions";
 import {
-  createResumableStreamContext,
-  type ResumableStreamContext,
-} from "resumable-stream";
-import { after } from "next/server";
-import type { Chat } from "@/lib/db/schema";
-import { differenceInSeconds } from "date-fns";
-import * as Sentry from "@sentry/nextjs";
+  getChatById,
+  getMessagesByChatId,
+  saveMessages,
+} from "@/lib/db/queries";
+import { withMonitoring } from "@/lib/monitoring/simple-monitor";
+import { streamText } from "ai";
+import { NextResponse } from "next/server";
+import { postRequestBodySchema } from "./schema";
+
+import {
+  ensureChatExists,
+  saveUserMessage,
+} from "@/lib/ai/chat/chat-management";
+import { formatErrorResponse } from "@/lib/ai/chat/error-handler";
+// Import utilities
+import {
+  convertDBMessagesToUIMessages,
+  ensureMessageHasUUID,
+  normalizeMessageParts,
+  normalizeUIMessage,
+} from "@/lib/ai/chat/message-utils";
+
+// Import tools (old SuperDuperAI tools - kept for backward compatibility)
 import { configureImageGeneration } from "@/lib/ai/tools/configure-image-generation";
-import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
-import { configureAudioGeneration } from "@/lib/ai/tools/configure-audio-generation";
-import {
-  listVideoModels,
-  findBestVideoModel,
-} from "@/lib/ai/tools/list-video-models";
-import { enhancePromptUnified } from "@/lib/ai/tools/enhance-prompt-unified";
-import { convertDBMessagesToUIMessages } from "@/lib/types/message-conversion";
 import { configureScriptGeneration } from "@/lib/ai/tools/configure-script-generation";
-import { isProductionEnvironment } from "@/lib/constants";
+import { configureVideoGeneration } from "@/lib/ai/tools/configure-video-generation";
+import { createDocument } from "@/lib/ai/tools/create-document";
+import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+import { updateDocument } from "@/lib/ai/tools/update-document";
 
-export const maxDuration = 60;
+// Import new tools (Nano Banana + FAL AI)
+import { nanoBananaImageGenerationForChat } from "@/lib/ai/tools/nano-banana-chat-image-generation";
+import { falVideoGenerationForChat } from "@/lib/ai/tools/fal-chat-video-generation";
 
-let globalStreamContext: ResumableStreamContext | null = null;
+export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
-/**
- * Нормализует сообщение для совместимости с UIMessage
- */
-function normalizeMessage(message: any) {
-  return {
-    ...message,
-    content: message.content || message.parts?.[0]?.text || "",
-    parts:
-      message.parts?.map((part: any) => ({
-        ...part,
-        text: part.text || "",
-      })) || [],
-  };
-}
+export const POST = withMonitoring(async (request: Request) => {
+  try {
+    const session = await auth();
 
-/**
- * Formats error response based on environment
- * @param error - error object
- * @param context - error context for easier debugging
- * @returns Response object with formatted error
- */
-function formatErrorResponse(error: unknown, context = "API") {
-  console.error(`Error in ${context}:`, error);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  // In development mode return detailed error information
-  if (!isProductionEnvironment) {
-    const errorMessage =
-      error instanceof Error
-        ? `${error.message}\n\n${error.stack}`
-        : "Unknown error";
+    const body = await request.json();
 
-    return new Response(
-      JSON.stringify(
-        {
-          error: `Error in ${context}`,
-          details: errorMessage,
-          timestamp: new Date().toISOString(),
-        },
-        null,
-        2
-      ),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    // Debug: Log raw request to understand what AI SDK v5 sends
+    console.log(
+      "🔍 REQUEST BODY - messages count:",
+      body.messages?.length || 0
     );
-  }
-
-  // In production return generic message
-  return new Response("An error occurred while processing your request!", {
-    status: 500,
-  });
-}
-
-function getStreamContext() {
-  if (!globalStreamContext) {
-    try {
-      globalStreamContext = createResumableStreamContext({
-        waitUntil: after,
-      });
-    } catch (error: any) {
-      if (error.message.includes("REDIS_URL")) {
+    if (body.messages) {
+      console.log(
+        "🔍 REQUEST BODY - message roles:",
+        body.messages.map((m: any) => m.role)
+      );
+      console.log(
+        "🔍 REQUEST BODY - message IDs:",
+        body.messages.map((m: any) => m.id)
+      );
+      // Log files for debugging attachments
+      if (body.messages.length > 0) {
+        const lastMessage = body.messages[body.messages.length - 1];
         console.log(
-          " > Resumable streams are disabled due to missing REDIS_URL"
+          "🔍 REQUEST BODY - last message parts:",
+          lastMessage.parts?.map((p: any) => ({
+            type: p.type,
+            hasText: !!p.text,
+            hasUrl: !!p.url,
+            hasFile: !!p.file,
+          }))
         );
-      } else {
-        console.error(error);
+        console.log(
+          "🔍 REQUEST BODY - last message has files:",
+          !!lastMessage.files,
+          "files count:",
+          lastMessage.files?.length || 0
+        );
       }
     }
-  }
+    console.log("🔍 REQUEST BODY - body has files:", !!body.files);
 
-  return globalStreamContext;
-}
-
-export const POST = withMonitoring(async function POST(request: Request) {
-  let requestBody: PostRequestBody;
-
-  try {
-    const json = await request.json();
-
-    // Логируем входящий запрос для отладки
-    console.log("🔍 Incoming chat request:", {
-      hasMessage: !!json.message,
-      hasMessages: !!json.messages,
-      messagesLength: json.messages ? json.messages.length : 0,
-      messageKeys: json.message ? Object.keys(json.message) : [],
-      hasId: !!json.id,
-      hasSelectedChatModel: !!json.selectedChatModel,
-      hasSelectedVisibilityType: !!json.selectedVisibilityType,
-      fullKeys: Object.keys(json),
-    });
-
-    requestBody = postRequestBodySchema.parse(json);
-  } catch (error) {
-    console.error("Invalid request body:", error);
-
-    if (!isProductionEnvironment) {
-      return new Response(
-        JSON.stringify(
-          {
-            error: "Invalid request data",
-            details: error instanceof Error ? error.message : "Unknown error",
-            timestamp: new Date().toISOString(),
-          },
-          null,
-          2
-        ),
+    // Validate request body using schema
+    const validationResult = postRequestBodySchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
         {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+          error: "Invalid request format",
+          details: validationResult.error.issues,
+        },
+        { status: 400 }
       );
     }
 
-    return new Response("Invalid request body", { status: 400 });
-  }
-
-  try {
-    const {
-      id,
-      message,
-      messages: requestMessages,
+    let {
+      messages: rawMessages,
+      message: singleMessage,
+      id: chatId,
       selectedChatModel,
       selectedVisibilityType,
-    } = requestBody;
+      requestAttachments,
+    } = validationResult.data as any;
 
-    // Определяем сообщение для обработки
-    const messageToProcess =
-      message ||
-      (requestMessages && requestMessages.length > 0
-        ? requestMessages[requestMessages.length - 1]
-        : null);
+    console.log("🔍 REQUEST ATTACHMENTS:", {
+      count: requestAttachments?.length || 0,
+      attachments: requestAttachments,
+    });
 
-    if (!messageToProcess) {
-      console.error("No message found in request body");
-      return new Response(
-        JSON.stringify(
-          {
-            error: "Invalid request data",
-            details: "No valid message found in request",
-            timestamp: new Date().toISOString(),
-          },
-          null,
-          2
-        ),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+    // Convert single message to array format if needed
+    if (singleMessage && !rawMessages) {
+      rawMessages = [singleMessage];
+    }
+
+    // Ensure we have messages
+    if (!rawMessages || rawMessages.length === 0) {
+      return NextResponse.json(
+        { error: "No messages provided" },
+        { status: 400 }
       );
     }
 
-    const session = await auth();
-
-    if (!session?.user) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    // Логируем данные сессии для отладки
-    Sentry.addBreadcrumb({
-      category: "auth",
-      message: "Session user info before chat creation",
-      level: "info",
-      data: {
-        userId: session.user.id,
-        email: session.user.email,
-        type: session.user.type,
-      },
+    // AI SDK v5: Ensure all messages have proper UUID and createdAt
+    // Also normalize message parts to convert tool-specific types to generic types
+    const normalizedMessages = rawMessages.map((msg: any) => {
+      const normalized = normalizeUIMessage(msg);
+      const withUUID = ensureMessageHasUUID(normalized);
+      return normalizeMessageParts(withUUID);
     });
 
-    const userType: UserType = session.user.type;
-
-    // Перед созданием чата убедимся, что пользователь существует в БД
-    try {
-      const users = await getUser(session.user.email || "");
-      if (users.length === 0) {
-        // Если поиск по email не дал результатов, принудительно создаем пользователя
-        console.log(
-          `User not found by email, trying to ensure user exists: ${session.user.id}`
-        );
-        await getOrCreateOAuthUser(
-          session.user.id,
-          session.user.email || `user-${session.user.id}@example.com`
-        );
-
-        // Логируем успешное создание пользователя
-        Sentry.addBreadcrumb({
-          category: "auth",
-          message: "User created before chat creation",
-          level: "info",
-          data: { userId: session.user.id },
-        });
-      } else {
-        // Пользователь найден по email, обновим userId в сессии для создания чата
-        const foundUser = users[0];
-        if (foundUser?.id !== session.user.id) {
-          console.log(
-            `User found with email but different ID, using existing ID: ${foundUser?.id} instead of ${session.user.id}`
-          );
-
-          // Логируем, что мы используем другой ID
-          Sentry.addBreadcrumb({
-            category: "auth",
-            message: "Using existing user ID from database",
-            level: "info",
-            data: {
-              sessionUserId: session.user.id,
-              databaseUserId: foundUser?.id,
-              email: session.user.email,
-            },
-          });
-
-          // Используем ID из базы данных для создания чата
-          session.user.id = foundUser?.id;
-        }
-      }
-    } catch (userError) {
-      console.error("Failed to ensure user exists:", userError);
-      Sentry.captureException(userError, {
-        tags: { operation: "user_check_before_chat" },
-        extra: {
-          userId: session.user.id,
-          email: session.user.email,
-        },
-      });
-      // Продолжаем выполнение, но логируем ошибку
-    }
-
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
+    // Ensure chat exists (with automatic FK recovery)
+    await ensureChatExists({
+      chatId,
+      userId: session.user.id,
+      userEmail: session.user.email || `user-${session.user.id}@example.com`,
+      firstMessage: normalizedMessages[normalizedMessages.length - 1],
+      visibility: selectedVisibilityType || "private",
     });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new Response(
-        "You have exceeded your maximum number of messages for the day! Please try again later.",
-        {
-          status: 429,
-        }
-      );
-    }
-
-    const chat = await getChatById({ id });
-
+    const chat = await getChatById({ id: chatId });
     if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message: normalizeMessage(messageToProcess),
-      });
-
-      let savedChat = false;
-      try {
-        await saveChat({
-          id,
-          userId: session.user.id,
-          title,
-          visibility: selectedVisibilityType,
-        });
-        savedChat = true;
-
-        // Логируем успешное создание чата
-        Sentry.addBreadcrumb({
-          category: "chat",
-          message: `Chat created: ${id}`,
-          level: "info",
-          data: {
-            chatId: id,
-            userId: session.user.id,
-            visibility: selectedVisibilityType,
-          },
-        });
-      } catch (error) {
-        console.error("Failed to save chat:", error);
-
-        // Добавляем проверку на ошибку внешнего ключа
-        if (
-          error instanceof Error &&
-          error.message.includes("foreign key constraint") &&
-          (error.message.includes("Chat_userId_User_id_fk") ||
-            error.message.includes("Key (userId)"))
-        ) {
-          // Логируем событие в Sentry
-          Sentry.captureException(error, {
-            tags: { error_type: "foreign_key_constraint", entity: "chat" },
-            extra: {
-              chatId: id,
-              userId: session.user.id,
-              email: session.user.email || "unknown",
-            },
-          });
-
-          console.log(`Trying to auto-create user with ID: ${session.user.id}`);
-
-          try {
-            // Пытаемся принудительно создать пользователя и чат
-            const email =
-              session.user.email || `auth0-user-${session.user.id}@example.com`;
-
-            const createdUser = await getOrCreateOAuthUser(
-              session.user.id,
-              email
-            );
-            console.log(`User created: ${JSON.stringify(createdUser)}`);
-
-            // Повторно пытаемся сохранить чат
-            await saveChat({
-              id,
-              userId: session.user.id,
-              title,
-              visibility: selectedVisibilityType,
-            });
-            savedChat = true;
-
-            // Логируем успешное восстановление ситуации
-            Sentry.addBreadcrumb({
-              category: "chat",
-              message: `Chat created after user recovery: ${id}`,
-              level: "info",
-              data: { chatId: id, userId: session.user.id },
-            });
-          } catch (innerError) {
-            console.error(
-              "Failed to auto-create user and save chat:",
-              innerError
-            );
-
-            // Логируем ошибку в Sentry
-            Sentry.captureException(innerError, {
-              tags: {
-                error_type: "failed_chat_recovery",
-                entity: "user_and_chat",
-              },
-              extra: {
-                chatId: id,
-                userId: session.user.id,
-                email: session.user.email || "unknown",
-              },
-            });
-
-            // Возвращаем ошибку клиенту с детальным описанием
-            return new Response(
-              JSON.stringify({
-                error: "Failed to create chat due to user creation issues",
-                details: "Please try refreshing the page or contact support",
-                chatId: id,
-                timestamp: new Date().toISOString(),
-              }),
-              {
-                status: 500,
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
-          }
-        } else {
-          // Другие ошибки при создании чата
-          Sentry.captureException(error as Error, {
-            tags: { error_type: "chat_creation_failed", entity: "chat" },
-            extra: {
-              chatId: id,
-              userId: session.user.id,
-              errorMessage: (error as Error).message,
-            },
-          });
-
-          return new Response(
-            JSON.stringify({
-              error: "Failed to create chat",
-              details: (error as Error).message,
-              chatId: id,
-              timestamp: new Date().toISOString(),
-            }),
-            {
-              status: 500,
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-        }
-      }
-
-      if (!savedChat) {
-        return new Response(
-          JSON.stringify({
-            error: "Failed to create chat",
-            details: "Chat creation was unsuccessful",
-            chatId: id,
-            timestamp: new Date().toISOString(),
-          }),
-          {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-    } else {
-      if (chat.userId !== session.user.id) {
-        // Логируем попытку доступа к чужому чату
-        Sentry.captureMessage(`Unauthorized chat access attempt: ${id}`, {
-          level: "warning",
-          tags: { error_type: "unauthorized", entity: "chat" },
-          extra: {
-            chatId: id,
-            chatOwnerId: chat.userId,
-            userId: session.user.id,
-          },
-        });
-
-        return new Response("Forbidden", { status: 403 });
-      }
-    }
-
-    const previousMessages = await getMessagesByChatId({ id });
-
-    const messages = appendClientMessage({
-      messages: convertDBMessagesToUIMessages(previousMessages),
-      message: normalizeMessage(messageToProcess),
-    });
-
-    const { longitude, latitude, city, country } = geolocation(request);
-
-    const requestHints: RequestHints = {
-      longitude,
-      latitude,
-      city,
-      country,
-    };
-
-    try {
-      await saveMessages({
-        messages: [
-          {
-            chatId: id,
-            id: messageToProcess.id,
-            role: "user",
-            parts: messageToProcess.parts,
-            attachments: messageToProcess.experimental_attachments ?? [],
-            createdAt: new Date(),
-          },
-        ],
-      });
-    } catch (error) {
-      console.error("Failed to save user message:", error);
-
-      // If the error is related to missing chat, try to recreate it
-      if (
-        error instanceof Error &&
-        error.message.includes("foreign key constraint") &&
-        (error.message.includes("Message_v2_chatId_Chat_id_fk") ||
-          error.message.includes("Key (chatId)"))
-      ) {
-        console.log(`Trying to recreate chat with ID: ${id}`);
-
-        try {
-          // Check if user exists, create if not
-          if (session.user.email) {
-            await getOrCreateOAuthUser(session.user.id, session.user.email);
-          }
-
-          // Try to recreate the chat
-          const title = await generateTitleFromUserMessage({
-            message: normalizeMessage(messageToProcess),
-          });
-
-          await saveChat({
-            id,
-            userId: session.user.id,
-            title,
-            visibility: selectedVisibilityType,
-          });
-
-          // Try to save message again
-          await saveMessages({
-            messages: [
-              {
-                chatId: id,
-                id: messageToProcess.id,
-                role: "user",
-                parts: messageToProcess.parts,
-                attachments: messageToProcess.experimental_attachments ?? [],
-                createdAt: new Date(),
-              },
-            ],
-          });
-        } catch (innerError) {
-          console.error(
-            "Failed to recreate chat and save message:",
-            innerError
-          );
-          // Continue execution to let the user get a response
-        }
-      }
-      // Continue execution, as we can still try to get a response without saving the message
-    }
-
-    const streamId = generateUUID();
-    try {
-      await createStreamId({ streamId, chatId: id });
-    } catch (error) {
-      console.error("Failed to create stream id in database", error);
-
-      // If the error is related to missing chat, try to recreate it
-      if (
-        error instanceof Error &&
-        error.message.includes("foreign key constraint") &&
-        (error.message.includes("Stream_chatId_Chat_id_fk") ||
-          error.message.includes("Key (chatId)"))
-      ) {
-        console.log(`Trying to recreate chat for stream with ID: ${id}`);
-
-        try {
-          // Check if user exists, create if not
-          if (session.user.email) {
-            await getOrCreateOAuthUser(session.user.id, session.user.email);
-          }
-
-          // Try to recreate the chat
-          const title = await generateTitleFromUserMessage({
-            message: normalizeMessage(messageToProcess),
-          });
-
-          await saveChat({
-            id,
-            userId: session.user.id,
-            title,
-            visibility: selectedVisibilityType,
-          });
-
-          // Try to create stream ID again
-          await createStreamId({ streamId, chatId: id });
-        } catch (innerError) {
-          console.error(
-            "Failed to recreate chat and create stream ID:",
-            innerError
-          );
-          // Continue execution as stream can be created even without DB record
-        }
-      }
-      // Continue execution, as we can proceed without DB record
-    }
-
-    const stream = createDataStream({
-      execute: async (dataStream) => {
-        const enhancedDataStream = {
-          ...dataStream,
-          end: () => {},
-          error: (error: Error) => {
-            console.error("Stream error:", error);
-          },
-        };
-
-        // Анализируем контекст изображения
-        let defaultSourceImageUrl: string | undefined;
-        try {
-          const { analyzeImageContext } = await import("@/lib/ai/context");
-
-          const imageContext = await analyzeImageContext(
-            messageToProcess.parts?.[0]?.text || "",
-            id,
-            (messageToProcess as any)?.experimental_attachments,
-            session.user.id
-          );
-
-          console.log("🔍 Pre-analysis: Image context:", {
-            confidence: imageContext.confidence,
-            reasoning: imageContext.reasoning,
-            sourceUrl: imageContext.sourceUrl,
-          });
-
-          defaultSourceImageUrl = imageContext.sourceUrl;
-
-          console.log(
-            "🔍 defaultSourceImageUrl set to:",
-            defaultSourceImageUrl
-          );
-        } catch (error) {
-          console.error("🔍 Pre-analysis error:", error);
-          // Fallback к старой логике
-          try {
-            const atts =
-              (messageToProcess as any)?.experimental_attachments || [];
-            const img = atts.find(
-              (a: any) =>
-                typeof a?.url === "string" &&
-                /^https?:\/\//.test(a.url) &&
-                String(a?.contentType || "").startsWith("image/")
-            );
-            defaultSourceImageUrl = img?.url;
-            console.log(
-              "🔍 Fallback defaultSourceImageUrl:",
-              defaultSourceImageUrl
-            );
-          } catch (fallbackError) {
-            console.error("Fallback error:", fallbackError);
-            defaultSourceImageUrl = undefined;
-          }
-        }
-
-        // Анализ видео контекста для defaultSourceVideoUrl
-        let defaultSourceVideoUrl: string | undefined;
-        try {
-          const { analyzeVideoContext } = await import("@/lib/ai/context");
-
-          const videoContext = await analyzeVideoContext(
-            messageToProcess.parts?.[0]?.text || "",
-            id,
-            (messageToProcess as any)?.experimental_attachments,
-            session.user.id
-          );
-
-          console.log("🔍 Pre-analysis: Video context:", {
-            confidence: videoContext.confidence,
-            reasoning: videoContext.reasoning,
-            sourceUrl: videoContext.sourceUrl,
-          });
-
-          defaultSourceVideoUrl = videoContext.sourceUrl;
-
-          console.log(
-            "🔍 defaultSourceVideoUrl set to:",
-            defaultSourceVideoUrl
-          );
-        } catch (error) {
-          console.error("🔍 Video context analysis error:", error);
-          defaultSourceVideoUrl = undefined;
-        }
-
-        const tools = {
-          createDocument: createDocument({
-            session,
-            dataStream: enhancedDataStream,
-          }),
-          updateDocument: updateDocument({
-            session,
-            dataStream: enhancedDataStream,
-          }),
-          requestSuggestions: requestSuggestions({
-            session,
-            dataStream: enhancedDataStream,
-          }),
-        };
-
-        // Note: Autotrigger disabled. Let the model call configureImageGeneration tool.
-
-        console.log("🔍 Message structure for configureImageGeneration:", {
-          hasMessage: !!messageToProcess,
-          messageKeys: messageToProcess ? Object.keys(messageToProcess) : [],
-          experimentalAttachments: (messageToProcess as any)
-            ?.experimental_attachments,
-          attachments: (messageToProcess as any)?.attachments,
-        });
-
-        console.log(
-          "🔍 About to call streamText with defaultSourceImageUrl:",
-          defaultSourceImageUrl
-        );
-
-        // Если есть изображение для редактирования или анимации, добавляем явную инструкцию
-        let enhancedMessages = messages;
-        if (defaultSourceImageUrl && messageToProcess.parts?.[0]?.text) {
-          const userText = messageToProcess.parts[0].text;
-          const editKeywords = [
-            "добавь",
-            "сделай",
-            "измени",
-            "подправь",
-            "замени",
-            "исправь",
-            "улучши",
-          ];
-          const animationKeywords = [
-            "анимируй",
-            "animate",
-            "анимация",
-            "animation",
-            "видео",
-            "video",
-            "движение",
-            "motion",
-          ];
-
-          const hasEditIntent = editKeywords.some((keyword) =>
-            userText.toLowerCase().includes(keyword)
-          );
-          const hasAnimationIntent = animationKeywords.some((keyword) =>
-            userText.toLowerCase().includes(keyword)
-          );
-
-          if (hasEditIntent) {
-            console.log(
-              "🔍 Edit intent detected, adding explicit instruction to call configureImageGeneration"
-            );
-            enhancedMessages = [
-              ...messages,
-              {
-                id: generateUUID(),
-                role: "system" as const,
-                content: `IMPORTANT: The user wants to edit an existing image. You MUST call the configureImageGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
-                createdAt: new Date(),
-                parts: [],
-              },
-            ];
-          } else if (hasAnimationIntent) {
-            console.log(
-              "🔍 Animation intent detected, adding explicit instruction to call configureVideoGeneration"
-            );
-            enhancedMessages = [
-              ...messages,
-              {
-                id: generateUUID(),
-                role: "system" as const,
-                content: `IMPORTANT: The user wants to animate an existing image. You MUST call the configureVideoGeneration tool with the user's request as the prompt AND the exact source image URL: "${defaultSourceImageUrl}". Use this exact URL as the sourceImageUrl parameter. Do not use placeholder text like "user-uploaded-image" - use the actual URL provided.`,
-                createdAt: new Date(),
-                parts: [],
-              },
-            ];
-          }
-        }
-
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: enhancedMessages,
-          maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
-              ? []
-              : [
-                  "configureImageGeneration",
-                  "configureVideoGeneration",
-                  "configureScriptGeneration",
-                  "listVideoModels",
-                  "findBestVideoModel",
-                  "enhancePromptUnified",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
-          experimental_transform: smoothStream({ chunking: "word" }),
-          experimental_generateMessageId: generateUUID,
-
-          tools: {
-            ...tools,
-            configureImageGeneration: configureImageGeneration({
-              createDocument: tools.createDocument,
-              session,
-              defaultSourceImageUrl,
-            }),
-            configureVideoGeneration: configureVideoGeneration({
-              createDocument: tools.createDocument,
-              session,
-              defaultSourceVideoUrl,
-              defaultSourceImageUrl,
-              chatId: id,
-              userMessage: messageToProcess.parts?.[0]?.text || "",
-              currentAttachments:
-                messageToProcess.experimental_attachments || [],
-            }),
-            configureAudioGeneration: configureAudioGeneration({
-              createDocument: tools.createDocument,
-              session,
-              chatId: id,
-              userMessage: message?.content || "",
-              currentAttachments: message?.experimental_attachments || [],
-            }),
-            configureScriptGeneration: configureScriptGeneration({
-              createDocument: tools.createDocument,
-              session,
-            }),
-            listVideoModels,
-            findBestVideoModel,
-            enhancePromptUnified,
-          },
-          // Note: explicit toolChoice removed due to type constraints; tool remains available
-          onFinish: async ({ response }) => {
-            console.log("🔍 onFinish called with response:", {
-              messagesCount: response.messages.length,
-              hasAssistantMessages: response.messages.some(
-                (m) => m.role === "assistant"
-              ),
-              responseKeys: Object.keys(response),
-            });
-
-            if (session.user?.id) {
-              try {
-                const assistantMessages = response.messages.filter(
-                  (message) => message.role === "assistant"
-                );
-
-                if (assistantMessages.length === 0) {
-                  console.warn("No assistant messages found in response");
-                  return;
-                }
-
-                const assistantId = getTrailingMessageId({
-                  messages: assistantMessages,
-                });
-
-                if (!assistantId) {
-                  console.warn("No assistant message ID found");
-                  return;
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [messageToProcess as any],
-                  responseMessages: response.messages,
-                });
-
-                if (!assistantMessage) {
-                  console.warn("Failed to append response messages");
-                  return;
-                }
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-
-                console.log("🔍 Assistant message saved successfully");
-
-                // Отправляем команду перенаправления на страницу чата
-                // Это происходит только после успешного создания чата
-                try {
-                  dataStream.writeData({
-                    type: "redirect",
-                    url: `/chat/${id}`,
-                  });
-                  console.log(
-                    "🔍 Redirect command sent to client:",
-                    `/chat/${id}`
-                  );
-                } catch (redirectError) {
-                  console.error(
-                    "🔍 Failed to send redirect command:",
-                    redirectError
-                  );
-                }
-              } catch (error) {
-                console.error("🔍 Failed to save assistant message:", error);
-                if (error instanceof Error) {
-                  console.error("🔍 Error stack:", error.stack);
-                }
-                // Не выбрасываем ошибку, чтобы не прерывать поток
-              }
-            }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: "stream-text",
-          },
-        });
-
-        result.consumeStream();
-
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
-      },
-      onError: (error: any) => {
-        console.error("🔍 DataStream onError called with:", error);
-        return `Oops, an error occurred! Error: ${error?.message || "Unknown error"}`;
-      },
-    });
-
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () => stream)
-      );
-    } else {
-      return new Response(stream);
-    }
-  } catch (error) {
-    return formatErrorResponse(error);
-  }
-});
-
-export async function GET(request: Request) {
-  try {
-    const streamContext = getStreamContext();
-    const resumeRequestedAt = new Date();
-
-    if (!streamContext) {
-      return new Response(null, { status: 204 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const chatId = searchParams.get("chatId");
-
-    if (!chatId) {
-      return new Response("id is required", { status: 400 });
-    }
-
-    // Валидация UUID формата
-    if (
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        chatId
-      )
-    ) {
-      return new Response(
-        JSON.stringify({
-          error: "Invalid chat ID format",
-          details: "Chat ID must be a valid UUID",
-          chatId: chatId,
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      return formatErrorResponse(
+        new Error("Failed to create chat"),
+        "Chat API"
       );
     }
 
-    const session = await auth();
+    // Get previous messages from database
+    const previousMessages = await getMessagesByChatId({ id: chatId });
+    console.log(`🔍 Loaded ${previousMessages.length} messages from DB`);
 
-    if (!session?.user) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    let chat: Chat | undefined;
-
-    try {
-      chat = await getChatById({ id: chatId });
-    } catch (error) {
-      console.error("Error getting chat by ID:", error);
-      return formatErrorResponse(error as Error, "GET chat/getChatById");
-    }
-
-    if (!chat) {
-      return new Response(
-        JSON.stringify({
-          error: "Chat not found",
-          details: "The requested chat does not exist",
-          chatId: chatId,
-        }),
-        {
-          status: 404,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    if (chat.visibility === "private" && chat.userId !== session.user.id) {
-      return new Response(
-        JSON.stringify({
-          error: "Access denied",
-          details: "You don't have permission to access this chat",
-          chatId: chatId,
-        }),
-        {
-          status: 403,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    const streamIds = await getStreamIdsByChatId({ chatId });
-
-    if (!streamIds.length) {
-      return new Response("No streams found", { status: 404 });
-    }
-
-    const recentStreamId = streamIds.at(-1);
-
-    if (!recentStreamId) {
-      return new Response("No recent stream found", { status: 404 });
-    }
-
-    const emptyDataStream = createDataStream({
-      execute: () => {},
-    });
-
-    const stream = await streamContext.resumableStream(
-      recentStreamId,
-      () => emptyDataStream
+    // Convert to UI format
+    const previousUIMessages = convertDBMessagesToUIMessages(previousMessages);
+    console.log(`🔍 Converted to ${previousUIMessages.length} UI messages`);
+    console.log(
+      `🔍 Previous UI messages:`,
+      previousUIMessages.map((m) => ({
+        role: m.role,
+        partsCount: m.parts?.length || 0,
+        hasAttachments: !!(m as any).experimental_attachments?.length,
+      }))
     );
 
-    /*
-     * For when the generation is streaming during SSR
-     * but the resumable stream has concluded at this point.
-     */
-    if (!stream) {
-      try {
-        const messages = await getMessagesByChatId({ id: chatId });
-        const mostRecentMessage = messages.at(-1);
-
-        if (!mostRecentMessage) {
-          return new Response(emptyDataStream, { status: 200 });
-        }
-
-        if (mostRecentMessage.role !== "assistant") {
-          return new Response(emptyDataStream, { status: 200 });
-        }
-
-        const messageCreatedAt = new Date(mostRecentMessage.createdAt);
-
-        if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
-          return new Response(emptyDataStream, { status: 200 });
-        }
-
-        const restoredStream = createDataStream({
-          execute: (buffer) => {
-            buffer.writeData({
-              type: "append-message",
-              message: JSON.stringify(mostRecentMessage),
-            });
-          },
-        });
-
-        return new Response(restoredStream, { status: 200 });
-      } catch (error) {
-        return formatErrorResponse(error, "GET chat/restoreStream");
+    // CRITICAL FIX: AI SDK v5 sendMessage creates new IDs each time
+    // So we can't rely on ID matching alone - need content-based deduplication
+    // Create a map of previous messages by content hash for deduplication
+    const previousMessageMap = new Map();
+    for (const msg of previousUIMessages) {
+      // Create a content hash based on role + text content
+      // IMPORTANT: Check both content field AND parts array
+      let textContent = "";
+      const msgAny = msg as any;
+      if (typeof msgAny.content === "string" && msgAny.content.trim()) {
+        textContent = msgAny.content;
+      } else {
+        const textPart = msg.parts?.find((p: any) => p.type === "text") as any;
+        textContent = textPart?.text || "";
       }
+      const contentHash = `${msg.role}:${textContent}`;
+      previousMessageMap.set(contentHash, msg);
     }
 
-    return new Response(stream, { status: 200 });
-  } catch (error) {
-    return formatErrorResponse(error, "GET chat");
-  }
-}
+    // Filter out messages that already exist by content (not just ID)
+    const newMessages = normalizedMessages.filter((msg: any) => {
+      if (msg.role === "system") return false;
 
-export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+      const msgAny = msg as any;
+      const textContent =
+        typeof msgAny.content === "string"
+          ? msgAny.content
+          : msg.parts?.find((p: any) => p.type === "text")?.text || "";
+      const contentHash = `${msg.role}:${textContent}`;
 
-  if (!id) {
-    return new Response("Not Found", { status: 404 });
-  }
+      const isDuplicate = previousMessageMap.has(contentHash);
+      if (isDuplicate) {
+        console.log(
+          `🔍 Skipping duplicate message: ${contentHash.substring(0, 50)}...`
+        );
+      }
+      return !isDuplicate;
+    });
 
-  const session = await auth();
+    console.log(
+      `🔍 Filtered messages: ${newMessages.length} new out of ${normalizedMessages.length} total`
+    );
 
-  if (!session?.user?.id) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+    // Combine previous messages with only NEW messages
+    const allMessages = [...previousUIMessages, ...newMessages];
 
-  try {
-    const chat = await getChatById({ id });
+    // CRITICAL FIX: Ensure all messages have proper parts array for Gemini API
+    // Convert content string to parts if needed AND remove parts without text
+    const messagesForAPI = allMessages
+      .map((msg) => {
+        const msgAny = msg as any;
+        // If message has no parts but has content string, convert it to parts
+        if (
+          (!msg.parts || msg.parts.length === 0) &&
+          msgAny.content &&
+          typeof msgAny.content === "string"
+        ) {
+          return {
+            ...msg,
+            parts: [
+              {
+                type: "text",
+                text: msgAny.content,
+              },
+            ],
+          };
+        }
 
-    if (chat?.userId !== session.user.id) {
-      return new Response("Forbidden", { status: 403 });
+        // For messages with parts, filter out problematic parts (like step-start)
+        // but keep text, file, and tool parts that are needed for functionality
+        if (msg.parts && msg.parts.length > 0) {
+          const validParts = msg.parts.filter((p: any) => {
+            // Keep text parts with valid content
+            if (
+              p.type === "text" &&
+              p.text &&
+              typeof p.text === "string" &&
+              p.text.trim().length > 0
+            ) {
+              return true;
+            }
+            // Keep file parts (needed for image/video generation with uploads)
+            if (p.type === "file" && p.url) {
+              return true;
+            }
+            // Keep tool invocation parts (needed for image/video generation)
+            if (p.type?.startsWith("tool-")) {
+              return true;
+            }
+            // Filter out everything else (step-start, etc.)
+            return false;
+          });
+
+          // If we have valid parts, return message with only those parts
+          if (validParts.length > 0) {
+            return {
+              ...msg,
+              parts: validParts,
+            };
+          }
+        }
+
+        return msg;
+      })
+      .filter((msg) => {
+        // For all messages, ensure they have at least one valid text, file, or tool part
+        // Text parts are required for conversation
+        // File parts are needed for image/video generation with uploads
+        // Tool parts are needed for image/video generation
+        const hasTextPart = msg.parts?.some(
+          (p: any) =>
+            p.type === "text" &&
+            p.text &&
+            typeof p.text === "string" &&
+            p.text.trim().length > 0
+        );
+
+        const hasFilePart = msg.parts?.some(
+          (p: any) => p.type === "file" && p.url
+        );
+
+        const hasToolPart = msg.parts?.some((p: any) =>
+          p.type?.startsWith("tool-")
+        );
+
+        const isValid = hasTextPart || hasFilePart || hasToolPart;
+
+        if (!isValid) {
+          console.log(
+            `🔍 Filtering out ${msg.role} message without valid text, file, or tool parts:`,
+            {
+              id: msg.id,
+              role: msg.role,
+              partsCount: msg.parts?.length,
+            }
+          );
+        }
+
+        return isValid;
+      });
+
+    // CRITICAL FIX: Remove experimental_attachments AND base64 images from all messages to prevent token overflow
+    // Images and videos in attachments can cause massive token consumption
+    const messagesWithoutAttachments = messagesForAPI.map((msg) => {
+      const { experimental_attachments, ...rest } = msg as any;
+
+      // Also remove base64 images from content field
+      // These are typically generated images that have been saved as base64 strings
+      if (rest.content && typeof rest.content === "string") {
+        try {
+          // Try to parse content as JSON (for tool results with embedded base64)
+          const parsed = JSON.parse(rest.content);
+          if (parsed.imageUrl?.startsWith("data:image/")) {
+            // Remove base64 image URL, keep other metadata
+            const { imageUrl, ...contentWithoutImage } = parsed;
+            rest.content = JSON.stringify(contentWithoutImage);
+            console.log("🔍 Removed base64 image from message content");
+          }
+        } catch {
+          // Not JSON, check if it's a base64 data URL
+          if (
+            rest.content.startsWith("data:image/") ||
+            rest.content.startsWith("data:video/")
+          ) {
+            // Replace with placeholder to prevent token overflow
+            rest.content = "[Media content removed to prevent token overflow]";
+            console.log("🔍 Replaced base64 data URL with placeholder");
+          }
+        }
+      }
+
+      // Also check parts array for base64 content
+      if (rest.parts && Array.isArray(rest.parts)) {
+        rest.parts = rest.parts.map((part: any) => {
+          if (
+            part.type === "text" &&
+            part.text &&
+            typeof part.text === "string"
+          ) {
+            // Check if text contains base64 data URL
+            if (
+              part.text.startsWith("data:image/") ||
+              part.text.startsWith("data:video/")
+            ) {
+              return {
+                ...part,
+                text: "[Media content removed to prevent token overflow]",
+              };
+            }
+            // Check if text is JSON with base64 imageUrl
+            try {
+              const parsed = JSON.parse(part.text);
+              if (parsed.imageUrl?.startsWith("data:image/")) {
+                const { imageUrl, ...contentWithoutImage } = parsed;
+                return {
+                  ...part,
+                  text: JSON.stringify(contentWithoutImage),
+                };
+              }
+            } catch {
+              // Not JSON, continue
+            }
+          }
+          return part;
+        });
+      }
+
+      return rest;
+    });
+
+    console.log(
+      `🔍 Messages for API: ${messagesWithoutAttachments.length} out of ${allMessages.length} total`
+    );
+    console.log(
+      `🔍 Removed attachments from messages to prevent token overflow`
+    );
+
+    // Debug: Log all messages structure before sending to API
+    messagesWithoutAttachments.forEach((msg, index) => {
+      const msgAny = msg as any;
+      console.log(`🔍 Message ${index}:`, {
+        role: msg.role,
+        partsCount: msg.parts?.length,
+        partsTypes: msg.parts?.map((p: any) => p.type).join(", "),
+        contentLength:
+          typeof msgAny.content === "string" ? msgAny.content.length : 0,
+      });
+    });
+
+    // Save user messages to database (with automatic FK recovery)
+    const userMessages = normalizedMessages.filter(
+      (msg: any) => msg.role === "user"
+    );
+
+    // AICODE-FIX: Only save NEW user messages that aren't already in the database
+    // Use content-based deduplication (same as above)
+    const newUserMessages = userMessages.filter((msg: any) => {
+      const msgAny = msg as any;
+      const textContent =
+        typeof msgAny.content === "string"
+          ? msgAny.content
+          : msg.parts?.find((p: any) => p.type === "text")?.text || "";
+      const contentHash = `${msg.role}:${textContent}`;
+      return !previousMessageMap.has(contentHash);
+    });
+
+    // console.log(
+    //   `💾 Saving user messages: ${newUserMessages.length} new out of ${userMessages.length} total`
+    // );
+    // console.log(`💾 Previous messages count:`, previousMessageMap.size);
+    // console.log(
+    //   `💾 Previous message hashes:`,
+    //   Array.from(previousMessageMap.keys()).map((hash) => hash.substring(0, 50))
+    // );
+    // console.log(
+    //   `💾 User message contents:`,
+    //   userMessages.map((m) => {
+    //     const text =
+    //       typeof m.content === "string"
+    //         ? m.content
+    //         : m.parts?.find((p: any) => p.type === "text")?.text || "";
+    //     const hash = `${m.role}:${text}`;
+    //     const isDuplicate = previousMessageMap.has(hash);
+    //     return {
+    //       text: text.substring(0, 30),
+    //       hash: hash.substring(0, 50),
+    //       isDuplicate,
+    //     };
+    //   })
+    // );
+
+    for (const userMsg of newUserMessages) {
+      const msgAny = userMsg as any;
+      const msgAttachments =
+        msgAny?.experimental_attachments ||
+        msgAny?.attachments ||
+        requestAttachments ||
+        [];
+
+      console.log("💾 SAVING USER MESSAGE:", {
+        chatId,
+        messageId: msgAny.id,
+        contentPreview: msgAny.content?.substring(0, 50),
+        attachmentsCount: msgAttachments.length,
+        attachments: msgAttachments,
+      });
+
+      await saveUserMessage({
+        chatId,
+        message: userMsg,
+        attachments: msgAttachments,
+      });
     }
 
-    const deletedChat = await deleteChatById({ id });
+    // Generate response using AI SDK v5
+    const chatModel = selectedChatModel || "chat-model";
 
-    return Response.json(deletedChat, { status: 200 });
+    // Create tools with proper parameters
+    const createDocumentTool = createDocument({ session });
+    const updateDocumentTool = updateDocument({ session });
+    const lastMessage = normalizedMessages[normalizedMessages.length - 1];
+
+    // CRITICAL: Extract files from parts for AI SDK v5 file support
+    console.log("🔍 Last message parts before extraction:", lastMessage?.parts);
+    const filePartsFromMessage =
+      lastMessage?.parts
+        ?.filter((p: any) => p.type === "file")
+        .map((p: any) => ({
+          url: p.url,
+          name: p.filename || "attachment",
+          contentType: p.mediaType || "image/png",
+        })) || [];
+
+    console.log("🔍 Extracted file parts:", filePartsFromMessage);
+
+    // Prefer experimental_attachments; fallback to files from parts or requestAttachments
+    const currentAttachments = ((lastMessage as any)
+      ?.experimental_attachments ||
+      (lastMessage as any)?.attachments ||
+      requestAttachments ||
+      filePartsFromMessage ||
+      []) as any[];
+
+    console.log("🔍 EXTRACTED ATTACHMENTS:", {
+      fromExperimental:
+        (lastMessage as any)?.experimental_attachments?.length || 0,
+      fromAttachments: (lastMessage as any)?.attachments?.length || 0,
+      fromRequestAttachments: requestAttachments?.length || 0,
+      fromFileParts: filePartsFromMessage.length,
+      total: currentAttachments.length,
+      attachments: currentAttachments,
+    });
+
+    // Old SuperDuperAI tools (kept for backward compatibility)
+    const imageGenerationTool = configureImageGeneration({
+      createDocument: createDocumentTool,
+      session,
+      chatId,
+      userMessage: lastMessage?.content || "",
+      currentAttachments,
+    });
+    const videoGenerationTool = configureVideoGeneration({
+      createDocument: createDocumentTool,
+      session,
+      chatId,
+      userMessage: lastMessage?.content || "",
+      currentAttachments,
+    });
+
+    // New tools (Nano Banana + FAL AI)
+    const nanoBananaImageTool = nanoBananaImageGenerationForChat({
+      createDocument: createDocumentTool,
+      session,
+      chatId,
+      userMessage: lastMessage?.content || "",
+      currentAttachments,
+    });
+    const falVideoTool = falVideoGenerationForChat({
+      createDocument: createDocumentTool,
+      session,
+      chatId,
+      userMessage: lastMessage?.content || "",
+      currentAttachments,
+    });
+
+    const scriptGenerationTool = configureScriptGeneration({
+      createDocument: createDocumentTool,
+      session,
+    });
+    const suggestionsTool = requestSuggestions({ session });
+
+    // Debug: Log available tools and system prompt
+    const toolsObject = {
+      // Old SuperDuperAI tools (kept for backward compatibility)
+      configureImageGeneration: imageGenerationTool,
+      configureVideoGeneration: videoGenerationTool,
+      // New tools (Nano Banana + FAL AI - primary image/video generation)
+      nanoBananaImageGeneration: nanoBananaImageTool,
+      falVideoGeneration: falVideoTool,
+      // Other tools
+      configureScriptGeneration: scriptGenerationTool,
+      createDocument: createDocumentTool,
+      updateDocument: updateDocumentTool,
+      requestSuggestions: suggestionsTool,
+    };
+
+    // console.log("🔧 Available tools:", Object.keys(toolsObject));
+    // console.log("🤖 Using model:", chatModel);
+    // console.log("📝 Messages count:", messagesWithoutAttachments.length);
+    // console.log(
+    //   "📝 Last user message:",
+    //   messagesWithoutAttachments[messagesWithoutAttachments.length - 1]?.content
+    // );
+
+    const systemPromptText = systemPrompt({
+      selectedChatModel: chatModel,
+      requestHints: { latitude: "0", longitude: "0", city: "", country: "" },
+    });
+    // console.log(
+    //   "📋 System prompt first 500 chars:",
+    //   systemPromptText.substring(0, 500)
+    // );
+
+    // CRITICAL: Detect image and video generation requests
+    const lastUserMessage =
+      messagesWithoutAttachments[messagesWithoutAttachments.length - 1];
+    const isImageGenerationRequest =
+      lastUserMessage?.content &&
+      typeof lastUserMessage.content === "string" &&
+      /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|draw|show|need|want|can you).*?(?:фото|картинк|изображени|рисунок|иллюстраци|image|picture|photo|drawing|illustration)/i.test(
+        lastUserMessage.content.toLowerCase()
+      );
+
+    const isVideoGenerationRequest =
+      lastUserMessage?.content &&
+      typeof lastUserMessage.content === "string" &&
+      /(?:сделай|создай|сгенерируй|нарисуй|покажи|нужно|хочу|можешь|make|create|generate|show|need|want|can you).*?(?:видео|ролик|анимаци|video|clip|animation)/i.test(
+        lastUserMessage.content.toLowerCase()
+      );
+
+    console.log("🔍 Request type detection:", {
+      isImageGeneration: isImageGenerationRequest,
+      isVideoGeneration: isVideoGenerationRequest,
+      lastMessage: lastUserMessage?.content?.substring(0, 100),
+    });
+
+    const result = streamText({
+      model: myProvider.languageModel(chatModel),
+      system: systemPromptText,
+      messages: messagesWithoutAttachments, // Use filtered messages without attachments to prevent token overflow
+      temperature: 0.7,
+      tools: {
+        // Old SuperDuperAI tools (kept for backward compatibility)
+        configureImageGeneration: imageGenerationTool,
+        configureVideoGeneration: videoGenerationTool,
+        // New tools (Nano Banana + FAL AI - primary image/video generation)
+        nanoBananaImageGeneration: nanoBananaImageTool,
+        falVideoGeneration: falVideoTool,
+        // Other tools
+        configureScriptGeneration: scriptGenerationTool,
+        createDocument: createDocumentTool,
+        updateDocument: updateDocumentTool,
+        requestSuggestions: suggestionsTool,
+      },
+      // CRITICAL: Force tool usage for image/video generation to ensure models call the right tool
+      toolChoice:
+        isImageGenerationRequest || isVideoGenerationRequest
+          ? "required"
+          : "auto",
+      // Allow the model to call tools and then produce text (use default tool roundtrips)
+      // REMOVED stopWhen - let AI SDK handle tool execution naturally without interference
+      onError: ({ error }) => {
+        console.error("❌ Stream error:", error);
+        if (error instanceof Error) {
+          console.error("❌ Error stack:", error.stack);
+        }
+      },
+    });
+
+    // AI SDK v5: Use toUIMessageStreamResponse() WITHOUT originalMessages
+    // The client manages its own message state and will receive the response via streaming
+    // We don't need to send back messages - client already has them
+    // NOTE: Do NOT use consumeStream() here as it interferes with tool execution and client streaming
+    return result.toUIMessageStreamResponse({
+      onFinish: async ({ messages: finishedMessages, responseMessage }) => {
+        try {
+          console.log(
+            "📝 onFinish called with messages:",
+            finishedMessages.length
+          );
+
+          if (!responseMessage) {
+            console.log("📝 ⚠️ No response message to save");
+            return;
+          }
+
+          // Debug: Log the raw responseMessage structure
+
+          // CRITICAL FIX: Check if message has only tool calls without text
+          // This happens when toolChoice: 'required' forces tool execution without text generation
+          const parts = (responseMessage as any).parts || [];
+          const hasTextPart = parts.some(
+            (p: any) => p.type === "text" && p.text
+          );
+          const hasToolPart = parts.some(
+            (p: any) =>
+              p.type && typeof p.type === "string" && p.type.startsWith("tool-")
+          );
+
+          // If message has tool calls but no text, add text from tool result message
+          if (hasToolPart && !hasTextPart) {
+            console.log(
+              "📝 🔧 Tool-only message detected, adding text part from tool result"
+            );
+
+            // Find tool part with output
+            const toolPart = parts.find(
+              (p: any) => p.type?.startsWith("tool-") && p.output
+            );
+
+            if (toolPart?.output) {
+              console.log(
+                "📝 🔍 Tool output structure:"
+                // JSON.stringify(toolPart.output, null, 2)
+              );
+
+              // Try to extract message from various possible locations
+              // Priority: error message > explicit message > success message > fallback
+              const message =
+                toolPart.output.error || // Error message (highest priority)
+                toolPart.output.message || // Direct message field
+                toolPart.output.data?.message || // Nested in data
+                (toolPart.output.success === false
+                  ? "Tool execution failed" // Failed without error message
+                  : "Content generated successfully using AI tools."); // Success without message
+
+              // Add text part with message from tool result
+              parts.push({
+                type: "text",
+                text: message,
+              });
+              console.log("📝 ✅ Added text part:", message);
+            } else {
+              // Fallback: add generic message
+              parts.push({
+                type: "text",
+                text: "Generated content using AI tools.",
+              });
+              console.log(
+                "📝 ✅ Added default text part (no tool output found)"
+              );
+            }
+          }
+
+          // Extract document IDs from tool results in the response message parts
+          const toolDocuments: Array<{
+            id: string;
+            title: string;
+            kind: string;
+          }> = [];
+
+          // Check responseMessage parts for tool invocations
+          if (parts.length > 0) {
+            console.log("📝 🔍 Processing", parts.length, "parts...");
+            for (const part of parts) {
+              // console.log('📝 🔍 Part type:', part.type);
+              // console.log('📝 🔍 Part state:', (part as any).state);
+              // console.log('📝 🔍 Part output:', (part as any).output);
+              // console.log('📝 🔍 Part keys:', Object.keys(part));
+
+              // AI SDK v5: Tool data is directly in part, not in nested toolInvocation
+              // Check for tool parts with completed state and output
+              // State can be 'output-available' or 'result'
+              if (
+                part.type &&
+                typeof part.type === "string" &&
+                part.type.startsWith("tool-") &&
+                ((part as any).state === "output-available" ||
+                  (part as any).state === "result") &&
+                (part as any).output
+              ) {
+                const toolName = part.type.replace("tool-", "");
+                const toolResult = (part as any).output;
+
+                console.log(
+                  "📝 🔍 Tool found:",
+                  toolName,
+                  "state:",
+                  (part as any).state
+                );
+                // console.log('📝 🔍 Tool result:', toolResult);
+
+                // Check for script documents from either configureScriptGeneration OR createDocument
+                // Case 1: configureScriptGeneration tool
+                if (
+                  toolName === "configureScriptGeneration" &&
+                  toolResult.id &&
+                  toolResult.kind
+                ) {
+                  toolDocuments.push({
+                    id: toolResult.id,
+                    title: toolResult.title || "Document",
+                    kind: toolResult.kind,
+                  });
+                  console.log(
+                    "📝 ✅ Found script document from configureScriptGeneration:",
+                    toolResult.id
+                  );
+                }
+                // Case 2: createDocument tool with kind === "script"
+                else if (
+                  toolName === "createDocument" &&
+                  toolResult.kind === "script" &&
+                  toolResult.id
+                ) {
+                  toolDocuments.push({
+                    id: toolResult.id,
+                    title: toolResult.title || "Document",
+                    kind: toolResult.kind,
+                  });
+                  console.log(
+                    "📝 ✅ Found script document from createDocument:",
+                    toolResult.id
+                  );
+                }
+              }
+            }
+          }
+
+          // Update responseMessage with modified parts (may include added text part)
+          (responseMessage as any).parts = parts;
+
+          // Normalize the response message and add attachments for script documents
+          const normalized = normalizeUIMessage(responseMessage);
+          const withUUID = ensureMessageHasUUID(normalized);
+
+          const attachments = normalized.experimental_attachments || [];
+
+          // Add attachments for script documents created by tools
+          for (const doc of toolDocuments) {
+            if (doc.kind === "script") {
+              attachments.push({
+                name:
+                  doc.title.length > 200
+                    ? `${doc.title.substring(0, 200)}...`
+                    : doc.title,
+                url: `${
+                  typeof process !== "undefined" &&
+                  process.env.NEXT_PUBLIC_APP_URL
+                    ? process.env.NEXT_PUBLIC_APP_URL
+                    : "http://localhost:3001"
+                }/api/document?id=${doc.id}`,
+                contentType: "text/markdown" as const,
+                documentId: doc.id,
+              });
+              console.log("📝 ✅ Added script attachment to message:", doc.id);
+            }
+          }
+
+          // Create the assistant message to save
+          const assistantMessage = {
+            id: withUUID.id,
+            chatId,
+            role: "assistant" as const,
+            parts: normalized.parts,
+            attachments: attachments,
+            createdAt: new Date(),
+          };
+
+          console.log("📝 Saving assistant message to database");
+          await saveMessages({ messages: [assistantMessage] });
+          console.log("📝 ✅ Assistant message saved successfully");
+          console.log("📝 ✅ Message details:", {
+            id: assistantMessage.id,
+            attachments: attachments.length,
+            partsCount: normalized.parts?.length || 0,
+          });
+        } catch (error) {
+          console.error("Failed to save assistant messages:", error);
+          // Don't throw - let the stream complete even if save fails
+        }
+      },
+    });
   } catch (error) {
-    return formatErrorResponse(error);
+    return formatErrorResponse(error, "Chat API");
   }
-}
+});

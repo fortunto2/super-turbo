@@ -1,25 +1,25 @@
-import type { UIMessage } from "ai";
-import { PreviewMessage, ThinkingMessage } from "./message";
-import { memo } from "react";
-import type { Vote } from "@/lib/db/schema";
-import equal from "fast-deep-equal";
-import type { UseChatHelpers } from "@ai-sdk/react";
-import { motion } from "framer-motion";
-import { useMessages } from "@/hooks/use-messages";
-import { Greeting } from "../chat";
+import type { UIMessage } from 'ai';
+import { PreviewMessage, ThinkingMessage } from './message';
+import { memo } from 'react';
+import type { Vote } from '@/lib/db/schema';
+import equal from 'fast-deep-equal';
+import type { UseChatHelpers } from '@ai-sdk/react';
+import { motion } from 'framer-motion';
+import { useMessages } from '@/hooks/use-messages';
+import { Greeting } from '../chat';
 
 interface MessagesProps {
   chatId: string;
-  status: UseChatHelpers["status"];
+  status: UseChatHelpers<any>['status'];
   votes: Array<Vote> | undefined;
   messages: Array<UIMessage>;
-  setMessages: UseChatHelpers["setMessages"];
-  reload: UseChatHelpers["reload"];
+  setMessages: any; // AI SDK v5: setMessages type changed;
+  reload: any; // AI SDK v5: reload type changed;
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedChatModel: string;
-  selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers["append"];
+  selectedVisibilityType: 'public' | 'private';
+  append?: any; // AI SDK v5: append type changed;
 }
 
 function PureMessages({
@@ -57,7 +57,7 @@ function PureMessages({
           key={message.id}
           chatId={chatId}
           message={message}
-          isLoading={status === "streaming" && messages.length - 1 === index}
+          isLoading={status === 'streaming' && messages.length - 1 === index}
           vote={
             votes
               ? votes.find((vote) => vote.messageId === message.id)
@@ -75,9 +75,9 @@ function PureMessages({
         />
       ))}
 
-      {status === "submitted" &&
+      {status === 'submitted' &&
         messages.length > 0 &&
-        messages[messages.length - 1]?.role === "user" && <ThinkingMessage />}
+        messages[messages.length - 1]?.role === 'user' && <ThinkingMessage />}
 
       <motion.div
         ref={messagesEndRef}

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Banana, Video, Zap } from "lucide-react";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2, Banana, Video, Zap } from 'lucide-react';
 
 export default function BananaVeo3Page() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function BananaVeo3Page() {
         <div className="flex items-center gap-2">
           <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
           <p className="text-gray-600 dark:text-gray-400">
-            Создаём новый Banana + VEO3 чат...
+            Creating a new Banana + VEO3 chat...
           </p>
         </div>
       </div>

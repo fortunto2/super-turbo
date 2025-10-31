@@ -4,11 +4,11 @@ import {
   type ISceneRead,
   type WSMessage,
   WSMessageTypeEnum,
-} from "@turbo-super/api";
-import { useQueryClient } from "@tanstack/react-query";
-import type { EventHandler } from "@/lib/utils/event-source-store-factory";
-import { sceneKeys } from "@/lib/api";
-import { pushOrReplace } from "@/lib/utils/array";
+} from '@turbo-super/api';
+import { useQueryClient } from '@tanstack/react-query';
+import type { EventHandler } from '@/lib/utils/event-source-store-factory';
+import { sceneKeys } from '@/lib/api';
+import { pushOrReplace } from '@/lib/utils/array';
 
 export const useSceneEventHandler = (projectId: string): EventHandler => {
   const queryClient = useQueryClient();
@@ -26,7 +26,7 @@ export const useSceneEventHandler = (projectId: string): EventHandler => {
             ...oldData,
             file: object,
           };
-        }
+        },
       );
     }
 
@@ -45,9 +45,9 @@ export const useSceneEventHandler = (projectId: string): EventHandler => {
         }
         return {
           ...oldData,
-          items: pushOrReplace(oldData.items as ISceneRead[], object, "id"),
+          items: pushOrReplace(oldData.items as ISceneRead[], object, 'id'),
         };
-      }
+      },
     );
   };
 };

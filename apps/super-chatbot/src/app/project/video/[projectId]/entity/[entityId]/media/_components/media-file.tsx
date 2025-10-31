@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
 import {
   FileTypeEnum,
   type IFileRead,
   type IEntityRead,
-} from "@turbo-super/api";
-import { useState } from "react";
-import Image from "next/image";
-import { Play, Trash2, Check } from "lucide-react";
-import { useFileDelete, useEntityUpdate } from "@/lib/api/superduperai";
+} from '@turbo-super/api';
+import { useState } from 'react';
+import Image from 'next/image';
+import { Play, Trash2, Check } from 'lucide-react';
+import { useFileDelete, useEntityUpdate } from '@/lib/api/superduperai';
 
 export function MediaFile({
   file,
@@ -30,7 +30,7 @@ export function MediaFile({
     try {
       await deleteFile({ id: fileId });
     } catch (error) {
-      console.error("Error deleting file:", error);
+      console.error('Error deleting file:', error);
     }
   };
 
@@ -42,7 +42,7 @@ export function MediaFile({
         file_id: file.id,
       } as any);
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.error('Error selecting file:', error);
     }
   };
 
@@ -59,9 +59,9 @@ export function MediaFile({
         disabled={isSelecting}
         className={`relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg border transition-all duration-200 ${
           isActive
-            ? "border-primary ring-2 ring-primary"
-            : "border-border hover:border-primary/60 hover:shadow-md"
-        } ${isSelecting ? "opacity-50 cursor-not-allowed" : ""}`}
+            ? 'border-primary ring-2 ring-primary'
+            : 'border-border hover:border-primary/60 hover:shadow-md'
+        } ${isSelecting ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {file.type === FileTypeEnum.VIDEO && (
           <div className="absolute z-10">

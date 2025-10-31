@@ -11,15 +11,15 @@
       "public",
       ".vercel",
       ".pnpm-cache",
-      "**/*.json",
+      "**/*.json"
     ],
-    "maxSize": 2097152,
+    "maxSize": 2097152
   },
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "defaultBranch": "main",
-    "useIgnoreFile": true,
+    "useIgnoreFile": true
   },
   "formatter": {
     "enabled": true,
@@ -28,7 +28,7 @@
     "indentWidth": 2,
     "lineEnding": "lf",
     "lineWidth": 80,
-    "attributePosition": "auto",
+    "attributePosition": "auto"
   },
   "linter": {
     "enabled": true,
@@ -41,8 +41,8 @@
           "level": "warn",
           "options": {
             "ignoreNonDom": false,
-            "allowInvalidRoles": ["none", "text"],
-          },
+            "allowInvalidRoles": ["none", "text"]
+          }
         },
         "useSemanticElements": "off", // Rule is buggy, revisit later
         "noSvgWithoutTitle": "off", // We do not intend to adhere to this rule
@@ -53,14 +53,14 @@
         "useAriaPropsForRole": "off", // Disable required ARIA attributes check
         "useKeyWithClickEvents": "off", // Disable keyboard event requirement with click events
         "useAltText": "off", // Disable alt text requirement
-        "useButtonType": "off", // Disable button type requirement
+        "useButtonType": "off" // Disable button type requirement
       },
       "complexity": {
         "noUselessStringConcat": "warn", // Not in recommended ruleset, turning on manually
         "noForEach": "off", // forEach is too familiar to ban
         "noUselessSwitchCase": "off", // Turned off due to developer preferences
         "noUselessThisAlias": "off", // Turned off due to developer preferences
-        "noBannedTypes": "off",
+        "noBannedTypes": "off"
       },
       "correctness": {
         "noUnusedImports": "warn", // Not in recommended ruleset, turning on manually
@@ -69,10 +69,10 @@
         "useJsxKeyInIterable": "off", // Rule is buggy, revisit later
         "useExhaustiveDependencies": "off", // Community feedback on this rule has been poor, we will continue with ESLint
         "noUnnecessaryContinue": "off", // Turned off due to developer preferences
-        "noUnusedLabels": "error", // Catches Git conflict markers
+        "noUnusedLabels": "error" // Catches Git conflict markers
       },
       "security": {
-        "noDangerouslySetInnerHtml": "off", // Covered by Conformance
+        "noDangerouslySetInnerHtml": "off" // Covered by Conformance
       },
       "style": {
         "useFragmentSyntax": "warn", // Not in recommended ruleset, turning on manually
@@ -80,12 +80,12 @@
         "useDefaultParameterLast": "warn", // Not in recommended ruleset, turning on manually
         "useExponentiationOperator": "off", // Obscure and arguably not easily readable
         "noUnusedTemplateLiteral": "off", // Stylistic opinion
-        "noUselessElse": "off", // Stylistic opinion
+        "noUselessElse": "off" // Stylistic opinion
       },
       "suspicious": {
         "noExplicitAny": "off", // We trust Vercelians to use any only when necessary
         "noArrayIndexKey": "off", // Disable array index key warning
-        "noControlCharactersInRegex": "off", // Allow control characters in regex
+        "noControlCharactersInRegex": "off" // Allow control characters in regex
       },
       "nursery": {
         "noStaticElementInteractions": "off", // Disable static element interactions warning
@@ -93,9 +93,9 @@
         "noDocumentImportInPage": "warn",
         "noDuplicateElseIf": "warn",
         "noIrregularWhitespace": "warn",
-        "useValidAutocomplete": "warn",
-      },
-    },
+        "useValidAutocomplete": "warn"
+      }
+    }
   },
   "javascript": {
     "jsxRuntime": "reactClassic",
@@ -108,22 +108,22 @@
       "bracketSpacing": true,
       "bracketSameLine": false,
       "quoteStyle": "single",
-      "attributePosition": "auto",
-    },
+      "attributePosition": "auto"
+    }
   },
   "json": {
     "formatter": {
       "enabled": true,
-      "trailingCommas": "none",
+      "trailingCommas": "none"
     },
     "parser": {
       "allowComments": true,
-      "allowTrailingCommas": false,
-    },
+      "allowTrailingCommas": false
+    }
   },
   "css": {
     "formatter": { "enabled": false },
-    "linter": { "enabled": false },
+    "linter": { "enabled": false }
   },
   "organizeImports": { "enabled": false },
   "overrides": [
@@ -134,10 +134,10 @@
       "linter": {
         "rules": {
           "correctness": {
-            "noEmptyPattern": "off",
-          },
-        },
-      },
-    },
-  ],
+            "noEmptyPattern": "off"
+          }
+        }
+      }
+    }
+  ]
 }

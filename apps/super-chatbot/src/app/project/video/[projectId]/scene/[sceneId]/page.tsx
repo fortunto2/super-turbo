@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { Toolbar, type ToolType } from "./_components/toolbar";
+import { Toolbar, type ToolType } from './_components/toolbar';
 
-import { ScenePreview } from "./_components/scene-preview";
+import { ScenePreview } from './_components/scene-preview';
 
-import { useSceneGetById } from "@/lib/api/superduperai";
+import { useSceneGetById } from '@/lib/api/superduperai';
 
-import { MediaList } from "./_components/media-list";
-import { VoiceoverList } from "./_components/voiceover-list";
-import { SoundEffectList } from "./_components/soundeffect-list";
-import { AnimatingTool } from "./_components/animating-tool";
+import { MediaList } from './_components/media-list';
+import { VoiceoverList } from './_components/voiceover-list';
+import { SoundEffectList } from './_components/soundeffect-list';
+import { AnimatingTool } from './_components/animating-tool';
 
 export default function ScenePage() {
   const params = useParams();
@@ -22,7 +22,7 @@ export default function ScenePage() {
   const sceneId = params.sceneId as string;
 
   const [activeTool, setActiveTool] = useState<ToolType | null | string>(
-    "mediaList"
+    'mediaList',
   );
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -34,7 +34,7 @@ export default function ScenePage() {
   const togglePlay = () => setIsPlaying(!isPlaying);
 
   const handleStarted = (newFileId: string) => {
-    setActiveTool("mediaList");
+    setActiveTool('mediaList');
   };
 
   return (
@@ -43,7 +43,7 @@ export default function ScenePage() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="mb-3 flex shrink-0 items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">
-            Scene {scene?.order != null ? scene.order + 1 : ""}
+            Scene {scene?.order != null ? scene.order + 1 : ''}
           </h3>
           <div className="text-xs text-muted-foreground">
             Duration: {scene?.duration}
@@ -61,32 +61,29 @@ export default function ScenePage() {
         />
 
         <div className="mt-4 flex-1 overflow-hidden">
-          {activeTool === "mediaList" ? (
-            <MediaList
-              projectId={projectId}
-              sceneId={sceneId}
-            />
-          ) : activeTool === "voiceover" ? (
+          {activeTool === 'mediaList' ? (
+            <MediaList projectId={projectId} sceneId={sceneId} />
+          ) : activeTool === 'voiceover' ? (
             <VoiceoverList
               projectId={projectId}
               sceneId={sceneId}
               onCreateAudio={() => {
                 router.push(
-                  `/project/video/${projectId}/scene/${sceneId}/voiceover`
+                  `/project/video/${projectId}/scene/${sceneId}/voiceover`,
                 );
               }}
             />
-          ) : activeTool === "soundEffect" ? (
+          ) : activeTool === 'soundEffect' ? (
             <SoundEffectList
               projectId={projectId}
               sceneId={sceneId}
               onCreateAudio={() => {
                 router.push(
-                  `/project/video/${projectId}/scene/${sceneId}/soundEffect`
+                  `/project/video/${projectId}/scene/${sceneId}/soundEffect`,
                 );
               }}
             />
-          ) : activeTool === "animating" ? (
+          ) : activeTool === 'animating' ? (
             <AnimatingTool
               sceneId={sceneId}
               projectId={projectId}

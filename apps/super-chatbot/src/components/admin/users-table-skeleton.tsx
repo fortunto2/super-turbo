@@ -5,9 +5,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from '../ui/table';
 
-import { Skeleton } from "@turbo-super/ui";
+import { Skeleton } from '@turbo-super/ui';
 export function UsersTableSkeleton() {
   return (
     <div className="space-y-4">

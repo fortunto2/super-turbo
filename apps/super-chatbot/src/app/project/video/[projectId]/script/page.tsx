@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@turbo-super/ui";
-import { FileText, Save, Users } from "lucide-react";
-import { BackButton } from "@/components/shared/back-button";
-import Link from "next/link";
-import { MarkdownEditor } from "@/components/editors/markdown-editor";
-import { useProjectGetById, useDataUpdate } from "@/lib/api";
-import type { MDXEditorMethods } from "@mdxeditor/editor";
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@turbo-super/ui';
+import { FileText, Save, Users } from 'lucide-react';
+import { BackButton } from '@/components/shared/back-button';
+import Link from 'next/link';
+import { MarkdownEditor } from '@/components/editors/markdown-editor';
+import { useProjectGetById, useDataUpdate } from '@/lib/api';
+import type { MDXEditorMethods } from '@mdxeditor/editor';
 
 export default function ScriptPage() {
   const params = useParams();
@@ -17,7 +17,7 @@ export default function ScriptPage() {
   const queryClient = useQueryClient();
   const projectId = params.projectId as string;
 
-  const [scriptText, setScriptText] = useState("");
+  const [scriptText, setScriptText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -32,13 +32,13 @@ export default function ScriptPage() {
   } = useProjectGetById({ id: projectId });
 
   // Получаем скрипт из данных проекта
-  const scriptData = project?.data?.find((item) => item.type === "script");
-  const currentScript = scriptData?.value?.text || "";
+  const scriptData = project?.data?.find((item) => item.type === 'script');
+  const currentScript = scriptData?.value?.text || '';
 
   // Инициализируем редактор с данными проекта
   useEffect(() => {
     if (currentScript && !scriptText) {
-      const formattedText = currentScript.replace(/(?<!(?<!\\)\\)</g, "\\<");
+      const formattedText = currentScript.replace(/(?<!(?<!\\)\\)</g, '\\<');
       setScriptText(formattedText);
       editorRef.current?.setMarkdown(formattedText);
       // Сбрасываем флаг изменений после инициализации
@@ -49,7 +49,7 @@ export default function ScriptPage() {
   const handleChange = (value: string) => {
     setScriptText(value);
     // Сравниваем с оригинальным текстом, а не с currentScript
-    const originalText = scriptData?.value?.text || "";
+    const originalText = scriptData?.value?.text || '';
     setHasChanges(value !== originalText);
   };
 
@@ -58,7 +58,7 @@ export default function ScriptPage() {
 
     setIsSaving(true);
     try {
-      const safeText = scriptText.replace(/\\</g, "<");
+      const safeText = scriptText.replace(/\\</g, '<');
 
       // Используем mutate для сохранения скрипта
       mutate(
@@ -71,15 +71,15 @@ export default function ScriptPage() {
         {
           onSuccess: () => {
             setHasChanges(false);
-            console.log("✅ Script saved successfully");
+            console.log('✅ Script saved successfully');
           },
           onError: (error) => {
-            console.error("❌ Error saving script:", error);
+            console.error('❌ Error saving script:', error);
           },
-        }
+        },
       );
     } catch (error) {
-      console.error("❌ Error saving script:", error);
+      console.error('❌ Error saving script:', error);
     } finally {
       setIsSaving(false);
     }
@@ -151,7 +151,7 @@ export default function ScriptPage() {
               size="sm"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isSaving || isUpdating ? "Saving..." : "Save"}
+              {isSaving || isUpdating ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function ScriptPage() {
           <div className="inline-flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-md">
             <div className="size-2 bg-primary rounded-full animate-pulse" />
             <span className="text-xs text-muted-foreground">
-              Powered by{" "}
+              Powered by{' '}
               <strong className="text-foreground">SuperDuperAI</strong>
             </span>
           </div>

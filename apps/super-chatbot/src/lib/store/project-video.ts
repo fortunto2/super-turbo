@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { IFileRead } from "@turbo-super/api";
-import { create } from "zustand";
+import type { IFileRead } from '@turbo-super/api';
+import { create } from 'zustand';
 
-type SetState = Omit<ProjectVideoRenderStore, "setState">;
+type SetState = Omit<ProjectVideoRenderStore, 'setState'>;
 
 type ProjectVideoRenderStore = {
   progress: null | number;
@@ -18,5 +18,5 @@ export const useProjectVideoRenderStore = create<ProjectVideoRenderStore>(
     setState: (state) => {
       set(state);
     },
-  })
+  }),
 );

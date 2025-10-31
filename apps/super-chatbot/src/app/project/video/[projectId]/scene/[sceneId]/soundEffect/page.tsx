@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from 'next/navigation';
 
-import { AudioTypeEnum, type IFileRead } from "@turbo-super/api";
+import { AudioTypeEnum, type IFileRead } from '@turbo-super/api';
 
-import { ArrowLeft } from "lucide-react";
-import { FileAudioGenerate } from "../voiceover/_components/file-audio-generate";
-import { useSceneGetById, useSceneUpdate } from "@/lib/api";
+import { ArrowLeft } from 'lucide-react';
+import { FileAudioGenerate } from '../voiceover/_components/file-audio-generate';
+import { useSceneGetById, useSceneUpdate } from '@/lib/api';
 
 const SceneSoundEffectGenerationPage = () => {
   const params = useParams();

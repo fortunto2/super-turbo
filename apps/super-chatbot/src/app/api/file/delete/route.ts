@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { configureSuperduperAI } from "@/lib/config/superduperai";
-import { getSuperduperAIConfig, OpenAPI, FileService } from "@turbo-super/api";
+import { type NextRequest, NextResponse } from 'next/server';
+import { configureSuperduperAI } from '@/lib/config/superduperai';
+import { getSuperduperAIConfig, OpenAPI, FileService } from '@turbo-super/api';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -15,9 +15,9 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         {
-          error: "No id provided",
+          error: 'No id provided',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,13 +26,13 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("💥 Scene proxy error:", error);
+    console.error('💥 Scene proxy error:', error);
     return NextResponse.json(
       {
-        error: "Failed to update scene status",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to update scene status',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

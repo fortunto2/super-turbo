@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -8,28 +8,24 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from "@turbo-super/ui";
-import {
-  Play,
-  AlertCircle,
-  ArrowLeft,
-} from "lucide-react";
-import Link from "next/link";
-import { QueryState } from "@/components/ui/query-state";
+} from '@turbo-super/ui';
+import { Play, AlertCircle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { QueryState } from '@/components/ui/query-state';
 // import { useProjectList } from "@/lib/api/superduperai";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 import {
   getStatusIcon,
   getStatusColor,
   getStatusText,
-} from "@/lib/utils/project-status";
+} from '@/lib/utils/project-status';
 
 interface UserProject {
   id: string;
   userId: string;
   projectId: string;
-  status?: "pending" | "processing" | "completed" | "failed";
-  errorStage?: "script" | "entities" | "storyboard";
+  status?: 'pending' | 'processing' | 'completed' | 'failed';
+  errorStage?: 'script' | 'entities' | 'storyboard';
   errorMessage?: string;
   completedStages?: string[];
   failedStages?: string[];
@@ -49,11 +45,11 @@ export default function ProjectsPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["user-projects"],
+    queryKey: ['user-projects'],
     queryFn: async () => {
-      const response = await fetch("/api/user/projects");
+      const response = await fetch('/api/user/projects');
       if (!response.ok) {
-        throw new Error("Failed to fetch projects");
+        throw new Error('Failed to fetch projects');
       }
       return response.json();
     },
@@ -132,7 +128,7 @@ export default function ProjectsPage() {
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {projects.map((project: UserProject) => {
-                  const status = project.status || "pending"; // TODO: Получить статус из API
+                  const status = project.status || 'pending'; // TODO: Получить статус из API
 
                   return (
                     <Card
@@ -149,9 +145,9 @@ export default function ProjectsPage() {
                           </span>
                         </div>
                         <CardDescription className="text-muted-foreground">
-                          Created{" "}
+                          Created{' '}
                           {new Date(project.createdAt).toLocaleDateString(
-                            "en-US"
+                            'en-US',
                           )}
                           {project.creditsUsed && (
                             <span className="block text-xs">
@@ -185,7 +181,7 @@ export default function ProjectsPage() {
                           {project.completedStages &&
                             project.completedStages.length > 0 && (
                               <div className="text-xs text-muted-foreground">
-                                Completed: {project.completedStages.join(", ")}
+                                Completed: {project.completedStages.join(', ')}
                               </div>
                             )}
 

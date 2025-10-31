@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -9,26 +9,26 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 import {
   Play,
   Loader2,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-} from "lucide-react";
-import { ProjectTaskList } from "@/components/project/project-task-list";
-import { useProjectTasks } from "@turbo-super/api";
+} from 'lucide-react';
+import { ProjectTaskList } from '@/components/project/project-task-list';
+import { useProjectTasks } from '@turbo-super/api';
 import {
   useProjectGetById,
   useProjectScript2Storyboard,
   useProjectTxt2Script,
   useProjectVideoScript2Entities,
-} from "@/lib/api";
-import { getProjectStatus } from "@/lib/utils/project-status";
-import { useProjectEvents } from "@/hooks/event-handlers/event-source";
-import { useProjectEventHandler } from "@/hooks/event-handlers/event-handler";
-import { useProjectVideoEventHandler } from "@/hooks/event-handlers/use-project-video-event-handler";
+} from '@/lib/api';
+import { getProjectStatus } from '@/lib/utils/project-status';
+import { useProjectEvents } from '@/hooks/event-handlers/event-source';
+import { useProjectEventHandler } from '@/hooks/event-handlers/event-handler';
+import { useProjectVideoEventHandler } from '@/hooks/event-handlers/use-project-video-event-handler';
 
 export default function GeneratePage() {
   const params = useParams();
@@ -72,7 +72,7 @@ export default function GeneratePage() {
   const projectStatusInfo = project?.tasks
     ? getProjectStatus(project.tasks)
     : null;
-  const projectStatus = projectStatusInfo?.status || "pending";
+  const projectStatus = projectStatusInfo?.status || 'pending';
   const hasErrors = errorTasks.length > 0;
   const isCompleted =
     isStoryboardCompleted && isEntityCompleted && isTxtCompleted;
@@ -98,14 +98,14 @@ export default function GeneratePage() {
   // Автоматический запуск следующего этапа после успешного завершения предыдущего
   const handleAutoNextStage = useCallback(() => {
     if (isTxtCompleted && !isEntityCompleted && !isEntityError) {
-      console.log("🚀 Auto-starting entities generation...");
+      console.log('🚀 Auto-starting entities generation...');
       regenerateEntities({ id: projectId });
     } else if (
       isEntityCompleted &&
       !isStoryboardCompleted &&
       !isStoryboardError
     ) {
-      console.log("🚀 Auto-starting storyboard generation...");
+      console.log('🚀 Auto-starting storyboard generation...');
       regenerateStoryboard({ id: projectId });
     }
   }, [
@@ -206,20 +206,20 @@ export default function GeneratePage() {
 
                 {/* Status display */}
                 <div className="flex items-center space-x-2">
-                  {projectStatus === "completed" ? (
+                  {projectStatus === 'completed' ? (
                     <CheckCircle className="size-4 text-green-600" />
-                  ) : projectStatus === "failed" ? (
+                  ) : projectStatus === 'failed' ? (
                     <AlertCircle className="size-4 text-red-600" />
-                  ) : projectStatus === "processing" ? (
+                  ) : projectStatus === 'processing' ? (
                     <Loader2 className="size-4 animate-spin text-primary" />
                   ) : (
                     <Loader2 className="size-4 animate-spin text-yellow-600" />
                   )}
                   <span className="capitalize">
-                    {projectStatus === "completed" && "Video ready!"}
-                    {projectStatus === "failed" && "Generation error"}
-                    {projectStatus === "processing" && "Video generating..."}
-                    {projectStatus === "pending" && "Waiting to start..."}
+                    {projectStatus === 'completed' && 'Video ready!'}
+                    {projectStatus === 'failed' && 'Generation error'}
+                    {projectStatus === 'processing' && 'Video generating...'}
+                    {projectStatus === 'pending' && 'Waiting to start...'}
                   </span>
                 </div>
 
@@ -227,8 +227,8 @@ export default function GeneratePage() {
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm">
                     {hasErrors
-                      ? "An error occurred. Please try regenerating the project."
-                      : "Auto mode is active. Please wait while your project is being prepared."}
+                      ? 'An error occurred. Please try regenerating the project.'
+                      : 'Auto mode is active. Please wait while your project is being prepared.'}
                   </p>
                 </div>
 
@@ -243,7 +243,7 @@ export default function GeneratePage() {
                 {/* Action buttons */}
                 <div className="mt-4 space-y-3">
                   {/* View video button for completed projects */}
-                  {projectStatus === "completed" && (
+                  {projectStatus === 'completed' && (
                     <Button
                       onClick={() =>
                         router.push(`/project/video/${projectId}/preview`)
@@ -276,7 +276,7 @@ export default function GeneratePage() {
                           Regenerating...
                         </>
                       ) : (
-                        "Regenerate Project"
+                        'Regenerate Project'
                       )}
                     </Button>
                   )}
@@ -287,7 +287,7 @@ export default function GeneratePage() {
                   tasks={
                     project?.tasks?.map((task) => ({
                       ...task,
-                      status: task.status || "pending",
+                      status: task.status || 'pending',
                     })) || []
                   }
                 />

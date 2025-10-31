@@ -1,13 +1,13 @@
-import "server-only";
+import 'server-only';
 
-import { count, sql, } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { user, document, userProject } from "./schema";
+import { count, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { user, document, userProject } from './schema';
 
 // Create database connection
-const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
-const client = postgres(databaseUrl, { ssl: "require" });
+const databaseUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+const client = postgres(databaseUrl, { ssl: 'require' });
 const db = drizzle(client);
 
 export interface SystemStats {
@@ -130,8 +130,8 @@ export async function getSystemStats(): Promise<SystemStats> {
     `);
 
     const systemData = systemInfo[0] as any;
-    console.log("System data from database:", systemData);
-    console.log("Recent activity data:", {
+    console.log('System data from database:', systemData);
+    console.log('Recent activity data:', {
       recentUsers: recentUsers[0]?.count || 0,
       recentDocuments: recentDocuments[0]?.count || 0,
       recentProjects: recentProjects[0]?.count || 0,
@@ -166,14 +166,14 @@ export async function getSystemStats(): Promise<SystemStats> {
         min: balanceStats[0]?.min || 0,
       },
       system: {
-        databaseSize: systemData?.database_size || "Unknown",
-        databaseName: systemData?.database_name || "Unknown",
-        postgresVersion: systemData?.postgres_version || "Unknown",
+        databaseSize: systemData?.database_size || 'Unknown',
+        databaseName: systemData?.database_name || 'Unknown',
+        postgresVersion: systemData?.postgres_version || 'Unknown',
         uptime: Math.round(systemData?.uptime || 0),
       },
     };
   } catch (error) {
-    console.error("Error fetching system stats:", error);
+    console.error('Error fetching system stats:', error);
     throw error;
   }
 }

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import {
   Veo3PromptGenerator,
   type PromptDataType,
   type MoodboardImageType,
-} from "@turbo-super/features";
-import { enhancePromptVeo3 } from "@/lib/ai/api/enhance-prompt-veo3";
+} from '@turbo-super/features';
+import { enhancePromptVeo3 } from '@/lib/ai/api/enhance-prompt-veo3';
 
 // Define types from exported values
 type PromptData = typeof PromptDataType;
@@ -34,6 +34,7 @@ export default function Veo3PromptGeneratorPage() {
     <Veo3PromptGenerator
       enhancePromptFunction={enhancePromptFunction}
       showInfoBanner={true}
+      MoodboardUploader={undefined}
     />
   );
 }

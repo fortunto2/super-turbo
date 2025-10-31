@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { type ReactNode, useMemo, useState } from "react";
-import { Button } from "@turbo-super/ui";
+import { type ReactNode, useMemo, useState } from 'react';
+import { Button } from '@turbo-super/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { cn } from "@turbo-super/ui";
+} from '../ui/dropdown-menu';
+import { cn } from '@turbo-super/ui';
 import {
   CheckCircleFillIcon,
   ChevronDownIcon,
   GlobeIcon,
   LockIcon,
-} from "../common/icons";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
+} from '../common/icons';
+import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
-export type VisibilityType = "private" | "public";
+export type VisibilityType = 'private' | 'public';
 
 const visibilities: Array<{
   id: VisibilityType;
@@ -26,15 +26,15 @@ const visibilities: Array<{
   icon: ReactNode;
 }> = [
   {
-    id: "private",
-    label: "Private",
-    description: "Only you can access this chat",
+    id: 'private',
+    label: 'Private',
+    description: 'Only you can access this chat',
     icon: <LockIcon />,
   },
   {
-    id: "public",
-    label: "Public",
-    description: "Anyone with the link can access this chat",
+    id: 'public',
+    label: 'Public',
+    description: 'Anyone with the link can access this chat',
     icon: <GlobeIcon />,
   },
 ];
@@ -56,19 +56,16 @@ export function VisibilitySelector({
 
   const selectedVisibility = useMemo(
     () => visibilities.find((visibility) => visibility.id === visibilityType),
-    [visibilityType]
+    [visibilityType],
   );
 
   return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={setOpen}
-    >
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         asChild
         className={cn(
-          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-          className
+          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+          className,
         )}
       >
         <Button
@@ -82,10 +79,7 @@ export function VisibilitySelector({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="start"
-        className="min-w-[300px]"
-      >
+      <DropdownMenuContent align="start" className="min-w-[300px]">
         {visibilities.map((visibility) => (
           <DropdownMenuItem
             data-testid={`visibility-selector-item-${visibility.id}`}

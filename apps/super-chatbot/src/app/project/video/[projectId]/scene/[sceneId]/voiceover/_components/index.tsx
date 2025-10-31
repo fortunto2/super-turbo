@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Download, Pause, Play } from "lucide-react";
-import { useCustomAudio } from "@/hooks/use-audio";
-import { cn } from "@turbo-super/ui";
+import { useEffect, useState } from 'react';
+import { Download, Pause, Play } from 'lucide-react';
+import { useCustomAudio } from '@/hooks/use-audio';
+import { cn } from '@turbo-super/ui';
 
 type Props = {
   src?: string | null;
@@ -31,10 +31,10 @@ export const AudioPlayer = ({ src, allowDownload }: Props) => {
     try {
       setIsDownloading(true);
       const response = await fetch(src);
-      if (!response.ok) throw new Error("Failed to download audio");
+      if (!response.ok) throw new Error('Failed to download audio');
 
       const blob = await response.blob();
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = src;
       document.body.appendChild(link);
@@ -42,7 +42,7 @@ export const AudioPlayer = ({ src, allowDownload }: Props) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
     } catch (error) {
-      console.error("Error downloading audio:", error);
+      console.error('Error downloading audio:', error);
     } finally {
       setIsDownloading(false);
     }
@@ -52,21 +52,18 @@ export const AudioPlayer = ({ src, allowDownload }: Props) => {
     <div className="flex gap-3 items-center">
       <button
         className={cn(
-          "p-2 rounded-md border border-gray-300  disabled:opacity-50"
+          'p-2 rounded-md border border-gray-300  disabled:opacity-50',
         )}
         onClick={handleToggle}
         disabled={!src}
-        aria-label={isPlaying ? "Pause" : "Play"}
+        aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? (
           <Pause className="w-5 h-5" />
         ) : (
           <Play className="w-5 h-5" />
         )}
-        <audio
-          ref={audioRef}
-          style={{ display: "none" }}
-        />
+        <audio ref={audioRef} style={{ display: 'none' }} />
       </button>
 
       {allowDownload && (

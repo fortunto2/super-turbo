@@ -1,9 +1,9 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { useEffect, useState } from "react";
+'use client';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
-import { Button } from "@turbo-super/ui";
+import { Button } from '@turbo-super/ui';
 
 export default function Page() {
   const router = useRouter();
@@ -12,31 +12,31 @@ export default function Page() {
 
   useEffect(() => {
     // Получаем список доступных провайдеров
-    fetch("/api/auth/providers")
+    fetch('/api/auth/providers')
       .then((res) => res.json())
       .then((data) => {
         setProviders(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to fetch providers:", err);
+        console.error('Failed to fetch providers:', err);
         setLoading(false);
       });
   }, []);
 
   const handleGuestLogin = async () => {
     try {
-      await signIn("guest", { callbackUrl: "/" });
+      await signIn('guest', { callbackUrl: '/' });
     } catch (error) {
-      console.error("Guest login error:", error);
+      console.error('Guest login error:', error);
     }
   };
 
   const handleAuth0Login = async () => {
     try {
-      await signIn("auth0", { callbackUrl: "/" });
+      await signIn('auth0', { callbackUrl: '/' });
     } catch (error) {
-      console.error("Auth0 login error:", error);
+      console.error('Auth0 login error:', error);
     }
   };
 

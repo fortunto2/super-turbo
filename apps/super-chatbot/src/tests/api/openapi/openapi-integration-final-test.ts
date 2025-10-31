@@ -1,42 +1,42 @@
-import { configureVideoGeneration } from "../../../lib/ai/tools/configure-video-generation";
-import { configureImageGeneration } from "../../../lib/ai/tools/configure-image-generation";
+import { configureVideoGeneration } from '../../../lib/ai/tools/configure-video-generation';
+import { configureImageGeneration } from '../../../lib/ai/tools/configure-image-generation';
 import {
   getImageGenerationConfig,
   getVideoGenerationConfig,
-} from "../../../lib/config/media-settings-factory";
+} from '../../../lib/config/media-settings-factory';
 
-console.log("🎯 OpenAPI Integration Final Test");
-console.log("==================================================");
+console.log('🎯 OpenAPI Integration Final Test');
+console.log('==================================================');
 
 async function testFullIntegration() {
-  console.log("\n🔧 Testing AI Tools Integration...");
+  console.log('\n🔧 Testing AI Tools Integration...');
 
   // Test video tool creation
   try {
     const videoTool = configureVideoGeneration(undefined);
-    console.log("✅ Video tool created successfully");
+    console.log('✅ Video tool created successfully');
   } catch (error) {
-    console.error("❌ Video tool creation failed:", error);
+    console.error('❌ Video tool creation failed:', error);
     return false;
   }
 
   // Test image tool creation
   try {
     const imageTool = configureImageGeneration(undefined);
-    console.log("✅ Image tool created successfully");
+    console.log('✅ Image tool created successfully');
   } catch (error) {
-    console.error("❌ Image tool creation failed:", error);
+    console.error('❌ Image tool creation failed:', error);
     return false;
   }
 
-  console.log("\n🏭 Testing Factory Pattern...");
+  console.log('\n🏭 Testing Factory Pattern...');
 
   // Test factory functions
   try {
     const imageConfig = await getImageGenerationConfig();
     const videoConfig = await getVideoGenerationConfig();
 
-    console.log("✅ Factory works:", {
+    console.log('✅ Factory works:', {
       imageModels: imageConfig.availableModels.length,
       videoModels: videoConfig.availableModels.length,
       imageHasAdaptedFields: !!(
@@ -49,11 +49,11 @@ async function testFullIntegration() {
       ),
     });
   } catch (error) {
-    console.error("❌ Factory failed:", error);
+    console.error('❌ Factory failed:', error);
     return false;
   }
 
-  console.log("\n🔍 Testing Model Compatibility...");
+  console.log('\n🔍 Testing Model Compatibility...');
 
   // Test model compatibility
   try {
@@ -79,7 +79,7 @@ async function testFullIntegration() {
       videoModel?.type
     );
 
-    console.log("✅ Model compatibility:", {
+    console.log('✅ Model compatibility:', {
       imageModelValid,
       videoModelValid,
       imageModelFields: imageModel ? Object.keys(imageModel).sort() : [],
@@ -87,15 +87,15 @@ async function testFullIntegration() {
     });
 
     if (!imageModelValid || !videoModelValid) {
-      console.error("❌ Models missing required fields");
+      console.error('❌ Models missing required fields');
       return false;
     }
   } catch (error) {
-    console.error("❌ Model compatibility test failed:", error);
+    console.error('❌ Model compatibility test failed:', error);
     return false;
   }
 
-  console.log("\n📊 Testing Model Distribution...");
+  console.log('\n📊 Testing Model Distribution...');
 
   // Test model type distribution
   try {
@@ -112,7 +112,7 @@ async function testFullIntegration() {
       return acc;
     }, {});
 
-    console.log("✅ Model distribution:", {
+    console.log('✅ Model distribution:', {
       imageTypes,
       videoTypes,
       totalImageModels: imageConfig.availableModels.length,
@@ -126,18 +126,18 @@ async function testFullIntegration() {
     const hasImageToVideo = videoTypes.image_to_video > 0;
 
     if (!hasTextToImage || !hasTextToVideo) {
-      console.error("❌ Missing essential model types");
+      console.error('❌ Missing essential model types');
       return false;
     }
 
-    console.log("✅ Essential model types present:", {
+    console.log('✅ Essential model types present:', {
       hasTextToImage,
       hasImageToImage,
       hasTextToVideo,
       hasImageToVideo,
     });
   } catch (error) {
-    console.error("❌ Model distribution test failed:", error);
+    console.error('❌ Model distribution test failed:', error);
     return false;
   }
 
@@ -147,23 +147,23 @@ async function testFullIntegration() {
 async function main() {
   const success = await testFullIntegration();
 
-  console.log("\n📊 Final Integration Test Results:");
-  console.log("==================================================");
+  console.log('\n📊 Final Integration Test Results:');
+  console.log('==================================================');
 
   if (success) {
-    console.log("🎉 ✅ ALL TESTS PASSED!");
-    console.log("🎯 OpenAPI integration is fully functional");
-    console.log("🚀 Ready for production deployment");
-    console.log("\n📋 What works:");
-    console.log("  ✅ Dynamic model loading from SuperDuperAI API");
-    console.log("  ✅ AI tools with OpenAPI integration");
-    console.log("  ✅ Factory pattern for MediaSettings");
-    console.log("  ✅ Type-safe model adaptation");
-    console.log("  ✅ Proper model type distribution");
-    console.log("  ✅ Backward compatibility maintained");
+    console.log('🎉 ✅ ALL TESTS PASSED!');
+    console.log('🎯 OpenAPI integration is fully functional');
+    console.log('🚀 Ready for production deployment');
+    console.log('\n📋 What works:');
+    console.log('  ✅ Dynamic model loading from SuperDuperAI API');
+    console.log('  ✅ AI tools with OpenAPI integration');
+    console.log('  ✅ Factory pattern for MediaSettings');
+    console.log('  ✅ Type-safe model adaptation');
+    console.log('  ✅ Proper model type distribution');
+    console.log('  ✅ Backward compatibility maintained');
   } else {
-    console.log("❌ INTEGRATION TEST FAILED");
-    console.log("⚠️  Some components need fixing before production");
+    console.log('❌ INTEGRATION TEST FAILED');
+    console.log('⚠️  Some components need fixing before production');
     process.exit(1);
   }
 }

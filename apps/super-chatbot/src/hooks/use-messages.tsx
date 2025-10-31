@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useScrollToBottom } from "./use-scroll-to-bottom";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import { useState, useEffect } from 'react';
+import { useScrollToBottom } from './use-scroll-to-bottom';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 export function useMessages({
   chatId,
   status,
 }: {
   chatId: string;
-  status: UseChatHelpers["status"];
+  status: UseChatHelpers<any>['status'];
 }) {
   const {
     containerRef,
@@ -24,13 +24,13 @@ export function useMessages({
 
   useEffect(() => {
     if (chatId) {
-      scrollToBottom("instant");
+      scrollToBottom('instant');
       setHasSentMessage(false);
     }
   }, [chatId, scrollToBottom]);
 
   useEffect(() => {
-    if (status === "submitted") {
+    if (status === 'submitted') {
       setHasSentMessage(true);
     }
   }, [status]);

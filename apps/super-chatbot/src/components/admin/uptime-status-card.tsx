@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
-import { Clock } from "lucide-react";
+} from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
+import { Clock } from 'lucide-react';
 
 interface UptimeStatus {
   systemUptime: number;
@@ -27,12 +27,12 @@ export function UptimeStatusCard() {
     const fetchUptimeStatus = async () => {
       try {
         const [healthResponse, statsResponse] = await Promise.all([
-          fetch("/api/health"),
-          fetch("/api/admin/system/stats"),
+          fetch('/api/health'),
+          fetch('/api/admin/system/stats'),
         ]);
 
         if (!healthResponse.ok || !statsResponse.ok) {
-          throw new Error("Failed to fetch uptime status");
+          throw new Error('Failed to fetch uptime status');
         }
 
         const healthData = await healthResponse.json();
@@ -40,17 +40,19 @@ export function UptimeStatusCard() {
 
         // Вычисляем время последнего перезапуска
         const uptime = healthData.uptime || 0;
-        const lastRestart = new Date(Date.now() - uptime * 1000).toLocaleString();
+        const lastRestart = new Date(
+          Date.now() - uptime * 1000,
+        ).toLocaleString();
 
         setStatus({
           systemUptime: uptime,
           lastRestart: lastRestart,
-          apiStatus: healthData.status || "unknown",
-          databaseStatus: healthData.services?.database || "unknown",
+          apiStatus: healthData.status || 'unknown',
+          databaseStatus: healthData.services?.database || 'unknown',
         });
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching uptime status:", err);
+        console.error('Error fetching uptime status:', err);
       } finally {
         setLoading(false);
       }
@@ -71,24 +73,24 @@ export function UptimeStatusCard() {
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
-      case "healthy":
-      case "online":
-      case "connected":
+      case 'healthy':
+      case 'online':
+      case 'connected':
         return (
           <Badge variant="default" className="bg-green-500">
             Online
           </Badge>
         );
-      case "warning":
-      case "degraded":
+      case 'warning':
+      case 'degraded':
         return (
           <Badge variant="default" className="bg-yellow-500">
             Warning
           </Badge>
         );
-      case "error":
-      case "offline":
-      case "disconnected":
+      case 'error':
+      case 'offline':
+      case 'disconnected':
         return <Badge variant="destructive">Offline</Badge>;
       default:
         return <Badge variant="secondary">Unknown</Badge>;
@@ -159,9 +161,7 @@ export function UptimeStatusCard() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Last Restart</span>
-            <Badge variant="secondary">
-              {status.lastRestart}
-            </Badge>
+            <Badge variant="secondary">{status.lastRestart}</Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">API Status</span>

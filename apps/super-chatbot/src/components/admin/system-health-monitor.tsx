@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+} from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Server,
   Database,
@@ -17,7 +17,7 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface SystemHealth {
   databaseSize: string;
@@ -34,17 +34,17 @@ export function SystemHealthMonitor() {
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const response = await fetch("/api/admin/system/stats");
+        const response = await fetch('/api/admin/system/stats');
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch system health");
+          throw new Error(data.error || 'Failed to fetch system health');
         }
 
         setHealth(data.stats.system);
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching system health:", err);
+        console.error('Error fetching system health:', err);
       } finally {
         setLoading(false);
       }
@@ -56,38 +56,32 @@ export function SystemHealthMonitor() {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusIcon = (status: "healthy" | "warning" | "error") => {
+  const getStatusIcon = (status: 'healthy' | 'warning' | 'error') => {
     switch (status) {
-      case "healthy":
+      case 'healthy':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "warning":
+      case 'warning':
         return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case "error":
+      case 'error':
         return <XCircle className="h-4 w-4 text-red-500" />;
     }
   };
 
-  const getStatusBadge = (status: "healthy" | "warning" | "error") => {
+  const getStatusBadge = (status: 'healthy' | 'warning' | 'error') => {
     switch (status) {
-      case "healthy":
+      case 'healthy':
         return (
-          <Badge
-            variant="default"
-            className="bg-green-500"
-          >
+          <Badge variant="default" className="bg-green-500">
             Healthy
           </Badge>
         );
-      case "warning":
+      case 'warning':
         return (
-          <Badge
-            variant="default"
-            className="bg-yellow-500"
-          >
+          <Badge variant="default" className="bg-yellow-500">
             Warning
           </Badge>
         );
-      case "error":
+      case 'error':
         return <Badge variant="destructive">Error</Badge>;
     }
   };
@@ -114,10 +108,7 @@ export function SystemHealthMonitor() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-lg border"
-              >
+              <div key={i} className="p-4 rounded-lg border">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-4 w-4 bg-muted animate-pulse rounded" />
                   <span className="text-sm font-medium">Loading...</span>
@@ -157,36 +148,36 @@ export function SystemHealthMonitor() {
 
   const healthMetrics = [
     {
-      title: "Database Connection",
-      value: "Connected",
+      title: 'Database Connection',
+      value: 'Connected',
       description: health.databaseName,
       icon: Database,
-      status: "healthy" as const,
-      color: "text-green-500",
+      status: 'healthy' as const,
+      color: 'text-green-500',
     },
     {
-      title: "Database Size",
+      title: 'Database Size',
       value: health.databaseSize,
-      description: "Current database size",
+      description: 'Current database size',
       icon: HardDrive,
-      status: "healthy" as const,
-      color: "text-blue-500",
+      status: 'healthy' as const,
+      color: 'text-blue-500',
     },
     {
-      title: "PostgreSQL Version",
-      value: health.postgresVersion.split(" ")[0] || "Unknown",
-      description: "Database version",
+      title: 'PostgreSQL Version',
+      value: health.postgresVersion.split(' ')[0] || 'Unknown',
+      description: 'Database version',
       icon: Server,
-      status: "healthy" as const,
-      color: "text-purple-500",
+      status: 'healthy' as const,
+      color: 'text-purple-500',
     },
     {
-      title: "System Uptime",
+      title: 'System Uptime',
       value: formatUptime(health.uptime),
-      description: "Current session uptime",
+      description: 'Current session uptime',
       icon: Activity,
-      status: "healthy" as const,
-      color: "text-emerald-500",
+      status: 'healthy' as const,
+      color: 'text-emerald-500',
     },
   ];
 
@@ -206,10 +197,7 @@ export function SystemHealthMonitor() {
           {healthMetrics.map((metric, index) => {
             const Icon = metric.icon;
             return (
-              <div
-                key={index}
-                className="p-4 rounded-lg border"
-              >
+              <div key={index} className="p-4 rounded-lg border">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Icon className={`h-4 w-4 ${metric.color}`} />

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { Canvas } from "fabric";
-import { Control } from "@turbo-super/features";
-import { Button } from "@turbo-super/ui";
-import { X } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import { Canvas } from 'fabric';
+import { Control } from '@turbo-super/features';
+import { Button } from '@turbo-super/ui';
+import { X } from 'lucide-react';
 
 interface SceneInpaintingProps {
   imageUrl: string;
@@ -63,18 +63,14 @@ export function SceneInpainting({
   }, []);
 
   const handleActiveChange = (tool: string | null) => {
-    setIsActive(tool === "inpainting");
+    setIsActive(tool === 'inpainting');
   };
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Inpainting</h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-        >
+        <Button variant="ghost" size="sm" onClick={onClose}>
           <X className="size-4" />
         </Button>
       </div>
@@ -86,7 +82,7 @@ export function SceneInpainting({
           className="absolute inset-0 w-full h-full"
           style={{
             zIndex: isActive ? 10 : -1,
-            pointerEvents: isActive ? "auto" : "none",
+            pointerEvents: isActive ? 'auto' : 'none',
           }}
         >
           <canvas
@@ -94,7 +90,7 @@ export function SceneInpainting({
             className="w-full h-full block"
             style={{
               opacity: isActive ? 0.5 : 0,
-              display: "block",
+              display: 'block',
             }}
           />
         </div>

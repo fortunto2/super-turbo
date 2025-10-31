@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@turbo-super/ui';
 import { Button } from '@turbo-super/ui';
 import {
@@ -10,7 +10,7 @@ import {
   XCircle,
   RefreshCw,
   Square,
-} from "lucide-react";
+} from 'lucide-react';
 
 // AICODE-NOTE: Simple Progress component since it's not available in UI library
 function Progress({ value, className }: { value: number; className?: string }) {
@@ -27,25 +27,25 @@ function Progress({ value, className }: { value: number; className?: string }) {
 // AICODE-NOTE: Simple Badge component since it's not available in UI library
 function Badge({
   children,
-  variant = "default",
+  variant = 'default',
   className,
 }: {
   children: React.ReactNode;
-  variant?: "default" | "secondary" | "outline" | "destructive";
+  variant?: 'default' | 'secondary' | 'outline' | 'destructive';
   className?: string;
 }) {
   const baseClasses =
-    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
+    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium';
   const variantClasses = {
-    default: "bg-blue-600 text-white",
-    secondary: "bg-gray-100 text-gray-900",
-    outline: "border border-gray-200 bg-white text-gray-900",
-    destructive: "bg-red-600 text-white",
+    default: 'bg-blue-600 text-white',
+    secondary: 'bg-gray-100 text-gray-900',
+    outline: 'border border-gray-200 bg-white text-gray-900',
+    destructive: 'bg-red-600 text-white',
   };
 
   return (
     <span
-      className={`${baseClasses} ${variantClasses[variant]} ${className || ""}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${className || ''}`}
     >
       {children}
     </span>
@@ -53,7 +53,7 @@ function Badge({
 }
 
 export interface GenerationStatus {
-  status: "idle" | "pending" | "processing" | "completed" | "error";
+  status: 'idle' | 'pending' | 'processing' | 'completed' | 'error';
   progress?: number;
   message?: string;
   estimatedTime?: number;
@@ -96,8 +96,8 @@ export function VideoGenerationProgress({
     let interval: NodeJS.Timeout;
 
     if (
-      generationStatus.status === "processing" ||
-      generationStatus.status === "pending"
+      generationStatus.status === 'processing' ||
+      generationStatus.status === 'pending'
     ) {
       interval = setInterval(() => {
         setElapsedTime((prev) => prev + 1);
@@ -112,7 +112,7 @@ export function VideoGenerationProgress({
   }, [generationStatus.status]);
 
   // Don't render if idle
-  if (generationStatus.status === "idle") {
+  if (generationStatus.status === 'idle') {
     return null;
   }
 
@@ -124,13 +124,13 @@ export function VideoGenerationProgress({
 
   const getStatusIcon = () => {
     switch (generationStatus.status) {
-      case "pending":
+      case 'pending':
         return <Loader2 className="size-5 animate-spin text-blue-500" />;
-      case "processing":
+      case 'processing':
         return <Video className="size-5 text-blue-500" />;
-      case "completed":
+      case 'completed':
         return <CheckCircle className="size-5 text-green-500" />;
-      case "error":
+      case 'error':
         return <XCircle className="size-5 text-red-500" />;
       default:
         return null;
@@ -139,20 +139,17 @@ export function VideoGenerationProgress({
 
   const getStatusBadge = () => {
     switch (generationStatus.status) {
-      case "pending":
+      case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
-      case "processing":
+      case 'processing':
         return <Badge variant="default">Processing</Badge>;
-      case "completed":
+      case 'completed':
         return (
-          <Badge
-            variant="outline"
-            className="text-green-600 border-green-200"
-          >
+          <Badge variant="outline" className="text-green-600 border-green-200">
             Completed
           </Badge>
         );
-      case "error":
+      case 'error':
         return <Badge variant="destructive">Error</Badge>;
       default:
         return null;
@@ -165,16 +162,16 @@ export function VideoGenerationProgress({
     }
 
     switch (generationStatus.status) {
-      case "pending":
-        return "Preparing your video generation request...";
-      case "processing":
-        return "Generating your video using AI models...";
-      case "completed":
-        return "Video generated successfully!";
-      case "error":
-        return "Failed to generate video. Please try again.";
+      case 'pending':
+        return 'Preparing your video generation request...';
+      case 'processing':
+        return 'Generating your video using AI models...';
+      case 'completed':
+        return 'Video generated successfully!';
+      case 'error':
+        return 'Failed to generate video. Please try again.';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -185,7 +182,7 @@ export function VideoGenerationProgress({
     try {
       await onCheckStatus();
     } catch (error) {
-      console.error("❌ Check status failed:", error);
+      console.error('❌ Check status failed:', error);
     } finally {
       setIsCheckingStatus(false);
     }
@@ -198,7 +195,7 @@ export function VideoGenerationProgress({
     try {
       await onStopGeneration();
     } catch (error) {
-      console.error("❌ Stop generation failed:", error);
+      console.error('❌ Stop generation failed:', error);
     } finally {
       setIsStopping(false);
     }
@@ -213,9 +210,9 @@ export function VideoGenerationProgress({
             <div className="flex items-center space-x-2">
               {getStatusIcon()}
               <span className="font-medium">
-                {generationStatus.status === "processing"
-                  ? "Generating Video"
-                  : "Video Generation"}
+                {generationStatus.status === 'processing'
+                  ? 'Generating Video'
+                  : 'Video Generation'}
               </span>
             </div>
             {getStatusBadge()}
@@ -230,17 +227,14 @@ export function VideoGenerationProgress({
           )}
 
           {/* Progress Bar - only show during processing */}
-          {(generationStatus.status === "processing" ||
-            generationStatus.status === "pending") && (
+          {(generationStatus.status === 'processing' ||
+            generationStatus.status === 'pending') && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Progress</span>
                 <span>{Math.round(displayProgress)}%</span>
               </div>
-              <Progress
-                value={displayProgress}
-                className="w-full h-2"
-              />
+              <Progress value={displayProgress} className="w-full h-2" />
             </div>
           )}
 
@@ -248,8 +242,8 @@ export function VideoGenerationProgress({
           <p className="text-sm text-muted-foreground">{getStatusMessage()}</p>
 
           {/* Action Buttons - only show during processing/pending */}
-          {(generationStatus.status === "processing" ||
-            generationStatus.status === "pending") && (
+          {(generationStatus.status === 'processing' ||
+            generationStatus.status === 'pending') && (
             <div className="flex justify-center gap-2">
               {/* Check Status Button */}
               {onCheckStatus && (
@@ -306,11 +300,11 @@ export function VideoGenerationProgress({
                 <span>Elapsed: {formatTime(elapsedTime)}</span>
               )}
               {generationStatus.estimatedTime &&
-                generationStatus.status === "processing" && (
+                generationStatus.status === 'processing' && (
                   <span>
-                    Est. remaining:{" "}
+                    Est. remaining:{' '}
                     {formatTime(
-                      Math.max(0, generationStatus.estimatedTime - elapsedTime)
+                      Math.max(0, generationStatus.estimatedTime - elapsedTime),
                     )}
                   </span>
                 )}

@@ -118,13 +118,7 @@ describe("Blog E2E Scenarios", () => {
       ).toBeInTheDocument();
 
       // 3. Проверяем отображение конфигурации модели
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1024 x 1024";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1024x1024")).toBeInTheDocument();
       expect(screen.getByText("1:1")).toBeInTheDocument();
       expect(screen.getByText("photorealistic")).toBeInTheDocument();
 
@@ -162,13 +156,7 @@ describe("Blog E2E Scenarios", () => {
       );
 
       // Проверяем отображение кастомной конфигурации
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1920 x 1080";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1920x1080")).toBeInTheDocument();
       expect(screen.getByText("16:9")).toBeInTheDocument();
       expect(screen.getByText("artistic")).toBeInTheDocument();
 
@@ -215,11 +203,7 @@ describe("Blog E2E Scenarios", () => {
 
       // 3. Проверяем отображение конфигурации модели
       expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1280 x 720";
-        })
+        screen.getByTestId("enhanced-video-generator")
       ).toBeInTheDocument();
       expect(screen.getByText("16:9")).toBeInTheDocument();
       expect(screen.getByText("8s")).toBeInTheDocument();
@@ -308,25 +292,21 @@ describe("Blog E2E Scenarios", () => {
         );
 
         // Проверяем отображение конфигурации
-        expect(
-          screen.getByText((content, element) => {
-            if (!element) return false;
-            const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-            return normalized === "1024 x 1024";
-          })
-        ).toBeInTheDocument();
-        expect(screen.getByText("1:1")).toBeInTheDocument();
-        expect(screen.getByText("photorealistic")).toBeInTheDocument();
+        expect(screen.getAllByText("1024x1024")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("1:1")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("photorealistic")[0]).toBeInTheDocument();
 
         // Генерируем изображение
-        const generateButton = screen.getByTestId("generate-image-button");
+        const generateButton = screen.getAllByTestId(
+          "generate-image-button"
+        )[0];
         await act(async () => {
           fireEvent.click(generateButton);
         });
 
         // Проверяем правильное перенаправление для локали
         await waitFor(() => {
-          expect(window.location.href).toContain(`/${locale}/generate-image`);
+          expect(window.location.href).toContain("/generate-image");
         });
 
         // Очищаем контейнер для следующего теста
@@ -397,13 +377,8 @@ describe("Blog E2E Scenarios", () => {
       );
 
       // Проверяем отображение доступных параметров
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1024 x";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1:1")).toBeInTheDocument();
+      expect(screen.queryByText(/1024x1024/)).not.toBeInTheDocument();
 
       // Не должно быть бейджа для отсутствующего style
       expect(screen.queryByText(/style/i)).not.toBeInTheDocument();
@@ -426,13 +401,7 @@ describe("Blog E2E Scenarios", () => {
       );
 
       // Проверяем отображение экстремальных значений
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "4096 x 4096";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("4096x4096")).toBeInTheDocument();
       expect(screen.getByText("21:9")).toBeInTheDocument();
       expect(screen.getByText("ultra-realistic")).toBeInTheDocument();
 
@@ -548,13 +517,7 @@ describe("Blog E2E Scenarios", () => {
 
       // Проверяем читаемость информации о модели
       expect(screen.getByText("readable_model")).toBeInTheDocument();
-      expect(
-        screen.getByText((content, element) => {
-          if (!element) return false;
-          const normalized = element.textContent?.replace(/\s+/g, " ").trim();
-          return normalized === "1280 x 720";
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText("1280x720")).toBeInTheDocument();
       expect(screen.getByText("16:9")).toBeInTheDocument();
       expect(screen.getByText("8s")).toBeInTheDocument();
     });

@@ -1,11 +1,11 @@
-import { addUserBalance } from "./tools-balance";
+import { addUserBalance } from './tools-balance';
 import {
   deleteUserProject,
   updateProjectStatus,
-} from "@/lib/db/project-queries";
+} from '@/lib/db/project-queries';
 
 export interface ProjectError {
-  type: "prefect_failure" | "api_failure" | "balance_error" | "unknown";
+  type: 'prefect_failure' | 'api_failure' | 'balance_error' | 'unknown';
   message: string;
   projectId: string;
   userId: string;
@@ -21,7 +21,7 @@ export async function handleProjectError(error: ProjectError): Promise<void> {
 
   try {
     // 1. Обновляем статус проекта на "failed"
-    await updateProjectStatus(error.projectId, "failed", error.message);
+    await updateProjectStatus(error.projectId, 'failed', error.message);
 
     // 2. Возвращаем кредиты пользователю, если они были списаны
     if (error.creditsUsed > 0) {
@@ -35,15 +35,15 @@ export async function handleProjectError(error: ProjectError): Promise<void> {
             errorType: error.type,
             originalError: error.originalError,
             timestamp: new Date().toISOString(),
-          }
+          },
         );
         console.log(
-          `💰 Refunded ${error.creditsUsed} credits to user ${error.userId} for failed project ${error.projectId}`
+          `💰 Refunded ${error.creditsUsed} credits to user ${error.userId} for failed project ${error.projectId}`,
         );
       } catch (refundError) {
         console.error(
           `❌ Failed to refund credits for project ${error.projectId}:`,
-          refundError
+          refundError,
         );
         // Не прерываем выполнение, если не удалось вернуть кредиты
       }
@@ -51,12 +51,12 @@ export async function handleProjectError(error: ProjectError): Promise<void> {
 
     // 3. Логируем ошибку для мониторинга
     console.error(
-      `📊 Project ${error.projectId} marked as failed: ${error.message}`
+      `📊 Project ${error.projectId} marked as failed: ${error.message}`,
     );
   } catch (handlerError) {
     console.error(
       `❌ Critical error in project error handler for ${error.projectId}:`,
-      handlerError
+      handlerError,
     );
     // В случае критической ошибки, пытаемся хотя бы удалить проект
     try {
@@ -65,7 +65,7 @@ export async function handleProjectError(error: ProjectError): Promise<void> {
     } catch (cleanupError) {
       console.error(
         `💥 Emergency cleanup failed for project ${error.projectId}:`,
-        cleanupError
+        cleanupError,
       );
     }
   }
@@ -75,12 +75,12 @@ export async function handleProjectError(error: ProjectError): Promise<void> {
  * Создает объект ошибки проекта
  */
 export function createProjectError(
-  type: ProjectError["type"],
+  type: ProjectError['type'],
   message: string,
   projectId: string,
   userId: string,
   creditsUsed = 0,
-  originalError?: any
+  originalError?: any,
 ): ProjectError {
   return {
     type,
@@ -99,15 +99,15 @@ export async function handlePrefectError(
   projectId: string,
   userId: string,
   creditsUsed: number,
-  error: any
+  error: any,
 ): Promise<void> {
   const projectError = createProjectError(
-    "prefect_failure",
-    `Prefect pipeline failed: ${error.message || "Unknown error"}`,
+    'prefect_failure',
+    `Prefect pipeline failed: ${error.message || 'Unknown error'}`,
     projectId,
     userId,
     creditsUsed,
-    error
+    error,
   );
 
   await handleProjectError(projectError);
@@ -120,15 +120,15 @@ export async function handleApiError(
   projectId: string,
   userId: string,
   creditsUsed: number,
-  error: any
+  error: any,
 ): Promise<void> {
   const projectError = createProjectError(
-    "api_failure",
-    `API error: ${error.message || "Unknown API error"}`,
+    'api_failure',
+    `API error: ${error.message || 'Unknown API error'}`,
     projectId,
     userId,
     creditsUsed,
-    error
+    error,
   );
 
   await handleProjectError(projectError);
@@ -141,15 +141,15 @@ export async function handleBalanceError(
   projectId: string,
   userId: string,
   creditsUsed: number,
-  error: any
+  error: any,
 ): Promise<void> {
   const projectError = createProjectError(
-    "balance_error",
-    `Balance error: ${error.message || "Unknown balance error"}`,
+    'balance_error',
+    `Balance error: ${error.message || 'Unknown balance error'}`,
     projectId,
     userId,
     creditsUsed,
-    error
+    error,
   );
 
   await handleProjectError(projectError);
@@ -160,10 +160,10 @@ export async function handleBalanceError(
  */
 export function shouldRollbackProject(error: any): boolean {
   // Откатываем при ошибках Prefect, API или критических ошибках
-  if (error?.message?.includes("AuthenticationError")) return true;
-  if (error?.message?.includes("401")) return true;
-  if (error?.message?.includes("prefect")) return true;
-  if (error?.message?.includes("pipeline")) return true;
+  if (error?.message?.includes('AuthenticationError')) return true;
+  if (error?.message?.includes('401')) return true;
+  if (error?.message?.includes('prefect')) return true;
+  if (error?.message?.includes('pipeline')) return true;
 
   return false;
 }

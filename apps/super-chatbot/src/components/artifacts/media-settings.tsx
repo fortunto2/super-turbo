@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button, Input } from "@turbo-super/ui";
-import { EnhancedTextarea } from "../ui/enhanced-textarea";
+import { useState } from 'react';
+import { Button, Input } from '@turbo-super/ui';
+import { EnhancedTextarea } from '../ui/enhanced-textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from '../ui/select';
 import type {
   ImageGenerationConfig,
   ImageSettings,
@@ -18,16 +18,15 @@ import type {
   MediaResolution,
   MediaOption,
   AdaptedModel,
-} from "@/lib/types/media-settings";
-import { generateUUID } from "@/lib/utils";
-import type { UseChatHelpers } from "@ai-sdk/react";
+} from '@/lib/types/media-settings';
+import { generateUUID } from '@/lib/utils';
 
 interface MediaSettingsProps {
   config: ImageGenerationConfig | VideoGenerationConfig;
   onConfirm: (settings: ImageSettings | VideoSettings) => void;
   selectedChatModel: string;
-  selectedVisibilityType: "public" | "private";
-  append?: UseChatHelpers["append"];
+  selectedVisibilityType: 'public' | 'private';
+  append?: any; // AI SDK v5: append type changed;
 }
 
 export function MediaSettings({
@@ -37,39 +36,39 @@ export function MediaSettings({
   selectedVisibilityType,
   append,
 }: MediaSettingsProps) {
-  const isVideoConfig = config.type === "video-generation-settings";
+  const isVideoConfig = config.type === 'video-generation-settings';
   const videoConfig = isVideoConfig ? (config as VideoGenerationConfig) : null;
   const imageConfig = !isVideoConfig ? (config as ImageGenerationConfig) : null;
 
   const [selectedResolution, setSelectedResolution] = useState<MediaResolution>(
-    config.defaultSettings.resolution
+    config.defaultSettings.resolution,
   );
   const [selectedStyle, setSelectedStyle] = useState<MediaOption>(
-    config.defaultSettings.style
+    config.defaultSettings.style,
   );
   const [selectedShotSize, setSelectedShotSize] = useState<MediaOption>(
-    config.defaultSettings.shotSize
+    config.defaultSettings.shotSize,
   );
   const [selectedModel, setSelectedModel] = useState<AdaptedModel>(
-    config.defaultSettings.model
+    config.defaultSettings.model,
   );
-  const [seed, setSeed] = useState<string>("");
-  const [prompt, setPrompt] = useState<string>("");
+  const [seed, setSeed] = useState<string>('');
+  const [prompt, setPrompt] = useState<string>('');
   const [batchSize, setBatchSize] = useState<number>(1);
 
   // Video-specific states
   const [selectedFrameRate, setSelectedFrameRate] = useState<number>(
-    isVideoConfig ? videoConfig?.defaultSettings.frameRate || 30 : 30
+    isVideoConfig ? videoConfig?.defaultSettings.frameRate || 30 : 30,
   );
   const [duration, setDuration] = useState<number>(
     isVideoConfig
-      ? typeof videoConfig?.defaultSettings.duration === "number"
+      ? typeof videoConfig?.defaultSettings.duration === 'number'
         ? videoConfig.defaultSettings.duration
         : 10
-      : 10
+      : 10,
   );
   const [negativePrompt, setNegativePrompt] = useState<string>(
-    isVideoConfig ? videoConfig?.defaultSettings.negativePrompt || "" : ""
+    isVideoConfig ? videoConfig?.defaultSettings.negativePrompt || '' : '',
   );
 
   const handleConfirm = () => {
@@ -92,12 +91,12 @@ export function MediaSettings({
       : (baseSettings as ImageSettings);
 
     // Create user message for the selection
-    const userMessage = `Selected resolution: ${selectedResolution.width}x${selectedResolution.height}, style: ${selectedStyle.label}, shot size: ${selectedShotSize.label}, model: ${selectedModel.label}${seed ? `, seed: ${seed}` : ""}${!isVideoConfig && batchSize > 1 ? `, batch size: ${batchSize}` : ""}`;
+    const userMessage = `Selected resolution: ${selectedResolution.width}x${selectedResolution.height}, style: ${selectedStyle.label}, shot size: ${selectedShotSize.label}, model: ${selectedModel.label}${seed ? `, seed: ${seed}` : ''}${!isVideoConfig && batchSize > 1 ? `, batch size: ${batchSize}` : ''}`;
 
     if (append) {
       append({
         id: generateUUID(),
-        role: "user",
+        role: 'user',
         content: userMessage,
       });
     }
@@ -111,13 +110,13 @@ export function MediaSettings({
     }
 
     // Generate appropriate message based on media type
-    const mediaType = isVideoConfig ? "video" : "image";
-    const generateMessage = `Generate ${mediaType}: ${prompt}. Use resolution ${selectedResolution.label}, style "${selectedStyle.label}", shot size "${selectedShotSize.label}", model "${selectedModel.label}"${seed ? `, seed ${seed}` : ""}${!isVideoConfig && batchSize > 1 ? `, batch size ${batchSize}` : ""}${isVideoConfig && selectedFrameRate ? `, frame rate ${selectedFrameRate} FPS` : ""}${isVideoConfig && duration ? `, duration ${duration} sec` : ""}.`;
+    const mediaType = isVideoConfig ? 'video' : 'image';
+    const generateMessage = `Generate ${mediaType}: ${prompt}. Use resolution ${selectedResolution.label}, style "${selectedStyle.label}", shot size "${selectedShotSize.label}", model "${selectedModel.label}"${seed ? `, seed ${seed}` : ''}${!isVideoConfig && batchSize > 1 ? `, batch size ${batchSize}` : ''}${isVideoConfig && selectedFrameRate ? `, frame rate ${selectedFrameRate} FPS` : ''}${isVideoConfig && duration ? `, duration ${duration} sec` : ''}.`;
 
     if (append) {
       append({
         id: generateUUID(),
-        role: "user",
+        role: 'user',
         content: generateMessage,
       });
     }
@@ -128,7 +127,7 @@ export function MediaSettings({
     setSeed(String(randomSeed));
   };
 
-  const mediaTypeLabel = isVideoConfig ? "Video" : "Image";
+  const mediaTypeLabel = isVideoConfig ? 'Video' : 'Image';
 
   return (
     <div className="w-full max-w-none mx-auto p-3 border rounded-lg bg-card">
@@ -143,10 +142,7 @@ export function MediaSettings({
 
       {/* Prompt Input Section */}
       <div className="mb-4 space-y-1">
-        <label
-          htmlFor="prompt-input"
-          className="text-xs font-medium"
-        >
+        <label htmlFor="prompt-input" className="text-xs font-medium">
           Prompt *
         </label>
         <EnhancedTextarea
@@ -167,17 +163,14 @@ export function MediaSettings({
       <div className="grid grid-cols-1 gap-3 mb-4">
         {/* Resolution Selector */}
         <div className="space-y-1">
-          <label
-            htmlFor="resolution-select"
-            className="text-xs font-medium"
-          >
+          <label htmlFor="resolution-select" className="text-xs font-medium">
             Resolution
           </label>
           <Select
             value={`${selectedResolution.width}x${selectedResolution.height}`}
             onValueChange={(value) => {
               const resolution = config.availableResolutions.find(
-                (r) => `${r.width}x${r.height}` === value
+                (r) => `${r.width}x${r.height}` === value,
               );
               if (resolution) {
                 setSelectedResolution(resolution);
@@ -209,10 +202,7 @@ export function MediaSettings({
 
         {/* Style Selector */}
         <div className="space-y-1">
-          <label
-            htmlFor="style-select"
-            className="text-xs font-medium"
-          >
+          <label htmlFor="style-select" className="text-xs font-medium">
             Style
           </label>
           <Select
@@ -229,10 +219,7 @@ export function MediaSettings({
             </SelectTrigger>
             <SelectContent>
               {config.availableStyles.map((style) => (
-                <SelectItem
-                  key={style.id}
-                  value={style.id}
-                >
+                <SelectItem key={style.id} value={style.id}>
                   <div className="flex items-center justify-between w-full">
                     <span className="text-xs">{style.label}</span>
                     {style.description && (
@@ -249,17 +236,14 @@ export function MediaSettings({
 
         {/* Shot Size Selector */}
         <div className="space-y-1">
-          <label
-            htmlFor="shot-size-select"
-            className="text-xs font-medium"
-          >
+          <label htmlFor="shot-size-select" className="text-xs font-medium">
             Shot Size
           </label>
           <Select
             value={selectedShotSize.id}
             onValueChange={(value) => {
               const shotSize = config.availableShotSizes.find(
-                (s) => s.id === value
+                (s) => s.id === value,
               );
               if (shotSize) {
                 setSelectedShotSize(shotSize);
@@ -271,10 +255,7 @@ export function MediaSettings({
             </SelectTrigger>
             <SelectContent>
               {config.availableShotSizes.map((shotSize) => (
-                <SelectItem
-                  key={shotSize.id}
-                  value={shotSize.id}
-                >
+                <SelectItem key={shotSize.id} value={shotSize.id}>
                   <div className="flex items-center justify-between w-full">
                     <span className="text-xs">{shotSize.label}</span>
                     {shotSize.description && (
@@ -291,10 +272,7 @@ export function MediaSettings({
 
         {/* Model Selector */}
         <div className="space-y-1">
-          <label
-            htmlFor="model-select"
-            className="text-xs font-medium"
-          >
+          <label htmlFor="model-select" className="text-xs font-medium">
             Model
           </label>
           <Select
@@ -311,10 +289,7 @@ export function MediaSettings({
             </SelectTrigger>
             <SelectContent>
               {config?.availableModels?.map((model) => (
-                <SelectItem
-                  key={model.id}
-                  value={model.id}
-                >
+                <SelectItem key={model.id} value={model.id}>
                   <div className="flex items-center justify-between w-full">
                     <span className="text-xs">{model.label}</span>
                     {model.description && (
@@ -335,10 +310,7 @@ export function MediaSettings({
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Frame Rate Selector */}
           <div className="space-y-1">
-            <label
-              htmlFor="frame-rate-select"
-              className="text-xs font-medium"
-            >
+            <label htmlFor="frame-rate-select" className="text-xs font-medium">
               Frame Rate
             </label>
             <Select
@@ -365,10 +337,7 @@ export function MediaSettings({
 
           {/* Duration Input */}
           <div className="space-y-1">
-            <label
-              htmlFor="duration-input"
-              className="text-xs font-medium"
-            >
+            <label htmlFor="duration-input" className="text-xs font-medium">
               Duration (sec)
             </label>
             <Input
@@ -408,10 +377,7 @@ export function MediaSettings({
       <div className="mb-4 grid grid-cols-1 gap-3">
         {/* Seed Input */}
         <div className="space-y-1">
-          <label
-            htmlFor="seed-input"
-            className="text-xs font-medium"
-          >
+          <label htmlFor="seed-input" className="text-xs font-medium">
             Seed (Optional)
           </label>
           <div className="flex items-center gap-2">
@@ -439,10 +405,7 @@ export function MediaSettings({
         {/* Batch Size - Only for Images */}
         {!isVideoConfig && (
           <div className="space-y-1">
-            <label
-              htmlFor="batch-size-select"
-              className="text-xs font-medium"
-            >
+            <label htmlFor="batch-size-select" className="text-xs font-medium">
               Batch Size
             </label>
             <Select
@@ -524,7 +487,7 @@ export function MediaSettings({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Batch Size:</span>
               <span className="font-medium">
-                {batchSize} image{batchSize > 1 ? "s" : ""}
+                {batchSize} image{batchSize > 1 ? 's' : ''}
               </span>
             </div>
           )}

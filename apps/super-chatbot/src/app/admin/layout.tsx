@@ -1,14 +1,14 @@
-import { auth } from "@/app/(auth)/auth";
-import { redirect } from "next/navigation";
-import { AdminNavigation } from "@/components/admin/admin-navigation";
+import { auth } from '@/app/(auth)/auth';
+import { redirect } from 'next/navigation';
+import { AdminNavigation } from '@/components/admin/admin-navigation';
 
 // Check if user is admin
 function isAdmin(email?: string | null): boolean {
-  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [
-    "pranov.adiletqwe@gmail.com",
-    "admin@superduperai.com",
-    "support@superduperai.com",
-    "dev@superduperai.com",
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [
+    'pranov.adiletqwe@gmail.com',
+    'admin@superduperai.com',
+    'support@superduperai.com',
+    'dev@superduperai.com',
   ];
   return email ? adminEmails.includes(email) : false;
 }
@@ -22,11 +22,11 @@ export default async function AdminLayout({
 
   // Redirect if not authenticated or not admin
   if (!session?.user) {
-    redirect("/login?callbackUrl=/admin");
+    redirect('/login?callbackUrl=/admin');
   }
 
   if (!isAdmin(session.user.email)) {
-    redirect("/");
+    redirect('/');
   }
 
   return (

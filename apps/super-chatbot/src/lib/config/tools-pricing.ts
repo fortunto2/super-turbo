@@ -1,10 +1,10 @@
-import type { UserType } from "@/app/(auth)/auth";
+import type { UserType } from '@/app/(auth)/auth';
 import {
   TOOLS_PRICING,
   calculateOperationCost,
   getOperationCost,
   getPricingInfo,
-} from "@turbo-super/api";
+} from '@turbo-super/api';
 
 // Re-export shared pricing configuration
 export {
@@ -27,31 +27,31 @@ export const FREE_BALANCE_BY_USER_TYPE: Record<UserType, number> = {
  * Examples of common operations and their costs
  */
 export const PRICING_EXAMPLES = {
-  "Basic image generation": calculateOperationCost(
-    "image-generation",
-    "text-to-image"
+  'Basic image generation': calculateOperationCost(
+    'image-generation',
+    'text-to-image',
   ),
-  "High-quality image": calculateOperationCost(
-    "image-generation",
-    "text-to-image",
-    ["high-quality"]
+  'High-quality image': calculateOperationCost(
+    'image-generation',
+    'text-to-image',
+    ['high-quality'],
   ),
-  "Short video (5s)": calculateOperationCost(
-    "video-generation",
-    "text-to-video",
-    ["duration-5s"]
+  'Short video (5s)': calculateOperationCost(
+    'video-generation',
+    'text-to-video',
+    ['duration-5s'],
   ),
-  "HD video (10s)": calculateOperationCost(
-    "video-generation",
-    "text-to-video",
-    ["duration-10s", "hd-quality"]
+  'HD video (10s)': calculateOperationCost(
+    'video-generation',
+    'text-to-video',
+    ['duration-10s', 'hd-quality'],
   ),
-  "Script generation": calculateOperationCost(
-    "script-generation",
-    "basic-script"
+  'Script generation': calculateOperationCost(
+    'script-generation',
+    'basic-script',
   ),
-  "Prompt enhancement": calculateOperationCost(
-    "prompt-enhancement",
-    "basic-enhancement"
+  'Prompt enhancement': calculateOperationCost(
+    'prompt-enhancement',
+    'basic-enhancement',
   ),
 } as const;

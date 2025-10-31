@@ -28,6 +28,9 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+_env
+_env.local
+_env.*
 
 # turbo
 .turbo
@@ -51,3 +54,11 @@ yarn-error.log*
 .generation-data/
 
 dist/
+.pnpm-store/
+
+# TypeScript build files
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+docs/adilet.md
+
+ClAUDE.md

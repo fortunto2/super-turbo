@@ -196,7 +196,7 @@ export async function getAvailableModels(): Promise<IGenerationConfigRead[]> {
 
     return fixedModels;
   } catch (error) {
-    console.error("Failed to fetch generation models:", error);
+    // Suppress non-critical API errors (e.g., timeouts) - returning empty array as fallback
     return [];
   }
 }
@@ -322,14 +322,17 @@ export async function getDefaultImageModel(): Promise<ImageModel | undefined> {
     "sdxl", // Alternative SDXL naming
   ];
 
-  console.log(
-    "🎯 Looking for default image model from priority list:",
-    defaultPriority
-  );
-  console.log(
-    "🎯 Available models:",
-    imageModels.map((m) => m.name)
-  );
+  // Only log when models are available to reduce console noise
+  if (imageModels.length > 0) {
+    console.log(
+      "🎯 Looking for default image model from priority list:",
+      defaultPriority
+    );
+    console.log(
+      "🎯 Available models:",
+      imageModels.map((m) => m.name)
+    );
+  }
 
   for (const modelName of defaultPriority) {
     const model = findModel(modelName, imageModels);
@@ -355,8 +358,10 @@ export async function getDefaultImageModel(): Promise<ImageModel | undefined> {
     return safeModels[0];
   }
 
-  // Last resort: first available model
-  console.log("⚠️ Using first available image model:", imageModels[0]?.name);
+  // Last resort: first available model (only log if model exists)
+  if (imageModels[0]) {
+    console.log("⚠️ Using first available image model:", imageModels[0].name);
+  }
   return imageModels[0];
 }
 

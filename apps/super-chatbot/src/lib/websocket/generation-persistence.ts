@@ -31,7 +31,7 @@ export interface PersistenceConfig {
 const DEFAULT_CONFIG: PersistenceConfig = {
   maxAge: 30 * 60 * 1000, // 30 minutes
   maxItems: 10,
-  storageKey: 'generation_states'
+  storageKey: 'generation_states',
 };
 
 /**
@@ -52,18 +52,22 @@ export class GenerationPersistence {
   saveState(state: GenerationState): void {
     try {
       const states = this.getAllStates();
-      
+
       // Update existing state or add new one
-      const existingIndex = states.findIndex(s => s.id === state.id);
+      const existingIndex = states.findIndex((s) => s.id === state.id);
       if (existingIndex >= 0) {
-        states[existingIndex] = { ...states[existingIndex], ...state, lastUpdate: Date.now() };
+        states[existingIndex] = {
+          ...states[existingIndex],
+          ...state,
+          lastUpdate: Date.now(),
+        };
       } else {
         states.push({ ...state, lastUpdate: Date.now() });
       }
 
       // Cleanup old states
       this.cleanupStates(states);
-      
+
       // Save to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem(this.config.storageKey, JSON.stringify(states));
@@ -72,7 +76,12 @@ export class GenerationPersistence {
       // Notify subscribers
       this.notifySubscribers(states);
 
-      console.log('💾 Generation state saved:', state.id, state.type, state.status);
+      console.log(
+        '💾 Generation state saved:',
+        state.id,
+        state.type,
+        state.status,
+      );
     } catch (error) {
       console.error('❌ Failed to save generation state:', error);
     }
@@ -83,7 +92,7 @@ export class GenerationPersistence {
    */
   getState(id: string): GenerationState | null {
     const states = this.getAllStates();
-    return states.find(s => s.id === id) || null;
+    return states.find((s) => s.id === id) || null;
   }
 
   /**
@@ -92,7 +101,7 @@ export class GenerationPersistence {
   getAllStates(): GenerationState[] {
     try {
       if (typeof window === 'undefined') return [];
-      
+
       const stored = localStorage.getItem(this.config.storageKey);
       if (!stored) return [];
 
@@ -108,8 +117,8 @@ export class GenerationPersistence {
    * Get active (pending/processing) generation states
    */
   getActiveStates(): GenerationState[] {
-    return this.getAllStates().filter(state => 
-      state.status === 'pending' || state.status === 'processing'
+    return this.getAllStates().filter(
+      (state) => state.status === 'pending' || state.status === 'processing',
     );
   }
 
@@ -128,8 +137,8 @@ export class GenerationPersistence {
    */
   removeState(id: string): void {
     try {
-      const states = this.getAllStates().filter(s => s.id !== id);
-      
+      const states = this.getAllStates().filter((s) => s.id !== id);
+
       if (typeof window !== 'undefined') {
         localStorage.setItem(this.config.storageKey, JSON.stringify(states));
       }
@@ -149,7 +158,7 @@ export class GenerationPersistence {
       if (typeof window !== 'undefined') {
         localStorage.removeItem(this.config.storageKey);
       }
-      
+
       this.notifySubscribers([]);
       console.log('🧹 All generation states cleared');
     } catch (error) {
@@ -162,10 +171,10 @@ export class GenerationPersistence {
    */
   subscribe(callback: (states: GenerationState[]) => void): () => void {
     this.subscribers.add(callback);
-    
+
     // Immediately call with current states
     callback(this.getAllStates());
-    
+
     // Return unsubscribe function
     return () => {
       this.subscribers.delete(callback);
@@ -185,7 +194,7 @@ export class GenerationPersistence {
    * Get recovery candidates (active but potentially stale)
    */
   getRecoveryCandidates(): GenerationState[] {
-    return this.getActiveStates().filter(state => {
+    return this.getActiveStates().filter((state) => {
       const age = Date.now() - state.startTime;
       // Consider for recovery if:
       // 1. Still in active status
@@ -199,9 +208,9 @@ export class GenerationPersistence {
    * Mark generation as recovered
    */
   markAsRecovered(id: string): void {
-    this.updateState(id, { 
+    this.updateState(id, {
       lastUpdate: Date.now(),
-      message: 'Connection recovered'
+      message: 'Connection recovered',
     });
   }
 
@@ -210,9 +219,9 @@ export class GenerationPersistence {
    */
   private cleanupStates(states: GenerationState[]): GenerationState[] {
     const now = Date.now();
-    
+
     // Remove states older than maxAge
-    let cleanStates = states.filter(state => {
+    let cleanStates = states.filter((state) => {
       const age = now - state.lastUpdate;
       return age < this.config.maxAge;
     });
@@ -231,7 +240,7 @@ export class GenerationPersistence {
    * Private: Notify all subscribers
    */
   private notifySubscribers(states: GenerationState[]): void {
-    this.subscribers.forEach(callback => {
+    this.subscribers.forEach((callback) => {
       try {
         callback(states);
       } catch (error) {
@@ -249,4 +258,4 @@ export const generationPersistence = new GenerationPersistence();
  */
 export function useGenerationPersistence() {
   return generationPersistence;
-} 
+}

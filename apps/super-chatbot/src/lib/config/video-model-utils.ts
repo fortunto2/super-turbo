@@ -1,7 +1,7 @@
-import { GenerationTypeEnum } from "@turbo-super/api";
-import { getAvailableVideoModels } from "./superduperai";
-import videoModelsConfig from "./video-models.json";
-import type { VideoModel } from "@/lib/config/superduperai";
+import { GenerationTypeEnum } from '@turbo-super/api';
+import { getAvailableVideoModels } from './superduperai';
+import videoModelsConfig from './video-models.json';
+import type { VideoModel } from '@/lib/config/superduperai';
 
 /**
  * Enhanced video model with metadata
@@ -17,12 +17,12 @@ export interface EnhancedVideoModel extends VideoModel {
   workflowPath?: string;
   supportedAspectRatios?: string[];
   supportedQualities?: string[];
-  category: "text_to_video" | "image_to_video" | "video_to_video";
+  category: 'text_to_video' | 'image_to_video' | 'video_to_video';
   uiLabel: string;
   uiDescription: string;
   recommendedSettings: any;
   bestFor: string[];
-  priceTier: "budget" | "standard" | "premium" | "luxury";
+  priceTier: 'budget' | 'standard' | 'premium' | 'luxury';
   requiresSourceImage: boolean;
   requiresSourceVideo: boolean;
 }
@@ -44,30 +44,30 @@ export async function getEnhancedVideoModels(): Promise<EnhancedVideoModel[]> {
         ];
 
       // Determine price tier
-      let priceTier: "budget" | "standard" | "premium" | "luxury" = "standard";
-      if (apiModel.params?.price_per_second <= 0.5) priceTier = "budget";
-      else if (apiModel.params?.price_per_second <= 1.5) priceTier = "standard";
-      else if (apiModel.params?.price_per_second <= 2.5) priceTier = "premium";
-      else priceTier = "luxury";
+      let priceTier: 'budget' | 'standard' | 'premium' | 'luxury' = 'standard';
+      if (apiModel.params?.price_per_second <= 0.5) priceTier = 'budget';
+      else if (apiModel.params?.price_per_second <= 1.5) priceTier = 'standard';
+      else if (apiModel.params?.price_per_second <= 2.5) priceTier = 'premium';
+      else priceTier = 'luxury';
 
       // Determine category from metadata or model name
-      let category: "text_to_video" | "image_to_video" | "video_to_video" =
-        "text_to_video";
+      let category: 'text_to_video' | 'image_to_video' | 'video_to_video' =
+        'text_to_video';
       if (metadata?.category) {
         category = metadata.category as any;
       } else {
         // Fallback: detect from model name
         if (
-          apiModel.name.includes("image-to-video") ||
-          apiModel.name.includes("veo") ||
-          apiModel.name.includes("kling")
+          apiModel.name.includes('image-to-video') ||
+          apiModel.name.includes('veo') ||
+          apiModel.name.includes('kling')
         ) {
-          category = "image_to_video";
+          category = 'image_to_video';
         } else if (
-          apiModel.name.includes("lip-sync") ||
-          apiModel.name.includes("video-to-video")
+          apiModel.name.includes('lip-sync') ||
+          apiModel.name.includes('video-to-video')
         ) {
-          category = "video_to_video";
+          category = 'video_to_video';
         }
       }
 
@@ -80,39 +80,39 @@ export async function getEnhancedVideoModels(): Promise<EnhancedVideoModel[]> {
         recommendedSettings: metadata?.recommended_settings || {},
         bestFor: metadata?.best_for || [],
         priceTier,
-        requiresSourceImage: category === "image_to_video",
-        requiresSourceVideo: category === "video_to_video",
+        requiresSourceImage: category === 'image_to_video',
+        requiresSourceVideo: category === 'video_to_video',
       };
     });
 
     return enhancedModels;
   } catch (error) {
-    console.error("Error getting enhanced video models:", error);
+    console.error('Error getting enhanced video models:', error);
 
     // Fallback to basic LTX model
     return [
       {
-        name: "comfyui/ltx",
-        label: "LTX Video",
+        name: 'comfyui/ltx',
+        label: 'LTX Video',
         type: GenerationTypeEnum.TEXT_TO_VIDEO,
-        source: "superduperai" as any,
+        source: 'superduperai' as any,
         params: {
           price_per_second: 0.4,
           maxDuration: 30,
           maxResolution: { width: 1216, height: 704 },
           supportedFrameRates: [30],
-          workflowPath: "LTX/default.json",
-          supportedAspectRatios: ["16:9", "1:1", "9:16"],
-          supportedQualities: ["hd"],
+          workflowPath: 'LTX/default.json',
+          supportedAspectRatios: ['16:9', '1:1', '9:16'],
+          supportedQualities: ['hd'],
         },
-        category: "text_to_video",
-        uiLabel: "LTX Video",
-        uiDescription: "Budget-friendly text-to-video generation",
+        category: 'text_to_video',
+        uiLabel: 'LTX Video',
+        uiDescription: 'Budget-friendly text-to-video generation',
         recommendedSettings:
-          videoModelsConfig.model_metadata["comfyui/ltx"]
+          videoModelsConfig.model_metadata['comfyui/ltx']
             ?.recommended_settings || {},
-        bestFor: ["social_media", "quick_prototypes", "budget_projects"],
-        priceTier: "budget",
+        bestFor: ['social_media', 'quick_prototypes', 'budget_projects'],
+        priceTier: 'budget',
         requiresSourceImage: false,
         requiresSourceVideo: false,
       },
@@ -124,7 +124,7 @@ export async function getEnhancedVideoModels(): Promise<EnhancedVideoModel[]> {
  * Filter models by category
  */
 export async function getModelsByCategory(
-  category: "text_to_video" | "image_to_video" | "video_to_video"
+  category: 'text_to_video' | 'image_to_video' | 'video_to_video',
 ): Promise<EnhancedVideoModel[]> {
   const models = await getEnhancedVideoModels();
   return models.filter((model) => model.category === category);
@@ -134,7 +134,7 @@ export async function getModelsByCategory(
  * Filter models by price tier
  */
 export async function getModelsByPriceTier(
-  tier: "budget" | "standard" | "premium" | "luxury"
+  tier: 'budget' | 'standard' | 'premium' | 'luxury',
 ): Promise<EnhancedVideoModel[]> {
   const models = await getEnhancedVideoModels();
   return models.filter((model) => model.priceTier === tier);
@@ -144,7 +144,7 @@ export async function getModelsByPriceTier(
  * Get recommended models for a specific use case
  */
 export async function getRecommendedModels(
-  useCase: string
+  useCase: string,
 ): Promise<EnhancedVideoModel[]> {
   const models = await getEnhancedVideoModels();
   return models.filter((model) => model.bestFor.includes(useCase));
@@ -154,7 +154,7 @@ export async function getRecommendedModels(
  * Get model by ID with metadata
  */
 export async function getEnhancedModelById(
-  modelId: string
+  modelId: string,
 ): Promise<EnhancedVideoModel | null> {
   const models = await getEnhancedVideoModels();
   return models.find((model) => model.name === modelId) || null;

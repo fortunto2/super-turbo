@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getStripeConfig } from "@turbo-super/shared";
+import { NextResponse } from 'next/server';
+import { getStripeConfig } from '@turbo-super/shared';
 
 export async function GET() {
   try {
@@ -11,10 +11,10 @@ export async function GET() {
       mode: config.mode,
     });
   } catch (error) {
-    console.error("Error fetching Stripe prices:", error);
+    console.error('Error fetching Stripe prices:', error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch prices" },
-      { status: 500 }
+      { success: false, error: 'Failed to fetch prices' },
+      { status: 500 },
     );
   }
 }

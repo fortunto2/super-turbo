@@ -1,6 +1,6 @@
-import { Suspense } from "react";
-import { UsersTable } from "@/components/admin/users-table";
-import { UsersTableSkeleton } from "@/components/admin/users-table-skeleton";
+import { Suspense } from 'react';
+import { UsersTable } from '@/components/admin/users-table';
+import { UsersTableSkeleton } from '@/components/admin/users-table-skeleton';
 import {
   Card,
   CardContent,
@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@turbo-super/ui';
-import { Users } from "lucide-react";
+import { Users } from 'lucide-react';
 
 interface PageProps {
   searchParams: Promise<{
@@ -20,7 +20,7 @@ interface PageProps {
 export default async function UsersPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
-  const search = params.search || "";
+  const search = params.search || '';
 
   return (
     <div className="space-y-6">
@@ -43,10 +43,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
         </CardHeader>
         <CardContent>
           <Suspense fallback={<UsersTableSkeleton />}>
-            <UsersTable
-              page={page}
-              search={search}
-            />
+            <UsersTable page={page} search={search} />
           </Suspense>
         </CardContent>
       </Card>

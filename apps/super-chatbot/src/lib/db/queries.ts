@@ -36,6 +36,9 @@ import { generateUUID } from "../utils";
 import { generateHashedPassword } from "./utils";
 import type { VisibilityType } from "@/components/shared/visibility-selector";
 
+// Re-export types for external use
+export type { User, Chat };
+
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
@@ -495,19 +498,43 @@ export async function saveDocument({
     const defaultVisibility =
       visibility || (kind === "script" ? "public" : "private");
 
-    return await db()
-      .insert(document)
-      .values({
-        id,
-        title,
-        kind,
-        content,
-        userId,
-        thumbnailUrl: thumbnailUrl ?? null,
-        visibility: defaultVisibility,
-        createdAt: new Date(),
-      })
-      .returning();
+    // Check if document with this ID already exists
+    const existingDocs = await db()
+      .select()
+      .from(document)
+      .where(eq(document.id, id))
+      .limit(1);
+
+    if (existingDocs.length > 0) {
+      // Update existing document
+      console.log("📄 Document already exists, updating:", id);
+      return await db()
+        .update(document)
+        .set({
+          title,
+          content,
+          thumbnailUrl: thumbnailUrl ?? null,
+          visibility: defaultVisibility,
+        })
+        .where(eq(document.id, id))
+        .returning();
+    } else {
+      // Insert new document
+      console.log("📄 Creating new document:", id);
+      return await db()
+        .insert(document)
+        .values({
+          id,
+          title,
+          kind,
+          content,
+          userId,
+          thumbnailUrl: thumbnailUrl ?? null,
+          visibility: defaultVisibility,
+          createdAt: new Date(),
+        })
+        .returning();
+    }
   } catch (error) {
     console.error("Failed to save document in database");
     throw error;
@@ -832,6 +859,412 @@ export async function getChatImageArtifacts({
     return imageArtifacts;
   } catch (error) {
     console.error("Failed to get chat image artifacts from database");
+    throw error;
+  }
+}
+
+/**
+ * Media artifact structure returned from chat messages
+ */
+export interface MediaArtifact {
+  id: string;
+  url: string;
+  role: "user" | "assistant";
+  timestamp: Date;
+  prompt?: string;
+  messageIndex: number;
+  mediaType: "image" | "video" | "audio";
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Get all media artifacts from chat messages
+ * Extracts images, videos, and audio from message parts
+ * Used by context system for AI-powered media reference detection
+ */
+export async function getChatMediaArtifacts({
+  chatId,
+  limit = 50,
+}: {
+  chatId: string;
+  limit?: number;
+}): Promise<MediaArtifact[]> {
+  try {
+    // Fetch recent messages from chat
+    const recentMessages = await db()
+      .select({
+        id: message.id,
+        role: message.role,
+        parts: message.parts,
+        attachments: message.attachments,
+        createdAt: message.createdAt,
+      })
+      .from(message)
+      .where(eq(message.chatId, chatId))
+      .orderBy(desc(message.createdAt))
+      .limit(100); // Look at more messages to find artifacts
+
+    const mediaArtifacts: MediaArtifact[] = [];
+    let messageIndex = recentMessages.length - 1;
+
+    for (const msg of recentMessages) {
+      // 1. Extract artifacts from message parts (AI-generated content)
+      if (msg.parts && Array.isArray(msg.parts)) {
+        for (const part of msg.parts) {
+          // Check TEXT parts for JSON artifacts
+          if (part && typeof part === "object" && "text" in part) {
+            const text = part.text as string;
+
+            // Check for image artifacts
+            if (
+              text &&
+              (text.includes('"kind":"image"') ||
+                text.includes("'kind':'image'") ||
+                text.includes("ImageArtifact"))
+            ) {
+              try {
+                let artifactContent = null;
+
+                if (text.includes("```json")) {
+                  const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
+                  if (jsonMatch) {
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
+                  }
+                } else if (text.startsWith("{") && text.endsWith("}")) {
+                  artifactContent = JSON.parse(text);
+                }
+
+                if (
+                  artifactContent &&
+                  artifactContent.status === "completed" &&
+                  artifactContent.imageUrl
+                ) {
+                  mediaArtifacts.push({
+                    id:
+                      artifactContent.requestId ||
+                      artifactContent.projectId ||
+                      msg.id,
+                    url: artifactContent.imageUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: artifactContent.prompt || "Generated image",
+                    messageIndex,
+                    mediaType: "image",
+                    metadata: {
+                      projectId: artifactContent.projectId,
+                      requestId: artifactContent.requestId,
+                    },
+                  });
+                }
+              } catch (parseError) {
+                continue;
+              }
+            }
+
+            // Check for video artifacts
+            if (
+              text &&
+              (text.includes('"kind":"video"') ||
+                text.includes("'kind':'video'") ||
+                text.includes("VideoArtifact"))
+            ) {
+              try {
+                let artifactContent = null;
+
+                if (text.includes("```json")) {
+                  const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
+                  if (jsonMatch) {
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
+                  }
+                } else if (text.startsWith("{") && text.endsWith("}")) {
+                  artifactContent = JSON.parse(text);
+                }
+
+                if (
+                  artifactContent &&
+                  artifactContent.status === "completed" &&
+                  artifactContent.videoUrl
+                ) {
+                  mediaArtifacts.push({
+                    id:
+                      artifactContent.requestId ||
+                      artifactContent.projectId ||
+                      msg.id,
+                    url: artifactContent.videoUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: artifactContent.prompt || "Generated video",
+                    messageIndex,
+                    mediaType: "video",
+                    metadata: {
+                      projectId: artifactContent.projectId,
+                      requestId: artifactContent.requestId,
+                    },
+                  });
+                }
+              } catch (parseError) {
+                continue;
+              }
+            }
+
+            // Check for audio artifacts (script/audio generation)
+            if (
+              text &&
+              (text.includes('"kind":"script"') ||
+                text.includes("'kind':'script'") ||
+                text.includes("ScriptArtifact"))
+            ) {
+              try {
+                let artifactContent = null;
+
+                if (text.includes("```json")) {
+                  const jsonMatch = text.match(/```json\s*({[\s\S]*?})\s*```/);
+                  if (jsonMatch) {
+                    artifactContent = JSON.parse(jsonMatch[1] || "");
+                  }
+                } else if (text.startsWith("{") && text.endsWith("}")) {
+                  artifactContent = JSON.parse(text);
+                }
+
+                if (
+                  artifactContent &&
+                  artifactContent.status === "completed" &&
+                  artifactContent.audioUrl
+                ) {
+                  mediaArtifacts.push({
+                    id:
+                      artifactContent.requestId ||
+                      artifactContent.projectId ||
+                      msg.id,
+                    url: artifactContent.audioUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: artifactContent.scriptText || "Generated audio",
+                    messageIndex,
+                    mediaType: "audio",
+                    metadata: {
+                      projectId: artifactContent.projectId,
+                      requestId: artifactContent.requestId,
+                      scriptText: artifactContent.scriptText,
+                    },
+                  });
+                }
+              } catch (parseError) {
+                continue;
+              }
+            }
+          }
+
+          // CRITICAL: Check TOOL-RESULT parts for Nano Banana and other tool outputs
+          // Tool parts have type like 'tool-call-nanoBananaImageGeneration' with output field
+          if (
+            part &&
+            typeof part === "object" &&
+            "type" in part &&
+            "output" in part
+          ) {
+            const partType = (part as any).type;
+            const partOutput = (part as any).output;
+
+            // Check if this is an image generation tool
+            if (
+              partType &&
+              typeof partType === "string" &&
+              (partType.includes("ImageGeneration") ||
+                partType.includes("nanoBananaImageGeneration") ||
+                partType.includes("configureImageGeneration"))
+            ) {
+              try {
+                // Tool output can be direct object or JSON string in content field
+                let toolResult = partOutput;
+
+                // If output has content field with JSON string, parse it
+                if (
+                  toolResult &&
+                  typeof toolResult === "object" &&
+                  "content" in toolResult &&
+                  typeof toolResult.content === "string"
+                ) {
+                  try {
+                    toolResult = {
+                      ...toolResult,
+                      ...JSON.parse(toolResult.content),
+                    };
+                  } catch {
+                    // Content is not JSON, use as is
+                  }
+                }
+
+                // Extract image URL from tool result
+                const imageUrl =
+                  toolResult?.url ||
+                  toolResult?.imageUrl ||
+                  toolResult?.data?.imageUrl;
+
+                if (imageUrl && typeof imageUrl === "string") {
+                  mediaArtifacts.push({
+                    id: toolResult?.id || msg.id,
+                    url: imageUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: toolResult?.prompt || "Generated image",
+                    messageIndex,
+                    mediaType: "image",
+                    metadata: {
+                      toolType: partType,
+                      projectId: toolResult?.projectId,
+                      requestId: toolResult?.requestId,
+                    },
+                  });
+                  console.log(
+                    `✅ [getChatMediaArtifacts] Found image in tool part: ${partType}`
+                  );
+                }
+              } catch (error) {
+                console.warn(
+                  "[getChatMediaArtifacts] Failed to parse tool output:",
+                  error
+                );
+                continue;
+              }
+            }
+
+            // Check if this is a video generation tool
+            if (
+              partType &&
+              typeof partType === "string" &&
+              (partType.includes("VideoGeneration") ||
+                partType.includes("falVideoGeneration") ||
+                partType.includes("configureVideoGeneration"))
+            ) {
+              try {
+                let toolResult = partOutput;
+
+                if (
+                  toolResult &&
+                  typeof toolResult === "object" &&
+                  "content" in toolResult &&
+                  typeof toolResult.content === "string"
+                ) {
+                  try {
+                    toolResult = {
+                      ...toolResult,
+                      ...JSON.parse(toolResult.content),
+                    };
+                  } catch {
+                    // Content is not JSON, use as is
+                  }
+                }
+
+                const videoUrl =
+                  toolResult?.url ||
+                  toolResult?.videoUrl ||
+                  toolResult?.data?.videoUrl;
+
+                if (videoUrl && typeof videoUrl === "string") {
+                  mediaArtifacts.push({
+                    id: toolResult?.id || msg.id,
+                    url: videoUrl,
+                    role: msg.role as "user" | "assistant",
+                    timestamp: msg.createdAt,
+                    prompt: toolResult?.prompt || "Generated video",
+                    messageIndex,
+                    mediaType: "video",
+                    metadata: {
+                      toolType: partType,
+                      projectId: toolResult?.projectId,
+                      requestId: toolResult?.requestId,
+                    },
+                  });
+                  console.log(
+                    `✅ [getChatMediaArtifacts] Found video in tool part: ${partType}`
+                  );
+                }
+              } catch (error) {
+                console.warn(
+                  "[getChatMediaArtifacts] Failed to parse tool output:",
+                  error
+                );
+                continue;
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Extract media from message attachments (user-uploaded content)
+      if (msg.attachments && Array.isArray(msg.attachments)) {
+        for (const attachment of msg.attachments) {
+          if (
+            attachment &&
+            typeof attachment === "object" &&
+            "contentType" in attachment &&
+            "url" in attachment
+          ) {
+            const contentType = attachment.contentType as string;
+            const url = attachment.url as string;
+            const name = (attachment as any).name as string | undefined;
+
+            if (contentType?.startsWith("image/")) {
+              mediaArtifacts.push({
+                id: (attachment as any).id || `${msg.id}-attachment`,
+                url,
+                role: msg.role as "user" | "assistant",
+                timestamp: msg.createdAt,
+                prompt: name || "Uploaded image",
+                messageIndex,
+                mediaType: "image",
+                metadata: {
+                  contentType,
+                  name,
+                  isAttachment: true,
+                },
+              });
+            } else if (contentType?.startsWith("video/")) {
+              mediaArtifacts.push({
+                id: (attachment as any).id || `${msg.id}-attachment`,
+                url,
+                role: msg.role as "user" | "assistant",
+                timestamp: msg.createdAt,
+                prompt: name || "Uploaded video",
+                messageIndex,
+                mediaType: "video",
+                metadata: {
+                  contentType,
+                  name,
+                  isAttachment: true,
+                },
+              });
+            } else if (contentType?.startsWith("audio/")) {
+              mediaArtifacts.push({
+                id: (attachment as any).id || `${msg.id}-attachment`,
+                url,
+                role: msg.role as "user" | "assistant",
+                timestamp: msg.createdAt,
+                prompt: name || "Uploaded audio",
+                messageIndex,
+                mediaType: "audio",
+                metadata: {
+                  contentType,
+                  name,
+                  isAttachment: true,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      messageIndex--;
+
+      if (mediaArtifacts.length >= limit) {
+        break;
+      }
+    }
+
+    return mediaArtifacts;
+  } catch (error) {
+    console.error("Failed to get chat media artifacts from database", error);
     throw error;
   }
 }

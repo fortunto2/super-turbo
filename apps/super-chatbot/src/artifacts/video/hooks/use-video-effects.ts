@@ -1,10 +1,9 @@
-import { useEffect, useRef } from "react";
-import type { UseChatHelpers } from "@ai-sdk/react";
+import { useEffect, useRef } from 'react';
 
 export interface UseVideoEffectsProps {
   videoUrl?: string;
   status: string;
-  append?: UseChatHelpers["append"];
+  append?: any; // AI SDK v5: append type changed
   prompt: string;
   hasInitialized: boolean;
   setArtifact?: (fn: (prev: any) => any) => void;
@@ -12,14 +11,14 @@ export interface UseVideoEffectsProps {
   resetState: () => void;
   setPrompt: (prompt: string) => void;
   initialPrompt?: string;
-  setMessages?: UseChatHelpers["setMessages"];
+  setMessages?: any; // AI SDK v5: setMessages type changed
 }
 
 // AICODE-NOTE: Function to generate a valid UUID v4
 const generateUUID = (): string => {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 };
@@ -37,22 +36,22 @@ export function useVideoEffects({
   initialPrompt,
   setMessages,
 }: UseVideoEffectsProps) {
-  const savedVideoUrlRef = useRef<string>("none");
+  const savedVideoUrlRef = useRef<string>('none');
 
   // AICODE-NOTE: Auto-save completed video to chat history for permanent access
   useEffect(() => {
     // Debug all conditions
-    console.log("🔍 useVideoEffects debug:", {
-      videoUrl: videoUrl ? `${videoUrl.substring(0, 50)}...` : "none",
+    console.log('🔍 useVideoEffects debug:', {
+      videoUrl: videoUrl ? `${videoUrl.substring(0, 50)}...` : 'none',
       status,
       hasInitialized,
-      chatId: chatId || "none",
+      chatId: chatId || 'none',
       setMessages: !!setMessages,
-      prompt: prompt ? `${prompt.substring(0, 30)}...` : "none",
+      prompt: prompt ? `${prompt.substring(0, 30)}...` : 'none',
       savedVideoUrlRef: savedVideoUrlRef.current,
       allConditionsMet: !!(
         videoUrl &&
-        status === "completed" &&
+        status === 'completed' &&
         hasInitialized &&
         chatId &&
         setMessages &&
@@ -66,7 +65,7 @@ export function useVideoEffects({
     // This prevents double saving to chat history
     if (
       videoUrl &&
-      status === "completed" &&
+      status === 'completed' &&
       hasInitialized &&
       chatId &&
       setMessages &&
@@ -74,7 +73,7 @@ export function useVideoEffects({
       savedVideoUrlRef.current !== videoUrl // Prevent duplicate saves
     ) {
       console.log(
-        "💾 🎬 Video generation completed, skipping auto-save to chat (handled by wrapper)"
+        '💾 🎬 Video generation completed, skipping auto-save to chat (handled by wrapper)',
       );
       savedVideoUrlRef.current = videoUrl;
     }
@@ -82,9 +81,9 @@ export function useVideoEffects({
 
   // Handle prompt reset
   useEffect(() => {
-    if (status === "completed" && initialPrompt) {
+    if (status === 'completed' && initialPrompt) {
       resetState();
-      setPrompt("");
+      setPrompt('');
     }
   }, [status, initialPrompt, resetState, setPrompt]);
 

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { uploadFile } from "@/lib/ai/api/upload-file";
-import { Button } from "@turbo-super/ui";
-import type { FileTypeEnum, IFileRead } from "@turbo-super/api";
+import { useState } from 'react';
+import { uploadFile } from '@/lib/ai/api/upload-file';
+import { Button } from '@turbo-super/ui';
+import type { FileTypeEnum, IFileRead } from '@turbo-super/api';
 
 export function UploadAudio({
   projectId,
@@ -27,7 +27,7 @@ export function UploadAudio({
       if (res?.id) onUploaded(res as unknown as IFileRead);
     } finally {
       setPending(false);
-      e.currentTarget.value = "";
+      e.currentTarget.value = '';
     }
   };
 
@@ -41,11 +41,8 @@ export function UploadAudio({
         id="voiceover-upload-input"
       />
       <label htmlFor="voiceover-upload-input">
-        <Button
-          disabled={pending}
-          asChild
-        >
-          <span>{pending ? "Uploading..." : "Upload Own Audio"}</span>
+        <Button disabled={pending} asChild>
+          <span>{pending ? 'Uploading...' : 'Upload Own Audio'}</span>
         </Button>
       </label>
     </div>

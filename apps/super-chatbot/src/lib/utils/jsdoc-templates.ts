@@ -208,11 +208,11 @@ export const CLASS_TEMPLATE = `
  */
 export function generateComponentDoc(
   name: string,
-  description: string
+  description: string,
 ): string {
   return COMPONENT_TEMPLATE.replace(/{componentName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -222,7 +222,7 @@ export function generateComponentDoc(
 export function generateHookDoc(name: string, description: string): string {
   return HOOK_TEMPLATE.replace(/{hookName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -232,7 +232,7 @@ export function generateHookDoc(name: string, description: string): string {
 export function generateUtilityDoc(name: string, description: string): string {
   return UTILITY_TEMPLATE.replace(/{functionName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -242,7 +242,7 @@ export function generateUtilityDoc(name: string, description: string): string {
 export function generateApiDoc(name: string, description: string): string {
   return API_TEMPLATE.replace(/{functionName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -252,7 +252,7 @@ export function generateApiDoc(name: string, description: string): string {
 export function generateTypeDoc(name: string, description: string): string {
   return TYPE_TEMPLATE.replace(/{typeName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -262,7 +262,7 @@ export function generateTypeDoc(name: string, description: string): string {
 export function generateConstantDoc(name: string, description: string): string {
   return CONSTANT_TEMPLATE.replace(/{constantName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -272,7 +272,7 @@ export function generateConstantDoc(name: string, description: string): string {
 export function generateEnumDoc(name: string, description: string): string {
   return ENUM_TEMPLATE.replace(/{enumName}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }
 
@@ -282,6 +282,6 @@ export function generateEnumDoc(name: string, description: string): string {
 export function generateClassDoc(name: string, description: string): string {
   return CLASS_TEMPLATE.replace(/{className}/g, name).replace(
     /{description}/g,
-    description
+    description,
   );
 }

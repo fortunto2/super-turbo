@@ -3,19 +3,19 @@
  * Разделен на более мелкие, специализированные хуки для лучшей читаемости и тестируемости
  */
 
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
-import { useVideoGenerationState } from "./use-video-generation-state";
-import { useVideoStorage } from "./use-video-storage";
-import { useVideoConnection } from "./use-video-connection";
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
+import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
+import { useVideoGenerationState } from './use-video-generation-state';
+import { useVideoStorage } from './use-video-storage';
+import { useVideoConnection } from './use-video-connection';
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
 import type {
   UseVideoGeneratorReturn,
   VideoGenerationFormData,
   GeneratedVideo,
-} from "./types";
+} from './types';
 
 interface UseVideoGeneratorProps {
   projectId?: string;
@@ -61,20 +61,20 @@ export function useVideoGenerator({
   const generateVideo = useCallback(
     async (formData: VideoGenerationFormData) => {
       try {
-        updateStatus("preparing");
-        updateMessage("Подготовка к генерации видео...");
+        updateStatus('preparing');
+        updateMessage('Подготовка к генерации видео...');
 
         // Сохраняем параметры генерации в localStorage
         localStorage.setItem(
-          "lastVideoGenerationParams",
-          JSON.stringify(formData)
+          'lastVideoGenerationParams',
+          JSON.stringify(formData),
         );
 
         // Отправляем запрос на генерацию
         const response = await fetch(API_NEXT_ROUTES.GENERATE_VIDEO, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             ...formData,
@@ -90,12 +90,12 @@ export function useVideoGenerator({
 
         if (data.requestId) {
           updateRequestId(data.requestId);
-          updateStatus("generating");
-          updateMessage("Генерация видео началась...");
+          updateStatus('generating');
+          updateMessage('Генерация видео началась...');
         }
       } catch (error) {
         const errorMessage =
-          error instanceof Error ? error.message : "Неизвестная ошибка";
+          error instanceof Error ? error.message : 'Неизвестная ошибка';
         updateError(errorMessage);
         onError?.(errorMessage);
         toast.error(`Ошибка генерации видео: ${errorMessage}`);
@@ -108,28 +108,28 @@ export function useVideoGenerator({
       updateRequestId,
       updateError,
       onError,
-    ]
+    ],
   );
 
   // Повторная генерация
   const retryGeneration = useCallback(async () => {
-    const lastParamsStr = localStorage.getItem("lastVideoGenerationParams");
+    const lastParamsStr = localStorage.getItem('lastVideoGenerationParams');
     if (lastParamsStr) {
       try {
         const lastParams = JSON.parse(lastParamsStr);
         await generateVideo(lastParams);
       } catch (error) {
-        toast.error("Ошибка при загрузке параметров для повтора");
+        toast.error('Ошибка при загрузке параметров для повтора');
       }
     } else {
-      toast.error("Нет сохраненных параметров для повтора генерации");
+      toast.error('Нет сохраненных параметров для повтора генерации');
     }
   }, [generateVideo]);
 
   // Очистка текущей генерации
   const clearGeneration = useCallback(() => {
     resetState();
-    localStorage.removeItem("lastVideoGenerationParams");
+    localStorage.removeItem('lastVideoGenerationParams');
   }, [resetState]);
 
   // Сохранение видео
@@ -138,7 +138,7 @@ export function useVideoGenerator({
       saveVideoToStorage(video);
       onVideoGenerated?.(video);
     },
-    [saveVideoToStorage, onVideoGenerated]
+    [saveVideoToStorage, onVideoGenerated],
   );
 
   // Удаление видео
@@ -146,40 +146,40 @@ export function useVideoGenerator({
     (videoId: string) => {
       deleteVideoFromStorage(videoId);
     },
-    [deleteVideoFromStorage]
+    [deleteVideoFromStorage],
   );
 
   // Обновление настроек
   const updateSettings = useCallback(
     (settings: Partial<VideoGenerationFormData>) => {
       const currentParamsStr = localStorage.getItem(
-        "lastVideoGenerationParams"
+        'lastVideoGenerationParams',
       );
       if (currentParamsStr) {
         try {
           const currentParams = JSON.parse(currentParamsStr);
           const updatedParams = { ...currentParams, ...settings };
           localStorage.setItem(
-            "lastVideoGenerationParams",
-            JSON.stringify(updatedParams)
+            'lastVideoGenerationParams',
+            JSON.stringify(updatedParams),
           );
         } catch (error) {
-          console.error("Ошибка при обновлении настроек:", error);
+          console.error('Ошибка при обновлении настроек:', error);
         }
       }
     },
-    []
+    [],
   );
 
   // Получение последних параметров генерации
   const getLastGenerationParams =
     useCallback((): VideoGenerationFormData | null => {
-      const lastParamsStr = localStorage.getItem("lastVideoGenerationParams");
+      const lastParamsStr = localStorage.getItem('lastVideoGenerationParams');
       if (lastParamsStr) {
         try {
           return JSON.parse(lastParamsStr);
         } catch (error) {
-          console.error("Ошибка при загрузке параметров:", error);
+          console.error('Ошибка при загрузке параметров:', error);
           return null;
         }
       }
@@ -192,17 +192,17 @@ export function useVideoGenerator({
       return {
         id: state.requestId || `video-${Date.now()}`,
         url: state.videoUrl,
-        prompt: getLastGenerationParams()?.prompt || "",
+        prompt: getLastGenerationParams()?.prompt || '',
         timestamp: Date.now(),
         ...(state.projectId && { projectId: state.projectId }),
         ...(state.requestId && { requestId: state.requestId }),
         settings: (() => {
           const params = getLastGenerationParams();
           const settings = {
-            model: params?.model || "",
-            style: params?.style || "",
-            resolution: params?.resolution || "",
-            shotSize: params?.shotSize || "",
+            model: params?.model || '',
+            style: params?.style || '',
+            resolution: params?.resolution || '',
+            shotSize: params?.shotSize || '',
             duration: params?.duration || 5,
             frameRate: params?.frameRate || 24,
           };

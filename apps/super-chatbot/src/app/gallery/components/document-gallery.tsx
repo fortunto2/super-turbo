@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { DocumentCard } from "./document-card";
-import { GallerySkeleton } from "./gallery-skeleton";
-import { Button } from "@turbo-super/ui";
-import type { DocumentFilters } from "../page";
-import type { ArtifactKind } from "@/components/artifacts/artifact";
+import { useState, useEffect } from 'react';
+import { DocumentCard } from './document-card';
+import { GallerySkeleton } from './gallery-skeleton';
+import { Button } from '@turbo-super/ui';
+import type { DocumentFilters } from '../page';
+import type { ArtifactKind } from '@/components/artifacts/artifact';
 
 interface Document {
   id: string;
@@ -18,7 +18,7 @@ interface Document {
   model?: string;
   tags: string[];
   viewCount: number;
-  visibility: "public" | "private";
+  visibility: 'public' | 'private';
   metadata: Record<string, any>;
 }
 
@@ -49,32 +49,32 @@ export function DocumentGallery({
       try {
         // Build query parameters
         const params = new URLSearchParams({
-          list: "true",
+          list: 'true',
           page: page.toString(),
-          limit: "20",
+          limit: '20',
           visibility: filters.visibility,
           sort: filters.sort,
         });
 
-        if (filters.kind) params.append("kind", filters.kind);
-        if (filters.model) params.append("model", filters.model);
-        if (filters.search) params.append("search", filters.search);
+        if (filters.kind) params.append('kind', filters.kind);
+        if (filters.model) params.append('model', filters.model);
+        if (filters.search) params.append('search', filters.search);
         if (filters.dateFrom)
-          params.append("dateFrom", filters.dateFrom.toISOString());
+          params.append('dateFrom', filters.dateFrom.toISOString());
         if (filters.dateTo)
-          params.append("dateTo", filters.dateTo.toISOString());
+          params.append('dateTo', filters.dateTo.toISOString());
 
         const response = await fetch(`/api/document?${params}`);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch documents");
+          throw new Error('Failed to fetch documents');
         }
 
         const data = await response.json();
         setDocuments(data.documents);
         setTotalPages(Math.ceil(data.pagination.total / data.pagination.limit));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
         onLoadingChange(false);
@@ -113,10 +113,7 @@ export function DocumentGallery({
       {/* Document grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {documents.map((doc) => (
-          <DocumentCard
-            key={`${doc.id}-${doc.createdAt}`}
-            document={doc}
-          />
+          <DocumentCard key={`${doc.id}-${doc.createdAt}`} document={doc} />
         ))}
       </div>
 

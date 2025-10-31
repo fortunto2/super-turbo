@@ -1,44 +1,44 @@
 // Chat components
-export * from "./chat";
+export * from './chat';
 
 // Message components
-export * from "./messages";
+export * from './messages';
 
 // Artifact components
-export * from "./artifacts";
+export * from './artifacts';
 
 // Sidebar components
-export * from "./sidebar";
+export * from './sidebar';
 
 // Editor components
-export * from "./editors";
+export * from './editors';
 
 // Scene components
-export * from "./scenes";
+export * from './scenes';
 
 // Shared components
-export * from "./shared";
+export * from './shared';
 
 // Common components
-export * from "./common";
+export * from './common';
 
 // Layout components
-export * from "./layout";
+export * from './layout';
 
 // Auth components
-export * from "./auth";
+export * from './auth';
 
 // Debug components
-export * from "./debug";
+export * from './debug';
 
 // Project components
-export * from "./project";
+export * from './project';
 
 // Tools components
-export * from "./tools";
+export * from './tools';
 
 // UI components (keeping existing structure)
-export * from "./ui";
+export * from './ui';
 
 // Admin components (keeping existing structure)
-export * from "./admin";
+export * from './admin';

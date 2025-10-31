@@ -28,7 +28,7 @@ export {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 
 // Re-export commonly used icons
 export {
@@ -51,4 +51,4 @@ export {
   TrashIcon,
   InfoIcon,
   ArrowUpIcon,
-} from "@/components/common/icons";
+} from '@/components/common/icons';

@@ -1,25 +1,25 @@
 // AICODE-NOTE: Form component for Nano Banana prompt enhancement
 // Provides comprehensive controls for prompt optimization
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@turbo-super/ui";
-import { Label } from "@turbo-super/ui";
-import { Textarea } from "@turbo-super/ui";
-import { Separator } from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@turbo-super/ui';
+import { Label } from '@turbo-super/ui';
+import { Textarea } from '@turbo-super/ui';
+import { Separator } from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../components/ui";
-import { Switch } from "../../../../components/ui";
-import { Sparkles, Wand2, Settings, Zap, } from "lucide-react";
-import type { NanoBananaPromptEnhancementRequest } from "../api/nano-banana-api";
+} from '../../../../components/ui';
+import { Switch } from '../../../../components/ui';
+import { Sparkles, Wand2, Settings, Zap } from 'lucide-react';
+import type { NanoBananaPromptEnhancementRequest } from '../api/nano-banana-api';
 
 interface NanoBananaPromptEnhancerFormProps {
   onEnhance: (request: NanoBananaPromptEnhancementRequest) => Promise<void>;
@@ -35,37 +35,37 @@ export function NanoBananaPromptEnhancerForm({
   isEnhancing,
   config = {
     techniques: [
-      "context_awareness",
-      "surgical_precision",
-      "physical_logic",
-      "technical_enhancement",
-      "artistic_enhancement",
-      "composition_optimization",
-      "lighting_enhancement",
-      "style_consistency",
+      'context_awareness',
+      'surgical_precision',
+      'physical_logic',
+      'technical_enhancement',
+      'artistic_enhancement',
+      'composition_optimization',
+      'lighting_enhancement',
+      'style_consistency',
     ],
     styles: [
-      "photorealistic",
-      "artistic",
-      "minimalist",
-      "vintage",
-      "futuristic",
-      "cinematic",
-      "painterly",
-      "sketch",
+      'photorealistic',
+      'artistic',
+      'minimalist',
+      'vintage',
+      'futuristic',
+      'cinematic',
+      'painterly',
+      'sketch',
     ],
   },
 }: NanoBananaPromptEnhancerFormProps) {
   const [formData, setFormData] = useState<NanoBananaPromptEnhancementRequest>({
-    originalPrompt: "",
-    enhancementTechnique: "context_awareness",
-    targetStyle: "photorealistic",
+    originalPrompt: '',
+    enhancementTechnique: 'context_awareness',
+    targetStyle: 'photorealistic',
     includeTechnicalTerms: true,
     includeQualityDescriptors: true,
     enhanceForEditing: false,
     creativeMode: false,
     preserveOriginalIntent: true,
-    customInstructions: "",
+    customInstructions: '',
   });
 
   // Handle form submission
@@ -81,7 +81,7 @@ export function NanoBananaPromptEnhancerForm({
   // Update form data
   const updateFormData = (
     field: keyof NanoBananaPromptEnhancementRequest,
-    value: any
+    value: any,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -92,32 +92,23 @@ export function NanoBananaPromptEnhancerForm({
         <CardTitle className="flex items-center space-x-2">
           <Sparkles className="size-5 text-purple-600" />
           <span>Nano Banana Prompt Enhancer</span>
-          <Badge
-            variant="secondary"
-            className="ml-auto"
-          >
+          <Badge variant="secondary" className="ml-auto">
             AI-Powered
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Original Prompt Input */}
           <div className="space-y-2">
-            <Label
-              htmlFor="originalPrompt"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="originalPrompt" className="text-sm font-medium">
               Original Prompt *
             </Label>
             <Textarea
               id="originalPrompt"
               placeholder="Enter your original prompt here... (e.g., 'a cat sitting on a chair')"
               value={formData.originalPrompt}
-              onChange={(e) => updateFormData("originalPrompt", e.target.value)}
+              onChange={(e) => updateFormData('originalPrompt', e.target.value)}
               className="min-h-[120px]"
               disabled={isEnhancing}
             />
@@ -136,9 +127,9 @@ export function NanoBananaPromptEnhancerForm({
               Enhancement Technique
             </Label>
             <Select
-              value={formData.enhancementTechnique || ""}
+              value={formData.enhancementTechnique || ''}
               onValueChange={(value) =>
-                updateFormData("enhancementTechnique", value)
+                updateFormData('enhancementTechnique', value)
               }
               disabled={isEnhancing}
             >
@@ -147,12 +138,9 @@ export function NanoBananaPromptEnhancerForm({
               </SelectTrigger>
               <SelectContent>
                 {config.techniques.map((technique) => (
-                  <SelectItem
-                    key={technique}
-                    value={technique}
-                  >
+                  <SelectItem key={technique} value={technique}>
                     {technique
-                      .replace(/_/g, " ")
+                      .replace(/_/g, ' ')
                       .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </SelectItem>
                 ))}
@@ -165,15 +153,12 @@ export function NanoBananaPromptEnhancerForm({
 
           {/* Target Style */}
           <div className="space-y-2">
-            <Label
-              htmlFor="targetStyle"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="targetStyle" className="text-sm font-medium">
               Target Style
             </Label>
             <Select
-              value={formData.targetStyle || ""}
-              onValueChange={(value) => updateFormData("targetStyle", value)}
+              value={formData.targetStyle || ''}
+              onValueChange={(value) => updateFormData('targetStyle', value)}
               disabled={isEnhancing}
             >
               <SelectTrigger>
@@ -181,10 +166,7 @@ export function NanoBananaPromptEnhancerForm({
               </SelectTrigger>
               <SelectContent>
                 {config.styles.map((style) => (
-                  <SelectItem
-                    key={style}
-                    value={style}
-                  >
+                  <SelectItem key={style} value={style}>
                     {style.charAt(0).toUpperCase() + style.slice(1)}
                   </SelectItem>
                 ))}
@@ -197,10 +179,7 @@ export function NanoBananaPromptEnhancerForm({
 
           {/* Custom Instructions */}
           <div className="space-y-2">
-            <Label
-              htmlFor="customInstructions"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="customInstructions" className="text-sm font-medium">
               Custom Instructions (Optional)
             </Label>
             <Textarea
@@ -208,7 +187,7 @@ export function NanoBananaPromptEnhancerForm({
               placeholder="Add any specific instructions for the enhancement... (e.g., 'Focus on lighting details', 'Emphasize composition', 'Include technical photography terms')"
               value={formData.customInstructions}
               onChange={(e) =>
-                updateFormData("customInstructions", e.target.value)
+                updateFormData('customInstructions', e.target.value)
               }
               className="min-h-[80px]"
               disabled={isEnhancing}
@@ -241,7 +220,7 @@ export function NanoBananaPromptEnhancerForm({
                 <Switch
                   checked={formData.includeTechnicalTerms || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("includeTechnicalTerms", checked)
+                    updateFormData('includeTechnicalTerms', checked)
                   }
                   disabled={isEnhancing}
                 />
@@ -259,7 +238,7 @@ export function NanoBananaPromptEnhancerForm({
                 <Switch
                   checked={formData.includeQualityDescriptors || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("includeQualityDescriptors", checked)
+                    updateFormData('includeQualityDescriptors', checked)
                   }
                   disabled={isEnhancing}
                 />
@@ -277,7 +256,7 @@ export function NanoBananaPromptEnhancerForm({
                 <Switch
                   checked={formData.enhanceForEditing || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("enhanceForEditing", checked)
+                    updateFormData('enhanceForEditing', checked)
                   }
                   disabled={isEnhancing}
                 />
@@ -295,7 +274,7 @@ export function NanoBananaPromptEnhancerForm({
                 <Switch
                   checked={formData.preserveOriginalIntent || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("preserveOriginalIntent", checked)
+                    updateFormData('preserveOriginalIntent', checked)
                   }
                   disabled={isEnhancing}
                 />
@@ -323,7 +302,7 @@ export function NanoBananaPromptEnhancerForm({
                 <Switch
                   checked={formData.creativeMode || false}
                   onCheckedChange={(checked) =>
-                    updateFormData("creativeMode", checked)
+                    updateFormData('creativeMode', checked)
                   }
                   disabled={isEnhancing}
                 />

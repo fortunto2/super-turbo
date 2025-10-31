@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from 'vitest';
 
-describe("API Configuration", () => {
-  describe("Environment variables", () => {
-    it("should have required environment variables", () => {
+describe('API Configuration', () => {
+  describe('Environment variables', () => {
+    it('should have required environment variables', () => {
       // Test that environment variables are accessible
       expect(process.env.NODE_ENV).toBeDefined();
     });
 
-    it("should handle missing SUPERDUPERAI_URL", () => {
+    it('should handle missing SUPERDUPERAI_URL', () => {
       const originalUrl = process.env.SUPERDUPERAI_URL;
       process.env.SUPERDUPERAI_URL = undefined;
 
@@ -23,7 +23,7 @@ describe("API Configuration", () => {
       }
     });
 
-    it("should handle missing SUPERDUPERAI_TOKEN", () => {
+    it('should handle missing SUPERDUPERAI_TOKEN', () => {
       const originalToken = process.env.SUPERDUPERAI_TOKEN;
       process.env.SUPERDUPERAI_TOKEN = undefined;
 

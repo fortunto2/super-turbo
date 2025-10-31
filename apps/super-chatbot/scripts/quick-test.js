@@ -22,13 +22,9 @@ console.log('- При ошибке Prefect - кредиты возвращают
 console.log('');
 
 console.log('🔍 Проверьте в БД:');
-console.log('SELECT "projectId", "status", "creditsUsed" FROM "UserProject" ORDER BY "createdAt" DESC LIMIT 3;');
+console.log(
+  'SELECT "projectId", "status", "creditsUsed" FROM "UserProject" ORDER BY "createdAt" DESC LIMIT 3;',
+);
 console.log('');
 
 console.log('🎉 Если все работает - API полностью готов!');
-
-
-
-
-
-

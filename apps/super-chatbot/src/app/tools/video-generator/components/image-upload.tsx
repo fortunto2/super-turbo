@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useRef } from "react";
-import { Card, CardContent } from "@turbo-super/ui";
-import { Button } from "@turbo-super/ui";
-import { X, Image as ImageIcon, AlertCircle, Crop } from "lucide-react";
-import { toast } from "sonner";
-import NextImage from "next/image";
+import { useState, useCallback, useRef } from 'react';
+import { Card, CardContent } from '@turbo-super/ui';
+import { Button } from '@turbo-super/ui';
+import { X, Image as ImageIcon, AlertCircle, Crop } from 'lucide-react';
+import { toast } from 'sonner';
+import NextImage from 'next/image';
 
 interface ImageUploadProps {
   onImageSelect: (file: File, previewUrl: string) => void;
@@ -23,7 +23,7 @@ const parseResolution = (resolutionString?: string) => {
   let height = 1080;
 
   if (resolutionString) {
-    const match = resolutionString.match(/(\d+)x(\d+)/);
+    const match = resolutionString?.match(/(\d+)x(\d+)/);
     if (match?.[1] && match[2]) {
       width = Number.parseInt(match[1], 10);
       height = Number.parseInt(match[2], 10);
@@ -36,18 +36,18 @@ const parseResolution = (resolutionString?: string) => {
 const processImageForResolution = async (
   file: File,
   targetWidth: number,
-  targetHeight: number
+  targetHeight: number,
 ): Promise<{ processedFile: File; previewUrl: string }> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       try {
         // Create canvas for processing
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
 
         if (!ctx) {
-          throw new Error("Failed to get canvas context");
+          throw new Error('Failed to get canvas context');
         }
 
         // Set target dimensions
@@ -80,13 +80,13 @@ const processImageForResolution = async (
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error("Failed to create processed image"));
+              reject(new Error('Failed to create processed image'));
               return;
             }
 
             // Create new file with processed image
             const processedFile = new File([blob], file.name, {
-              type: "image/jpeg",
+              type: 'image/jpeg',
               lastModified: Date.now(),
             });
 
@@ -94,15 +94,15 @@ const processImageForResolution = async (
 
             resolve({ processedFile, previewUrl });
           },
-          "image/jpeg",
-          0.92
+          'image/jpeg',
+          0.92,
         );
       } catch (error) {
         reject(error);
       }
     };
 
-    img.onerror = () => reject(new Error("Failed to load image"));
+    img.onerror = () => reject(new Error('Failed to load image'));
     img.src = URL.createObjectURL(file);
   });
 };
@@ -112,7 +112,7 @@ export function ImageUpload({
   onImageRemove,
   selectedImage,
   disabled = false,
-  className = "",
+  className = '',
   targetResolution,
 }: ImageUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -122,16 +122,16 @@ export function ImageUpload({
 
   const validateImageFile = (file: File): boolean => {
     // Check file type
-    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
-      toast.error("Please select a valid image file (JPEG, PNG, or WebP)");
+      toast.error('Please select a valid image file (JPEG, PNG, or WebP)');
       return false;
     }
 
     // Check file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      toast.error("Image file must be smaller than 10MB");
+      toast.error('Image file must be smaller than 10MB');
       return false;
     }
 
@@ -152,7 +152,7 @@ export function ImageUpload({
         const { width: targetWidth, height: targetHeight } =
           parseResolution(targetResolution);
 
-        console.log("🖼️ Processing image for resolution:", {
+        console.log('🖼️ Processing image for resolution:', {
           target: targetResolution,
           dimensions: { targetWidth, targetHeight },
           originalFile: { name: file.name, size: file.size },
@@ -162,11 +162,11 @@ export function ImageUpload({
         const { processedFile, previewUrl } = await processImageForResolution(
           file,
           targetWidth,
-          targetHeight
+          targetHeight,
         );
 
-        console.log("✅ Image processed:", {
-          original: { width: "unknown", height: "unknown", size: file.size },
+        console.log('✅ Image processed:', {
+          original: { width: 'unknown', height: 'unknown', size: file.size },
           processed: {
             width: targetWidth,
             height: targetHeight,
@@ -178,26 +178,26 @@ export function ImageUpload({
         onImageSelect(processedFile, previewUrl);
 
         toast.success(
-          `Image processed for ${targetWidth}x${targetHeight} resolution`
+          `Image processed for ${targetWidth}x${targetHeight} resolution`,
         );
       } catch (error) {
-        console.error("❌ Error processing image:", error);
-        toast.error("Failed to process image for video resolution");
+        console.error('❌ Error processing image:', error);
+        toast.error('Failed to process image for video resolution');
 
         // Fallback: use original image
         try {
           const previewUrl = URL.createObjectURL(file);
           onImageSelect(file, previewUrl);
-          toast.warning("Using original image (no processing applied)");
+          toast.warning('Using original image (no processing applied)');
         } catch (fallbackError) {
-          toast.error("Failed to process image");
+          toast.error('Failed to process image');
         }
       } finally {
         setIsUploading(false);
         setIsProcessing(false);
       }
     },
-    [onImageSelect, targetResolution]
+    [onImageSelect, targetResolution],
   );
 
   const handleDragOver = useCallback(
@@ -208,7 +208,7 @@ export function ImageUpload({
         setIsDragOver(true);
       }
     },
-    [disabled]
+    [disabled],
   );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
@@ -226,15 +226,15 @@ export function ImageUpload({
       if (disabled || isUploading) return;
 
       const files = Array.from(e.dataTransfer.files);
-      const imageFile = files.find((file) => file.type.startsWith("image/"));
+      const imageFile = files.find((file) => file.type.startsWith('image/'));
 
       if (imageFile) {
         handleFileSelect(imageFile);
       } else {
-        toast.error("Please drop an image file");
+        toast.error('Please drop an image file');
       }
     },
-    [disabled, isUploading, handleFileSelect]
+    [disabled, isUploading, handleFileSelect],
   );
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,7 +244,7 @@ export function ImageUpload({
     }
     // Clear the input so the same file can be selected again
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -321,11 +321,11 @@ export function ImageUpload({
             border-2 cursor-pointer transition-all duration-200
             ${
               isDragOver
-                ? "border-primary bg-primary/5 scale-[1.02]"
-                : "border-dashed border-muted-foreground/25 hover:border-primary/50"
+                ? 'border-primary bg-primary/5 scale-[1.02]'
+                : 'border-dashed border-muted-foreground/25 hover:border-primary/50'
             }
-            ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-            ${isUploading ? "border-primary bg-primary/5" : ""}
+            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+            ${isUploading ? 'border-primary bg-primary/5' : ''}
           `}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -337,8 +337,8 @@ export function ImageUpload({
               <div
                 className={`p-4 rounded-full ${
                   isDragOver || isUploading
-                    ? "bg-primary/10 text-primary"
-                    : "bg-muted text-muted-foreground"
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {isUploading ? (
@@ -352,8 +352,8 @@ export function ImageUpload({
                 <h3 className="font-semibold text-lg">Select Source Image</h3>
                 <p className="text-muted-foreground text-sm max-w-sm">
                   {isDragOver
-                    ? "Drop your image here"
-                    : "Drag and drop an image file here, or click to browse"}
+                    ? 'Drop your image here'
+                    : 'Drag and drop an image file here, or click to browse'}
                 </p>
                 {targetResolution && (
                   <div className="flex items-center justify-center gap-1 text-xs text-blue-600 bg-blue-50 rounded-md px-2 py-1">

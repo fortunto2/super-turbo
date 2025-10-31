@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from 'next/navigation';
 import {
   RemotionPlayer,
   sceneToMediaFormatting,
   useMediaPrefetch,
-} from "@turbo-super/features";
+} from '@turbo-super/features';
 import {
   Play,
   Download,
@@ -16,23 +16,23 @@ import {
   FileText,
   Settings,
   Users,
-} from "lucide-react";
-import Link from "next/link";
-import { BackButton } from "@/components/shared/back-button";
+} from 'lucide-react';
+import Link from 'next/link';
+import { BackButton } from '@/components/shared/back-button';
 import {
   TaskTypeEnum,
   useTaskStatus,
   type IFileRead,
   type IProjectVideoRead,
-} from "@turbo-super/api";
-import { useMemo, useState } from "react";
-import { ShareDialog, ProjectVideoExportDialog } from "@/components";
+} from '@turbo-super/api';
+import { useMemo, useState } from 'react';
+import { ShareDialog, ProjectVideoExportDialog } from '@/components';
 import {
   useProjectGetById,
   useProjectStoryboard2Video,
   useSceneList,
-} from "@/lib/api/superduperai";
-import { QueryState } from "@/components/ui/query-state";
+} from '@/lib/api/superduperai';
+import { QueryState } from '@/components/ui/query-state';
 
 // CSS for custom scrollbar
 const customScrollbarStyles = `
@@ -78,7 +78,7 @@ export default function PreviewPage() {
 
   const { isPending: isRendering } = useTaskStatus(
     TaskTypeEnum.STORYBOARD2VIDEO_FLOW,
-    project?.tasks
+    project?.tasks,
   );
 
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -88,7 +88,7 @@ export default function PreviewPage() {
 
   const scenesMedia = useMemo(
     () => sceneToMediaFormatting((scenes?.items as any) ?? []),
-    [scenes?.items]
+    [scenes?.items],
   );
 
   const files = useMemo(() => [...scenesMedia], [scenesMedia]);
@@ -98,8 +98,8 @@ export default function PreviewPage() {
   const aspectRatio = useMemo(() => {
     if (!project) return;
     const videoProject = project as IProjectVideoRead;
-    const value = videoProject.config.aspect_ratio ?? "16:9";
-    const [numerator, denominator] = value.split(":").map(Number);
+    const value = videoProject.config.aspect_ratio ?? '16:9';
+    const [numerator, denominator] = value.split(':').map(Number);
     if (numerator && denominator) {
       return numerator / denominator;
     }
@@ -114,12 +114,12 @@ export default function PreviewPage() {
   // Function for downloading file
   const handleDownload = (file: IFileRead) => {
     if (!file.url) {
-      console.error("❌ No download URL available");
+      console.error('❌ No download URL available');
       return;
     }
 
     // Create temporary download link
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = file.url;
     link.download = `video-${projectId}.mp4`;
     document.body.appendChild(link);
@@ -130,9 +130,9 @@ export default function PreviewPage() {
   const isLoading = isProjectLoading || isScenesLoading;
   const isError = isProjectError || isScenesError;
   const error = isProjectError
-    ? "Failed to load project"
+    ? 'Failed to load project'
     : isScenesError
-      ? "Failed to load scenes"
+      ? 'Failed to load scenes'
       : null;
 
   if (!projectId) {
@@ -226,7 +226,7 @@ export default function PreviewPage() {
                             scenes={scenes?.items as any}
                             music={music}
                             isLoading={!isLoaded}
-                            aspectRatio={aspectRatio ?? 16/9}
+                            aspectRatio={aspectRatio ?? 16 / 9}
                           />
                         </div>
                       </div>
@@ -241,8 +241,8 @@ export default function PreviewPage() {
                           </p>
                           <p className="text-muted-foreground">
                             {!project
-                              ? "Project not found"
-                              : "Scenes not found"}
+                              ? 'Project not found'
+                              : 'Scenes not found'}
                           </p>
                         </div>
                       </div>
@@ -287,7 +287,7 @@ export default function PreviewPage() {
                         Aspect Ratio:
                       </span>
                       <span className="text-sm font-semibold text-foreground">
-                        {project.config?.aspect_ratio || "16:9"}
+                        {project.config?.aspect_ratio || '16:9'}
                       </span>
                     </div>
                   </div>
@@ -316,7 +316,7 @@ export default function PreviewPage() {
                           </div>
                           <span className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground line-clamp-2">
                             {scene.visual_description ||
-                              "Scene description unavailable"}
+                              'Scene description unavailable'}
                           </span>
                           <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
                             <ArrowRight className="size-3 text-primary" />
@@ -369,7 +369,7 @@ export default function PreviewPage() {
               <div className="inline-flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-md">
                 <div className="size-2 bg-primary rounded-full animate-pulse" />
                 <span className="text-xs text-muted-foreground">
-                  Powered by{" "}
+                  Powered by{' '}
                   <strong className="text-foreground">SuperDuperAI</strong>
                 </span>
               </div>

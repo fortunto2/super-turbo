@@ -17,7 +17,11 @@ interface ChatImageHistoryProps {
   onImageSelect?: (imageUrl: string) => void;
 }
 
-export function ChatImageHistory({ chatId, isVisible, onImageSelect }: ChatImageHistoryProps) {
+export function ChatImageHistory({
+  chatId,
+  isVisible,
+  onImageSelect,
+}: ChatImageHistoryProps) {
   const [images, setImages] = useState<ChatImageArtifact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,18 +29,19 @@ export function ChatImageHistory({ chatId, isVisible, onImageSelect }: ChatImage
   const loadChatImages = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/chat/${chatId}/images`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to load images: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setImages(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load chat images';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load chat images';
       setError(errorMessage);
       console.error('Failed to load chat images:', err);
     } finally {
@@ -59,11 +64,14 @@ export function ChatImageHistory({ chatId, isVisible, onImageSelect }: ChatImage
       onImageSelect(imageUrl);
     } else {
       // Default action: copy URL to clipboard
-      navigator.clipboard.writeText(imageUrl).then(() => {
-        toast.success('Image URL copied to clipboard');
-      }).catch(() => {
-        toast.error('Failed to copy image URL');
-      });
+      navigator.clipboard
+        .writeText(imageUrl)
+        .then(() => {
+          toast.success('Image URL copied to clipboard');
+        })
+        .catch(() => {
+          toast.error('Failed to copy image URL');
+        });
     }
   };
 
@@ -114,7 +122,7 @@ export function ChatImageHistory({ chatId, isVisible, onImageSelect }: ChatImage
                 className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                 loading="lazy"
               />
-              
+
               {/* Overlay with prompt */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors">
                 <div className="absolute bottom-0 inset-x-0 p-2 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
@@ -124,11 +132,21 @@ export function ChatImageHistory({ chatId, isVisible, onImageSelect }: ChatImage
                   </div>
                 </div>
               </div>
-              
+
               {/* Click indicator */}
               <div className="absolute top-2 right-2 size-6 bg-white/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <svg
+                  className="size-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
                 </svg>
               </div>
             </div>
@@ -137,4 +155,4 @@ export function ChatImageHistory({ chatId, isVisible, onImageSelect }: ChatImage
       )}
     </div>
   );
-} 
+}

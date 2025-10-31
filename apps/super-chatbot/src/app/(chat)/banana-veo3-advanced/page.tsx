@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@turbo-super/ui";
+import { useState } from 'react';
+import { Button } from '@turbo-super/ui';
 import {
   Send,
   Loader2,
@@ -11,65 +11,83 @@ import {
   Play,
   List,
   Lightbulb,
-} from "lucide-react";
-import { useChat } from "ai/react";
+} from 'lucide-react';
+import { useChat } from '@ai-sdk/react';
 
 export default function BananaVeo3AdvancedPage() {
   const [chatId] = useState(() => crypto.randomUUID());
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    reload,
-    stop,
-  } = useChat({
+  // AI SDK v5: Manage input state manually
+  const [input, setInput] = useState('');
+
+  const chatHelpers = useChat({
     id: chatId,
-    api: "/api/banana-veo3-advanced",
-    body: {
-      selectedVisibilityType: "private",
+    fetch: async (url: string, options?: RequestInit) => {
+      return fetch('/api/banana-veo3-advanced', {
+        ...options,
+        body: JSON.stringify({
+          ...JSON.parse((options?.body as string) || '{}'),
+          selectedVisibilityType: 'private',
+        }),
+      });
     },
-  });
+  } as any);
+
+  const { messages, status, stop } = chatHelpers;
+  const sendMessage = (chatHelpers as any).sendMessage;
+  const regenerate = (chatHelpers as any).regenerate;
+  const isLoading = status !== 'ready';
+
+  // AI SDK v5: Create handleSubmit manually using sendMessage
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    await sendMessage({ text: input });
+    setInput('');
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  const reload = () => {
+    if (regenerate) regenerate();
+  };
 
   const quickActions = [
     {
       icon: List,
-      label: "Показать модели Banana",
-      action: "Покажи доступные модели Banana для inference",
-      color: "bg-yellow-500 hover:bg-yellow-600",
+      label: 'Показать модели Banana',
+      action: 'Покажи доступные модели Banana для inference',
+      color: 'bg-yellow-500 hover:bg-yellow-600',
     },
     {
       icon: Play,
-      label: "Создать видео VEO3",
-      action: "Создай видео про AI технологии с помощью VEO3",
-      color: "bg-blue-500 hover:bg-blue-600",
+      label: 'Создать видео VEO3',
+      action: 'Создай видео про AI технологии с помощью VEO3',
+      color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
       icon: Lightbulb,
-      label: "Идеи для видео",
-      action: "Сгенерируй идеи для видео про роботов",
-      color: "bg-purple-500 hover:bg-purple-600",
+      label: 'Идеи для видео',
+      action: 'Сгенерируй идеи для видео про роботов',
+      color: 'bg-purple-500 hover:bg-purple-600',
     },
     {
       icon: Zap,
-      label: "Banana Inference",
-      action: "Запусти inference на Banana для анализа текста",
-      color: "bg-green-500 hover:bg-green-600",
+      label: 'Banana Inference',
+      action: 'Запусти inference на Banana для анализа текста',
+      color: 'bg-green-500 hover:bg-green-600',
     },
   ];
 
   const handleQuickAction = (action: string) => {
-    // Устанавливаем текст в input и отправляем
-    const inputElement = document.querySelector(
-      'textarea[placeholder*="Banana"]'
-    ) as HTMLTextAreaElement;
-    if (inputElement) {
-      inputElement.value = action;
-      inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-      handleSubmit(new Event("submit") as any);
-    }
+    setInput(action);
+    // Simulate form submission
+    const event = new Event('submit') as any;
+    event.preventDefault = () => {};
+    handleSubmit(event);
   };
 
   return (
@@ -86,7 +104,7 @@ export default function BananaVeo3AdvancedPage() {
               Banana + VEO3 Advanced
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Реальная интеграция с Banana GPU Inference и VEO3 Video Generation
+              Реальная интеграция с Banana и VEO3 Video Generation
             </p>
           </div>
         </div>
@@ -122,27 +140,31 @@ export default function BananaVeo3AdvancedPage() {
             <div
               key={message.id}
               className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
+                message.role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
               <div
                 className={`max-w-3xl p-4 rounded-lg ${
-                  message.role === "user"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                  message.role === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  {message.role === "user" ? (
+                  {message.role === 'user' ? (
                     <Banana className="w-4 h-4" />
                   ) : (
                     <Video className="w-4 h-4" />
                   )}
                   <span className="text-sm font-medium">
-                    {message.role === "user" ? "Вы" : "Banana + VEO3"}
+                    {message.role === 'user' ? 'Вы' : 'Banana + VEO3'}
                   </span>
                 </div>
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div className="whitespace-pre-wrap">
+                  {(message as any).content ||
+                    (message.parts?.[0] as any)?.text ||
+                    ''}
+                </div>
               </div>
             </div>
           ))}
@@ -150,10 +172,7 @@ export default function BananaVeo3AdvancedPage() {
       </div>
 
       {/* Input Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="input"
@@ -192,21 +211,13 @@ export default function BananaVeo3AdvancedPage() {
           </Button>
 
           {isLoading && (
-            <Button
-              type="button"
-              onClick={stop}
-              variant="outline"
-            >
+            <Button type="button" onClick={stop} variant="outline">
               Остановить
             </Button>
           )}
 
           {messages.length > 0 && (
-            <Button
-              type="button"
-              onClick={() => reload()}
-              variant="outline"
-            >
+            <Button type="button" onClick={() => reload()} variant="outline">
               Перезапустить
             </Button>
           )}
@@ -219,7 +230,7 @@ export default function BananaVeo3AdvancedPage() {
           <div className="flex items-center gap-2 mb-2">
             <Banana className="w-5 h-5 text-yellow-600" />
             <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
-              Banana GPU Inference
+              Banana
             </h4>
           </div>
           <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">

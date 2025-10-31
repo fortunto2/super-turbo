@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { Coins, Zap } from "lucide-react";
-import { StripePaymentButton } from "@turbo-super/payment";
+import { useEffect, useState } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Coins, Zap } from 'lucide-react';
+import { StripePaymentButton } from '@turbo-super/payment';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   Button,
   Badge,
   cn,
-} from "@turbo-super/ui";
+} from '@turbo-super/ui';
 
 interface ToolsBalanceData {
   balance: number;
@@ -21,7 +21,7 @@ interface ToolsBalanceData {
     balance: number;
     isLow: boolean;
     isEmpty: boolean;
-    displayColor: "green" | "yellow" | "red";
+    displayColor: 'green' | 'yellow' | 'red';
   };
   userType: string;
   userId: string;
@@ -29,13 +29,13 @@ interface ToolsBalanceData {
 
 interface ToolsBalanceProps {
   className?: string;
-  variant?: "compact" | "detailed" | "header";
+  variant?: 'compact' | 'detailed' | 'header';
   showLabel?: boolean;
 }
 
 export function ToolsBalance({
   className,
-  variant = "compact",
+  variant = 'compact',
   showLabel = true,
 }: ToolsBalanceProps) {
   const [data, setData] = useState<ToolsBalanceData | null>(null);
@@ -46,16 +46,16 @@ export function ToolsBalance({
     async function fetchBalance() {
       try {
         setLoading(true);
-        const response = await fetch("/api/tools-balance");
+        const response = await fetch('/api/tools-balance');
 
         if (!response.ok) {
-          throw new Error("Failed to fetch tools balance");
+          throw new Error('Failed to fetch tools balance');
         }
 
         const data = await response.json();
         setData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
@@ -74,13 +74,9 @@ export function ToolsBalance({
       <div className={className}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-            >
+            <Button variant="outline" size="sm" className="h-8">
               <Coins className="size-4" />
-              {showLabel && variant !== "compact" && (
+              {showLabel && variant !== 'compact' && (
                 <span className="ml-1 animate-pulse">Loading...</span>
               )}
             </Button>
@@ -96,13 +92,9 @@ export function ToolsBalance({
       <div className={className}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-red-500"
-            >
+            <Button variant="outline" size="sm" className="h-8 text-red-500">
               <Coins className="size-4" />
-              {showLabel && variant !== "compact" && (
+              {showLabel && variant !== 'compact' && (
                 <span className="ml-1">Error</span>
               )}
             </Button>
@@ -119,32 +111,32 @@ export function ToolsBalance({
   // Color mapping for dark theme
   const colorClasses = {
     green:
-      "text-green-400 border-input bg-green-950/50 dark:text-green-400 dark:border-input dark:bg-green-950/50",
+      'text-green-400 border-input bg-green-950/50 dark:text-green-400 dark:border-input dark:bg-green-950/50',
     yellow:
-      "text-yellow-400 border-yellow-800 bg-yellow-950/50 dark:text-yellow-400 dark:border-yellow-800 dark:bg-yellow-950/50",
-    red: "text-red-400 border-red-800 bg-red-950/50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/50",
+      'text-yellow-400 border-yellow-800 bg-yellow-950/50 dark:text-yellow-400 dark:border-yellow-800 dark:bg-yellow-950/50',
+    red: 'text-red-400 border-red-800 bg-red-950/50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/50',
   };
 
   const iconColorClasses = {
-    green: "text-green-400 dark:text-green-400",
-    yellow: "text-yellow-400 dark:text-yellow-400",
-    red: "text-red-400 dark:text-red-400",
+    green: 'text-green-400 dark:text-green-400',
+    yellow: 'text-yellow-400 dark:text-yellow-400',
+    red: 'text-red-400 dark:text-red-400',
   };
 
   // Render different variants
-  if (variant === "header") {
+  if (variant === 'header') {
     return (
-      <div className={cn("flex items-center gap-2", className)}>
+      <div className={cn('flex items-center gap-2', className)}>
         <Dialog>
           <DialogTrigger asChild>
             <Button
               variant="outline"
               className={cn(
                 `h-8 flex items-center gap-1.5 px-2.5 cursor-pointer`,
-                colorClasses[displayColor]
+                colorClasses[displayColor],
               )}
             >
-              <Coins className={cn("size-4", iconColorClasses[displayColor])} />
+              <Coins className={cn('size-4', iconColorClasses[displayColor])} />
               <span className="text-xs font-medium">{balance}</span>
               {showLabel && <span className="text-xs">credits</span>}
             </Button>
@@ -170,15 +162,15 @@ export function ToolsBalance({
                 <div className="mt-2">
                   <Badge
                     variant={
-                      isEmpty ? "destructive" : isLow ? "secondary" : "default"
+                      isEmpty ? 'destructive' : isLow ? 'secondary' : 'default'
                     }
                     className="text-xs"
                   >
                     {isEmpty
-                      ? "Пустой"
+                      ? 'Пустой'
                       : isLow
-                        ? "Низкий баланс"
-                        : "Хороший баланс"}
+                        ? 'Низкий баланс'
+                        : 'Хороший баланс'}
                   </Badge>
                 </div>
                 <p className="text-xs mt-2 text-muted-foreground">
@@ -201,29 +193,29 @@ export function ToolsBalance({
     );
   }
 
-  if (variant === "detailed") {
+  if (variant === 'detailed') {
     return (
       <Dialog>
         <DialogTrigger asChild>
           <div
             className={cn(
-              "space-y-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/50 p-3 rounded-lg transition-colors",
-              className
+              'space-y-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/50 p-3 rounded-lg transition-colors',
+              className,
             )}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Coins
-                  className={cn("size-5", iconColorClasses[displayColor])}
+                  className={cn('size-5', iconColorClasses[displayColor])}
                 />
                 <span className="font-medium">Tools Balance</span>
               </div>
               <Badge
                 variant={
-                  isEmpty ? "destructive" : isLow ? "secondary" : "default"
+                  isEmpty ? 'destructive' : isLow ? 'secondary' : 'default'
                 }
               >
-                {isEmpty ? "Empty" : isLow ? "Low" : "Good"}
+                {isEmpty ? 'Empty' : isLow ? 'Low' : 'Good'}
               </Badge>
             </div>
 
@@ -237,9 +229,7 @@ export function ToolsBalance({
             <div className="text-sm text-muted-foreground">
               <p>Use credits to generate images, videos, and scripts</p>
               {isLow && !isEmpty && (
-                <p className="text-yellow-600 mt-1">
-                  ⚠️ Balance is running low
-                </p>
+                <p className="text-yellow-600 mt-1">⚠️ Balance is running low</p>
               )}
               {isEmpty && (
                 <p className="text-red-600 mt-1">
@@ -270,15 +260,15 @@ export function ToolsBalance({
               <div className="mt-2">
                 <Badge
                   variant={
-                    isEmpty ? "destructive" : isLow ? "secondary" : "default"
+                    isEmpty ? 'destructive' : isLow ? 'secondary' : 'default'
                   }
                   className="text-xs"
                 >
                   {isEmpty
-                    ? "Пустой"
+                    ? 'Пустой'
                     : isLow
-                      ? "Низкий баланс"
-                      : "Хороший баланс"}
+                      ? 'Низкий баланс'
+                      : 'Хороший баланс'}
                 </Badge>
               </div>
               <p className="text-xs mt-2 text-muted-foreground">
@@ -309,11 +299,11 @@ export function ToolsBalance({
             variant="outline"
             size="sm"
             className={cn(
-              "h-8 flex items-center gap-1.5 px-2.5 cursor-pointer",
-              colorClasses[displayColor]
+              'h-8 flex items-center gap-1.5 px-2.5 cursor-pointer',
+              colorClasses[displayColor],
             )}
           >
-            <Coins className={cn("size-4", iconColorClasses[displayColor])} />
+            <Coins className={cn('size-4', iconColorClasses[displayColor])} />
             <span className="text-xs font-medium">{balance}</span>
           </Button>
         </DialogTrigger>
@@ -338,15 +328,15 @@ export function ToolsBalance({
               <div className="mt-2">
                 <Badge
                   variant={
-                    isEmpty ? "destructive" : isLow ? "secondary" : "default"
+                    isEmpty ? 'destructive' : isLow ? 'secondary' : 'default'
                   }
                   className="text-xs"
                 >
                   {isEmpty
-                    ? "Пустой"
+                    ? 'Пустой'
                     : isLow
-                      ? "Низкий баланс"
-                      : "Хороший баланс"}
+                      ? 'Низкий баланс'
+                      : 'Хороший баланс'}
                 </Badge>
               </div>
               <p className="text-xs mt-2 text-muted-foreground">
@@ -385,7 +375,7 @@ interface ToolsPricingProps {
 
 export function ToolsPricing({ className }: ToolsPricingProps) {
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn('space-y-3', className)}>
       <div className="text-center">
         <h3 className="font-semibold text-lg flex items-center justify-center gap-2">
           <Zap className="size-5 text-blue-500" />

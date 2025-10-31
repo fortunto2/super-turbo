@@ -1,13 +1,13 @@
-import { memo } from "react";
-import { CrossIcon } from "../";
-import { initialArtifactData, useArtifactLegacy } from "@/hooks/use-artifact";
-import { useArtifactContext } from "@/contexts/artifact-context";
+import { memo } from 'react';
+import { CrossIcon } from '../';
+import { initialArtifactData, useArtifactLegacy } from '@/hooks/use-artifact';
+import { useArtifactContext } from '@/contexts/artifact-context';
 import {
   saveArtifactToStorage,
   clearArtifactFromStorage,
-} from "@/lib/utils/artifact-persistence";
+} from '@/lib/utils/artifact-persistence';
 
-import { Button } from "@turbo-super/ui";
+import { Button } from '@turbo-super/ui';
 function PureArtifactCloseButton() {
   // Всегда вызываем оба хука
   const legacy = useArtifactLegacy();
@@ -22,7 +22,7 @@ function PureArtifactCloseButton() {
     chatId = context.chatId;
   } catch {
     // Fallback на legacy хук
-    console.log("🔍 ArtifactCloseButton: Context not available, using legacy");
+    console.log('🔍 ArtifactCloseButton: Context not available, using legacy');
     setArtifact = legacy.setArtifact;
   }
 
@@ -33,7 +33,7 @@ function PureArtifactCloseButton() {
       className="h-fit p-2 dark:hover:bg-zinc-700"
       onClick={() => {
         setArtifact((currentArtifact: any) => {
-          if (currentArtifact.status === "streaming") {
+          if (currentArtifact.status === 'streaming') {
             // Если генерация в процессе, скрываем но сохраняем
             return {
               ...currentArtifact,
@@ -41,14 +41,14 @@ function PureArtifactCloseButton() {
             };
           } else {
             // Если генерация завершена, полностью сбрасываем
-            return { ...initialArtifactData, status: "idle" };
+            return { ...initialArtifactData, status: 'idle' };
           }
         });
 
         // Умная очистка localStorage
-        if (chatId && typeof window !== "undefined") {
+        if (chatId && typeof window !== 'undefined') {
           const currentArtifact = (window as any).artifactInstance?.artifact;
-          if (currentArtifact && currentArtifact.status === "streaming") {
+          if (currentArtifact && currentArtifact.status === 'streaming') {
             // Для активных генераций сохраняем скрытое состояние
             const hiddenArtifact = {
               ...currentArtifact,

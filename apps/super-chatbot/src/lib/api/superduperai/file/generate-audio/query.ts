@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileService } from "@turbo-super/api";
-import { fileKeys } from "../query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { FileService } from '@turbo-super/api';
+import { fileKeys } from '../query';
 
 export const useFileGenerateAudio = () => {
   const queryClient = useQueryClient();

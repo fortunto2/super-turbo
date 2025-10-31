@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useProjectVideoRenderStore } from "@/lib/store";
-import type { EventHandler } from "@/lib/utils/event-source-store-factory";
+import { useProjectVideoRenderStore } from '@/lib/store';
+import type { EventHandler } from '@/lib/utils/event-source-store-factory';
 import {
   type IFileRead,
   type WSMessage,
   WSMessageTypeEnum,
   type IDataRead,
-} from "@turbo-super/api";
-import { useQueryClient } from "@tanstack/react-query";
-import { projectKeys } from "@/lib/api";
-import { unshiftOrReplace } from "@/lib/utils/array";
+} from '@turbo-super/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { projectKeys } from '@/lib/api';
+import { unshiftOrReplace } from '@/lib/utils/array';
 
 export const useProjectVideoEventHandler = (
-  projectId: string
+  projectId: string,
 ): EventHandler => {
   const { setState } = useProjectVideoRenderStore();
   const queryClient = useQueryClient();
@@ -28,7 +28,7 @@ export const useProjectVideoEventHandler = (
     } else if (eventData.type === WSMessageTypeEnum.DATA) {
       // Обрабатываем события типа "data" для обновления данных проекта
       const object = eventData.object as IDataRead;
-      console.log("📊 Project data updated:", object);
+      console.log('📊 Project data updated:', object);
 
       const queryKey = projectKeys.getById({ id: projectId }).queryKey;
 
@@ -37,11 +37,11 @@ export const useProjectVideoEventHandler = (
 
         return {
           ...oldData,
-          data: unshiftOrReplace(oldData.data || [], object, "type"),
+          data: unshiftOrReplace(oldData.data || [], object, 'type'),
         };
       });
     } else {
-      console.log("🎬 Unhandled event type:", eventData.type, eventData);
+      console.log('🎬 Unhandled event type:', eventData.type, eventData);
     }
   };
 };

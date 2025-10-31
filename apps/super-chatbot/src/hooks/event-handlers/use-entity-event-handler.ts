@@ -1,10 +1,10 @@
-import { entityKeys } from "@/lib/api";
-import type { EventHandler } from "@/lib/utils/event-source-store-factory";
-import { useQueryClient } from "@tanstack/react-query";
-import { type WSMessage, WSMessageTypeEnum } from "@turbo-super/api";
-import type { IEntityRead } from "@turbo-super/api";
-import type { IResponsePaginated_IEntityRead_ } from "@turbo-super/api";
-import { unshiftOrReplace } from "@/lib/utils/array";
+import { entityKeys } from '@/lib/api';
+import type { EventHandler } from '@/lib/utils/event-source-store-factory';
+import { useQueryClient } from '@tanstack/react-query';
+import { type WSMessage, WSMessageTypeEnum } from '@turbo-super/api';
+import type { IEntityRead } from '@turbo-super/api';
+import type { IResponsePaginated_IEntityRead_ } from '@turbo-super/api';
+import { unshiftOrReplace } from '@/lib/utils/array';
 
 export const useEntityEventHandler = (projectId?: string): EventHandler => {
   const queryClient = useQueryClient();
@@ -12,7 +12,9 @@ export const useEntityEventHandler = (projectId?: string): EventHandler => {
   return (eventData: WSMessage) => {
     if (eventData.type === WSMessageTypeEnum.ENTITY) {
       const object: IEntityRead = eventData.object as IEntityRead;
-      const listQueryKey = entityKeys.list({ ...(projectId && { projectId }) }).queryKey;
+      const listQueryKey = entityKeys.list({
+        ...(projectId && { projectId }),
+      }).queryKey;
       const entityQueryKey = entityKeys.getById({
         id: object.id,
       }).queryKey;
@@ -22,9 +24,9 @@ export const useEntityEventHandler = (projectId?: string): EventHandler => {
         (oldData: IResponsePaginated_IEntityRead_) => {
           return {
             ...oldData,
-            items: unshiftOrReplace(oldData.items, object, "id"),
+            items: unshiftOrReplace(oldData.items, object, 'id'),
           };
-        }
+        },
       );
 
       queryClient.setQueryData(entityQueryKey, () => {

@@ -4,8 +4,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { getAdminOverviewStats } from "@/lib/db/admin-queries";
+} from '@turbo-super/ui';
+import { getAdminOverviewStats } from '@/lib/db/admin-queries';
 import {
   Users,
   CreditCard,
@@ -14,39 +14,39 @@ import {
   UserCog,
   FolderOpen,
   Monitor,
-} from "lucide-react";
+} from 'lucide-react';
 
 export default async function AdminPage() {
   const stats = await getAdminOverviewStats();
 
   const statCards = [
     {
-      title: "Total Users",
+      title: 'Total Users',
       value: stats.totalUsers,
       description: `${stats.guestUsers} guests, ${stats.regularUsers} registered`,
       icon: Users,
-      color: "text-blue-500",
+      color: 'text-blue-500',
     },
     {
-      title: "Total Credits",
+      title: 'Total Credits',
       value: stats.totalCredits,
       description: `Average: ${stats.averageCredits} per user`,
       icon: CreditCard,
-      color: "text-green-500",
+      color: 'text-green-500',
     },
     {
-      title: "Documents Created",
+      title: 'Documents Created',
       value: stats.totalDocuments,
       description: `${stats.imagesCount} images, ${stats.videosCount} videos`,
       icon: FileText,
-      color: "text-purple-500",
+      color: 'text-purple-500',
     },
     {
-      title: "Recent Activity",
+      title: 'Recent Activity',
       value: stats.recentTransactions,
-      description: "Transactions in last 24h",
+      description: 'Transactions in last 24h',
       icon: Activity,
-      color: "text-orange-500",
+      color: 'text-orange-500',
     },
   ];
 
@@ -105,9 +105,9 @@ export default async function AdminPage() {
                     <div>
                       <p className="text-sm font-medium">{user.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        {user.type === "guest"
-                          ? "Guest User"
-                          : "Registered User"}
+                        {user.type === 'guest'
+                          ? 'Guest User'
+                          : 'Registered User'}
                       </p>
                     </div>
                   </div>
@@ -116,10 +116,10 @@ export default async function AdminPage() {
                       {user.balance} credits
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Created{" "}
+                      Created{' '}
                       {user.createdAt
                         ? new Date(user.createdAt).toLocaleDateString()
-                        : "Unknown"}
+                        : 'Unknown'}
                     </p>
                   </div>
                 </div>

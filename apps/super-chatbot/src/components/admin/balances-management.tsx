@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button, Input, cn } from "@turbo-super/ui";
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Badge, Button, Input, cn } from '@turbo-super/ui';
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from '../ui/table';
 import {
   Search,
   Plus,
@@ -19,8 +19,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
-} from "lucide-react";
-import { BulkBalanceDialog } from "./bulk-balance-dialog";
+} from 'lucide-react';
+import { BulkBalanceDialog } from './bulk-balance-dialog';
 
 interface BalancesManagementProps {
   page: number;
@@ -31,7 +31,7 @@ interface User {
   id: string;
   email: string;
   balance: number;
-  type: "guest" | "regular";
+  type: 'guest' | 'regular';
 }
 
 export function BalancesManagement({ page, search }: BalancesManagementProps) {
@@ -63,15 +63,15 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
         setLoading(true);
 
         const params = new URLSearchParams();
-        params.set("page", page.toString());
+        params.set('page', page.toString());
         if (search) {
-          params.set("search", search);
+          params.set('search', search);
         }
 
         const response = await fetch(`/api/admin/users?${params.toString()}`);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch users");
+          throw new Error('Failed to fetch users');
         }
 
         const data = await response.json();
@@ -82,12 +82,12 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
         const balances = data.users.map((u: User) => u.balance);
         const totalBalance = balances.reduce(
           (sum: number, balance: number) => sum + balance,
-          0
+          0,
         );
         const averageBalance =
           balances.length > 0 ? totalBalance / balances.length : 0;
         const lowBalanceCount = balances.filter(
-          (balance: number) => balance <= 10
+          (balance: number) => balance <= 10,
         ).length;
 
         setStats({
@@ -96,7 +96,7 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
           lowBalanceCount,
         });
       } catch (error) {
-        console.error("Failed to load users:", error);
+        console.error('Failed to load users:', error);
       } finally {
         setLoading(false);
       }
@@ -110,18 +110,18 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (searchQuery) {
-      params.set("search", searchQuery);
+      params.set('search', searchQuery);
     } else {
-      params.delete("search");
+      params.delete('search');
     }
-    params.delete("page"); // Reset to first page
+    params.delete('page'); // Reset to first page
     router.push(`/admin/balances?${params.toString()}`);
   };
 
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set("page", newPage.toString());
+    params.set('page', newPage.toString());
     router.push(`/admin/balances?${params.toString()}`);
   };
 
@@ -153,21 +153,21 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
       const newBalance = Math.max(0, user.balance + amount);
 
       const response = await fetch(`/api/admin/users/${userId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ balance: newBalance }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update balance");
+        throw new Error('Failed to update balance');
       }
 
       const updatedUser = await response.json();
       setUsers(users.map((u) => (u.id === userId ? updatedUser : u)));
     } catch (error) {
-      console.error("Failed to update balance:", error);
+      console.error('Failed to update balance:', error);
     }
   };
 
@@ -219,10 +219,7 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
 
       {/* Search and Actions */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <form
-          onSubmit={handleSearch}
-          className="flex gap-2 flex-1"
-        >
+        <form onSubmit={handleSearch} className="flex gap-2 flex-1">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -311,9 +308,9 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
                 <TableCell className="font-medium">{user.email}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={user.type === "regular" ? "default" : "secondary"}
+                    variant={user.type === 'regular' ? 'default' : 'secondary'}
                   >
-                    {user.type === "regular" ? "Registered" : "Guest"}
+                    {user.type === 'regular' ? 'Registered' : 'Guest'}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -321,12 +318,12 @@ export function BalancesManagement({ page, search }: BalancesManagementProps) {
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <span
                       className={cn(
-                        "font-medium",
+                        'font-medium',
                         user.balance <= 10
-                          ? "text-red-500"
+                          ? 'text-red-500'
                           : user.balance <= 50
-                            ? "text-yellow-500"
-                            : "text-green-500"
+                            ? 'text-yellow-500'
+                            : 'text-green-500',
                       )}
                     >
                       {user.balance}

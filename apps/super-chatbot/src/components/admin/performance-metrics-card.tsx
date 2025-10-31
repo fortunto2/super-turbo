@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@turbo-super/ui";
-import { Badge } from "@turbo-super/ui";
-import { Cpu } from "lucide-react";
+} from '@turbo-super/ui';
+import { Badge } from '@turbo-super/ui';
+import { Cpu } from 'lucide-react';
 
 interface PerformanceMetrics {
   cpuUsage: number;
@@ -26,16 +26,16 @@ export function PerformanceMetricsCard() {
   useEffect(() => {
     const fetchPerformanceMetrics = async () => {
       try {
-        const response = await fetch("/api/metrics");
+        const response = await fetch('/api/metrics');
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch performance metrics");
+          throw new Error(data.error || 'Failed to fetch performance metrics');
         }
 
         // Извлекаем метрики из ответа
         const memoryUsage = data.data?.summary?.memoryUsage || 0;
-        
+
         setMetrics({
           cpuUsage: 0, // Не доступно в упрощенной системе
           memoryUsage: memoryUsage,
@@ -44,7 +44,7 @@ export function PerformanceMetricsCard() {
         });
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching performance metrics:", err);
+        console.error('Error fetching performance metrics:', err);
       } finally {
         setLoading(false);
       }
@@ -112,34 +112,32 @@ export function PerformanceMetricsCard() {
           <Cpu className="h-5 w-5" />
           Performance Metrics
         </CardTitle>
-        <CardDescription>
-          System performance and resource usage
-        </CardDescription>
+        <CardDescription>System performance and resource usage</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm">CPU Usage</span>
             <Badge variant="secondary">
-              {metrics.cpuUsage > 0 ? `${metrics.cpuUsage}%` : "N/A"}
+              {metrics.cpuUsage > 0 ? `${metrics.cpuUsage}%` : 'N/A'}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Memory Usage</span>
             <Badge variant="secondary">
-              {metrics.memoryUsage > 0 ? `${metrics.memoryUsage}%` : "N/A"}
+              {metrics.memoryUsage > 0 ? `${metrics.memoryUsage}%` : 'N/A'}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Disk Usage</span>
             <Badge variant="secondary">
-              {metrics.diskUsage > 0 ? `${metrics.diskUsage}%` : "N/A"}
+              {metrics.diskUsage > 0 ? `${metrics.diskUsage}%` : 'N/A'}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">Network I/O</span>
             <Badge variant="secondary">
-              {metrics.networkIO > 0 ? `${metrics.networkIO} MB/s` : "N/A"}
+              {metrics.networkIO > 0 ? `${metrics.networkIO} MB/s` : 'N/A'}
             </Badge>
           </div>
         </div>

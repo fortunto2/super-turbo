@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { cn } from "@turbo-super/ui";
+import * as React from 'react';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import { cn } from '@turbo-super/ui';
 
 interface ScrollAreaProps
   extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
-  scrollBehavior?: "always" | "hover" | "scroll";
+  scrollBehavior?: 'always' | 'hover' | 'scroll';
   hideDelay?: number;
 }
 
@@ -18,11 +18,11 @@ const ScrollArea = React.forwardRef<
     {
       className,
       children,
-      scrollBehavior = "hover",
+      scrollBehavior = 'hover',
       hideDelay = 600,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isHovered, setIsHovered] = React.useState(false);
     const [isScrolling, setIsScrolling] = React.useState(false);
@@ -36,7 +36,7 @@ const ScrollArea = React.forwardRef<
     }, []);
 
     const hideScrollbars = React.useCallback(() => {
-      if (scrollBehavior === "hover" && !isHovered) {
+      if (scrollBehavior === 'hover' && !isHovered) {
         hideTimeoutRef.current = setTimeout(() => {
           setIsScrolling(false);
         }, hideDelay);
@@ -45,20 +45,20 @@ const ScrollArea = React.forwardRef<
 
     const handleMouseEnter = React.useCallback(() => {
       setIsHovered(true);
-      if (scrollBehavior === "hover") {
+      if (scrollBehavior === 'hover') {
         showScrollbars();
       }
     }, [scrollBehavior, showScrollbars]);
 
     const handleMouseLeave = React.useCallback(() => {
       setIsHovered(false);
-      if (scrollBehavior === "hover") {
+      if (scrollBehavior === 'hover') {
         hideScrollbars();
       }
     }, [scrollBehavior, hideScrollbars]);
 
     const handleScroll = React.useCallback(() => {
-      if (scrollBehavior === "scroll") {
+      if (scrollBehavior === 'scroll') {
         showScrollbars();
         hideScrollbars();
       }
@@ -73,14 +73,14 @@ const ScrollArea = React.forwardRef<
     }, []);
 
     const shouldShowScrollbars =
-      scrollBehavior === "always" ||
-      (scrollBehavior === "hover" && (isHovered || isScrolling)) ||
-      (scrollBehavior === "scroll" && isScrolling);
+      scrollBehavior === 'always' ||
+      (scrollBehavior === 'hover' && (isHovered || isScrolling)) ||
+      (scrollBehavior === 'scroll' && isScrolling);
 
     return (
       <ScrollAreaPrimitive.Root
         ref={ref}
-        className={cn("relative overflow-hidden", className)}
+        className={cn('relative overflow-hidden', className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...props}
@@ -94,38 +94,38 @@ const ScrollArea = React.forwardRef<
         <ScrollBar
           orientation="vertical"
           className={cn(
-            "transition-opacity duration-300",
-            shouldShowScrollbars ? "opacity-100" : "opacity-0"
+            'transition-opacity duration-300',
+            shouldShowScrollbars ? 'opacity-100' : 'opacity-0',
           )}
         />
         <ScrollBar
           orientation="horizontal"
           className={cn(
-            "transition-opacity duration-300",
-            shouldShowScrollbars ? "opacity-100" : "opacity-0"
+            'transition-opacity duration-300',
+            shouldShowScrollbars ? 'opacity-100' : 'opacity-0',
           )}
         />
         <ScrollAreaPrimitive.Corner />
       </ScrollAreaPrimitive.Root>
     );
-  }
+  },
 );
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 const ScrollBar = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
->(({ className, orientation = "vertical", ...props }, ref) => (
+>(({ className, orientation = 'vertical', ...props }, ref) => (
   <ScrollAreaPrimitive.ScrollAreaScrollbar
     ref={ref}
     orientation={orientation}
     className={cn(
-      "flex touch-none select-none transition-colors",
-      orientation === "vertical" &&
-        "h-full w-2.5 border-l border-l-transparent p-[1px]",
-      orientation === "horizontal" &&
-        "h-2.5 flex-col border-t border-t-transparent p-[1px]",
-      className
+      'flex touch-none select-none transition-colors',
+      orientation === 'vertical' &&
+        'h-full w-2.5 border-l border-l-transparent p-[1px]',
+      orientation === 'horizontal' &&
+        'h-2.5 flex-col border-t border-t-transparent p-[1px]',
+      className,
     )}
     {...props}
   >

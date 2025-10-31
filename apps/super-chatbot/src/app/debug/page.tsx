@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { MessageReasoningDebug } from "@/components/messages/message-reasoning-debug";
+import { useState } from 'react';
+import { MessageReasoningDebug } from '@/components/messages/message-reasoning-debug';
 
 export default function DebugPage() {
   const [exampleText, setExampleText] = useState(`<think>
@@ -14,10 +14,10 @@ export default function DebugPage() {
 А этот текст должен остаться как основной контент сообщения.`);
 
   const mockMessage = {
-    id: "test-message",
-    role: "assistant",
+    id: 'test-message',
+    role: 'assistant',
     content: exampleText,
-    parts: [{ type: "text", text: exampleText }],
+    parts: [{ type: 'text', text: exampleText }],
   };
 
   return (
@@ -61,9 +61,9 @@ export default function DebugPage() {
             isLoading={false}
             reasoning="Это текст рассуждений как отдельное свойство"
             message={{
-              id: "test-reason-prop",
-              role: "assistant",
-              reasoning: "Это текст рассуждений как отдельное свойство",
+              id: 'test-reason-prop',
+              role: 'assistant',
+              reasoning: 'Это текст рассуждений как отдельное свойство',
             }}
           />
         </div>
@@ -76,12 +76,12 @@ export default function DebugPage() {
             isLoading={false}
             reasoning="Текст не важен"
             message={{
-              id: "test-parts",
-              role: "assistant",
+              id: 'test-parts',
+              role: 'assistant',
               parts: [
                 {
-                  type: "reasoning",
-                  reasoning: "Это рассуждение в части сообщения",
+                  type: 'reasoning',
+                  reasoning: 'Это рассуждение в части сообщения',
                 },
               ],
             }}

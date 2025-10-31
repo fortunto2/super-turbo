@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
-import { BackButton } from "@/components/shared/back-button";
-import { EntityForm } from "@/components/entity/entity-form";
-import { useEntityCreate } from "@/lib/api/superduperai/entity/create/query";
-import { EntityTypeEnum, type IEntityCreate } from "@turbo-super/api";
-import type { EntityData } from "@/components/entity/entity-form";
+import { useParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { BackButton } from '@/components/shared/back-button';
+import { EntityForm } from '@/components/entity/entity-form';
+import { useEntityCreate } from '@/lib/api/superduperai/entity/create/query';
+import { EntityTypeEnum, type IEntityCreate } from '@turbo-super/api';
+import type { EntityData } from '@/components/entity/entity-form';
 
 export default function AddEntityPage() {
   const params = useParams();
   const projectId = params.projectId as string;
 
   const [selectedType, setSelectedType] = useState<EntityTypeEnum>(
-    EntityTypeEnum.CHARACTER
+    EntityTypeEnum.CHARACTER,
   );
   const [isCreating, setIsCreating] = useState(false);
 
@@ -37,36 +37,36 @@ export default function AddEntityPage() {
           window.location.href = backRoute;
         },
         onError: (error: any) => {
-          console.error("Failed to create entity:", error);
+          console.error('Failed to create entity:', error);
           setIsCreating(false);
         },
-      }
+      },
     );
   };
 
   const entityTypes = [
     {
       type: EntityTypeEnum.CHARACTER,
-      label: "Character",
-      icon: "👤",
-      description: "Create a character for your video",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      label: 'Character',
+      icon: '👤',
+      description: 'Create a character for your video',
+      color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
     },
     {
       type: EntityTypeEnum.LOCATION,
-      label: "Location",
-      icon: "📍",
-      description: "Define a location or setting",
+      label: 'Location',
+      icon: '📍',
+      description: 'Define a location or setting',
       color:
-        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
     },
     {
       type: EntityTypeEnum.OBJECT,
-      label: "Object",
-      icon: "📦",
-      description: "Add an object or prop",
+      label: 'Object',
+      icon: '📦',
+      description: 'Add an object or prop',
       color:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+        'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
     },
   ];
 
@@ -124,8 +124,8 @@ export default function AddEntityPage() {
                           onClick={() => setSelectedType(entityType.type)}
                           className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${
                             selectedType === entityType.type
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:border-primary/50"
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
                           }`}
                         >
                           <div className="flex items-center space-x-3">
@@ -172,7 +172,7 @@ export default function AddEntityPage() {
             <div className="inline-flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-md">
               <div className="size-2 bg-primary rounded-full animate-pulse" />
               <span className="text-xs text-muted-foreground">
-                Powered by{" "}
+                Powered by{' '}
                 <strong className="text-foreground">SuperDuperAI</strong>
               </span>
             </div>

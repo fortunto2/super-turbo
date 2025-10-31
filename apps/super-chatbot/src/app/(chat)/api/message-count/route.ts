@@ -1,14 +1,14 @@
-import { auth } from "@/app/(auth)/auth";
-import { getMessageCountByUserId } from "@/lib/db/queries";
-import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import type { UserType } from "@/app/(auth)/auth";
+import { auth } from '@/app/(auth)/auth';
+import { getMessageCountByUserId } from '@/lib/db/queries';
+import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import type { UserType } from '@/app/(auth)/auth';
 
 export async function GET() {
   try {
     const session = await auth();
 
     if (!session?.user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userType = session.user.type as UserType;
@@ -29,10 +29,10 @@ export async function GET() {
       userType,
     });
   } catch (error) {
-    console.error("Error fetching message count:", error);
+    console.error('Error fetching message count:', error);
     return Response.json(
-      { error: "Failed to fetch message count" },
-      { status: 500 }
+      { error: 'Failed to fetch message count' },
+      { status: 500 },
     );
   }
 }

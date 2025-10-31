@@ -1,10 +1,9 @@
-import { Button } from "@turbo-super/ui";
-import type { GeneratedImage } from "../hooks/use-image-generator";
-import { formatTimestamp } from "@/lib/utils/format";
-import { X } from "lucide-react";
-import { Inpainting } from "@turbo-super/features";
-import { API_NEXT_ROUTES } from "@/lib/config/next-api-routes";
-import { useState } from "react";
+import { Button } from '@turbo-super/ui';
+import type { GeneratedImage } from '../hooks/use-image-generator';
+import { X } from 'lucide-react';
+import { Inpainting } from '@turbo-super/features';
+import { API_NEXT_ROUTES } from '@/lib/config/next-api-routes';
+import { useState } from 'react';
 
 export const ImagePreviewModal = ({
   image,
@@ -20,7 +19,7 @@ export const ImagePreviewModal = ({
     projectId: string,
     prompt: string,
     sourceImage: GeneratedImage,
-    fileId?: string
+    fileId?: string,
   ) => Promise<void>;
   isGenerating: boolean;
 }) => {
@@ -35,25 +34,25 @@ export const ImagePreviewModal = ({
       setIsInpainting(true);
 
       const formData = new FormData();
-      formData.append("prompt", result.prompt);
-      formData.append("mask", result.mask);
-      formData.append("config", result.config);
-      formData.append("generationType", "image-to-image");
-      formData.append("mask", result.mask);
-      formData.append("sourceImageId", image.id);
-      formData.append("sourceImageUrl", image.url);
-      formData.append("model", "comfyui/flux/inpainting");
+      formData.append('prompt', result.prompt);
+      formData.append('mask', result.mask);
+      formData.append('config', result.config);
+      formData.append('generationType', 'image-to-image');
+      formData.append('mask', result.mask);
+      formData.append('sourceImageId', image.id);
+      formData.append('sourceImageUrl', image.url);
+      formData.append('model', 'comfyui/flux/inpainting');
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
+        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${API_NEXT_ROUTES.GENERATE_IMAGE}`,
         {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        }
+        },
       );
 
       const data = await response.json();
-      console.log("Inpainting response:", data);
+      console.log('Inpainting response:', data);
 
       // If successful, start polling for the result
       if (data.success && data.projectId) {
@@ -64,14 +63,14 @@ export const ImagePreviewModal = ({
           data.projectId,
           result.prompt,
           image,
-          image.fileId || image.id || data.projectId
+          image.fileId || image.id || data.projectId,
         );
       } else {
         // If failed, unblock the button
         setIsInpainting(false);
       }
     } catch (error) {
-      console.error("Error during inpainting:", error);
+      console.error('Error during inpainting:', error);
       // Unblock the button on error
       setIsInpainting(false);
     }
@@ -96,19 +95,6 @@ export const ImagePreviewModal = ({
             onComplete={handleInpaintingComplete}
             isGenerating={isGenerating || isInpainting}
           />
-        </div>
-
-        <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white p-4 rounded-b-lg">
-          <p className="text-sm font-medium line-clamp-2">{image.prompt}</p>
-          <p className="text-xs text-gray-300 mt-1">
-            {formatTimestamp(image.timestamp)}
-          </p>
-          {isInpainting && (
-            <div className="mt-2 flex items-center space-x-2 text-blue-300">
-              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs">Starting inpainting...</span>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
-import { auth } from "@/app/(auth)/auth";
-import type { ArtifactKind } from "@/components/artifacts/artifact";
+import { auth } from '@/app/(auth)/auth';
+import type { ArtifactKind } from '@/components/artifacts/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
@@ -8,34 +8,34 @@ import {
   getPublicDocuments,
   incrementDocumentViewCount,
   updateDocumentThumbnail,
-} from "@/lib/db/queries";
+} from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-  const listMode = searchParams.get("list") === "true";
+  const id = searchParams.get('id');
+  const listMode = searchParams.get('list') === 'true';
 
   const session = await auth();
 
   // AICODE-NOTE: Handle gallery list mode
   if (listMode) {
     // Parse query parameters
-    const kind = searchParams.get("kind") as ArtifactKind | undefined;
-    const model = searchParams.get("model") || undefined;
+    const kind = searchParams.get('kind') as ArtifactKind | undefined;
+    const model = searchParams.get('model') || undefined;
     const visibility =
-      (searchParams.get("visibility") as "mine" | "public" | "all") || "all";
-    const search = searchParams.get("search") || undefined;
-    const dateFromParam = searchParams.get("dateFrom");
-    const dateToParam = searchParams.get("dateTo");
+      (searchParams.get('visibility') as 'mine' | 'public' | 'all') || 'all';
+    const search = searchParams.get('search') || undefined;
+    const dateFromParam = searchParams.get('dateFrom');
+    const dateToParam = searchParams.get('dateTo');
     const dateFrom = dateFromParam ? new Date(dateFromParam) : undefined;
     const dateTo = dateToParam ? new Date(dateToParam) : undefined;
     const sortBy =
-      (searchParams.get("sort") as "newest" | "oldest" | "popular") || "newest";
-    const page = Number.parseInt(searchParams.get("page") || "1", 10);
-    const limit = Number.parseInt(searchParams.get("limit") || "20", 10);
+      (searchParams.get('sort') as 'newest' | 'oldest' | 'popular') || 'newest';
+    const page = Number.parseInt(searchParams.get('page') || '1', 10);
+    const limit = Number.parseInt(searchParams.get('limit') || '20', 10);
 
     // For public-only documents, no auth required
-    if (visibility === "public") {
+    if (visibility === 'public') {
       const result = await getPublicDocuments({
         ...(kind && { kind }),
         ...(model && { model }),
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
     // For user's documents or mixed, auth required
     if (!session?.user?.id) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     const result = await getDocuments({
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
 
   // Original single document mode
   if (!id) {
-    return new Response("Missing id", { status: 400 });
+    return new Response('Missing id', { status: 400 });
   }
 
   const documents = await getDocumentsById({ id });
@@ -80,22 +80,22 @@ export async function GET(request: Request) {
   const [document] = documents;
 
   if (!document) {
-    return new Response("Not found", { status: 404 });
+    return new Response('Not found', { status: 404 });
   }
 
   // Check if document is public or owned by user
-  if (document.visibility === "public") {
+  if (document.visibility === 'public') {
     // Increment view count for public documents
     await incrementDocumentViewCount({ id });
     return Response.json(documents, { status: 200 });
   } else {
     // For private documents, require authentication
     if (!session?.user?.id) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     if (document.userId !== session.user.id) {
-      return new Response("Forbidden", { status: 403 });
+      return new Response('Forbidden', { status: 403 });
     }
 
     return Response.json(documents, { status: 200 });
@@ -104,16 +104,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+  const id = searchParams.get('id');
 
   if (!id) {
-    return new Response("Missing id", { status: 400 });
+    return new Response('Missing id', { status: 400 });
   }
 
   const session = await auth();
 
   if (!session?.user?.id) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response('Unauthorized', { status: 401 });
   }
 
   const {
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
     const [document] = documents;
 
     if (document && document.userId !== session.user.id) {
-      return new Response("Forbidden", { status: 403 });
+      return new Response('Forbidden', { status: 403 });
     }
   }
 
@@ -152,16 +152,16 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+  const id = searchParams.get('id');
 
   if (!id) {
-    return new Response("Missing id", { status: 400 });
+    return new Response('Missing id', { status: 400 });
   }
 
   const session = await auth();
 
   if (!session?.user?.id) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response('Unauthorized', { status: 401 });
   }
 
   const body = await request.json();
@@ -180,21 +180,21 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-  const timestamp = searchParams.get("timestamp");
+  const id = searchParams.get('id');
+  const timestamp = searchParams.get('timestamp');
 
   if (!id) {
-    return new Response("Missing id", { status: 400 });
+    return new Response('Missing id', { status: 400 });
   }
 
   if (!timestamp) {
-    return new Response("Missing timestamp", { status: 400 });
+    return new Response('Missing timestamp', { status: 400 });
   }
 
   const session = await auth();
 
   if (!session?.user?.id) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response('Unauthorized', { status: 401 });
   }
 
   const documents = await getDocumentsById({ id });
@@ -202,7 +202,7 @@ export async function DELETE(request: Request) {
   const [document] = documents;
 
   if (document && document.userId !== session.user.id) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response('Unauthorized', { status: 401 });
   }
 
   const documentsDeleted = await deleteDocumentsByIdAfterTimestamp({

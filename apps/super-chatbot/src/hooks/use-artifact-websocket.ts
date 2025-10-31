@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useCallback, useRef } from "react";
-import { useArtifactLegacy } from "@/hooks/use-artifact";
-import { imageWebsocketStore } from "@/artifacts/image/stores/image-websocket-store";
-import { getSuperduperAIConfig } from "@/lib/config/superduperai";
-import type { ImageEventHandler } from "@/artifacts/image/stores/image-websocket-store";
+import { useEffect, useCallback, useRef } from 'react';
+import { useArtifactLegacy } from '@/hooks/use-artifact';
+import { imageWebsocketStore } from '@/artifacts/image/stores/image-websocket-store';
+import { getSuperduperAIConfig } from '@/lib/config/superduperai';
+import type { ImageEventHandler } from '@/artifacts/image/stores/image-websocket-store';
 
 interface UseArtifactWebSocketOptions {
   enabled?: boolean;
@@ -23,7 +23,7 @@ export const useArtifactWebSocket = ({
   const getArtifactInfo = useCallback(() => {
     if (
       !artifact.content ||
-      (artifact.kind !== "image" && artifact.kind !== "video")
+      (artifact.kind !== 'image' && artifact.kind !== 'video')
     ) {
       return { projectId: null, requestId: null };
     }
@@ -35,7 +35,7 @@ export const useArtifactWebSocket = ({
         requestId: parsedContent.requestId || null,
       };
     } catch (error) {
-      console.log("🔌 Artifact WebSocket: Could not parse artifact content");
+      console.log('🔌 Artifact WebSocket: Could not parse artifact content');
       return { projectId: null, requestId: null };
     }
   }, [artifact.content, artifact.kind]);
@@ -44,7 +44,7 @@ export const useArtifactWebSocket = ({
   const createEventHandler = useCallback(
     (projectId: string, requestId: string): ImageEventHandler => {
       return (eventData) => {
-        console.log("🔌 Artifact WebSocket: Received event:", {
+        console.log('🔌 Artifact WebSocket: Received event:', {
           type: eventData.type,
           projectId: eventData.projectId,
           requestId: eventData.requestId,
@@ -53,77 +53,77 @@ export const useArtifactWebSocket = ({
           objectType: eventData.object?.type,
         });
 
-        if (eventData.type === "file" && eventData.object?.url) {
+        if (eventData.type === 'file' && eventData.object?.url) {
           const mediaUrl = eventData.object.url;
           const mediaType = eventData.object.type; // 'image' or 'video'
 
           console.log(
-            "🔌 Artifact WebSocket: Updating artifact with completed media:",
+            '🔌 Artifact WebSocket: Updating artifact with completed media:',
             {
               url: mediaUrl,
               type: mediaType,
-            }
+            },
           );
 
           setArtifact((currentArtifact) => {
             if (
-              currentArtifact.kind !== "image" &&
-              currentArtifact.kind !== "video"
+              currentArtifact.kind !== 'image' &&
+              currentArtifact.kind !== 'video'
             ) {
               console.log(
-                "🔌 Artifact WebSocket: Skipping update - not a media artifact"
+                '🔌 Artifact WebSocket: Skipping update - not a media artifact',
               );
               return currentArtifact;
             }
 
             try {
               const currentContent = JSON.parse(
-                currentArtifact.content || "{}"
+                currentArtifact.content || '{}',
               );
 
               // Check if this update is for our artifact
               const isMatch =
                 currentContent.projectId === projectId ||
                 currentContent.requestId === requestId ||
-                currentContent.status === "pending" ||
-                currentContent.status === "streaming";
+                currentContent.status === 'pending' ||
+                currentContent.status === 'streaming';
 
               if (!isMatch) {
                 console.log(
-                  "🔌 Artifact WebSocket: Event not matching current artifact, ignoring"
+                  '🔌 Artifact WebSocket: Event not matching current artifact, ignoring',
                 );
                 return currentArtifact;
               }
 
               // AICODE-FIX: Set appropriate URL field based on artifact type and media type
-              const isVideoArtifact = currentArtifact.kind === "video";
-              const isVideoMedia = mediaType === "video";
+              const isVideoArtifact = currentArtifact.kind === 'video';
+              const isVideoMedia = mediaType === 'video';
 
               let updatedContent: any;
               if (isVideoArtifact || isVideoMedia) {
                 updatedContent = {
                   ...currentContent,
-                  status: "completed",
+                  status: 'completed',
                   videoUrl: mediaUrl,
                   requestId: requestId || currentContent.requestId,
                   projectId: projectId || currentContent.projectId,
                   timestamp: Date.now(),
-                  message: "Video generation completed!",
+                  message: 'Video generation completed!',
                 };
               } else {
                 updatedContent = {
                   ...currentContent,
-                  status: "completed",
+                  status: 'completed',
                   imageUrl: mediaUrl,
                   requestId: requestId || currentContent.requestId,
                   projectId: projectId || currentContent.projectId,
                   timestamp: Date.now(),
-                  message: "Image generation completed!",
+                  message: 'Image generation completed!',
                 };
               }
 
               console.log(
-                "🔌 Artifact WebSocket: Successfully updated artifact content:",
+                '🔌 Artifact WebSocket: Successfully updated artifact content:',
                 {
                   previousStatus: currentContent.status,
                   newStatus: updatedContent.status,
@@ -132,31 +132,31 @@ export const useArtifactWebSocket = ({
                   ),
                   artifactKind: currentArtifact.kind,
                   mediaType: mediaType,
-                }
+                },
               );
 
               return {
                 ...currentArtifact,
                 content: JSON.stringify(updatedContent),
-                status: "idle" as const,
+                status: 'idle' as const,
               };
             } catch (error) {
               console.error(
-                "🔌 Artifact WebSocket: Error updating artifact:",
-                error
+                '🔌 Artifact WebSocket: Error updating artifact:',
+                error,
               );
               return currentArtifact;
             }
           });
-        } else if (eventData.type === "subscribe") {
+        } else if (eventData.type === 'subscribe') {
           console.log(
-            "🔌 Artifact WebSocket: Successfully subscribed to project:",
-            projectId
+            '🔌 Artifact WebSocket: Successfully subscribed to project:',
+            projectId,
           );
         }
       };
     },
-    [setArtifact]
+    [setArtifact],
   );
 
   // Connect to WebSocket when artifact has projectId
@@ -173,13 +173,13 @@ export const useArtifactWebSocket = ({
     // Skip if already connected to this project
     if (currentProjectIdRef.current === projectId) {
       console.log(
-        "🔌 Artifact WebSocket: Already connected to project:",
-        projectId
+        '🔌 Artifact WebSocket: Already connected to project:',
+        projectId,
       );
       return;
     }
 
-    console.log("🔌 Artifact WebSocket: Connecting to project:", {
+    console.log('🔌 Artifact WebSocket: Connecting to project:', {
       projectId,
       requestId,
       artifactStatus: artifact.status,
@@ -189,14 +189,14 @@ export const useArtifactWebSocket = ({
 
     // Clean up previous connection
     if (eventHandlerRef.current && currentProjectIdRef.current) {
-      console.log("🔌 Artifact WebSocket: Cleaning up previous connection");
+      console.log('🔌 Artifact WebSocket: Cleaning up previous connection');
       imageWebsocketStore.removeProjectHandlers(currentProjectIdRef.current, [
         eventHandlerRef.current,
       ]);
     }
 
     // Create new event handler
-    const eventHandler = createEventHandler(projectId, requestId || "");
+    const eventHandler = createEventHandler(projectId, requestId || '');
     eventHandlerRef.current = eventHandler;
     currentProjectIdRef.current = projectId;
     currentRequestIdRef.current = requestId;
@@ -204,18 +204,18 @@ export const useArtifactWebSocket = ({
     // Connect to WebSocket
     const config = getSuperduperAIConfig();
     const baseUrl = config.wsURL
-      .replace("wss://", "https://")
-      .replace("ws://", "http://");
-    const url = `${baseUrl.replace("https://", "wss://")}/api/v1/ws/project.${projectId}`;
+      .replace('wss://', 'https://')
+      .replace('ws://', 'http://');
+    const url = `${baseUrl.replace('https://', 'wss://')}/api/v1/ws/project.${projectId}`;
 
-    console.log("🔌 Artifact WebSocket: Connecting to URL:", url);
+    console.log('🔌 Artifact WebSocket: Connecting to URL:', url);
     imageWebsocketStore.initConnection(url, [eventHandler]);
     isConnectedRef.current = true;
 
     // Cleanup function
     return () => {
       if (eventHandlerRef.current && currentProjectIdRef.current) {
-        console.log("🔌 Artifact WebSocket: Cleaning up connection on unmount");
+        console.log('🔌 Artifact WebSocket: Cleaning up connection on unmount');
         imageWebsocketStore.removeProjectHandlers(currentProjectIdRef.current, [
           eventHandlerRef.current,
         ]);
@@ -233,7 +233,7 @@ export const useArtifactWebSocket = ({
   useEffect(() => {
     return () => {
       if (eventHandlerRef.current && currentProjectIdRef.current) {
-        console.log("🔌 Artifact WebSocket: Final cleanup");
+        console.log('🔌 Artifact WebSocket: Final cleanup');
         imageWebsocketStore.removeProjectHandlers(currentProjectIdRef.current, [
           eventHandlerRef.current,
         ]);

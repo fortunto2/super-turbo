@@ -1,20 +1,20 @@
-import type { Message } from "ai";
-import { useCopyToClipboard } from "usehooks-ts";
+import type { UIMessage as Message } from 'ai';
+import { useCopyToClipboard } from 'usehooks-ts';
 
-import type { Vote } from "@/lib/db/schema";
+import type { Vote } from '@/lib/db/schema';
 
-import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from "../common/icons";
+import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from '../common/icons';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../ui/tooltip";
-import { memo } from "react";
-import equal from "fast-deep-equal";
-import { toast } from "sonner";
+} from '../ui/tooltip';
+import { memo } from 'react';
+import equal from 'fast-deep-equal';
+import { toast } from 'sonner';
 
-import { Button } from "@turbo-super/ui";
+import { Button } from '@turbo-super/ui';
 export function PureMessageActions({
   chatId,
   message,
@@ -29,7 +29,7 @@ export function PureMessageActions({
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
-  if (message.role === "user") return null;
+  if (message.role === 'user') return null;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -41,9 +41,9 @@ export function PureMessageActions({
               variant="outline"
               onClick={async () => {
                 const textFromParts = message.parts
-                  ?.filter((part) => part.type === "text")
+                  ?.filter((part) => part.type === 'text')
                   .map((part) => part.text)
-                  .join("\n")
+                  .join('\n')
                   .trim();
 
                 if (!textFromParts) {
@@ -52,7 +52,7 @@ export function PureMessageActions({
                 }
 
                 await copyToClipboard(textFromParts);
-                toast.success("Copied to clipboard!");
+                toast.success('Copied to clipboard!');
               }}
             >
               <CopyIcon />
@@ -69,22 +69,22 @@ export function PureMessageActions({
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
-                const upvote = fetch("/api/vote", {
-                  method: "PATCH",
+                const upvote = fetch('/api/vote', {
+                  method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
                     messageId: message.id,
-                    type: "up",
+                    type: 'up',
                   }),
                 });
 
                 toast.promise(upvote, {
-                  loading: "Upvoting Response...",
+                  loading: 'Upvoting Response...',
                   success: () => {
                     // Просто показываем успех, без обновления кэша
-                    return "Upvoted Response!";
+                    return 'Upvoted Response!';
                   },
-                  error: "Failed to upvote response.",
+                  error: 'Failed to upvote response.',
                 });
               }}
             >
@@ -102,22 +102,22 @@ export function PureMessageActions({
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
-                const downvote = fetch("/api/vote", {
-                  method: "PATCH",
+                const downvote = fetch('/api/vote', {
+                  method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
                     messageId: message.id,
-                    type: "down",
+                    type: 'down',
                   }),
                 });
 
                 toast.promise(downvote, {
-                  loading: "Downvoting Response...",
+                  loading: 'Downvoting Response...',
                   success: () => {
                     // Просто показываем успех, без обновления кэша
-                    return "Downvoted Response!";
+                    return 'Downvoted Response!';
                   },
-                  error: "Failed to downvote response.",
+                  error: 'Failed to downvote response.',
                 });
               }}
             >
@@ -138,5 +138,5 @@ export const MessageActions = memo(
     if (prevProps.isLoading !== nextProps.isLoading) return false;
 
     return true;
-  }
+  },
 );

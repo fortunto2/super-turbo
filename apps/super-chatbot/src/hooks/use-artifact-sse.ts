@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 // AICODE-NOTE: Universal SSE message interface for artifacts
 export interface ArtifactSSEMessage {
@@ -25,8 +25,11 @@ type Props = {
 };
 
 // AICODE-NOTE: Universal SSE hook for artifacts replacing WebSocket functionality
-export const useArtifactSSE = ({ channel, eventHandlers, enabled = true }: Props) => {
-  
+export const useArtifactSSE = ({
+  channel,
+  eventHandlers,
+  enabled = true,
+}: Props) => {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -69,7 +72,7 @@ export const useArtifactSSE = ({ channel, eventHandlers, enabled = true }: Props
 
     // AICODE-NOTE: Use Next.js proxy for SSE connections instead of direct backend
     const sseUrl = `/api/events/${channel}`;
-    
+
     console.log('🔌 Connecting to SSE:', sseUrl);
 
     try {
@@ -78,7 +81,7 @@ export const useArtifactSSE = ({ channel, eventHandlers, enabled = true }: Props
 
       eventSource.onopen = () => {
         if (!mountedRef.current) return;
-        
+
         console.log('🔌 ✅ SSE connected to channel:', channel);
         setIsConnected(true);
         setConnectionAttempts(0);
@@ -86,38 +89,41 @@ export const useArtifactSSE = ({ channel, eventHandlers, enabled = true }: Props
 
       eventSource.onmessage = (event) => {
         if (!mountedRef.current) return;
-        
+
         try {
           const message: ArtifactSSEMessage = JSON.parse(event.data);
           // console.log('📡 SSE message received:', message);
 
           // Call all registered handlers
-          handlersRef.current.forEach(handler => {
+          handlersRef.current.forEach((handler) => {
             try {
               handler(message);
             } catch (error) {
               console.error('❌ Error in SSE event handler:', error);
             }
           });
-
         } catch (error) {
-          console.error('❌ SSE message parse error:', error, 'Raw data:', event.data);
+          console.error(
+            '❌ SSE message parse error:',
+            error,
+            'Raw data:',
+            event.data,
+          );
         }
       };
 
       eventSource.onerror = (error) => {
         if (!mountedRef.current) return;
-        
+
         console.error('❌ SSE error:', error);
         console.log('🔄 Browser will handle SSE reconnection automatically');
-        
+
         // Update connection state if closed
         if (eventSource.readyState === EventSource.CLOSED) {
           setIsConnected(false);
-          setConnectionAttempts(prev => prev + 1);
+          setConnectionAttempts((prev) => prev + 1);
         }
       };
-
     } catch (error) {
       console.error('❌ Failed to create SSE connection:', error);
       setIsConnected(false);
@@ -126,12 +132,12 @@ export const useArtifactSSE = ({ channel, eventHandlers, enabled = true }: Props
 
     return () => {
       console.log('🧹 Cleaning up SSE connection for channel:', channel);
-      
+
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
-      
+
       setConnectionAttempts(0);
     };
   }, [channel, enabled]);
@@ -140,7 +146,7 @@ export const useArtifactSSE = ({ channel, eventHandlers, enabled = true }: Props
   useEffect(() => {
     return () => {
       mountedRef.current = false;
-      
+
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;

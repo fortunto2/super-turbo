@@ -1,27 +1,22 @@
-"use client";
+'use client';
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
-import { Button, Label, Textarea } from "@turbo-super/ui";
-import {
-  Image as ImageIcon,
-  Wand2,
-  Trash2,
-  Check,
-} from "lucide-react";
-import Image from "next/image";
-import { BackButton } from "@/components/shared/back-button";
-import { QueryState } from "@/components/ui/query-state";
-import { EntityForm } from "@/components/entity/entity-form";
-import { useEntityGetById } from "@/lib/api/superduperai/entity/query";
-import { useEntityUpdate } from "@/lib/api/superduperai/entity/update/query";
-import { useFileList } from "@/lib/api/superduperai/file/query";
-import { useFileGenerateImage } from "@/lib/api/superduperai/file/generate-image/query";
-import { useFileDelete } from "@/lib/api/superduperai/file/delete/query";
-import { FileTypeEnum, type IFileRead } from "@turbo-super/api";
-import type { EntityData } from "@/components/entity/entity-form";
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useMemo, useState, useEffect } from 'react';
+import { Button, Label, Textarea } from '@turbo-super/ui';
+import { Image as ImageIcon, Wand2, Trash2, Check } from 'lucide-react';
+import Image from 'next/image';
+import { BackButton } from '@/components/shared/back-button';
+import { QueryState } from '@/components/ui/query-state';
+import { EntityForm } from '@/components/entity/entity-form';
+import { useEntityGetById } from '@/lib/api/superduperai/entity/query';
+import { useEntityUpdate } from '@/lib/api/superduperai/entity/update/query';
+import { useFileList } from '@/lib/api/superduperai/file/query';
+import { useFileGenerateImage } from '@/lib/api/superduperai/file/generate-image/query';
+import { useFileDelete } from '@/lib/api/superduperai/file/delete/query';
+import { FileTypeEnum, type IFileRead } from '@turbo-super/api';
+import type { EntityData } from '@/components/entity/entity-form';
 
-type TabType = "edit" | "media";
+type TabType = 'edit' | 'media';
 
 export default function EntityPage() {
   const params = useParams();
@@ -30,16 +25,16 @@ export default function EntityPage() {
   const projectId = params.projectId as string;
   const entityId = params.entityId as string;
 
-  const [activeTab, setActiveTab] = useState<TabType>("edit");
+  const [activeTab, setActiveTab] = useState<TabType>('edit');
 
   // Initialize tab from URL parameter
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam === "media") {
-      setActiveTab("media");
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'media') {
+      setActiveTab('media');
     }
   }, [searchParams]);
-  const [imagePrompt, setImagePrompt] = useState("");
+  const [imagePrompt, setImagePrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSelectingFile, setIsSelectingFile] = useState<string | null>(null);
 
@@ -72,17 +67,17 @@ export default function EntityPage() {
     updateEntity(
       {
         id: entity.id,
-        file_id: entity.file_id || "",
+        file_id: entity.file_id || '',
         ...data,
       } as any,
       {
         onSuccess: () => {
-          console.log("Entity updated successfully");
+          console.log('Entity updated successfully');
         },
         onError: (error: any) => {
-          console.error("Failed to update entity:", error);
+          console.error('Failed to update entity:', error);
         },
-      }
+      },
     );
   };
 
@@ -99,7 +94,7 @@ export default function EntityPage() {
             config: {
               prompt: imagePrompt,
               batch_size: 1,
-              generation_config_name: "comfyui/flux",
+              generation_config_name: 'comfyui/flux',
             },
           },
         },
@@ -113,23 +108,23 @@ export default function EntityPage() {
                 } as any,
                 {
                   onSuccess: () => {
-                    setImagePrompt("");
+                    setImagePrompt('');
                     refetchFiles();
                   },
-                }
+                },
               );
             }
           },
           onError: (error) => {
-            console.error("Failed to generate image:", error);
+            console.error('Failed to generate image:', error);
           },
           onSettled: () => {
             setIsGenerating(false);
           },
-        }
+        },
       );
     } catch (error) {
-      console.error("Failed to generate image:", error);
+      console.error('Failed to generate image:', error);
       setIsGenerating(false);
     }
   };
@@ -156,13 +151,13 @@ export default function EntityPage() {
             setIsSelectingFile(null);
           },
           onError: (error) => {
-            console.error("Error selecting file:", error);
+            console.error('Error selecting file:', error);
             setIsSelectingFile(null);
           },
-        }
+        },
       );
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.error('Error selecting file:', error);
       setIsSelectingFile(null);
     }
   };
@@ -172,7 +167,7 @@ export default function EntityPage() {
       await deleteFile({ id: fileId });
       refetchFiles();
     } catch (error) {
-      console.error("Error deleting file:", error);
+      console.error('Error deleting file:', error);
     }
   };
 
@@ -209,21 +204,21 @@ export default function EntityPage() {
             {/* Tab Navigation */}
             <div className="flex bg-muted rounded-lg p-1">
               <button
-                onClick={() => setActiveTab("edit")}
+                onClick={() => setActiveTab('edit')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "edit"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                  activeTab === 'edit'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Edit
               </button>
               <button
-                onClick={() => setActiveTab("media")}
+                onClick={() => setActiveTab('media')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "media"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                  activeTab === 'media'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Media
@@ -237,12 +232,12 @@ export default function EntityPage() {
           {/* Page Title */}
           <div className="text-center mb-6 flex-shrink-0">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-2">
-              {activeTab === "edit" ? "Edit Entity" : "Entity Media"}
+              {activeTab === 'edit' ? 'Edit Entity' : 'Entity Media'}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {activeTab === "edit"
-                ? "Configure your entity settings and properties"
-                : "Manage media files for this entity"}
+              {activeTab === 'edit'
+                ? 'Configure your entity settings and properties'
+                : 'Manage media files for this entity'}
             </p>
           </div>
 
@@ -261,7 +256,7 @@ export default function EntityPage() {
               >
                 {entity && (
                   <div className="p-6 flex-1 flex flex-col">
-                    {activeTab === "edit" ? (
+                    {activeTab === 'edit' ? (
                       <>
                         {/* Entity Image */}
                         <div className="mb-6">
@@ -371,9 +366,9 @@ export default function EntityPage() {
                                         disabled={isSelectingFile === file.id}
                                         className={`relative w-full h-full flex items-center justify-center transition-all duration-200 ${
                                           file.id === entity.file_id
-                                            ? "ring-2 ring-primary"
-                                            : "hover:ring-2 hover:ring-primary/50"
-                                        } ${isSelectingFile === file.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                                            ? 'ring-2 ring-primary'
+                                            : 'hover:ring-2 hover:ring-primary/50'
+                                        } ${isSelectingFile === file.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                       >
                                         {file.type === FileTypeEnum.VIDEO && (
                                           <div className="absolute z-10">
@@ -448,7 +443,7 @@ export default function EntityPage() {
             <div className="inline-flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-md">
               <div className="size-2 bg-primary rounded-full animate-pulse" />
               <span className="text-xs text-muted-foreground">
-                Powered by{" "}
+                Powered by{' '}
                 <strong className="text-foreground">SuperDuperAI</strong>
               </span>
             </div>

@@ -3,12 +3,12 @@
  * Настройка моков, утилит и общих функций для всех типов тестов
  */
 
-import { beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
+import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 
 // Глобальные моки для всех тестов
 export function setupGlobalMocks() {
   // Mock для Next.js
-  vi.mock("next/navigation", () => ({
+  vi.mock('next/navigation', () => ({
     useRouter: () => ({
       push: vi.fn(),
       replace: vi.fn(),
@@ -18,17 +18,17 @@ export function setupGlobalMocks() {
       refresh: vi.fn(),
     }),
     useSearchParams: () => new URLSearchParams(),
-    usePathname: () => "/",
+    usePathname: () => '/',
   }));
 
   // Mock для Next.js auth
-  vi.mock("@/app/(auth)/auth", () => ({
+  vi.mock('@/app/(auth)/auth', () => ({
     auth: () =>
       Promise.resolve({
         user: {
-          id: "test-user-id",
-          email: "test@example.com",
-          name: "Test User",
+          id: 'test-user-id',
+          email: 'test@example.com',
+          name: 'Test User',
         },
       }),
   }));
@@ -54,7 +54,7 @@ export function setupGlobalMocks() {
   })) as any;
 
   // Mock для localStorage
-  Object.defineProperty(window, "localStorage", {
+  Object.defineProperty(window, 'localStorage', {
     value: {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -65,7 +65,7 @@ export function setupGlobalMocks() {
   });
 
   // Mock для sessionStorage
-  Object.defineProperty(window, "sessionStorage", {
+  Object.defineProperty(window, 'sessionStorage', {
     value: {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -106,7 +106,7 @@ export function mockErrorResponse(error: string, status = 500) {
 }
 
 export function mockNetworkError() {
-  (global.fetch as any).mockRejectedValue(new Error("Network error"));
+  (global.fetch as any).mockRejectedValue(new Error('Network error'));
 }
 
 export function resetApiMocks() {
@@ -131,7 +131,7 @@ export function createMockWebSocket() {
   setTimeout(() => {
     mockWS.readyState = 1;
     if (mockWS.onopen) {
-      mockWS.onopen(new Event("open"));
+      mockWS.onopen(new Event('open'));
     }
   }, 10);
 
@@ -139,7 +139,7 @@ export function createMockWebSocket() {
 }
 
 export function simulateWebSocketMessage(mockWS: any, data: any) {
-  const event = new MessageEvent("message", {
+  const event = new MessageEvent('message', {
     data: JSON.stringify(data),
   });
   if (mockWS.onmessage) {
@@ -150,7 +150,7 @@ export function simulateWebSocketMessage(mockWS: any, data: any) {
 export function simulateWebSocketError(mockWS: any) {
   mockWS.readyState = 3; // CLOSED
   if (mockWS.onerror) {
-    mockWS.onerror(new Event("error"));
+    mockWS.onerror(new Event('error'));
   }
 }
 
@@ -210,7 +210,7 @@ export function createMockKeyboardEvent(type: string, data?: any) {
 
 // Утилиты для тестирования производительности
 export async function measureExecutionTime(
-  fn: () => void | Promise<void>
+  fn: () => void | Promise<void>,
 ): Promise<number> {
   const start = performance.now();
   await fn();
@@ -221,7 +221,7 @@ export async function measureExecutionTime(
 export async function waitForCondition(
   condition: () => boolean,
   timeout = 5000,
-  interval = 100
+  interval = 100,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const start = Date.now();
@@ -229,7 +229,7 @@ export async function waitForCondition(
       if (condition()) {
         resolve();
       } else if (Date.now() - start > timeout) {
-        reject(new Error("Condition timeout"));
+        reject(new Error('Condition timeout'));
       } else {
         setTimeout(check, interval);
       }
@@ -243,16 +243,16 @@ export function createMaliciousInput() {
   return {
     xss: "<script>alert('xss')</script>",
     sqlInjection: "'; DROP TABLE users; --",
-    pathTraversal: "../../../etc/passwd",
-    commandInjection: "; rm -rf /",
+    pathTraversal: '../../../etc/passwd',
+    commandInjection: '; rm -rf /',
   };
 }
 
 export function createValidInput() {
   return {
-    email: "test@example.com",
-    name: "Test User",
-    message: "Hello, world!",
+    email: 'test@example.com',
+    name: 'Test User',
+    message: 'Hello, world!',
   };
 }
 

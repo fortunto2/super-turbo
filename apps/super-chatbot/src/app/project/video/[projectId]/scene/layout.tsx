@@ -1,7 +1,7 @@
-import { BackButton, Scenes } from "@/components";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-import type { ReactNode } from "react";
+import { BackButton, Scenes } from '@/components';
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 export default async function Layout({
   children,

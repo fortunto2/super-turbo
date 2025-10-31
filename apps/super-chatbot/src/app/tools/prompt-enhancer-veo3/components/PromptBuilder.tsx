@@ -7,10 +7,10 @@ import {
   Textarea,
   Label,
   Badge,
-} from "@turbo-super/ui";
-import { MoodboardUploader } from "@/components/ui/moodboard-uploader";
-import { Trash2 } from "lucide-react";
-import type { Character, PromptData } from "../types";
+} from '@turbo-super/ui';
+import { MoodboardUploader } from '@/components/ui/moodboard-uploader';
+import { Trash2 } from 'lucide-react';
+import type { Character, PromptData } from '../types';
 
 interface PromptBuilderProps {
   promptData: PromptData;
@@ -117,7 +117,7 @@ export function PromptBuilder({
                     placeholder="Character name (e.g., Sarah, Vendor)"
                     value={character.name}
                     onChange={(e) =>
-                      updateCharacter(character.id, "name", e.target.value)
+                      updateCharacter(character.id, 'name', e.target.value)
                     }
                     className="w-full px-3 py-2 border border-green-600 bg-green-950/10 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
                   />
@@ -136,8 +136,8 @@ export function PromptBuilder({
                     onChange={(e) =>
                       updateCharacter(
                         character.id,
-                        "description",
-                        e.target.value
+                        'description',
+                        e.target.value,
                       )
                     }
                     className="min-h-[60px] text-sm border-green-600 bg-green-950/10 focus:border-green-400 focus:ring-green-400"
@@ -165,9 +165,9 @@ export function PromptBuilder({
                     placeholder="What they say (e.g., Hello there! or Привет!)"
                     value={character.speech}
                     onChange={(e) =>
-                      updateCharacter(character.id, "speech", e.target.value)
+                      updateCharacter(character.id, 'speech', e.target.value)
                     }
-                    className={`min-h-[50px] text-sm border-green-600 bg-green-950/10 focus:border-green-400 focus:ring-green-400 ${character.speech ? "border-blue-400 bg-blue-950/20" : ""}`}
+                    className={`min-h-[50px] text-sm border-green-600 bg-green-950/10 focus:border-green-400 focus:ring-green-400 ${character.speech ? 'border-blue-400 bg-blue-950/20' : ''}`}
                   />
                   {character.speech && (
                     <div className="mt-1 text-xs text-blue-300 flex items-center gap-1">
@@ -225,9 +225,9 @@ export function PromptBuilder({
                 <Badge
                   key={language}
                   variant={
-                    promptData.language === language ? "default" : "outline"
+                    promptData.language === language ? 'default' : 'outline'
                   }
-                  className={`cursor-pointer text-xs ${promptData.language === language ? "bg-yellow-600 text-white" : "border-yellow-600 text-yellow-300 hover:bg-yellow-950/30"}`}
+                  className={`cursor-pointer text-xs ${promptData.language === language ? 'bg-yellow-600 text-white' : 'border-yellow-600 text-yellow-300 hover:bg-yellow-950/30'}`}
                   onClick={() => setPromptData({ ...promptData, language })}
                 >
                   {language}
@@ -260,8 +260,8 @@ export function PromptBuilder({
               {PRESET_OPTIONS.styles.map((style: string) => (
                 <Badge
                   key={style}
-                  variant={promptData.style === style ? "default" : "outline"}
-                  className={`cursor-pointer text-xs ${promptData.style === style ? "bg-purple-600 text-white" : "border-purple-600 text-purple-300 hover:bg-purple-950/30"}`}
+                  variant={promptData.style === style ? 'default' : 'outline'}
+                  className={`cursor-pointer text-xs ${promptData.style === style ? 'bg-purple-600 text-white' : 'border-purple-600 text-purple-300 hover:bg-purple-950/30'}`}
                   onClick={() => setPromptData({ ...promptData, style })}
                 >
                   {style}
@@ -294,8 +294,8 @@ export function PromptBuilder({
               {PRESET_OPTIONS.cameras.map((camera: string) => (
                 <Badge
                   key={camera}
-                  variant={promptData.camera === camera ? "default" : "outline"}
-                  className={`cursor-pointer text-xs ${promptData.camera === camera ? "bg-indigo-600 text-white" : "border-indigo-600 text-indigo-300 hover:bg-indigo-950/30"}`}
+                  variant={promptData.camera === camera ? 'default' : 'outline'}
+                  className={`cursor-pointer text-xs ${promptData.camera === camera ? 'bg-indigo-600 text-white' : 'border-indigo-600 text-indigo-300 hover:bg-indigo-950/30'}`}
                   onClick={() => setPromptData({ ...promptData, camera })}
                 >
                   {camera}
@@ -329,9 +329,9 @@ export function PromptBuilder({
                 <Badge
                   key={light}
                   variant={
-                    promptData.lighting === light ? "default" : "outline"
+                    promptData.lighting === light ? 'default' : 'outline'
                   }
-                  className={`cursor-pointer text-xs ${promptData.lighting === light ? "bg-pink-600 text-white" : "border-pink-600 text-pink-300 hover:bg-pink-950/30"}`}
+                  className={`cursor-pointer text-xs ${promptData.lighting === light ? 'bg-pink-600 text-white' : 'border-pink-600 text-pink-300 hover:bg-pink-950/30'}`}
                   onClick={() =>
                     setPromptData({ ...promptData, lighting: light })
                   }
@@ -366,8 +366,8 @@ export function PromptBuilder({
               {PRESET_OPTIONS.moods.map((mood: string) => (
                 <Badge
                   key={mood}
-                  variant={promptData.mood === mood ? "default" : "outline"}
-                  className={`cursor-pointer text-xs ${promptData.mood === mood ? "bg-rose-600 text-white" : "border-rose-600 text-rose-300 hover:bg-rose-950/30"}`}
+                  variant={promptData.mood === mood ? 'default' : 'outline'}
+                  className={`cursor-pointer text-xs ${promptData.mood === mood ? 'bg-rose-600 text-white' : 'border-rose-600 text-rose-300 hover:bg-rose-950/30'}`}
                   onClick={() => setPromptData({ ...promptData, mood })}
                 >
                   {mood}

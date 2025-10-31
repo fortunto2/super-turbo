@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { forwardRef, useEffect, useState } from "react";
-import type { MDXEditorMethods, MDXEditorProps } from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
+import { forwardRef, useEffect, useState } from 'react';
+import type { MDXEditorMethods, MDXEditorProps } from '@mdxeditor/editor';
+import '@mdxeditor/editor/style.css';
 
-interface DynamicMarkdownEditorProps extends Omit<MDXEditorProps, "ref"> {
+interface DynamicMarkdownEditorProps extends Omit<MDXEditorProps, 'ref'> {
   editorRef?: React.RefObject<MDXEditorMethods>;
   className?: string;
 }
@@ -19,11 +19,11 @@ export const DynamicMarkdownEditor = forwardRef<
   useEffect(() => {
     const loadEditor = async () => {
       try {
-        const { MDXEditor } = await import("@mdxeditor/editor");
+        const { MDXEditor } = await import('@mdxeditor/editor');
         setEditor(() => MDXEditor);
         setIsLoading(false);
       } catch (error) {
-        console.error("Failed to load MDXEditor:", error);
+        console.error('Failed to load MDXEditor:', error);
         setIsLoading(false);
       }
     };
@@ -34,7 +34,7 @@ export const DynamicMarkdownEditor = forwardRef<
   if (isLoading) {
     return (
       <div
-        className={`flex items-center justify-center h-64 ${className || ""}`}
+        className={`flex items-center justify-center h-64 ${className || ''}`}
       >
         <div className="text-gray-500">Loading editor...</div>
       </div>
@@ -44,20 +44,14 @@ export const DynamicMarkdownEditor = forwardRef<
   if (!Editor) {
     return (
       <div
-        className={`flex items-center justify-center h-64 ${className || ""}`}
+        className={`flex items-center justify-center h-64 ${className || ''}`}
       >
         <div className="text-red-500">Failed to load editor</div>
       </div>
     );
   }
 
-  return (
-    <Editor
-      ref={ref || editorRef}
-      className={className}
-      {...props}
-    />
-  );
+  return <Editor ref={ref || editorRef} className={className} {...props} />;
 });
 
-DynamicMarkdownEditor.displayName = "DynamicMarkdownEditor";
+DynamicMarkdownEditor.displayName = 'DynamicMarkdownEditor';
