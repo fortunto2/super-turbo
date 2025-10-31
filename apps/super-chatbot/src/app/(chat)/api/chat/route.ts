@@ -282,7 +282,9 @@ export const POST = withMonitoring(async (request: Request) => {
             p.text.trim().length > 0
         );
 
-        const hasFilePart = msg.parts?.some((p: any) => p.type === "file" && p.url);
+        const hasFilePart = msg.parts?.some(
+          (p: any) => p.type === "file" && p.url
+        );
 
         const hasToolPart = msg.parts?.some((p: any) =>
           p.type?.startsWith("tool-")
@@ -464,19 +466,20 @@ export const POST = withMonitoring(async (request: Request) => {
     const createDocumentTool = createDocument({ session });
     const updateDocumentTool = updateDocument({ session });
     const lastMessage = normalizedMessages[normalizedMessages.length - 1];
-    
+
     // CRITICAL: Extract files from parts for AI SDK v5 file support
     console.log("🔍 Last message parts before extraction:", lastMessage?.parts);
-    const filePartsFromMessage = lastMessage?.parts
-      ?.filter((p: any) => p.type === "file")
-      .map((p: any) => ({
-        url: p.url,
-        name: p.filename || "attachment",
-        contentType: p.mediaType || "image/png",
-      })) || [];
-    
+    const filePartsFromMessage =
+      lastMessage?.parts
+        ?.filter((p: any) => p.type === "file")
+        .map((p: any) => ({
+          url: p.url,
+          name: p.filename || "attachment",
+          contentType: p.mediaType || "image/png",
+        })) || [];
+
     console.log("🔍 Extracted file parts:", filePartsFromMessage);
-    
+
     // Prefer experimental_attachments; fallback to files from parts or requestAttachments
     const currentAttachments = ((lastMessage as any)
       ?.experimental_attachments ||
@@ -484,9 +487,10 @@ export const POST = withMonitoring(async (request: Request) => {
       requestAttachments ||
       filePartsFromMessage ||
       []) as any[];
-    
+
     console.log("🔍 EXTRACTED ATTACHMENTS:", {
-      fromExperimental: (lastMessage as any)?.experimental_attachments?.length || 0,
+      fromExperimental:
+        (lastMessage as any)?.experimental_attachments?.length || 0,
       fromAttachments: (lastMessage as any)?.attachments?.length || 0,
       fromRequestAttachments: requestAttachments?.length || 0,
       fromFileParts: filePartsFromMessage.length,

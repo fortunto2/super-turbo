@@ -321,6 +321,12 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
 
           // Call Fal.ai Veo3 API
           console.log("🚀 Calling Fal.ai Veo3 API...");
+          console.log("🎬 Video generation params:", {
+            prompt,
+            sourceImageUrl: normalizedSourceUrl,
+            operationType,
+          });
+
           const result = await fal.subscribe("fal-ai/veo3", {
             input: {
               prompt,
@@ -333,6 +339,8 @@ export const configureVideoGeneration = (params?: CreateVideoDocumentParams) =>
               generate_audio: true,
               enhance_prompt: true,
               ...(seed && { seed }),
+              // CRITICAL: Add source image URL for image-to-video generation
+              ...(normalizedSourceUrl && { image_url: normalizedSourceUrl }),
             },
             logs: true,
             onQueueUpdate: (update) => {

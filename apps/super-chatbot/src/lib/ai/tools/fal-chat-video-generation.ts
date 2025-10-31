@@ -25,7 +25,7 @@ interface CreateVideoDocumentParams {
 export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
   tool({
     description:
-      "Generate videos using Google Vertex AI VEO 3.1. Supports text-to-video and image-to-video (uses a reference image from chat history or attachments) with high quality output.",
+      "Generate videos using Google Vertex AI VEO 3.1. Supports ONLY text-to-video generation with high quality output. For image-to-video, use configureVideoGeneration tool instead.",
     inputSchema: z.object({
       prompt: z
         .string()
@@ -144,6 +144,12 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
         if (params?.chatId && params?.userMessage) {
           try {
             console.log("🔍 video:analyze start");
+            console.log("🔍 video:params", {
+              chatId: params.chatId,
+              userMessage: params.userMessage?.substring(0, 50),
+              currentAttachmentsCount: params?.currentAttachments?.length || 0,
+              currentAttachments: params?.currentAttachments,
+            });
             // Combine user message with optional reference description for better disambiguation
             const enhancedMessage = referenceImageDescription
               ? `${params.userMessage}\n\nReference: ${referenceImageDescription}`
@@ -155,6 +161,8 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
               params.session?.user?.id
             );
 
+            console.log("🔍 video:context result", contextResult);
+
             if (contextResult.sourceUrl && contextResult.confidence !== "low") {
               console.log("🔍 video:source found");
               normalizedSourceUrl = contextResult.sourceUrl;
@@ -162,7 +170,7 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
               console.warn("🔍 video:source not found");
             }
           } catch (error) {
-            console.warn("🔍 video:analyze error");
+            console.warn("🔍 video:analyze error", error);
           }
         }
 
@@ -214,18 +222,23 @@ export const falVideoGenerationForChat = (params?: CreateVideoDocumentParams) =>
         console.log("🎬 video:model VEO3");
 
         // Prepare request for Vertex AI
+        // NOTE: Vertex AI VEO3 does NOT support image-to-video
+        // We can only generate text-to-video, ignoring source image URL
         const vertexRequest: VertexVideoRequest = {
           prompt,
           duration: durationValue as "4" | "6" | "8",
           aspectRatio: aspectRatio || "16:9",
           resolution: resolution || "720p",
           ...(negativePrompt && { negativePrompt }),
-          // Add source image URL for image-to-video transformation (from context analysis)
-          ...(normalizedSourceUrl && { sourceImageUrl: normalizedSourceUrl }),
           model: "veo3",
         };
 
         console.log("🚀 video:vertex call");
+        console.log("🚀 video:request", {
+          prompt,
+          hasSourceImageUrl: !!normalizedSourceUrl,
+          note: "Vertex AI VEO3 does not support image-to-video",
+        });
 
         // Call Vertex AI video generation
         const result = await generateVertexVideo(vertexRequest, params.session);
