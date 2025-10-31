@@ -63,7 +63,27 @@ export const POST = withMonitoring(async (request: Request) => {
         "🔍 REQUEST BODY - message IDs:",
         body.messages.map((m: any) => m.id)
       );
+      // Log files for debugging attachments
+      if (body.messages.length > 0) {
+        const lastMessage = body.messages[body.messages.length - 1];
+        console.log(
+          "🔍 REQUEST BODY - last message parts:",
+          lastMessage.parts?.map((p: any) => ({
+            type: p.type,
+            hasText: !!p.text,
+            hasUrl: !!p.url,
+            hasFile: !!p.file,
+          }))
+        );
+        console.log(
+          "🔍 REQUEST BODY - last message has files:",
+          !!lastMessage.files,
+          "files count:",
+          lastMessage.files?.length || 0
+        );
+      }
     }
+    console.log("🔍 REQUEST BODY - body has files:", !!body.files);
 
     // Validate request body using schema
     const validationResult = postRequestBodySchema.safeParse(body);
@@ -83,7 +103,13 @@ export const POST = withMonitoring(async (request: Request) => {
       id: chatId,
       selectedChatModel,
       selectedVisibilityType,
-    } = validationResult.data;
+      requestAttachments,
+    } = validationResult.data as any;
+
+    console.log("🔍 REQUEST ATTACHMENTS:", {
+      count: requestAttachments?.length || 0,
+      attachments: requestAttachments,
+    });
 
     // Convert single message to array format if needed
     if (singleMessage && !rawMessages) {
@@ -159,7 +185,7 @@ export const POST = withMonitoring(async (request: Request) => {
     }
 
     // Filter out messages that already exist by content (not just ID)
-    const newMessages = normalizedMessages.filter((msg) => {
+    const newMessages = normalizedMessages.filter((msg: any) => {
       if (msg.role === "system") return false;
 
       const msgAny = msg as any;
@@ -360,12 +386,12 @@ export const POST = withMonitoring(async (request: Request) => {
 
     // Save user messages to database (with automatic FK recovery)
     const userMessages = normalizedMessages.filter(
-      (msg) => msg.role === "user"
+      (msg: any) => msg.role === "user"
     );
 
     // AICODE-FIX: Only save NEW user messages that aren't already in the database
     // Use content-based deduplication (same as above)
-    const newUserMessages = userMessages.filter((msg) => {
+    const newUserMessages = userMessages.filter((msg: any) => {
       const msgAny = msg as any;
       const textContent =
         typeof msgAny.content === "string"
@@ -401,9 +427,25 @@ export const POST = withMonitoring(async (request: Request) => {
     // );
 
     for (const userMsg of newUserMessages) {
+      const msgAny = userMsg as any;
+      const msgAttachments =
+        msgAny?.experimental_attachments ||
+        msgAny?.attachments ||
+        requestAttachments ||
+        [];
+
+      console.log("💾 SAVING USER MESSAGE:", {
+        chatId,
+        messageId: msgAny.id,
+        contentPreview: msgAny.content?.substring(0, 50),
+        attachmentsCount: msgAttachments.length,
+        attachments: msgAttachments,
+      });
+
       await saveUserMessage({
         chatId,
         message: userMsg,
+        attachments: msgAttachments,
       });
     }
 
@@ -414,6 +456,12 @@ export const POST = withMonitoring(async (request: Request) => {
     const createDocumentTool = createDocument({ session });
     const updateDocumentTool = updateDocument({ session });
     const lastMessage = normalizedMessages[normalizedMessages.length - 1];
+    // Prefer experimental_attachments; fallback to attachments or requestAttachments
+    const currentAttachments = ((lastMessage as any)
+      ?.experimental_attachments ||
+      (lastMessage as any)?.attachments ||
+      requestAttachments ||
+      []) as any[];
 
     // Old SuperDuperAI tools (kept for backward compatibility)
     const imageGenerationTool = configureImageGeneration({
@@ -421,14 +469,14 @@ export const POST = withMonitoring(async (request: Request) => {
       session,
       chatId,
       userMessage: lastMessage?.content || "",
-      currentAttachments: lastMessage?.experimental_attachments || [],
+      currentAttachments,
     });
     const videoGenerationTool = configureVideoGeneration({
       createDocument: createDocumentTool,
       session,
       chatId,
       userMessage: lastMessage?.content || "",
-      currentAttachments: lastMessage?.experimental_attachments || [],
+      currentAttachments,
     });
 
     // New tools (Nano Banana + FAL AI)
@@ -437,14 +485,14 @@ export const POST = withMonitoring(async (request: Request) => {
       session,
       chatId,
       userMessage: lastMessage?.content || "",
-      currentAttachments: lastMessage?.experimental_attachments || [],
+      currentAttachments,
     });
     const falVideoTool = falVideoGenerationForChat({
       createDocument: createDocumentTool,
       session,
       chatId,
       userMessage: lastMessage?.content || "",
-      currentAttachments: lastMessage?.experimental_attachments || [],
+      currentAttachments,
     });
 
     const scriptGenerationTool = configureScriptGeneration({
@@ -531,9 +579,7 @@ export const POST = withMonitoring(async (request: Request) => {
         isImageGenerationRequest || isVideoGenerationRequest
           ? "required"
           : "auto",
-      // CRITICAL: Allow model to generate text after tool call
-      // With maxSteps: 2, model can: step 1 = call tool, step 2 = generate text response
-      maxSteps: 2,
+      // Allow the model to call tools and then produce text (use default tool roundtrips)
       // REMOVED stopWhen - let AI SDK handle tool execution naturally without interference
       onError: ({ error }) => {
         console.error("❌ Stream error:", error);

@@ -62,15 +62,22 @@ function extractContentFromParts(parts?: Array<any>): string {
 function ensurePartsArray(
   message: any,
   content: string,
-): Array<{ type: string; text: string; [key: string]: any }> {
+): Array<{ type: string; text?: string; [key: string]: any }> {
   if (!message.parts || message.parts.length === 0) {
     return [{ type: 'text', text: content }];
   }
 
-  return message.parts.map((part: any) => ({
-    ...part,
-    text: part.text || '',
-  }));
+  // Preserve all parts as-is, only add text field for text parts
+  return message.parts.map((part: any) => {
+    if (part.type === 'text') {
+      return {
+        ...part,
+        text: part.text || '',
+      };
+    }
+    // For non-text parts (file, tool-call, etc.), return as-is without forcing text field
+    return part;
+  });
 }
 
 function isValidUUID(uuid: string): boolean {

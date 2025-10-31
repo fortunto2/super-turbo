@@ -78,6 +78,18 @@ export const postRequestBodySchema = z
     // Поддерживаем оба формата: message (объект) или messages (массив)
     message: messageSchema.optional(),
     messages: z.array(messageSchema).optional(),
+    // Дополнительные вложения текущего запроса (когда фронт отправляет файл отдельно от message)
+    requestAttachments: z
+      .array(
+        z.object({
+          url: z.string().url(),
+          name: z.string().min(1),
+          contentType: z.string(),
+          thumbnailUrl: z.string().url().optional(),
+          id: z.string().optional(),
+        })
+      )
+      .optional(),
     selectedChatModel: z
       .enum([
         'chat-model',

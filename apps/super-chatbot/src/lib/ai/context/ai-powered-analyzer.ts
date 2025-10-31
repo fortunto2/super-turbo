@@ -4,7 +4,7 @@
  * Replaces regex-based pattern matching with LLM reasoning
  */
 
-import { generateObject, generateText } from "ai";
+import { generateObject, } from "ai";
 import { z } from "zod";
 import { myProvider } from "@/lib/ai/providers";
 import type { ChatMedia, MediaContext, MediaType } from "./universal-context";

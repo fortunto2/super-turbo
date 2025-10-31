@@ -19,13 +19,13 @@ const videoGenerationSchema = z.object({
 
 function extractBase64FromDataUrl(dataUrl: string): string {
   const base64Match = dataUrl.match(/^data:image\/[^;]+;base64,(.+)$/);
-  if (base64Match && base64Match[1]) return base64Match[1];
+  if (base64Match?.[1]) return base64Match[1];
   return dataUrl;
 }
 
 function getMimeTypeFromDataUrl(dataUrl: string): string {
   const mimeMatch = dataUrl.match(/^data:(image\/[^;]+);base64,/);
-  return mimeMatch && mimeMatch[1] ? mimeMatch[1] : 'image/jpeg';
+  return mimeMatch?.[1] ? mimeMatch[1] : 'image/jpeg';
 }
 
 /**

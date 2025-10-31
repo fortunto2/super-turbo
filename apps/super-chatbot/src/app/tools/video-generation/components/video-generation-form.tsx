@@ -12,7 +12,7 @@ import {
 } from '@turbo-super/ui';
 import { Textarea } from '@turbo-super/ui';
 import { Badge } from '@turbo-super/ui';
-import { Loader2, VideoIcon, Wand2, Sparkles, Upload, X } from 'lucide-react';
+import { Loader2, VideoIcon, Wand2, Sparkles, X } from 'lucide-react';
 import {
   Select,
   SelectContent,

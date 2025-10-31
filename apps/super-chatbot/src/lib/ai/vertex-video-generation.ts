@@ -3,31 +3,31 @@
  * Extracted from API route to be used directly in AI tools
  */
 
-import type { Session } from 'next-auth';
+import type { Session } from "next-auth";
 import {
   validateOperationBalance,
   deductOperationBalance,
-} from '@/lib/utils/tools-balance';
+} from "@/lib/utils/tools-balance";
 
 export interface VertexVideoRequest {
   prompt: string;
-  duration?: '4' | '6' | '8';
-  aspectRatio?: '16:9' | '9:16' | '1:1';
-  resolution?: '720p' | '1080p';
+  duration?: "4" | "6" | "8";
+  aspectRatio?: "16:9" | "9:16" | "1:1";
+  resolution?: "720p" | "1080p";
   negativePrompt?: string;
-  model?: 'veo3';
+  model?: "veo3";
 }
 
 export interface VertexVideoResponse {
   success: boolean;
   fileId?: string;
   operationName?: string;
-  status?: 'processing' | 'completed';
+  status?: "processing" | "completed";
   videoUrl?: string;
   error?: string;
   provider?: string;
   model?: string;
-  creditsUsed?: number;
+  creditsUsed?: number | undefined;
 }
 
 /**
@@ -36,13 +36,13 @@ export interface VertexVideoResponse {
  */
 export async function generateVertexVideo(
   request: VertexVideoRequest,
-  session: Session,
+  session: Session
 ): Promise<VertexVideoResponse> {
   try {
-    console.log('🎬 Vertex AI Video Generation called');
+    console.log("🎬 Vertex AI Video Generation called");
 
     if (!session?.user?.id) {
-      throw new Error('User session required');
+      throw new Error("User session required");
     }
 
     // Check API key
@@ -52,48 +52,48 @@ export async function generateVertexVideo(
     if (!apiKey) {
       return {
         success: false,
-        error: 'Vertex AI API key not configured',
+        error: "Vertex AI API key not configured",
       };
     }
 
-    console.log('✅ API Key found');
+    console.log("✅ API Key found");
 
     // Validate balance
     const userId = session.user.id;
-    const generationType = 'text-to-video';
+    const generationType = "text-to-video";
 
     const multipliers: string[] = [];
-    const durationSeconds = Number.parseInt(request.duration || '8');
+    const durationSeconds = Number.parseInt(request.duration || "8");
 
-    if (durationSeconds <= 5) multipliers.push('duration-5s');
-    else if (durationSeconds <= 10) multipliers.push('duration-10s');
-    else if (durationSeconds <= 15) multipliers.push('duration-15s');
+    if (durationSeconds <= 5) multipliers.push("duration-5s");
+    else if (durationSeconds <= 10) multipliers.push("duration-10s");
+    else if (durationSeconds <= 15) multipliers.push("duration-15s");
 
-    if (request.resolution === '1080p') {
-      multipliers.push('hd-quality');
+    if (request.resolution === "1080p") {
+      multipliers.push("hd-quality");
     }
 
     const balanceValidation = await validateOperationBalance(
       userId,
-      'video-generation',
+      "video-generation",
       generationType,
-      multipliers,
+      multipliers
     );
 
     if (!balanceValidation.valid) {
       return {
         success: false,
-        error: balanceValidation.error || 'Insufficient balance',
+        error: balanceValidation.error || "Insufficient balance",
       };
     }
 
     console.log(
-      `💳 User ${userId} has sufficient balance (${balanceValidation.cost} credits)`,
+      `💳 User ${userId} has sufficient balance (${balanceValidation.cost} credits)`
     );
 
     // Determine model version (only veo-3.1 is available via Generative Language API)
-    const modelVersion = request.model || 'veo3';
-    const modelName = 'veo-3.1'; // Only VEO 3.1 is available
+    const modelVersion = request.model || "veo3";
+    const modelName = "veo-3.1"; // Only VEO 3.1 is available
 
     // Try Generative Language API (works with API key)
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}-generate-preview:predictLongRunning`;
@@ -102,10 +102,10 @@ export async function generateVertexVideo(
     console.log(`   Endpoint: ${endpoint}`);
 
     const response = await fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
       },
       body: JSON.stringify({
         instances: [
@@ -117,8 +117,8 @@ export async function generateVertexVideo(
           },
         ],
         parameters: {
-          aspectRatio: request.aspectRatio || '16:9',
-          resolution: request.resolution || '720p',
+          aspectRatio: request.aspectRatio || "16:9",
+          resolution: request.resolution || "720p",
           durationSeconds: durationSeconds,
         },
       }),
@@ -138,44 +138,44 @@ export async function generateVertexVideo(
     const operationData = JSON.parse(responseText);
     const fileId = `vertex-${modelVersion}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-    console.log('✅ Video generation started:', operationData.name);
+    console.log("✅ Video generation started:", operationData.name);
 
     // Deduct balance
     try {
       await deductOperationBalance(
         userId,
-        'video-generation',
+        "video-generation",
         generationType,
         multipliers,
         {
           fileId,
           operationType: generationType,
           duration: durationSeconds,
-          resolution: request.resolution || '720p',
-          provider: 'vertex-ai',
+          resolution: request.resolution || "720p",
+          provider: "vertex-ai",
           model: modelName,
           timestamp: new Date().toISOString(),
-        },
+        }
       );
       console.log(`💳 Balance deducted for user ${userId}`);
     } catch (balanceError) {
-      console.error('⚠️ Failed to deduct balance:', balanceError);
+      console.error("⚠️ Failed to deduct balance:", balanceError);
     }
 
     return {
       success: true,
       fileId,
       operationName: operationData.name,
-      status: 'processing',
-      provider: 'vertex-ai',
+      status: "processing",
+      provider: "vertex-ai",
       model: modelName,
       creditsUsed: balanceValidation.cost || undefined,
     };
   } catch (error) {
-    console.error('💥 Vertex Video Generation error:', error);
+    console.error("💥 Vertex Video Generation error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -184,7 +184,7 @@ export async function generateVertexVideo(
  * Check status of Vertex AI video generation
  */
 export async function checkVertexVideoStatus(operationName: string): Promise<{
-  status: 'processing' | 'completed' | 'failed';
+  status: "processing" | "completed" | "failed";
   videoUrl?: string;
   error?: string;
 }> {
@@ -193,7 +193,7 @@ export async function checkVertexVideoStatus(operationName: string): Promise<{
       process.env.GOOGLE_AI_API_KEY || process.env.VERTEX_AI_API_KEY;
 
     if (!apiKey) {
-      throw new Error('Vertex AI API key not configured');
+      throw new Error("Vertex AI API key not configured");
     }
 
     // Extract operation ID from name
@@ -201,7 +201,7 @@ export async function checkVertexVideoStatus(operationName: string): Promise<{
 
     const response = await fetch(endpoint, {
       headers: {
-        'x-goog-api-key': apiKey,
+        "x-goog-api-key": apiKey,
       },
     });
 
@@ -214,8 +214,8 @@ export async function checkVertexVideoStatus(operationName: string): Promise<{
     if (data.done) {
       if (data.error) {
         return {
-          status: 'failed',
-          error: data.error.message || 'Video generation failed',
+          status: "failed",
+          error: data.error.message || "Video generation failed",
         };
       }
 
@@ -230,25 +230,25 @@ export async function checkVertexVideoStatus(operationName: string): Promise<{
 
       if (!videoUrl) {
         return {
-          status: 'failed',
-          error: 'No video URL in response',
+          status: "failed",
+          error: "No video URL in response",
         };
       }
 
       return {
-        status: 'completed',
+        status: "completed",
         videoUrl,
       };
     }
 
     return {
-      status: 'processing',
+      status: "processing",
     };
   } catch (error) {
-    console.error('Status check error:', error);
+    console.error("Status check error:", error);
     return {
-      status: 'failed',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      status: "failed",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

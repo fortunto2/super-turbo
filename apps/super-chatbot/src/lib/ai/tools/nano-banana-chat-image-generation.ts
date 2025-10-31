@@ -315,6 +315,13 @@ export const nanoBananaImageGenerationForChat = (
         // CRITICAL: Use both userMessage AND referenceImageDescription for better accuracy
         let normalizedSourceUrl: string | undefined = undefined;
 
+        console.log("🔍 image:tool params:", {
+          chatId: params?.chatId,
+          userMessage: params?.userMessage?.substring(0, 50),
+          currentAttachmentsCount: params?.currentAttachments?.length || 0,
+          currentAttachments: params?.currentAttachments,
+        });
+
         if (params?.chatId) {
           try {
             console.log("🔍 image:analyze start");

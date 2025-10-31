@@ -4,14 +4,14 @@
 export interface ImageGenerationRequest {
   prompt: string;
   sourceImageUrl?: string;
-  style?: string;
-  quality?: "standard" | "high" | "ultra" | "masterpiece";
-  aspectRatio?: "1:1" | "4:3" | "16:9" | "3:2" | "9:16" | "21:9";
-  seed?: number;
-  batchSize?: number;
-  enableContextAwareness?: boolean;
-  enableSurgicalPrecision?: boolean;
-  creativeMode?: boolean;
+  style?: string | undefined;
+  quality?: "standard" | "high" | "ultra" | "masterpiece" | undefined;
+  aspectRatio?: "1:1" | "4:3" | "16:9" | "3:2" | "9:16" | "21:9" | undefined;
+  seed?: number | undefined;
+  batchSize?: number | undefined;
+  enableContextAwareness?: boolean | undefined;
+  enableSurgicalPrecision?: boolean | undefined;
+  creativeMode?: boolean | undefined;
 }
 
 export interface ImageEditingRequest {
@@ -44,14 +44,14 @@ export interface GeneratedImageResult {
   prompt: string;
   timestamp: number;
   settings?: {
-    style?: string;
-    quality?: string;
-    aspectRatio?: string;
+    style?: string | undefined;
+    quality?: string | undefined;
+    aspectRatio?: string | undefined;
     seed?: number | undefined;
-    batchSize?: number;
-    enableContextAwareness?: boolean;
-    enableSurgicalPrecision?: boolean;
-    creativeMode?: boolean;
+    batchSize?: number | undefined;
+    enableContextAwareness?: boolean | undefined;
+    enableSurgicalPrecision?: boolean | undefined;
+    creativeMode?: boolean | undefined;
   };
 }
 
