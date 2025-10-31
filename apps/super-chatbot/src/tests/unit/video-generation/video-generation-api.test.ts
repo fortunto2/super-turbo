@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type {
   VideoGenerationRequest,
-  VideoGenerationApiResponse,
-  GeneratedVideoResult,
 } from '@/app/tools/video-generation/api/video-generation-api';
 
 function createValidBase64DataUrl(): string {

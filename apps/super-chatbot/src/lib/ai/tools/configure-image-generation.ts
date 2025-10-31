@@ -91,22 +91,65 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
 
       // AICODE-NOTE: Define Nano Banana constants at the top of execute function
       const NANO_BANANA_STYLES = [
-        { id: "realistic", label: "Realistic", description: "Photorealistic images" },
-        { id: "cinematic", label: "Cinematic", description: "Cinematic style with dramatic lighting" },
-        { id: "anime", label: "Anime", description: "Japanese animation style" },
+        {
+          id: "realistic",
+          label: "Realistic",
+          description: "Photorealistic images",
+        },
+        {
+          id: "cinematic",
+          label: "Cinematic",
+          description: "Cinematic style with dramatic lighting",
+        },
+        {
+          id: "anime",
+          label: "Anime",
+          description: "Japanese animation style",
+        },
         { id: "cartoon", label: "Cartoon", description: "Cartoon style" },
         { id: "chibi", label: "Chibi", description: "Miniature cute style" },
-        { id: "3d-render", label: "3D Render", description: "Three-dimensional computer graphics" },
-        { id: "oil-painting", label: "Oil Painting", description: "Classic oil painting" },
-        { id: "watercolor", label: "Watercolor", description: "Gentle watercolor technique" },
+        {
+          id: "3d-render",
+          label: "3D Render",
+          description: "Three-dimensional computer graphics",
+        },
+        {
+          id: "oil-painting",
+          label: "Oil Painting",
+          description: "Classic oil painting",
+        },
+        {
+          id: "watercolor",
+          label: "Watercolor",
+          description: "Gentle watercolor technique",
+        },
         { id: "sketch", label: "Sketch", description: "Pencil sketch" },
-        { id: "digital-art", label: "Digital Art", description: "Modern digital creativity" },
+        {
+          id: "digital-art",
+          label: "Digital Art",
+          description: "Modern digital creativity",
+        },
       ];
 
       const NANO_BANANA_QUALITY_LEVELS = [
-        { id: "standard", label: "Standard", multiplier: 1.0, description: "Base quality" },
-        { id: "high", label: "High", multiplier: 1.5, description: "Enhanced quality" },
-        { id: "ultra", label: "Ultra", multiplier: 2.0, description: "Maximum quality" },
+        {
+          id: "standard",
+          label: "Standard",
+          multiplier: 1.0,
+          description: "Base quality",
+        },
+        {
+          id: "high",
+          label: "High",
+          multiplier: 1.5,
+          description: "Enhanced quality",
+        },
+        {
+          id: "ultra",
+          label: "Ultra",
+          multiplier: 2.0,
+          description: "Maximum quality",
+        },
       ];
 
       const NANO_BANANA_ASPECT_RATIOS = [
@@ -138,7 +181,10 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
         };
       }
 
-      console.log("🍌 ✅ PROMPT PROVIDED, GENERATING WITH NANO BANANA:", prompt);
+      console.log(
+        "🍌 ✅ PROMPT PROVIDED, GENERATING WITH NANO BANANA:",
+        prompt
+      );
 
       // Check style for quality multipliers
       const multipliers: string[] = [];
@@ -148,18 +194,28 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
       try {
         // Map old resolution format to Nano Banana aspect ratio
         const foundAspectRatio = resolution
-          ? NANO_BANANA_ASPECT_RATIOS.find((r) => r.label.includes(resolution) || resolution.includes(r.id))
+          ? NANO_BANANA_ASPECT_RATIOS.find(
+              (r) => r.label.includes(resolution) || resolution.includes(r.id)
+            )
           : null;
-        const selectedAspectRatio = (foundAspectRatio || NANO_BANANA_ASPECT_RATIOS[0])!; // Always has value from array
+        const selectedAspectRatio =
+          foundAspectRatio || NANO_BANANA_ASPECT_RATIOS[0]; // Always has value from array
+
+        if (!selectedAspectRatio) return;
 
         // Map old style to Nano Banana style
         const foundStyle = style
-          ? NANO_BANANA_STYLES.find((s) => s.label.toLowerCase().includes(style.toLowerCase()) || style.toLowerCase().includes(s.label.toLowerCase()))
+          ? NANO_BANANA_STYLES.find(
+              (s) =>
+                s.label.toLowerCase().includes(style.toLowerCase()) ||
+                style.toLowerCase().includes(s.label.toLowerCase())
+            )
           : null;
-        const selectedStyle = (foundStyle || NANO_BANANA_STYLES[0])!; // Always has value from array
+        const selectedStyle = foundStyle || NANO_BANANA_STYLES[0]; // Always has value from array
 
-        // Use high quality by default
-        const selectedQuality = NANO_BANANA_QUALITY_LEVELS[1]!; // "high" - Always has value from array
+        const selectedQuality = NANO_BANANA_QUALITY_LEVELS[1];
+
+        if (!selectedStyle || !selectedQuality) return;
 
         // Используем новую систему анализа контекста
         let normalizedSourceUrl = sourceImageUrl;
@@ -322,7 +378,9 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
 
         try {
           // Use Nano Banana Provider (Gemini API)
-          const { nanoBananaProvider } = await import("../providers/nano-banana");
+          const { nanoBananaProvider } = await import(
+            "../providers/nano-banana"
+          );
 
           const nanoBananaParams = {
             prompt: nanoBananaPrompt,
@@ -338,13 +396,14 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             },
           };
 
-          const result = await nanoBananaProvider.generateImage(nanoBananaParams);
+          const result =
+            await nanoBananaProvider.generateImage(nanoBananaParams);
 
           console.log("🍌 ✅ NANO BANANA API RESULT:", result);
 
           // CRITICAL: content must be JSON string with projectId/fileId for SSE connection
           const contentData = {
-            status: 'completed', // Image is already generated
+            status: "completed", // Image is already generated
             imageUrl: result.url,
             projectId: result.id, // Use result.id as projectId for SSE
             fileId: result.id, // Use result.id as fileId for SSE
@@ -354,13 +413,13 @@ export const configureImageGeneration = (params?: CreateImageDocumentParams) =>
             quality: selectedQuality,
             aspectRatio: selectedAspectRatio,
             seed: seed,
-            message: 'Image generated successfully!',
+            message: "Image generated successfully!",
           };
 
           return {
             ...result,
             content: JSON.stringify(contentData), // JSON string with projectId/fileId for SSE
-            kind: 'image', // Required for artifact system
+            kind: "image", // Required for artifact system
             message: `Image generated successfully using Nano Banana (Gemini 2.5 Flash Image): "${prompt}". Style: ${selectedStyle.label}, Quality: ${selectedQuality.label}, Format: ${selectedAspectRatio.label}.`,
             nanoBananaInfo: {
               model: "gemini-2.5-flash-image",

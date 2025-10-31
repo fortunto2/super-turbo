@@ -234,7 +234,7 @@ export const POST = withMonitoring(async (request: Request) => {
         }
 
         // For messages with parts, filter out problematic parts (like step-start)
-        // but keep text and tool parts that are needed for functionality
+        // but keep text, file, and tool parts that are needed for functionality
         if (msg.parts && msg.parts.length > 0) {
           const validParts = msg.parts.filter((p: any) => {
             // Keep text parts with valid content
@@ -244,6 +244,10 @@ export const POST = withMonitoring(async (request: Request) => {
               typeof p.text === "string" &&
               p.text.trim().length > 0
             ) {
+              return true;
+            }
+            // Keep file parts (needed for image/video generation with uploads)
+            if (p.type === "file" && p.url) {
               return true;
             }
             // Keep tool invocation parts (needed for image/video generation)
@@ -266,8 +270,10 @@ export const POST = withMonitoring(async (request: Request) => {
         return msg;
       })
       .filter((msg) => {
-        // For all messages, ensure they have at least one valid text OR tool part
-        // Text parts are required for conversation, tool parts are required for image/video generation
+        // For all messages, ensure they have at least one valid text, file, or tool part
+        // Text parts are required for conversation
+        // File parts are needed for image/video generation with uploads
+        // Tool parts are needed for image/video generation
         const hasTextPart = msg.parts?.some(
           (p: any) =>
             p.type === "text" &&
@@ -276,15 +282,17 @@ export const POST = withMonitoring(async (request: Request) => {
             p.text.trim().length > 0
         );
 
+        const hasFilePart = msg.parts?.some((p: any) => p.type === "file" && p.url);
+
         const hasToolPart = msg.parts?.some((p: any) =>
           p.type?.startsWith("tool-")
         );
 
-        const isValid = hasTextPart || hasToolPart;
+        const isValid = hasTextPart || hasFilePart || hasToolPart;
 
         if (!isValid) {
           console.log(
-            `🔍 Filtering out ${msg.role} message without valid text or tool parts:`,
+            `🔍 Filtering out ${msg.role} message without valid text, file, or tool parts:`,
             {
               id: msg.id,
               role: msg.role,
@@ -456,12 +464,35 @@ export const POST = withMonitoring(async (request: Request) => {
     const createDocumentTool = createDocument({ session });
     const updateDocumentTool = updateDocument({ session });
     const lastMessage = normalizedMessages[normalizedMessages.length - 1];
-    // Prefer experimental_attachments; fallback to attachments or requestAttachments
+    
+    // CRITICAL: Extract files from parts for AI SDK v5 file support
+    console.log("🔍 Last message parts before extraction:", lastMessage?.parts);
+    const filePartsFromMessage = lastMessage?.parts
+      ?.filter((p: any) => p.type === "file")
+      .map((p: any) => ({
+        url: p.url,
+        name: p.filename || "attachment",
+        contentType: p.mediaType || "image/png",
+      })) || [];
+    
+    console.log("🔍 Extracted file parts:", filePartsFromMessage);
+    
+    // Prefer experimental_attachments; fallback to files from parts or requestAttachments
     const currentAttachments = ((lastMessage as any)
       ?.experimental_attachments ||
       (lastMessage as any)?.attachments ||
       requestAttachments ||
+      filePartsFromMessage ||
       []) as any[];
+    
+    console.log("🔍 EXTRACTED ATTACHMENTS:", {
+      fromExperimental: (lastMessage as any)?.experimental_attachments?.length || 0,
+      fromAttachments: (lastMessage as any)?.attachments?.length || 0,
+      fromRequestAttachments: requestAttachments?.length || 0,
+      fromFileParts: filePartsFromMessage.length,
+      total: currentAttachments.length,
+      attachments: currentAttachments,
+    });
 
     // Old SuperDuperAI tools (kept for backward compatibility)
     const imageGenerationTool = configureImageGeneration({
